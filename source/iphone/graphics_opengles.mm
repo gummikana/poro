@@ -23,6 +23,18 @@ namespace poro {
 	
 namespace {
 	
+	Uint32 GetGLVertexMode(int vertex_mode){
+		switch (vertex_mode) {
+			case IGraphics::VERTEX_MODE_TRIANGLE_FAN:
+				return GL_TRIANGLE_FAN;
+			case IGraphics::VERTEX_MODE_TRIANGLE_STRIP:
+				return GL_TRIANGLE_STRIP;
+			default:
+				assert(false);
+				break;
+		}
+	}
+	
 	Uint32 GetNextPowerOfTwo(Uint32 input)
 	{
 		--input;
@@ -36,20 +48,25 @@ namespace {
 	
 	TextureOpenGLES * CreateTexture( unsigned char *data, int width, int height, GLint pixelFormat)
 	{
-		//int widthPow2 = GetNextPowerOfTwo(width);
-		//int heightPow2 = GetNextPowerOfTwo(height);
-		
-		// disables POT scaling thingamajig because it messes up the texture edges
-		int widthPow2 = width;
-		int heightPow2 = height;
+		// disables POT scaling for the ipad to make it look better. 
+		// TODO throw this out before release
+		#ifdef GLORG_HD 
+			int widthPow2 = width;
+			int heightPow2 = height;
+		#else
+			int widthPow2 = GetNextPowerOfTwo(width);
+			int heightPow2 = GetNextPowerOfTwo(height);
+		#endif
 		
 		TextureOpenGLES *texture = new TextureOpenGLES();
 		texture->mWidth  = width;
 		texture->mHeight = height;
-		texture->mUv[0] = 0; 
-		texture->mUv[1] = 0; 
-		texture->mUv[2] = ((GLfloat)width)/(GLfloat)widthPow2; 
-		texture->mUv[3] = ((GLfloat)height)/(GLfloat)heightPow2; 
+		texture->mRealSizeX = widthPow2;
+		texture->mRealSizeY = heightPow2;
+		texture->mUv[0] = 0;
+		texture->mUv[1] = 0;
+		texture->mUv[2] = ((GLfloat)width)/(GLfloat)widthPow2;
+		texture->mUv[3] = ((GLfloat)height)/(GLfloat)heightPow2;
 		
 		// allocate a texture name
 		glGenTextures( 1, &texture->mTextureId );
@@ -67,7 +84,7 @@ namespace {
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		
 		glDisable(GL_TEXTURE_2D);
-		
+
 		
 		//Get subimage
 		GLint prevAlignment;
@@ -189,7 +206,7 @@ namespace {
 		return texture;
 	}
 	
-	void drawsprite( TextureOpenGLES* texture, GLfloat* glTexCoords, GLfloat* glVertices, const types::fcolor& color, int count )
+	void drawsprite( TextureOpenGLES* texture, GLfloat* glTexCoords, GLfloat* glVertices, const types::fcolor& color, int count, Uint32 vertex_mode )
 	{
 		
 		glBindTexture(GL_TEXTURE_2D, texture->mTextureId);
@@ -203,8 +220,8 @@ namespace {
 		glTexCoordPointer(2, GL_FLOAT, 0, glTexCoords );
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(2, GL_FLOAT, 0, glVertices );
-		//glDrawArrays( GL_TRIANGLE_STRIP, 0, count );
-		glDrawArrays( GL_TRIANGLE_FAN, 0, count );
+		
+		glDrawArrays( vertex_mode, 0, count );
 		
 		glDisableClientState( GL_TEXTURE_COORD_ARRAY );
 		
@@ -214,7 +231,7 @@ namespace {
 	}
 	
 	void drawsprite_withalpha( TextureOpenGLES* texture,  GLfloat* glTexCoords, GLfloat* glVertices, const types::fcolor& color, int count,
-							  TextureOpenGLES* alpha_texture, GLfloat* alpha_glTexCoords, GLfloat* alpha_glVertices, const types::fcolor& alpha_color )
+							  TextureOpenGLES* alpha_texture, GLfloat* alpha_glTexCoords, GLfloat* alpha_glVertices, const types::fcolor& alpha_color, Uint32 vertex_mode )
 	{
 		// Specify texture cords
 		glClientActiveTexture(GL_TEXTURE0);
@@ -230,68 +247,28 @@ namespace {
 		glColor4f(alpha_color[ 0 ], alpha_color[ 1 ], alpha_color[ 2 ], alpha_color[ 3 ] );
 		glBindTexture(GL_TEXTURE_2D, alpha_texture->mTextureId );
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 		
-		/*glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_ADD);
-		glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_TEXTURE);
-		glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PREVIOUS);		
-		*/
 		glActiveTexture(GL_TEXTURE1);
 		glEnable(GL_TEXTURE_2D);
 		glColor4f(color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
 		glBindTexture(GL_TEXTURE_2D, texture->mTextureId );
-		/*
-		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
-		glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PREVIOUS);
-		glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_TEXTURE);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);		
-		*/		
 		
 		glDisable(GL_CULL_FACE);
 		
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(2, GL_FLOAT, 0, glVertices );
-		//glDrawArrays( GL_TRIANGLE_STRIP, 0, count );
-		glDrawArrays( GL_TRIANGLE_FAN, 0, count );
+		glDrawArrays( vertex_mode, 0, count );
 		
-						
-		glDisable(GL_TEXTURE_2D);
 		glDisable(GL_BLEND);
 		
 		glActiveTexture(GL_TEXTURE0);
 		glDisable(GL_TEXTURE_2D);
-		glDisable(GL_BLEND);
 		glActiveTexture(GL_TEXTURE1);
 		glDisable(GL_TEXTURE_2D);
-		glDisable(GL_BLEND);
+		
 		
 	}
-	
-	/*void drawsprite( TextureOpenGLES* texture, GLfloat* glTexCoords, GLfloat* glVertices, const types::fcolor& color )
-	{
-
-		glBindTexture(GL_TEXTURE_2D, texture->mTextureId);
-		glEnable(GL_TEXTURE_2D);
-		glEnable(GL_BLEND);
-		
-		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-		glColor4f(color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
-		
-		glEnableClientState( GL_TEXTURE_COORD_ARRAY );
-		glTexCoordPointer(2, GL_FLOAT, 0, glTexCoords );
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glVertexPointer(2, GL_FLOAT, 0, glVertices );
-		glDrawArrays( GL_TRIANGLE_FAN, 0, 4 );
-		
-		glDisableClientState( GL_TEXTURE_COORD_ARRAY );
-		
-		glDisable(GL_BLEND);
-		glDisable(GL_TEXTURE_2D);
-		
-	}*/
 	
 	types::vec2 Vec2Rotate( const types::vec2& point, const types::vec2& center, float angle )
 	{
@@ -325,6 +302,11 @@ bool GraphicsOpenGLES::Init( int width, int height, bool fullscreen, const types
 
 //=============================================================================
 
+ITexture* GraphicsOpenGLES::CloneTexture( ITexture* other )
+{
+	return new TextureOpenGLES( dynamic_cast< TextureOpenGLES* >( other ) );
+}
+	
 ITexture* GraphicsOpenGLES::LoadTexture( const types::string& filename )
 {
 	ITexture* temp = LoadImageFile(filename);	
@@ -392,18 +374,24 @@ void GraphicsOpenGLES::DrawTexture( ITexture* itexture, float x, float y, float 
 	tex_coords[ 3 ].x = tx2;
 	tex_coords[ 3 ].y = ty2;
 	
-	DrawTexture( texture,  temp_verts, tex_coords, color );
+	DrawTexture( texture,  temp_verts, tex_coords, 4, color );
 }
 
 //=============================================================================
 
-void GraphicsOpenGLES::DrawTexture( ITexture* itexture, types::vec2 vertices[ 4 ], types::vec2 tex_coords[ 4 ], const types::fcolor& color )
+void GraphicsOpenGLES::DrawTexture( ITexture* itexture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color )
 {
-	// this had an error message before, but it got all crazy because of all the empty container sprites so I removed it
-	if( itexture == NULL ) return;
+	
+	//Textures
+	if( itexture == NULL )
+		return;
+	
+	if( color[3] <= 0 )
+		return;
 	
 	TextureOpenGLES* texture = (TextureOpenGLES*)itexture;
 	
+	//Internal size convertion.
 	float xPlatformScale, yPlatformScale;
 	if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight()){	
 		xPlatformScale = poro::IPlatform::Instance()->GetWidth() / (float)poro::IPlatform::Instance()->GetInternalWidth();
@@ -412,74 +400,131 @@ void GraphicsOpenGLES::DrawTexture( ITexture* itexture, types::vec2 vertices[ 4 
 		xPlatformScale = 1.f;
 		yPlatformScale = 1.f;
 	}
+	static types::vec2 temp_tex_coords[ 8 ];
+	for( int i = 0; i < count; ++i )
+	{
+		temp_tex_coords[ i ].x = tex_coords[ i ].x * texture->mExternalScaleWidth;
+		temp_tex_coords[ i ].y = tex_coords[ i ].y * texture->mExternalScaleHeight;
+	}
+	//Flip texture cords for iphone
+	for (int i=0; i<count; ++i) {
+		temp_tex_coords[i].y = texture->mHeight - temp_tex_coords[i].y;
+	}
+	
+	//Vector
+	poro_assert( count > 2 );
+	poro_assert( count <= 8 );
 	
 	//Internal size convertion.
-	for (int i=0; i<4;++i) {
-		vertices[i].x = vertices[i].x * xPlatformScale;
-		tex_coords[i].x = tex_coords[i].x * texture->mExternalScaleWidth;
-		vertices[i].y = vertices[i].y * yPlatformScale;
-		tex_coords[i].y = tex_coords[i].y * texture->mExternalScaleHeight;
+	static types::vec2 temp_vertices[ 8 ];
+	for (int i=0; i<count;++i) {
+		temp_vertices[i].x = vertices[i].x * xPlatformScale;
+		temp_vertices[i].y = vertices[i].y * yPlatformScale;
 	}
 	
-	//Flip cords for iphone
-	for (int i=0; i<4; ++i) {
-		tex_coords[i].y = texture->mHeight - tex_coords[i].y;
+	static GLfloat glVertices[16];
+	static GLfloat glTexCords[16];
+	
+	float x_text_conv = ( 1.f / texture->mWidth ) * ( texture->mUv[ 2 ] - texture->mUv[ 0 ] );
+	float y_text_conv = ( 1.f / texture->mHeight ) * ( texture->mUv[ 3 ] - texture->mUv[ 1 ] );
+	for( int i = 0; i < count; ++i )
+	{
+		glVertices[i*2] = temp_vertices[ i ].x;
+		glVertices[i*2+1] = temp_vertices[ i ].y;
+		glTexCords[i*2] = texture->mUv[ 0 ] + ( temp_tex_coords[ i ].x * x_text_conv );
+		glTexCords[i*2+1] = texture->mUv[ 1 ] + ( temp_tex_coords[ i ].y * y_text_conv );
 	}
 	
-	static GLfloat glVertices[8];
-	static GLfloat glTexCords[8];
-	
-	glVertices[0] = vertices[ 1 ].x;
-	glVertices[1] = vertices[ 1 ].y;
-	glTexCords[0] = ( ( tex_coords[ 0 ].x + texture->mUv[ 0 ] ) / texture->mWidth ) * texture->mUv[ 2 ];
-	glTexCords[5] = ( ( tex_coords[ 0 ].y + texture->mUv[ 1 ] ) / texture->mHeight ) * texture->mUv[ 3 ];
-
-	glVertices[2] = vertices[ 3 ].x;
-	glVertices[3] = vertices[ 3 ].y;
-	glTexCords[2] = ( ( tex_coords[ 2 ].x + texture->mUv[ 0 ] ) / texture->mWidth ) * texture->mUv[ 2 ];
-	glTexCords[3] = ( ( tex_coords[ 1 ].y + texture->mUv[ 1 ] ) / texture->mHeight ) * texture->mUv[ 3 ];
-	
-	glVertices[4] = vertices[ 2 ].x;
-	glVertices[5] = vertices[ 2 ].y;
-	glTexCords[4] = ( ( tex_coords[ 3 ].x + texture->mUv[ 0 ] ) / texture->mWidth ) * texture->mUv[ 2 ];
-	glTexCords[1] = ( ( tex_coords[ 3 ].y + texture->mUv[ 1 ] ) / texture->mHeight ) * texture->mUv[ 3 ];
-
-	glVertices[6] = vertices[ 0 ].x;
-	glVertices[7] = vertices[ 0 ].y;
-	glTexCords[6] = ( ( tex_coords[ 1 ].x + texture->mUv[ 0 ] ) / texture->mWidth ) * texture->mUv[ 2 ];
-	glTexCords[7] = ( ( tex_coords[ 2 ].y + texture->mUv[ 1 ] ) / texture->mHeight ) * texture->mUv[ 3 ];
-	
-	
-	/*
-	glVertices[0] = vertices[ 0 ].x;
-	glVertices[1] = vertices[ 0 ].y;
-	glTexCords[0] = ( ( tex_coords[ 0 ].x + texture->mUv[ 0 ] ) / texture->mWidth ) * texture->mUv[ 2 ];
-	glTexCords[1] = ( ( tex_coords[ 0 ].y + texture->mUv[ 1 ] ) / texture->mHeight ) * texture->mUv[ 3 ];
-	
-	glVertices[2] = vertices[ 1 ].x;
-	glVertices[3] = vertices[ 1 ].y;
-	glTexCords[2] = ( ( tex_coords[ 1 ].x + texture->mUv[ 0 ] ) / texture->mWidth ) * texture->mUv[ 2 ];
-	glTexCords[3] = ( ( tex_coords[ 1 ].y + texture->mUv[ 1 ] ) / texture->mHeight ) * texture->mUv[ 3 ];
-	
-	glVertices[4] = vertices[ 2 ].x;
-	glVertices[5] = vertices[ 2 ].y;
-	glTexCords[4] = ( ( tex_coords[ 2 ].x + texture->mUv[ 0 ] ) / texture->mWidth ) * texture->mUv[ 2 ];
-	glTexCords[5] = ( ( tex_coords[ 2 ].y + texture->mUv[ 1 ] ) / texture->mHeight ) * texture->mUv[ 3 ];
-	
-	glVertices[6] = vertices[ 3 ].x;
-	glVertices[7] = vertices[ 3 ].y;
-	glTexCords[6] = ( ( tex_coords[ 3 ].x + texture->mUv[ 0 ] ) / texture->mWidth ) * texture->mUv[ 2 ];
-	glTexCords[7] = ( ( tex_coords[ 3 ].y + texture->mUv[ 1 ] ) / texture->mHeight ) * texture->mUv[ 3 ];
-	*/
-	
-	drawsprite( texture, glTexCords, glVertices, color, 4 );
+	drawsprite( texture, glTexCords, glVertices, color, count, GetGLVertexMode(mVertexMode) );
 }
 
+	
+void GraphicsOpenGLES::DrawTextureWithAlpha( ITexture* itexture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color,
+											ITexture* ialpha_texture, types::vec2* alpha_vertices, types::vec2* alpha_tex_coords, const types::fcolor& alpha_color ) {
+	
+	//Textures
+	if( itexture == NULL || ialpha_texture == NULL )
+		return;
+	
+	if( color[3] <= 0 || alpha_color[3] <= 0 )
+		return;
+	
+	TextureOpenGLES* texture = (TextureOpenGLES*)itexture;
+	TextureOpenGLES* alpha_texture = (TextureOpenGLES*)ialpha_texture;
+	
+	//Internal size convertion.
+	float xPlatformScale, yPlatformScale;
+	if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight()){	
+		xPlatformScale = poro::IPlatform::Instance()->GetWidth() / (float)poro::IPlatform::Instance()->GetInternalWidth();
+		yPlatformScale = poro::IPlatform::Instance()->GetHeight() / (float)poro::IPlatform::Instance()->GetInternalHeight();
+	} else {
+		xPlatformScale = 1.f;
+		yPlatformScale = 1.f;
+	}
+	static types::vec2 temp_tex_coords[ 8 ];
+	static types::vec2 temp_alpha_tex_coords[ 8 ];
+	for( int i = 0; i < count; ++i )
+	{
+		temp_tex_coords[ i ].x = tex_coords[ i ].x * texture->mExternalScaleWidth;
+		temp_tex_coords[ i ].y = tex_coords[ i ].y * texture->mExternalScaleHeight;
+		temp_alpha_tex_coords[ i ].x = alpha_tex_coords[ i ].x * texture->mExternalScaleWidth; 
+		temp_alpha_tex_coords[ i ].y = alpha_tex_coords[ i ].y * texture->mExternalScaleHeight; 
+	}
+	//Flip texture cords for iphone
+	for (int i=0; i<count; ++i) {
+		temp_tex_coords[i].y = texture->mHeight - temp_tex_coords[i].y;
+		temp_alpha_tex_coords[i].y = alpha_texture->mHeight - temp_alpha_tex_coords[i].y;
+	}
+	
+	//Vector
+	poro_assert( count > 2 );
+	poro_assert( count <= 8 );
+	
+	//Internal size convertion.
+	static types::vec2 temp_vertices[ 8 ];
+	for (int i=0; i<count;++i) {
+		temp_vertices[i].x = vertices[i].x * xPlatformScale;
+		temp_vertices[i].y = vertices[i].y * yPlatformScale;
+	}
+	
+	static GLfloat glVertices[16];
+	static GLfloat glTexCords[16];
+	static GLfloat glAlphaTexCords[16];
+	
+	// vertices
+	float x_text_conv = ( 1.f / texture->mWidth ) * ( texture->mUv[ 2 ] - texture->mUv[ 0 ] );
+	float y_text_conv = ( 1.f / texture->mHeight ) * ( texture->mUv[ 3 ] - texture->mUv[ 1 ] );
+	float x_alpha_text_conv = ( 1.f / alpha_texture->mWidth ) * ( alpha_texture->mUv[ 2 ] - alpha_texture->mUv[ 0 ] );
+	float y_alpha_text_conv = ( 1.f / alpha_texture->mHeight ) * ( alpha_texture->mUv[ 3 ] - alpha_texture->mUv[ 1 ] );
+	
+	for( int i = 0; i < count; ++i )
+	{
+		glVertices[i*2] = temp_vertices[ i ].x;
+		glVertices[i*2+1] = temp_vertices[ i ].y;
+		glTexCords[i*2] = texture->mUv[ 0 ] + ( temp_tex_coords[ i ].x * x_text_conv );
+		glTexCords[i*2+1] = texture->mUv[ 1 ] + ( temp_tex_coords[ i ].y * y_text_conv );
+		
+		glAlphaTexCords[i*2] = alpha_texture->mUv[ 0 ] + ( temp_alpha_tex_coords[ i ].x * x_alpha_text_conv );
+		glAlphaTexCords[i*2+1] = alpha_texture->mUv[ 1 ] + ( temp_alpha_tex_coords[ i ].y * y_alpha_text_conv );
+	}
+	
+	drawsprite_withalpha( texture, glTexCords, glVertices, color, count, alpha_texture, glAlphaTexCords, glVertices, alpha_color, GetGLVertexMode(mVertexMode) );
+}
+	
 //=============================================================================
 
 void GraphicsOpenGLES::BeginRendering()
 {
 	[iPhoneGlobals.glView beginRendering];
+	
+	//clear screen
+	glClearColor( mFillColor[ 0 ],
+				 mFillColor[ 1 ],
+				 mFillColor[ 2 ],
+				 mFillColor[ 3 ] );
+	
+	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	
 }
 
 void GraphicsOpenGLES::EndRendering()
@@ -541,21 +586,14 @@ void GraphicsOpenGLES::DrawLines( const std::vector< poro::types::vec2 >& vertic
 	
 }
 	
+void GraphicsOpenGLES::DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color )
+{
+	int vertCount = vertices.size();
 	
-void GraphicsOpenGLES::DrawTextureWithAlpha( ITexture* itexture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color,
-											 ITexture* ialpha_texture, types::vec2* alpha_vertices, types::vec2* alpha_tex_coords, const types::fcolor& alpha_color ) {
-	
-	//Textures
-	if( itexture == NULL || ialpha_texture == NULL )
+	if(vertCount == 0)
 		return;
 	
-	if( color[3] <= 0 || alpha_color[3] <= 0 )
-		return;
-	
-	TextureOpenGLES* texture = (TextureOpenGLES*)itexture;
-	TextureOpenGLES* alpha_texture = (TextureOpenGLES*)ialpha_texture;
-	
-	//Internal size convertion.
+	//Internal rescale
 	float xPlatformScale, yPlatformScale;
 	if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight()){	
 		xPlatformScale = poro::IPlatform::Instance()->GetWidth() / (float)poro::IPlatform::Instance()->GetInternalWidth();
@@ -564,52 +602,26 @@ void GraphicsOpenGLES::DrawTextureWithAlpha( ITexture* itexture, types::vec2* ve
 		xPlatformScale = 1.f;
 		yPlatformScale = 1.f;
 	}
-	static types::vec2 temp_tex_coords[ 8 ];
-	static types::vec2 temp_alpha_tex_coords[ 8 ];
-	for( int i = 0; i < count; ++i )
-	{
-		temp_tex_coords[ i ].x = tex_coords[ i ].x * texture->mExternalScaleWidth;
-		temp_tex_coords[ i ].y = tex_coords[ i ].y * texture->mExternalScaleHeight;
-		temp_alpha_tex_coords[ i ].x = alpha_tex_coords[ i ].x * texture->mExternalScaleWidth; 
-		temp_alpha_tex_coords[ i ].y = alpha_tex_coords[ i ].y * texture->mExternalScaleHeight; 
-	}
-	//Flip texture cords for iphone
-	for (int i=0; i<count; ++i) {
-		temp_tex_coords[i].y = texture->mHeight - temp_tex_coords[i].y;
-		temp_alpha_tex_coords[i].y = texture->mHeight - temp_alpha_tex_coords[i].y;
+	
+	//Consider static buffer size?
+	GLfloat *glVertices = new GLfloat[vertCount*2];
+	int o = -1;
+	for(int i=0; i < vertCount; ++i){
+		glVertices[++o] = vertices[i].x*xPlatformScale;
+		glVertices[++o] = vertices[i].y*yPlatformScale;
 	}
 	
-	//Vector
-	poro_assert( count > 2 );
-	poro_assert( count <= 8 );
-
-	//Internal size convertion.
-	static types::vec2 temp_vertices[ 8 ];
-	for (int i=0; i<count;++i) {
-		temp_vertices[i].x = vertices[i].x * xPlatformScale;
-		temp_vertices[i].y = vertices[i].y * yPlatformScale;
-	}
+	glColor4f(color[0], color[1], color[2], color[3]);
+	glPushMatrix();
+	glVertexPointer(2, GL_FLOAT , 0, glVertices);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glDrawArrays (GL_TRIANGLE_STRIP, 0, vertCount);
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glPopMatrix();
 	
-	static GLfloat glVertices[16];
-	static GLfloat glTexCords[16];
-	static GLfloat glAlphaTexCords[16];
+	delete glVertices;
 	
-	for( int i = 0; i < count; ++i )
-	{
-		glVertices[i*2] = temp_vertices[ i ].x;
-		glVertices[i*2+1] = temp_vertices[ i ].y;
-		glTexCords[i*2] = ( ( temp_tex_coords[ i ].x + texture->mUv[ 0 ] ) / texture->mWidth ) * texture->mUv[ 2 ];
-		glTexCords[i*2+1] = ( ( temp_tex_coords[ i ].y + texture->mUv[ 1 ] ) / texture->mHeight ) * texture->mUv[ 3 ];
-		
-		glAlphaTexCords[i*2] = ( ( temp_alpha_tex_coords[i].x + alpha_texture->mUv[ 0 ] ) / alpha_texture->mWidth ) * alpha_texture->mUv[ 2 ];
-		glAlphaTexCords[i*2+1] = ( ( temp_alpha_tex_coords[i].y + alpha_texture->mUv[ 1 ] ) / alpha_texture->mHeight ) * alpha_texture->mUv[ 3 ];
-	}
-	
-	//drawsprite( texture, glTexCords, glVertices, color, count );
-	drawsprite_withalpha( texture, glTexCords, glVertices, color, count, alpha_texture, glAlphaTexCords, glVertices, alpha_color );
 }
 	
-	
-	
-	//=============================================================================
+//=============================================================================
 } // end o namespace poro

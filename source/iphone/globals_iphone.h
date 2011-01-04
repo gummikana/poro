@@ -22,14 +22,12 @@ class iPhoneGlobalsStruct {
 public:
 	
 	IApplication	*baseApp;
-	UIWindow		*window;
 	PlatformIPhone	*iPhoneWindow;
 	EAGLView		*glView;
 	RootViewController	*viewController;
 	id				appDelegate;
 
 	iPhoneGlobalsStruct() {
-		window = 0;
 		baseApp = 0;
 		iPhoneWindow = 0;
 		glView = 0;

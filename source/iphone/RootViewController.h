@@ -13,6 +13,7 @@
 
 @interface RootViewController : UIViewController {
 	UIInterfaceOrientation deviceOrientation_;
+	bool mMatrixLoaded;
 }
 
 -(void) setDeviceOrientation:(UIInterfaceOrientation) orientation;

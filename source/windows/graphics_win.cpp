@@ -15,6 +15,21 @@
 namespace poro {
 		
 namespace {
+	Uint32 GetGLVertexMode(int vertex_mode){
+		switch (vertex_mode) {
+			case IGraphics::VERTEX_MODE_TRIANGLE_FAN:
+				return GL_TRIANGLE_FAN;
+			case IGraphics::VERTEX_MODE_TRIANGLE_STRIP:
+				return GL_TRIANGLE_STRIP;
+			default:
+				assert(false);
+				break;
+		}
+
+		// as a default
+		return GL_TRIANGLE_FAN;
+	}
+
 	types::vec2 Vec2Rotate( const types::vec2& point, const types::vec2& center, float angle )
 	{
 		types::vec2 D;
@@ -45,7 +60,7 @@ namespace {
 
 	//-------------------------------------------------------------------------
 	
-	void drawsprite( TextureWin* texture, Vertex* vertices, const types::fcolor& color, int count  )
+	void drawsprite( TextureWin* texture, Vertex* vertices, const types::fcolor& color, int count, Uint32 vertex_mode  )
 	{
 		Uint32 tex = texture->mTexture;
 		glBindTexture(GL_TEXTURE_2D, tex);
@@ -57,7 +72,7 @@ namespace {
 
 		glColor4f(color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
 
-		glBegin(GL_TRIANGLE_STRIP);
+		glBegin( vertex_mode );
 		for( int i = 0; i < count; ++i )
 		{
 			glTexCoord2f(vertices[ i ].tx, vertices[ i ].ty );
@@ -72,7 +87,8 @@ namespace {
 	//-------------------------------------------------------------------------
 	
 	void drawsprite_withalpha( TextureWin* texture, Vertex* vertices, const types::fcolor& color, int count,
-		TextureWin* alpha_texture, Vertex* alpha_vertices, const types::fcolor& alpha_color )
+		TextureWin* alpha_texture, Vertex* alpha_vertices, const types::fcolor& alpha_color,
+		Uint32 vertex_mode )
 	{
 		// no glew on mac? We'll maybe we need graphics_mac!?
 		if(!GLEW_VERSION_1_3)
@@ -99,7 +115,7 @@ namespace {
         glBindTexture(GL_TEXTURE_2D, image_id );
 
 		glDisable(GL_CULL_FACE);
-		glBegin(GL_POLYGON);
+		glBegin( vertex_mode );
 		for( int i = 0; i < count; ++i )
 		{
 			// glTexCoord2f(vertices[ i ].tx, vertices[ i ].ty );
@@ -244,7 +260,7 @@ namespace {
 	//-----------------------------------------------------------------------------
 
 	// Based on SDL examples.
-	bool CreateTexture( Uint32 &oTexture, float *oUV, SDL_Surface *surface )
+	bool CreateTexture( Uint32 &oTexture, float *oUV, SDL_Surface *surface, int* real_size )
 	{
 		Uint32 w, h;
 		SDL_Surface *image;
@@ -264,6 +280,9 @@ namespace {
 		oUV[1] = 0;                  // Min Y
 		oUV[2] = ((GLfloat)srcw/* - 0.0001f*/) / w;  // Max X
 		oUV[3] = ((GLfloat)srch/* - 0.0001f*/) / h;  // Max Y
+
+		real_size[ 0 ] = w;
+		real_size[ 1 ] = h;
 
 		image = CreateSDLSurface(w,h);
 		if (image == NULL)
@@ -328,13 +347,14 @@ namespace {
 		bool success;
 		Uint32 texture;
 		float uv[4];
+		int real_size[2];
 		int w = surface->w;
 		int h = surface->h;
 
 		if (surface == NULL)
 			return NULL;
 
-		success = CreateTexture( texture, uv, surface );
+		success = CreateTexture( texture, uv, surface, real_size );
 		if (!success)
 			return NULL;
 
@@ -342,6 +362,9 @@ namespace {
 		result->mTexture = texture;
 		result->mWidth = w;
 		result->mHeight = h;
+		result->mRealSizeX = real_size[ 0 ];
+		result->mRealSizeY = real_size[ 1 ];
+
 		for( int i = 0; i < 4; ++i )
 			result->mUv[ i ] = uv[ i ];
 		return result;
@@ -505,6 +528,11 @@ ITexture* GraphicsWin::CreateTexture( int width, int height )
 	// return NULL;
 }
 
+ITexture* GraphicsWin::CloneTexture( ITexture* other )
+{
+	return new TextureWin( dynamic_cast< TextureWin* >( other ) );
+}
+
 void GraphicsWin::SetTextureData( ITexture* texture, void* data )
 {
 	SetTextureDataForReal((TextureWin*)texture,data);
@@ -528,7 +556,6 @@ void GraphicsWin::ReleaseTexture( ITexture* texture )
 	glDeleteTextures(1, &textureWin->mTexture);
 	// poro_assert( false );
 }
-
 //=============================================================================
 
 void GraphicsWin::DrawTexture( ITexture* itexture, float x, float y, float w, float h, const types::fcolor& color, float rotation )
@@ -583,13 +610,14 @@ void GraphicsWin::DrawTexture( ITexture* itexture, float x, float y, float w, fl
 	tex_coords[ 3 ].x = tx2;
 	tex_coords[ 3 ].y = ty2;
 
-	DrawTexture( texture,  temp_verts, tex_coords, color );
+	DrawTexture( texture,  temp_verts, tex_coords, 4, color );
 }
-
 //=============================================================================
-
-void GraphicsWin::DrawTexture( ITexture* itexture, types::vec2 vertices[ 4 ], types::vec2 tex_coords[ 4 ], const types::fcolor& color )
+	
+void GraphicsWin::DrawTexture( ITexture* itexture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color )
 {
+	poro_assert( count <= 8 );
+	
 	if( itexture == NULL )
 		return;
 
@@ -598,36 +626,26 @@ void GraphicsWin::DrawTexture( ITexture* itexture, types::vec2 vertices[ 4 ], ty
 
 	TextureWin* texture = (TextureWin*)itexture;
 
-	for( int i = 0; i < 4; ++i )
+	for( int i = 0; i < count; ++i )
 	{
 		tex_coords[ i ].x *= texture->mExternalSizeX; 
 		tex_coords[ i ].y *= texture->mExternalSizeY;
 	}
 
 
-	static Vertex vert[4];
+	static Vertex vert[8];
 
-	vert[0].x = vertices[ 0 ].x;
-	vert[0].y = vertices[ 0 ].y;
-	vert[0].tx = ( ( tex_coords[ 0 ].x + texture->mUv[ 0 ] ) / texture->mWidth ) * texture->mUv[ 2 ];
-	vert[0].ty = ( ( tex_coords[ 0 ].y + texture->mUv[ 1 ] ) / texture->mHeight ) * texture->mUv[ 3 ];
+	float x_text_conv = ( 1.f / texture->mWidth ) * ( texture->mUv[ 2 ] - texture->mUv[ 0 ] );
+	float y_text_conv = ( 1.f / texture->mHeight ) * ( texture->mUv[ 3 ] - texture->mUv[ 1 ] );
+	for( int i = 0; i < count; ++i )
+	{
+		vert[i].x = vertices[i].x;	
+		vert[i].y = vertices[i].y;
+		vert[i].tx = texture->mUv[ 0 ] + ( tex_coords[i].x * x_text_conv );
+		vert[i].ty = texture->mUv[ 1 ] + ( tex_coords[i].y * y_text_conv ); 
+	}
 
-	vert[1].x = vertices[ 1 ].x;
-	vert[1].y = vertices[ 1 ].y;
-	vert[1].tx = ( ( tex_coords[ 1 ].x + texture->mUv[ 0 ] ) / texture->mWidth ) * texture->mUv[ 2 ];
-	vert[1].ty = ( ( tex_coords[ 1 ].y + texture->mUv[ 1 ] ) / texture->mHeight ) * texture->mUv[ 3 ];
-
-	vert[2].x = vertices[ 2 ].x;
-	vert[2].y = vertices[ 2 ].y;
-	vert[2].tx = ( ( tex_coords[ 2 ].x + texture->mUv[ 0 ] ) / texture->mWidth ) * texture->mUv[ 2 ];
-	vert[2].ty = ( ( tex_coords[ 2 ].y + texture->mUv[ 1 ] ) / texture->mHeight ) * texture->mUv[ 3 ];
-
-	vert[3].x = vertices[ 3 ].x;
-	vert[3].y = vertices[ 3 ].y;
-	vert[3].tx = ( ( tex_coords[ 3 ].x + texture->mUv[ 0 ] ) / texture->mWidth ) * texture->mUv[ 2 ];
-	vert[3].ty = ( ( tex_coords[ 3 ].y + texture->mUv[ 1 ] ) / texture->mHeight ) * texture->mUv[ 3 ];
-
-	drawsprite( texture, vert, color, 4 );
+	drawsprite( texture, vert, color, count, GetGLVertexMode(mVertexMode) );
 }
 
 //-----------------------------------------------------------------------------
@@ -661,103 +679,39 @@ void GraphicsWin::DrawTextureWithAlpha(
 	poro_assert( count <= 8 );
 
 	// vertices
+	float x_text_conv = ( 1.f / texture->mWidth ) * ( texture->mUv[ 2 ] - texture->mUv[ 0 ] );
+	float y_text_conv = ( 1.f / texture->mHeight ) * ( texture->mUv[ 3 ] - texture->mUv[ 1 ] );
+	float x_alpha_text_conv = ( 1.f / alpha_texture->mWidth ) * ( alpha_texture->mUv[ 2 ] - alpha_texture->mUv[ 0 ] );
+	float y_alpha_text_conv = ( 1.f / alpha_texture->mHeight ) * ( alpha_texture->mUv[ 3 ] - alpha_texture->mUv[ 1 ] );
+
 	for( int i = 0; i < count; ++i )
 	{
 		vert[i].x = vertices[ i ].x;
 		vert[i].y = vertices[ i ].y;
-		vert[i].tx = ( ( tex_coords[ i ].x + texture->mUv[ 0 ] ) / texture->mWidth ) * texture->mUv[ 2 ];
-		vert[i].ty = ( ( tex_coords[ i ].y + texture->mUv[ 1 ] ) / texture->mHeight ) * texture->mUv[ 3 ];
+		vert[i].tx = texture->mUv[ 0 ] + ( tex_coords[ i ].x * x_text_conv );
+		vert[i].ty = texture->mUv[ 1 ] + ( tex_coords[ i ].y * y_text_conv );
 
 		alpha_vert[i].x = alpha_vertices[i].x;
 		alpha_vert[i].y = alpha_vertices[i].y;
-		alpha_vert[i].tx = ( ( alpha_tex_coords[i].x + alpha_texture->mUv[ 0 ] ) / alpha_texture->mWidth ) * alpha_texture->mUv[ 2 ];
-		alpha_vert[i].ty = ( ( alpha_tex_coords[i].y + alpha_texture->mUv[ 1 ] ) / alpha_texture->mHeight ) * alpha_texture->mUv[ 3 ];
+		alpha_vert[i].tx = alpha_texture->mUv[ 0 ] + ( alpha_tex_coords[ i ].x * x_alpha_text_conv );
+		alpha_vert[i].ty = alpha_texture->mUv[ 1 ] + ( alpha_tex_coords[ i ].y * y_alpha_text_conv );
 
 	}
 
-	/*
-	vert[1].x = vertices[ 1 ].x;
-	vert[1].y = vertices[ 1 ].y;
-	vert[1].tx = ( ( tex_coords[ 1 ].x + texture->mUv[ 0 ] ) / texture->mWidth ) * texture->mUv[ 2 ];
-	vert[1].ty = ( ( tex_coords[ 1 ].y + texture->mUv[ 1 ] ) / texture->mHeight ) * texture->mUv[ 3 ];
-
-	vert[2].x = vertices[ 2 ].x;
-	vert[2].y = vertices[ 2 ].y;
-	vert[2].tx = ( ( tex_coords[ 2 ].x + texture->mUv[ 0 ] ) / texture->mWidth ) * texture->mUv[ 2 ];
-	vert[2].ty = ( ( tex_coords[ 2 ].y + texture->mUv[ 1 ] ) / texture->mHeight ) * texture->mUv[ 3 ];
-
-	vert[3].x = vertices[ 3 ].x;
-	vert[3].y = vertices[ 3 ].y;
-	vert[3].tx = ( ( tex_coords[ 3 ].x + texture->mUv[ 0 ] ) / texture->mWidth ) * texture->mUv[ 2 ];
-	vert[3].ty = ( ( tex_coords[ 3 ].y + texture->mUv[ 1 ] ) / texture->mHeight ) * texture->mUv[ 3 ];
-
-	// alpha vertices
-	alpha_vert[0].x = alpha_vertices[ 0 ].x;
-	alpha_vert[0].y = alpha_vertices[ 0 ].y;
-	alpha_vert[0].tx = ( ( alpha_tex_coords[ 0 ].x + alpha_texture->mUv[ 0 ] ) / alpha_texture->mWidth ) * alpha_texture->mUv[ 2 ];
-	alpha_vert[0].ty = ( ( alpha_tex_coords[ 0 ].y + alpha_texture->mUv[ 1 ] ) / alpha_texture->mHeight ) * alpha_texture->mUv[ 3 ];
-
-	alpha_vert[1].x = alpha_vertices[ 1 ].x;
-	alpha_vert[1].y = alpha_vertices[ 1 ].y;
-	alpha_vert[1].tx = ( ( alpha_tex_coords[ 1 ].x + alpha_texture->mUv[ 0 ] ) / alpha_texture->mWidth ) * alpha_texture->mUv[ 2 ];
-	alpha_vert[1].ty = ( ( alpha_tex_coords[ 1 ].y + alpha_texture->mUv[ 1 ] ) / alpha_texture->mHeight ) * alpha_texture->mUv[ 3 ];
-
-	alpha_vert[2].x = alpha_vertices[ 2 ].x;
-	alpha_vert[2].y = alpha_vertices[ 2 ].y;
-	alpha_vert[2].tx = ( ( alpha_tex_coords[ 2 ].x + alpha_texture->mUv[ 0 ] ) / alpha_texture->mWidth ) * alpha_texture->mUv[ 2 ];
-	alpha_vert[2].ty = ( ( alpha_tex_coords[ 2 ].y + alpha_texture->mUv[ 1 ] ) / alpha_texture->mHeight ) * alpha_texture->mUv[ 3 ];
-
-	alpha_vert[3].x = alpha_vertices[ 3 ].x;
-	alpha_vert[3].y = alpha_vertices[ 3 ].y;
-	alpha_vert[3].tx = ( ( alpha_tex_coords[ 3 ].x + alpha_texture->mUv[ 0 ] ) / alpha_texture->mWidth ) * alpha_texture->mUv[ 2 ];
-	alpha_vert[3].ty = ( ( alpha_tex_coords[ 3 ].y + alpha_texture->mUv[ 1 ] ) / alpha_texture->mHeight ) * alpha_texture->mUv[ 3 ];
-	*/
-	// drawsprite( texture, vert, color, 4 );
 	drawsprite_withalpha( texture, vert, color, count,
-		alpha_texture, alpha_vert, alpha_color );
-}
-
-//-----------------------------------------------------------------------------
-
-void GraphicsWin::DrawTriangle( ITexture* itexture, types::vec2 vertices[ 3 ], types::vec2 tex_coords[ 3 ], const types::fcolor& color )
-{
-	if( itexture == NULL )
-		return;
-
-	TextureWin* texture = (TextureWin*)itexture;
-
-	for( int i = 0; i < 3; ++i )
-	{
-		tex_coords[ i ].x *= texture->mExternalSizeX; 
-		tex_coords[ i ].y *= texture->mExternalSizeY;
-	}
-
-
-	static Vertex vert[3];
-
-	vert[0].x = vertices[ 0 ].x;
-	vert[0].y = vertices[ 0 ].y;
-	vert[0].tx = ( ( tex_coords[ 0 ].x + texture->mUv[ 0 ] ) / texture->mWidth ) * texture->mUv[ 2 ];
-	vert[0].ty = ( ( tex_coords[ 0 ].y + texture->mUv[ 1 ] ) / texture->mHeight ) * texture->mUv[ 3 ];
-
-	vert[1].x = vertices[ 1 ].x;
-	vert[1].y = vertices[ 1 ].y;
-	vert[1].tx = ( ( tex_coords[ 1 ].x + texture->mUv[ 0 ] ) / texture->mWidth ) * texture->mUv[ 2 ];
-	vert[1].ty = ( ( tex_coords[ 1 ].y + texture->mUv[ 1 ] ) / texture->mHeight ) * texture->mUv[ 3 ];
-
-	vert[2].x = vertices[ 2 ].x;
-	vert[2].y = vertices[ 2 ].y;
-	vert[2].tx = ( ( tex_coords[ 2 ].x + texture->mUv[ 0 ] ) / texture->mWidth ) * texture->mUv[ 2 ];
-	vert[2].ty = ( ( tex_coords[ 2 ].y + texture->mUv[ 1 ] ) / texture->mHeight ) * texture->mUv[ 3 ];
-
-	drawsprite( texture, vert, color, 3 );
+		alpha_texture, alpha_vert, alpha_color,
+		GetGLVertexMode(mVertexMode) );
 }
 
 //=============================================================================
 
 void GraphicsWin::BeginRendering()
 {
-	glClearColor(0,0,0,1.0);
+	glClearColor( mFillColor[ 0 ],
+		mFillColor[ 1 ],
+		mFillColor[ 2 ],
+		mFillColor[ 3 ] );
+
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 }
 
@@ -784,18 +738,72 @@ void GraphicsWin::DrawLines( const std::vector< poro::types::vec2 >& vertices, c
 	glDisable(GL_BLEND);
 }
 
+//-----------------------------------------------------------------------------
+
+void GraphicsWin::DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color )
+{
+	//poro_logger << "DrawLines" << std::endl;
+	int vertCount = vertices.size();
+	
+	if(vertCount == 0)
+		return;
+	
+	//Internal rescale
+	float xPlatformScale, yPlatformScale;
+	if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight()){	
+		xPlatformScale = poro::IPlatform::Instance()->GetWidth() / (float)poro::IPlatform::Instance()->GetInternalWidth();
+		yPlatformScale = poro::IPlatform::Instance()->GetHeight() / (float)poro::IPlatform::Instance()->GetInternalHeight();
+	} else {
+		xPlatformScale = 1.f;
+		yPlatformScale = 1.f;
+	}
+	
+	//Consider static buffer size?
+	GLfloat *glVertices = new GLfloat[vertCount*2];
+	int o = -1;
+	for(int i=0; i < vertCount; ++i){
+		glVertices[++o] = vertices[i].x*xPlatformScale;
+		glVertices[++o] = vertices[i].y*yPlatformScale;
+	}
+	
+	//for(int i=0; i < vertCount*2; ++i){
+	//	poro_logger << ":" << glVertices[i] << std::endl;
+	//}
+	
+	glColor4f(color[0], color[1], color[2], color[3]);
+	glLineWidth(2.0f);
+	glPushMatrix();
+	glVertexPointer(2, GL_FLOAT , 0, glVertices);
+	glDrawArrays (GL_LINE_STRIP, 0, vertCount);
+
+	/*
+	glBegin(GL_TRIANGLE_STRIP);
+	for( int i = 0; i < count; ++i )
+	{
+		glTexCoord2f(vertices[ i ].tx, vertices[ i ].ty );
+		glVertex2f(vertices[ i ].x, vertices[ i ].y );
+	}
+
+	glEnd();*/
+
+	//glDrawArrays (GL_TRIANGLE_FAN, 0, vertCount);
+	glPopMatrix();
+	
+	delete glVertices;
+}
 
 //=============================================================================
 
-	IGraphicsBuffer* GraphicsWin::CreateGraphicsBuffer(int width, int height){
-		GraphicsBufferWin* buffer = new GraphicsBufferWin();
-		buffer->Init(width, height);
-		return (IGraphicsBuffer*)buffer;
-	}
+IGraphicsBuffer* GraphicsWin::CreateGraphicsBuffer(int width, int height){
+	GraphicsBufferWin* buffer = new GraphicsBufferWin();
+	buffer->Init(width, height);
+	return (IGraphicsBuffer*)buffer;
+}
+
+void GraphicsWin::DestroyGraphicsBuffer(IGraphicsBuffer* buffer){
+	delete buffer;
+}
 	
-	void GraphicsWin::DestroyGraphicsBuffer(IGraphicsBuffer* buffer){
-		delete buffer;
-	}
-	
+//=============================================================================
 	
 } // end o namespace poro

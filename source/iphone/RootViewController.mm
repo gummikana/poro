@@ -44,8 +44,11 @@
 }
 
 -(void) applyOrientation {	
-	glPopMatrix();
+	if (mMatrixLoaded)
+		glPopMatrix(); //Restore original matrix.
+	
 	glPushMatrix();
+	mMatrixLoaded = true;
 	
 	CGSize newSize = [poro::iPhoneGlobals.glView bounds].size;
 		
@@ -85,7 +88,9 @@
 	
 	glViewport(0, 0, w, h);
 	glScissor(0, 0, w, h);
-	 
+	
+
+	
 }
 
 

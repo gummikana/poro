@@ -14,6 +14,12 @@ public:
 	virtual int GetWidth() const = 0;
 	virtual int GetHeight() const = 0;
 	
+	virtual void SetUVCoords( float x1, float y1, float x2, float y2 ) {
+		assert( false );
+		// this is actually used, probably for a texture atlas,
+		// you should implement this
+	}
+
 	virtual void SetExternalSize(int width, int height){
 		assert(false);
 		//Must be implemented if used

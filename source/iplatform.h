@@ -62,17 +62,6 @@ public:
 	
 	virtual bool GetOrientationIsLandscape();
 	
-	// stage color
-	inline void SetStageColor( float r, float g, float b ) { 
-		stageColor[ 0 ] = r; stageColor[ 1 ] = g; stageColor[ 2 ] = b; 
-	}
-	
-	inline void SetStageColor( const std::vector<float>& color) { 
-		stageColor = color;
-	}
-	inline const std::vector< float >& GetStageColor() {
-		return stageColor;
-	}
 	
 	//InternalScale
 	//  This sets the internal resolution of the application! 
@@ -110,9 +99,6 @@ protected:
 	IApplication *mApplication;
 	types::Float32 mInternalWidth;
 	types::Float32 mInternalHeight;
-	
-	// background color
-	std::vector< float >		stageColor;
 	
 };
 

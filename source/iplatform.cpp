@@ -44,12 +44,8 @@ IPlatform * IPlatform::gInstance = &platform;
 IPlatform::IPlatform() :
 	mApplication( NULL ),
 	mInternalWidth( 0.f ),
-	mInternalHeight( 0.f ),
-	stageColor( 3 )
+	mInternalHeight( 0.f )
 {
-	stageColor[ 0 ] = 0.f;
-	stageColor[ 1 ] = 0.f;
-	stageColor[ 2 ] = 0.f;
 }
 	
 IPlatform::~IPlatform()
