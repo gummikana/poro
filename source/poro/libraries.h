@@ -1,5 +1,5 @@
-#ifndef INC_WINLIBRARIES_H
-#define INC_WINLIBRARIES_H
+#ifndef INC_LIBRARIES_H
+#define INC_LIBRARIES_H
 
 #include "platform_defs.h"
 
@@ -25,6 +25,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_mixer.h>
+#include <GLEW/GLEW.h>
 #include <GLUT/glut.h>
 
 #endif

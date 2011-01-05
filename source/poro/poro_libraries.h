@@ -1,10 +1,11 @@
 #ifndef INC_PORO_LIBRARIES_H
 #define INC_PORO_LIBRARIES_H
 
-#include "../utils/staticarray/staticarray.h"
+//#define PORO_TEST_REGISTER(x) do { (void)sizeof(x); } while(0)
 
-#include "../tester/ctester.h"
-#include "../tester/tester_utils.h"
+#include "utils/staticarray/staticarray.h"
+#include "tester/ctester.h"
+#include "tester/tester_utils.h"
 
 namespace poro {
 

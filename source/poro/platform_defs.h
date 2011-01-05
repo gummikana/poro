@@ -4,13 +4,13 @@
 
 #ifdef __APPLE__
 	#include "TargetConditionals.h"
-	#ifdef TARGET_OS_IPHONE
-		#define PORO_PLAT_IPHONE
-	#else
+	//#ifdef TARGET_OS_IPHONE
+	//	#define PORO_PLAT_IPHONE
+	//#else
 		#ifdef __MACOSX__
 			#define PORO_PLAT_MAC
 		#endif
-	#endif
+	//#endif
 #endif
 
 
