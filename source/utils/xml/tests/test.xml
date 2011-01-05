@@ -1,0 +1,20 @@
+<CXmlTester>
+  <integer>
+    1234
+  </integer>
+  <vector>
+    1
+  </vector>
+  <vector>
+    2
+  </vector>
+  <vector>
+    3
+  </vector>
+  <list>
+    foo
+  </list>
+  <list>
+    bar
+  </list>
+</CXmlTester>
