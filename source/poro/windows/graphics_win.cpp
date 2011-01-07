@@ -630,12 +630,20 @@ void GraphicsWin::DrawTexture( ITexture* itexture, float x, float y, float w, fl
 	tex_coords[ 3 ].x = tx2;
 	tex_coords[ 3 ].y = ty2;
 
+	PushVertexMode(poro::IGraphics::VERTEX_MODE_TRIANGLE_STRIP);
 	DrawTexture( texture,  temp_verts, tex_coords, 4, color );
+	PopVertexMode();
+	
 }
 //=============================================================================
 	
 void GraphicsWin::DrawTexture( ITexture* itexture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color )
 {
+	
+	if(mVertexMode!=VERTEX_MODE_TRIANGLE_STRIP){
+		int mVertexMode=1;
+	}
+	
 	poro_assert( count <= 8 );
 	
 	if( itexture == NULL )

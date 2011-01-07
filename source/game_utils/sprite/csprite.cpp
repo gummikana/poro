@@ -240,7 +240,9 @@ bool CSprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics )
 				}
 			}
 			
+			graphics->PushVertexMode(poro::IGraphics::VERTEX_MODE_TRIANGLE_STRIP);
 			graphics->DrawTexture( myTexture, temp_verts, tex_coords, 4, color_me );
+			graphics->PopVertexMode();
 		}
 
 		return true;
