@@ -23,11 +23,11 @@
 
 #include <vector>
 
-#include "iplatform.h"
+#include "../iplatform.h"
+#include "../mouse.h"
+#include "../keyboard.h"
 #include "graphics_win.h"
 #include "soundplayer_win.h"
-#include "mouse.h"
-#include "keyboard.h"
 
 namespace poro {
 

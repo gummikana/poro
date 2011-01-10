@@ -5,9 +5,9 @@
 #include <list>
 #include <string>
 
-#include "igraphics.h"
-#include "iplatform.h"
-#include "itexture.h"
+#include "poro/igraphics.h"
+#include "poro/iplatform.h"
+#include "poro/itexture.h"
 #include "../../types.h"
 #include "csprite.h"
 

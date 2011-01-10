@@ -22,7 +22,7 @@
 #define INC_GRAPHICSBUFFERWIN_H
 
 #include "../igraphics_buffer.h"
-#include "poro_types.h"
+#include "../poro_types.h"
 #include "graphics_win.h"
 #include "texture_win.h"
 

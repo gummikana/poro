@@ -19,7 +19,7 @@
  ***************************************************************************/
 
 #include "joystick_win.h"
-#include "libraries.h"
+#include "../libraries.h"
 
 namespace poro {
 namespace {

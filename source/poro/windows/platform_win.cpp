@@ -20,10 +20,9 @@
 
 #include "platform_win.h"
 
-#include "libraries.h"
-#include "poro_main.h"
+#include "../poro_main.h"
+#include "../libraries.h"
 
-#include "graphics_win.h"
 #include "graphics_win.h"
 #include "soundplayer_win.h"
 #include "joystick_win.h"

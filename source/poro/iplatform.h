@@ -18,8 +18,8 @@
  *
  ***************************************************************************/
 
-#ifndef INC_RUNNER_H
-#define INC_RUNNER_H
+#ifndef INC_IPLATFORM_H
+#define INC_IPLATFORM_H
 
 #include "poro_types.h"
 #include "iapplication.h"
