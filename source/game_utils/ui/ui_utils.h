@@ -13,7 +13,7 @@
 #include "../../game_utils/sprite/cspritefactory.h"
 #include "../../game_utils/sprite/cspritefactory.h"
 
-#include "poro/iplatform.h"
+#include "iplatform.h"
 
 #define ui_assert cassert
 

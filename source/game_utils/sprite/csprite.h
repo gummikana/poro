@@ -1,8 +1,8 @@
 #ifndef INC_CSPRITE_H
 #define INC_CSPRITE_H
 
-#include "poro/igraphics.h"
-#include "poro/itexture.h"
+#include "igraphics.h"
+#include "itexture.h"
 #include "../../types.h"
 #include "utils/math/math_utils.h"
 #include "utils/string/enum.h"

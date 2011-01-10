@@ -2,7 +2,7 @@
 #define INC_UI_TYPES_H
 
 #include <string>
-#include "ui_utils.h"
+#include "libraries.h"
 
 // #include "../config/cengkeys.h"
 // #include "../config/cengmouse.h"
@@ -15,8 +15,8 @@
 #include "../../game_utils/sprite/csprite.h"
 #include "../../game_utils/sprite/cspritefactory.h"
 
-#include "poro/keyboard.h"
-#include "poro/mouse.h"
+#include "keyboard.h"
+#include "mouse.h"
 
 #include "../font/cfont.h"
 

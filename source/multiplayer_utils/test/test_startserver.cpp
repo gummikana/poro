@@ -1,6 +1,6 @@
 #include "test_startserver.h"
-#include "multiplayer_utils/framework/multiplayer_utils.h"
-// #include "../../cpt_farbs/multiplayer/game_messages.h"
+#include "../../multiplayer_utils/framework/multiplayer_utils.h"
+#include "../../cpt_farbs/multiplayer/game_messages.h"
 
 void TEST_LOG( const std::string& what )
 {
@@ -16,6 +16,7 @@ void TEST_LOG( const std::string& what )
 #define TEST_VALUE_UINT16	1327
 #define TEST_VALUE_UINT32	3245
 #define TEST_VALUE_FLOAT32	12345.f
+
 enum TestMessages
 {
 	ID_TEST_MESSAGE_1=ID_GAME_MESSAGE_LAST+1,

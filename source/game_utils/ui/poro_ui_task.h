@@ -1,10 +1,10 @@
 #ifndef INC_UI_PORO_TASK_H
 #define INC_UI_PORO_TASK_H
 
-#include "poro/iplatform.h"
-#include "poro/iapplication.h"
-#include "poro/imouse_listener.h"
-#include "poro/ikeyboard_listener.h"
+#include "iplatform.h"
+#include "iapplication.h"
+#include "imouse_listener.h"
+#include "ikeyboard_listener.h"
 
 #include "cdesktopwidget.h"
 

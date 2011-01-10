@@ -20,7 +20,7 @@
 
 #include "soundplayer_win.h"
 #include "sound_win.h"
-#include "../poro_macros.h"
+#include "poro_macros.h"
 
 namespace poro {
 

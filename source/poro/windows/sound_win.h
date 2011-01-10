@@ -21,9 +21,9 @@
 #ifndef INC_SOUND_WIN_H
 #define INC_SOUND_WIN_H
 
-#include "../isound.h"
-#include "../poro_types.h"
-#include "../libraries.h"
+#include "isound.h"
+#include "poro_types.h"
+#include "libraries.h"
 
 namespace poro {
 

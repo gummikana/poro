@@ -21,9 +21,9 @@
 #ifndef INC_TEXTURE_WIN_H
 #define INC_TEXTURE_WIN_H
 
-#include "../itexture.h"
-#include "../libraries.h"
-#include "../poro_types.h"
+#include "itexture.h"
+#include "libraries.h"
+#include "poro_types.h"
 
 namespace poro {
 

@@ -1,5 +1,5 @@
-#ifndef INC_PORO_ROOT_TYPES_H
-#define INC_PORO_ROOT_TYPES_H
+#ifndef INC_CPTFARBSTYPES_H
+#define INC_CPTFARBSTYPES_H
 
 // #include <SDL.h>
 #include <string>
@@ -51,8 +51,10 @@ typedef ceng::ICamera< vector2 >		camera;
 
 //-----------------------------------------------------------------------------
 
+typedef int	shippart;
 
 } // end
+
 
 namespace config
 {
