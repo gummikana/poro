@@ -639,6 +639,11 @@ void GraphicsWin::DrawTexture( ITexture* itexture, float x, float y, float w, fl
 	
 void GraphicsWin::DrawTexture( ITexture* itexture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color )
 {
+	
+	if(mVertexMode!=VERTEX_MODE_TRIANGLE_STRIP){
+		int mVertexMode=1;
+	}
+	
 	poro_assert( count <= 8 );
 	
 	if( itexture == NULL )
