@@ -22,10 +22,10 @@
 
 #include <cmath>
 
-#include "libraries.h"
-#include "poro_macros.h"
+#include "../iplatform.h"
+#include "../libraries.h"
+#include "../poro_macros.h"
 #include "texture_win.h"
-#include "iplatform.h"
 
 #include "graphics_buffer_win.h" 
 

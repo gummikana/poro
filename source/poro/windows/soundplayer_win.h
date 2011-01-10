@@ -21,8 +21,8 @@
 #ifndef INC_SOUNDPLAYER_WIN_H
 #define INC_SOUNDPLAYER_WIN_H
 
-#include "isoundplayer.h"
-#include "libraries.h"
+#include "../isoundplayer.h"
+#include "../libraries.h"
 
 namespace poro {
 

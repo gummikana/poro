@@ -1,7 +1,7 @@
 #ifndef INC_CMEMORYPOOL_H
 #define INC_CMEMORYPOOL_H
 
-#include "platform_defs.h"
+#include "poro/platform_defs.h"
 
 #ifdef PORO_PLAT_MAC
 	#include <malloc/malloc.h> // mac os x

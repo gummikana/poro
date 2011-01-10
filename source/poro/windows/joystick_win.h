@@ -21,7 +21,7 @@
 #ifndef INC_JOYSTICK_WIN_H
 #define INC_JOYSTICK_WIN_H
 
-#include "joystick.h"
+#include "../joystick.h"
 
 namespace poro {
 

@@ -25,6 +25,7 @@
 #include "libraries.h"
 #include "poro_macros.h"
 #include "iplatform.h"
+
 namespace poro {
 	class IPlatform;
 	class IApplication;

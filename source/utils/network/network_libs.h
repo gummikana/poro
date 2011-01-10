@@ -1,6 +1,9 @@
 #ifndef INC_NETWORK_LIBS_H
 #define INC_NETWORK_LIBS_H
 
+#include <sdl.h>
+// used for mutex
+
 #include <string>
 #include "tester/ctester.h"
 #include "../debug.h"
