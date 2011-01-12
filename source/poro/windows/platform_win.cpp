@@ -246,7 +246,7 @@ void PlatformWin::SingleLoop() {
 	poro::IPlatform::Instance()->GetApplication()->Update( mOneFrameShouldLast );
 
 	mGraphics->BeginRendering();
-	poro::IPlatform::Instance()->GetApplication()->Draw(mGraphics);
+	poro::IPlatform::Instance()->GetApplication ()->Draw(mGraphics);
 	mGraphics->EndRendering();
 
 }

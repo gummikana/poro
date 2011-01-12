@@ -28,7 +28,20 @@
 #include <assert.h>
 #include "pow2assert/pow2assert.h"
 
-#define cassert 	POW2_ASSERT
+#define assert_logger std::cout
+
+#ifdef NDEBUG
+#	define cassert(cond) \
+		do \
+		{ \
+			if (!(cond)) \
+			{ \
+				assert_logger << "Assert failed: (" << #cond << ") in " << __FILE__ << " at line " << __LINE__ << std::endl; \
+			} \
+		} while(0)
+#else
+#	define cassert 	POW2_ASSERT
+#endif
 // #define cassert 	assert
 #define logger 		std::cout
 
