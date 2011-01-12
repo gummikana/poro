@@ -26,11 +26,14 @@
 
 namespace ceng {
 
+void ClearLogs();
 
-#define logger			CLog::GetSingleton()
-#define logger_error	CLog::GetSingleton().Error()
-#define logger_warning	CLog::GetSingleton().Warning()
-#define logger_debug	CLog::GetSingleton().Debug()
+#define logger			ceng::CLog::GetSingleton()
+#define logger_error	ceng::CLog::GetSingleton().Error()
+#define logger_warning	ceng::CLog::GetSingleton().Warning()
+#define logger_debug	ceng::CLog::GetSingleton().Debug()
+
+extern CLog assert_logger;
 
 
 } // end of namespace ceng

@@ -22,13 +22,11 @@
 #ifndef INC_CRECT_FUNCTIONS_CPP
 #define INC_CRECT_FUNCTIONS_CPP
 
+#include "../debug.h"
 #include "crect_functions.h"
-// #include "../logger.h"
 
 #include <assert.h>
-#include <iostream>
 
-#define logger std::cout
 
 namespace ceng {
 

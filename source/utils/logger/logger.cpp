@@ -23,7 +23,15 @@
 
 namespace ceng {
 
+CLog assert_logger;
 
+void ClearLogs()
+{
+	logger.SetFile( "logs/log.txt" );
+	assert_logger.SetFile( "logs/assert_fails.txt" );
 }
+
+
+} // end of namespace ceng
 
 
