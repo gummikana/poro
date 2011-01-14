@@ -198,21 +198,18 @@ public:
 
 //=============================================================================
 
+class CBufferedPacketHandler;
+
 class CPacketHandler : public IPacketHandler
 {
 public:
 
-	CPacketHandler( bool server, RakNet::RakPeerInterface* peer, IGameMessageFactory* factory ) :
-		mServer( server ),
-		mMessageFactory( factory ),
-		mRakPeer( peer ),
-		mUserData( NULL )
-	{
-	}
+	CPacketHandler( bool server, RakNet::RakPeerInterface* peer, IGameMessageFactory* factory );
 
 	void*	GetUserData() { return mUserData; }
 	void	SetUserData( void* userdata ) { mUserData = userdata; }
 
+	virtual IPacketHandler* GetBufferedPacketHandler( Uint32 wait_for );
 
 	void HandleGamePackets( RakNet::Packet* packet )
 	{	
@@ -286,6 +283,7 @@ public:
 
 	virtual PlayerAddress* GetCurrentPacketAddress() { return mCurrentPacketAddress; }
 
+	void SendAllMessagesFromBuffer();
 
 	bool									mServer;
 	std::auto_ptr< IGameMessageFactory >	mMessageFactory;
@@ -293,7 +291,97 @@ public:
 	CServerManagement						mServerManager;
 	PlayerAddress*							mCurrentPacketAddress;
 	void*									mUserData;
+	CBufferedPacketHandler*					mBufferPacketHandler;
 };
+
+//-------------------------------------------------------------------------------------------------
+
+class CBufferedPacketHandler : public IPacketHandler
+{
+public:
+	CBufferedPacketHandler() : mParent( 0 ), mWaitTime( 0 ) { }
+
+	struct BufferMessage
+	{
+		BufferMessage() : message( NULL ), time_to_fire( 0 ) { }
+		BufferMessage( IGameMessage* message, Uint32 t ) : message( message ), time_to_fire( t ) { }
+
+		bool operator< ( const BufferMessage& other ) const { return  ( time_to_fire < other.time_to_fire ); }
+
+		IGameMessage* message;
+		Uint32 time_to_fire;
+	};
+
+	virtual void* GetUserData() { return mParent->GetUserData(); }
+	virtual PlayerAddress* GetCurrentPacketAddress() { return mParent->GetCurrentPacketAddress(); }
+
+
+	
+	void SetWaitTime( Uint32 t ) { mWaitTime = t; }
+
+	virtual void SendGameMessage( IGameMessage* message )
+	{
+		Uint32 t = SDL_GetTicks() + mWaitTime;
+
+		mMessageBufferMutex.Enter();
+		mMessageBuffer.push_back( BufferMessage( message, t ) );
+		mMessageBuffer.sort();
+		// std::sort( mMessageBuffer.begin(), mMessageBuffer.end() );
+		mMessageBufferMutex.Leave();
+	}
+
+	void SendAllMessagesFromBuffer( RakNet::RakPeerInterface* mRakPeer )
+	{
+		Uint32 time_now = SDL_GetTicks();
+
+		mMessageBufferMutex.Enter();
+
+
+		while( mMessageBuffer.empty() == false &&
+			mMessageBuffer.front().time_to_fire < time_now )
+		{
+			BufferMessage buffer = mMessageBuffer.front();
+			IGameMessage* message = buffer.message;
+			mMessageBuffer.pop_front();
+
+			cassert( message );
+			SendMessageImpl( mRakPeer, message, RakNet::UNASSIGNED_SYSTEM_ADDRESS );
+
+			// take care of the message
+			delete message;
+			message = NULL;
+		}
+
+		mMessageBufferMutex.Leave();
+	}
+
+
+	network_utils::SimpleMutex	mMessageBufferMutex;
+	std::list< BufferMessage >	mMessageBuffer;
+	Uint32						mWaitTime;
+	CPacketHandler*				mParent;
+};
+
+//-------------------------------------------------------------------------------------------------
+
+CPacketHandler::CPacketHandler( bool server, RakNet::RakPeerInterface* peer, IGameMessageFactory* factory ) :
+	mServer( server ),
+	mMessageFactory( factory ),
+	mRakPeer( peer ),
+	mUserData( NULL ),
+	mBufferPacketHandler( new CBufferedPacketHandler  )
+{
+	mBufferPacketHandler->mParent = this;
+}
+
+IPacketHandler* CPacketHandler::GetBufferedPacketHandler( Uint32 wait_for )
+{
+	mBufferPacketHandler->SetWaitTime( wait_for );
+	return mBufferPacketHandler;
+}
+
+void CPacketHandler::SendAllMessagesFromBuffer() { mBufferPacketHandler->SendAllMessagesFromBuffer( this->mRakPeer ); }
+
 
 //=============================================================================
 
@@ -352,6 +440,8 @@ int RunServer( void* data_struct )
 		{
 			((CPacketHandlerForClient*)IPacketHandler::mInstanceForGame)->SendAllMessagesFromBuffer( peer );
 		}
+
+		mPacketHandler.SendAllMessagesFromBuffer();
 
  		for (packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
 		{

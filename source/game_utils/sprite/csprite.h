@@ -101,6 +101,9 @@ public:
 	void 			SetRotation( float r );
 	float 			GetRotation();
 	
+	bool			IsHidden() const		{ return myHidden; }
+	void			SetHidden( bool value ) { myHidden = value; }
+
 	virtual types::vector2 GetSize() const;
 	virtual types::vector2 GetTextureSize() const;
 	
@@ -136,6 +139,7 @@ protected:
 
 	Image*						myTexture;
 	std::vector< Image* >		myTextures;
+	bool						myHidden;
 	std::vector< CAnimation* >	myAnimations;
 	CAnimation*					myAnimation;
 	bool						myAnimationPaused;

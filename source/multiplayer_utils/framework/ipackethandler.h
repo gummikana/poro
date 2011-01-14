@@ -48,6 +48,12 @@ public:
 	//
 	virtual void SendGameMessage( IGameMessage* message ) = 0;
 
+	// There are cases where we have to wait before we send the message
+	// this is the interface to do that, just ask for GetBufferedPacketHandler( wait_time_in_seconds )
+	// and it returns a packet handler that will wait for that time before sending the message
+	virtual IPacketHandler* GetBufferedPacketHandler( Uint32 time ) { return NULL; }
+
+
 	virtual PlayerAddress* GetCurrentPacketAddress() { return NULL; }
 
 	static IPacketHandler* InstanceForGame() { return mInstanceForGame; }

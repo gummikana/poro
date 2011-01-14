@@ -156,6 +156,7 @@ void CAnimation::Serialize( ceng::CXmlFileSys* filesys )
 CSprite::CSprite() : 
 	myTexture( NULL ),
 	myTextures( 1 ),
+	myHidden( false ),
 	myAnimations(),
 	myAnimation( NULL ),
 	myAnimationPaused( false ),
