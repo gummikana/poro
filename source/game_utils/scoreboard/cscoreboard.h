@@ -145,9 +145,21 @@ public:
 			std::stringstream ss;
 			ss << myCurrentScore;
 
-			mySprite->SetText( ss.str() );
-			mySprite->MoveTo( myScoreTopLeftPos );
+			if( mySprite ) {
+				mySprite->SetText( ss.str() );
+				mySprite->MoveTo( myScoreTopLeftPos );
+			}
 		}
+	}
+
+	void Show() 
+	{
+		if( mySprite ) mySprite->SetHidden( false );
+	}
+
+	void Hide()
+	{
+		if( mySprite ) mySprite->SetHidden( true );
 	}
 
 	CSpriteFactory* mySpriteFactory;

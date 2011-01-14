@@ -107,9 +107,9 @@ void CSpriteFactory::Draw( poro::IGraphics* graphics )
 		i != mySprites.end(); )
 	{
 		current = (*i);
-		if( current->IsDead() == false && (current)->myMoveToBack == false && current->IsHidden() == false )
+		if( current->IsDead() == false && (current)->myMoveToBack == false )
 		{
-			DrawSprite( current, graphics );
+			if( current->IsHidden() == false ) DrawSprite( current, graphics );
 			++i;
 		}
 		else 
