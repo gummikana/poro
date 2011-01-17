@@ -170,17 +170,12 @@ void CCameraZoom::SetCameraClampRect( const types::rect& camera_rect, bool enabl
 
 void CCameraZoom::Update( float dt )
 {
-	// return;
-	// float smooth_ness = 0.075f;		// good for 60 fps
-	float smooth_ness = 0.075f * 2.f;	// good for 30 fps
-
-
+	float smooth_ness = 0.35f; //Could be made a parameter to change 
+	
 	float new_scale = GetScale() + ( ( mTargetScale - GetScale() ) * smooth_ness );
 
 	SetScale( new_scale );
 
-	smooth_ness = 0.35f;
-	
 	types::vector2 new_offset = GetCameraOffset() + ( ( mTargetOffset - GetCameraOffset() ) * smooth_ness );
 	
 	new_offset = ClampOffsetToRect( new_offset );
@@ -225,11 +220,31 @@ void CCameraZoom::SetState( int state )
 */
 //-----------------------------------------------------------------------------
 
+
+/**
+ * If you want to keep the focus point on a different position than center when zooming you can use this
+ * function to calculate the target position.
+ * I.e. You want the camera to zoom in on the current mouse position like in Supreme Commender rahter than
+ * the center of the screen.
+ * @focus_pos	The position of the screen that should not change while we zoom.
+ * @return		The altered target position. This can then be used as zoom_here parameter in the SetCameraTarget function.
+ */
+types::vector2 CCameraZoom::GetFocusToTargetPos( const types::vector2& focus_pos, float scale )
+{
+	types::vector2 offset = ( myCenterPoint - focus_pos ) + myCenterPoint;
+	types::vector2 dist = (mTargetOffset-offset);
+	float inv_scale_change = scale/mTargetScale;
+	types::vector2 pos = focus_pos - (dist*0.5f*inv_scale_change);
+	return pos;
+}
+
+
 void CCameraZoom::SetCameraTarget( const types::vector2& zoom_here, float angle, float scale )
 {
 	//const float zoom_scale = GetScale();
-	types::vector2 offset = ( myCenterPoint - zoom_here ) + myCenterPoint +  ( ( /*zoom_scale **/ myCenterPoint ) - myCenterPoint );
-
+	//types::vector2 offset = ( myCenterPoint - zoom_here ) + myCenterPoint +  ( ( /*zoom_scale **/ myCenterPoint ) - myCenterPoint );
+	types::vector2 offset = ( myCenterPoint - zoom_here ) + myCenterPoint;
+	
 	mCameraRealRotation = angle;
 
 	SetTargetScale( scale );

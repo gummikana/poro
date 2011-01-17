@@ -194,6 +194,7 @@ public:
 
 	void SetTargetScale( float scale );
 	void SetTargetOffset( const types::vector2& p );
+	types::vector2 GetFocusToTargetPos( const types::vector2& focus_pos, float scale );
 	void SetCameraTarget( const types::vector2& zoom_here, float angle, float scale );
 
 	void Update( float dt );
