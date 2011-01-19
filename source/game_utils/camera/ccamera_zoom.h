@@ -189,7 +189,7 @@ public:
 
 	// void Important( const types::vector2& center_point, float radius );
 
-	types::vector2	ClampOffsetToRect( const types::vector2& offset );
+	types::vector2	ClampOffsetToRect( const types::vector2& offset, const float scale );
 	void			SetCameraClampRect( const types::rect& camera_rect, bool enabled );
 
 	void SetTargetScale( float scale );
@@ -200,6 +200,7 @@ public:
 	void Update( float dt );
 
 	types::vector2 GetTargetOffset() const { return mTargetOffset; }
+	float GetTargetScale() const { return mTargetScale; }
 
 	void DoCameraShake( float time, float shakeness );
 

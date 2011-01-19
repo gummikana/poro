@@ -107,7 +107,10 @@ void CCameraZoom::SetTargetScale( float scale ) {
 	else if( scale < mTargetScale )
 		mTargetScale = scale;
 
-	// SetScale( mTargetScale );
+	if( mUseCameraClampRect == true && scale!=0 ){
+		float min_scale = ceng::math::Max( config::screen_width/mCameraClampRect.w, config::screen_height/mCameraClampRect.h );
+		mTargetScale = ceng::math::Max( mTargetScale, min_scale );
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -115,20 +118,24 @@ void CCameraZoom::SetTargetScale( float scale ) {
 void CCameraZoom::SetTargetOffset( const types::vector2& p ) {
 	if( mCanWeMoveOffset )
 		mTargetOffset = p;
+	
+	if( mUseCameraClampRect == true && mTargetScale!=0 ){
+		mTargetOffset = ClampOffsetToRect(mTargetOffset,mTargetScale);
+	}
 }
 //-----------------------------------------------------------------------------
 
-types::vector2 CCameraZoom::ClampOffsetToRect( const types::vector2& offset ) 
+types::vector2 CCameraZoom::ClampOffsetToRect( const types::vector2& offset, const float scale ) 
 {
 
 	if( mUseCameraClampRect == false )
 		return offset;
 
-	if( myScale.x == 0 || myScale.y == 0 )
+	if( scale == 0 )
 		return offset;
 
-	float half_screen_w = ( config::screen_width * 0.5f ) / myScale.x;
-	float half_screen_h = ( config::screen_height * 0.5f ) / myScale.y;
+	float half_screen_w = ( config::screen_width * 0.5f ) / scale;
+	float half_screen_h = ( config::screen_height * 0.5f ) / scale;
 
 	types::vector2 result( offset );
 	
@@ -176,8 +183,8 @@ void CCameraZoom::Update( float dt )
 	//The 0.85f modifier is to compensate for the difference in the way scale and target aproaches the target values.
 	SetScale( new_scale );
 	
-	types::vector2 new_offset = GetCameraOffset() + ( ( ClampOffsetToRect(mTargetOffset) - GetCameraOffset() ) * smooth_ness );
-	new_offset = ClampOffsetToRect( new_offset );
+	types::vector2 new_offset = GetCameraOffset() + ( ( mTargetOffset - GetCameraOffset() ) * smooth_ness );
+	new_offset = ClampOffsetToRect( new_offset, myScale.x );
 	SetCameraOffset( new_offset );
 
 	if( mCameraShakeTime > 0 && mCameraShakeMaxTime > 0 )
@@ -230,7 +237,7 @@ void CCameraZoom::SetState( int state )
 types::vector2 CCameraZoom::GetFocusToTargetPos( const types::vector2& focus_pos, float scale )
 {
 	types::vector2 offset = ( myCenterPoint - focus_pos ) + myCenterPoint;
-	types::vector2 dist = (ClampOffsetToRect(mTargetOffset)-offset);
+	types::vector2 dist = mTargetOffset-offset;
 	float inv_scale_change = scale/mTargetScale;
 	types::vector2 pos = focus_pos - (dist*0.5f*inv_scale_change);
 	return pos;
@@ -246,7 +253,7 @@ void CCameraZoom::SetCameraTarget( const types::vector2& zoom_here, float angle,
 	SetTargetScale( scale );
 	SetTargetOffset( offset );
 	SetAngle( angle );
-		
+
 }
 //-----------------------------------------------------------------------------
 
