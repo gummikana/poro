@@ -41,6 +41,8 @@ public:
 	//platform setup
 	// virtual void Init(IApplication *application, int w, int h, bool fullscreen);
 	virtual void Init(IApplication *application, int w, int h, bool fullscreen, std::string = "Poro Application");
+	virtual void Exit(){ mRunning = false; }
+	
 	virtual void StartMainLoop();
 
 	//destroy

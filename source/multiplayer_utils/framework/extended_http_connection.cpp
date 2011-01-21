@@ -184,7 +184,7 @@ void ExtendedHTTPConnection::Update(void)
 				return;
 			}
 			
-#if defined(OPEN_SSL_CLIENT_SUPPORT)
+#if OPEN_SSL_CLIENT_SUPPORT==1
 			tcp->StartSSLClient(server);
 #endif
 			

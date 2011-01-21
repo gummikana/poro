@@ -58,9 +58,13 @@ std::string AsString( int what )
 }
 
 int				RAKPEER_PORT = 60123;
-#define			DEFAULT_SERVER_PORT "61111"
-#define			DEFAULT_SERVER_ADDRESS "94.198.81.195"
-
+#define DEFAULT_SERVER_PORT "61111"
+#define DEFAULT_SERVER_ADDRESS "94.198.81.195"
+//#define	DEFAULT_SERVER_PORT "60481"
+//#define	DEFAULT_SERVER_ADDRESS "8.17.250.34"
+	
+//94.198.81.19:60481
+	
 
 //=============================================================================
 
@@ -174,10 +178,17 @@ SystemAddress ConnectBlocking(RakNet::RakPeerInterface *rakPeer, const char *hos
 			{
 				return packet->systemAddress;
 			}
-			else
+			else if (packet->data[0]==ID_INCOMPATIBLE_PROTOCOL_VERSION)
 			{
+				std::cout << "Unable to communicate with NAT server because it uses a different protocol version!" << std::endl;
 				return RakNet::UNASSIGNED_SYSTEM_ADDRESS;
 			}
+			else
+			{
+				std::cout << "Failed to communicate with NAT server!" << std::endl;
+				return RakNet::UNASSIGNED_SYSTEM_ADDRESS;
+			}
+			
 			RakSleep(100);
 		}
 	}

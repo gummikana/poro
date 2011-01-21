@@ -39,6 +39,7 @@ namespace poro {
 		virtual ~PlatformIPhone(){};
 		
 		virtual void Init(IApplication * application, int w, int h, bool fullscreen,std::string = "Poro Application");	
+		virtual void Exit();
 		virtual void StartMainLoop();
 		virtual void Destroy();
 		

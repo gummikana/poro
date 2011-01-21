@@ -39,6 +39,8 @@ public:
 	
 	//platform setup
 	virtual void Init(IApplication * application, int w, int h, bool fullscreen, std::string title);
+	virtual void Exit(){ mRunning = false; }
+	
 	virtual void StartMainLoop();
 	
 	//destroy

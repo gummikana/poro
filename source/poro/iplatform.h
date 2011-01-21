@@ -47,6 +47,8 @@ public:
 	// haven't been set already!
 	// mInternalWidth is 0 if nobody has set it by hand same goes for mInternalHeight
 	virtual void Init(IApplication *application, int w, int h, bool fullscreen, std::string = "Poro Application");
+	virtual void Exit(){};
+	
 	virtual void StartMainLoop() = 0;
 	
 	//destroy

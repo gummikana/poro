@@ -52,6 +52,12 @@ namespace poro {
 		
 	}
 
+	void PlatformIPhone::Exit() {
+		std::cerr << "Steve Jobs considers exitig you iPhone apps in other ways than pressing the home button a No-No! Apps doing so have been rejected!" << std::endl;
+		assert(false);
+	}
+	
+	
 	void PlatformIPhone::StartMainLoop() {
 		NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
 		UIApplicationMain(nil, nil, nil, @"iPhoneAppDelegate");		// this will run the infinite loop checking all events

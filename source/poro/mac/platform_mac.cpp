@@ -168,15 +168,6 @@ void PlatformMac::HandleEvents() {
 		{
 			case SDL_KEYDOWN:
 			{
-				switch( event.key.keysym.sym )
-				{
-					case SDLK_ESCAPE:
-						mRunning = false;
-						break;
-					default:
-						break;
-				}
-				
 				if( mKeyboard )
 					mKeyboard->FireKeyDownEvent(static_cast< int >( event.key.keysym.sym ),
 												static_cast< types::charset >( event.key.keysym.unicode ) );

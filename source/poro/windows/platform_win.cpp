@@ -268,15 +268,14 @@ void PlatformWin::HandleEvents() {
 		{
 			case SDL_KEYDOWN:
 			{
-				switch( event.key.keysym.sym )
+				/*switch( event.key.keysym.sym )
 				{
 				case SDLK_ESCAPE:
 					mRunning = false;
 					break;
 				default:
 					break;
-				}
-
+				}*/
 				if( mKeyboard )
 					mKeyboard->FireKeyDownEvent( 
 						static_cast< int >( event.key.keysym.sym ),
