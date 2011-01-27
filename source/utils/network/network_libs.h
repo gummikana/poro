@@ -22,8 +22,7 @@
 #ifndef INC_NETWORK_LIBS_H
 #define INC_NETWORK_LIBS_H
 
-//#include <sdl.h>
-#include <SDL/SDL.h>
+#include <SDL.h>
 // used for mutex
 
 #include <string>

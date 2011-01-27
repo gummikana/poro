@@ -30,9 +30,12 @@
 //----------------------------------------------------
 // define logger
 
-// #include "logger/logger.h"
-#define assert_logger std::cout
-#define logger std::cout
+#ifdef __linux__
+    #define assert_logger std::cout
+    #define logger std::cout
+#else
+    #include "logger/logger.h"
+#endif
 
 //----------------------------------------------------
 // define cassert
