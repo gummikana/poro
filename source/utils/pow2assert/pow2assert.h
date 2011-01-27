@@ -61,22 +61,22 @@ namespace pow2 { namespace Assert
 		Continue,
 	};
 
-	typedef FailBehavior (*Handler)(const char* condition, 
-									const char* msg, 
-									const char* file, 
+	typedef FailBehavior (*Handler)(const char* condition,
+									const char* msg,
+									const char* file,
 									int line);
 
 	Handler GetHandler();
 	void SetHandler(Handler newHandler);
 
-	FailBehavior ReportFailure(const char* condition, 
-							   const char* file, 
-							   int line, 
+	FailBehavior ReportFailure(const char* condition,
+							   const char* file,
+							   int line,
 							   const char* msg, ...);
 }}
 
-#if defined(PORO_PLAT_MAC) || defined(PORO_PLAT_IPHONE)
-	#define POW2_HALT() abort()
+#if defined(PORO_PLAT_MAC) || defined(PORO_PLAT_IPHONE) || defined(PORO_PLAT_LINUX)
+	#define POW2_HALT() __builtin_trap()
 #else
 	#define POW2_HALT() __debugbreak()
 #endif

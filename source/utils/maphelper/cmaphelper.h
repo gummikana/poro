@@ -63,13 +63,15 @@ int main()
 //
 // 06.10.2005 Pete
 //		Fixed a bug that caused the Find sometimes to return false results.
-//		Fixed another bug that had crept in the macro defination. Added a unit 
-//		test to bust them. Actually the unit test helped catching them in the 
+//		Fixed another bug that had crept in the macro defination. Added a unit
+//		test to bust them. Actually the unit test helped catching them in the
 //		first place.
 //
 //=============================================================================
 
+#ifdef _MSC_VER
 #pragma warning ( disable : 4786 )
+#endif
 
 #ifndef INC_CMAPHELPER_H
 #define INC_CMAPHELPER_H
@@ -86,14 +88,14 @@ template < class T1, class T2, class PR = std::less< T1 > >
 class CMapHelper
 {
 public:
-	
+
 	typedef typename std::map<  T1, std::list< T2 >, PR >::iterator	Iterator;
 	typedef std::list< T2 >											List;
 	typedef typename std::list< T2 >::iterator						ListIterator;
-	
+
 	List*			HelperList;
 	ListIterator	i;
-	
+
 	Iterator Begin() { return myMap.begin(); }
 	Iterator End() { return myMap.end(); }
 
@@ -112,13 +114,13 @@ public:
 	{
 		// if ( myIterator != myMap.end() && myIterator->first == me ) return true;
 
-		
+
 		Iterator myIterator = myMap.find( me );
-		
+
 		return ( myIterator != myMap.end() );
 	}
 
-	
+
 	std::list< T2 >& Get( const T1& me )
 	{
 		// if ( myIterator != myMap.end() && myIterator->first == me ) return myIterator->second;
@@ -150,7 +152,7 @@ public:
 	void RemoveSecond( const T2& me )
 	{
 		typename std::map< T1, std::list< T2 >, PR >::iterator i = myMap.begin();
-		
+
 		while( i != myMap.end() )
 		{
 			ListIterator j = i->second.begin();
@@ -188,7 +190,7 @@ public:
 	void Remove( const T1& first, const T2& second )
 	{
 		typename std::map< T1, std::list< T2 >, PR >::iterator i;
-		
+
 		i = myMap.find( first );
 		if ( i == myMap.end() ) return;
 
@@ -215,7 +217,7 @@ public:
 		/*
 		for ( j = i->second.begin(); j != i->second.end(); ++j )
 		{
-			if ( (*j) == second ) 
+			if ( (*j) == second )
 			{
 				j = i->second.erase( j );
 			}
@@ -246,7 +248,7 @@ private:
 	{	if( map.Find( varname ) ) { map.HelperGet( varname ); \
 		for ( map.i = map.HelperList->begin(); map.i != map.HelperList->end(); ++map.i ) \
 		{ dacode; } } }
-	
+
 }
 
 #endif

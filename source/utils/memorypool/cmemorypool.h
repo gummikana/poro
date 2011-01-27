@@ -45,41 +45,41 @@ class CSimpleMemoryPool
 {
 private:
 	struct Unit;
-	
+
 	struct Unit
 	{
 		Unit* prev;
 		Unit* next;
 	};
-	
+
 	void* myMemoryBlock;
 	Unit* myAllocatedMemoryBlock;
 	Unit* myFreeMemoryBlock;
-	
+
 	const size_type myUnitSize;
 	const size_type myBlockSize;
 	size_type		myNumOfAllocatedObjects;
 
 public:
 	CSimpleMemoryPool() :
-		myMemoryBlock( NULL ), 
-		myAllocatedMemoryBlock( NULL ), 
-		myFreeMemoryBlock( NULL ), 
-		myUnitSize( sizeof( T ) ), 
+		myMemoryBlock( NULL ),
+		myAllocatedMemoryBlock( NULL ),
+		myFreeMemoryBlock( NULL ),
+		myUnitSize( sizeof( T ) ),
 		myBlockSize( number_of_units * ( sizeof( T ) + sizeof( Unit ) ) ),
 		myNumOfAllocatedObjects( 0 )
 	{
 		myMemoryBlock = malloc( myBlockSize );
-	
+
 		if( myMemoryBlock != NULL )
 		{
 			for( size_type i=0; i< number_of_units; i++ )
 			{
 				Unit* cur_unit = (Unit *)( (char *)myMemoryBlock + i * ( myUnitSize + sizeof( Unit ) ) );
-			
+
 				cur_unit->prev = NULL;
-				cur_unit->next = myFreeMemoryBlock;		
-			
+				cur_unit->next = myFreeMemoryBlock;
+
 				if( myFreeMemoryBlock != NULL)
 				{
 					myFreeMemoryBlock->prev = cur_unit;
@@ -93,7 +93,7 @@ public:
 	{
 		free( myMemoryBlock );
 	}
-	
+
 	// T* NewObject() { return GetMem( sizeof( T ) ); }
     void* GetMem( size_type sizeo )
 	{
@@ -112,10 +112,10 @@ public:
 		}
 
 		cur_unit->next = myAllocatedMemoryBlock;
-		
+
 		if( myAllocatedMemoryBlock )
 		{
-			myAllocatedMemoryBlock->prev = cur_unit; 
+			myAllocatedMemoryBlock->prev = cur_unit;
 		}
 
 		myAllocatedMemoryBlock = cur_unit;
@@ -168,7 +168,7 @@ public:
 		return ( myNumOfAllocatedObjects == 0 );
 	}
 
-	bool IsFull() const 
+	bool IsFull() const
 	{
 		return ( myFreeMemoryBlock == NULL );
 	}
@@ -235,9 +235,9 @@ public:
     void Free( void* p )
 	{
 		myCleanThePoolCount++;
-		
-		
-		if( myCleanThePoolCount > single_pool_size )
+
+
+		if( myCleanThePoolCount > (int)single_pool_size )
 		{
 			size_type clean_count = myFreePool->GetNumOfAllocatedObjects();
 			myCleanThePoolCount = 0;
@@ -259,7 +259,7 @@ public:
 					++i;
 				}
 			}
-			
+
 		}
 
 		if( myFreePool->HasPointer( p ) )

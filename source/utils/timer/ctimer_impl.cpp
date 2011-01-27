@@ -21,7 +21,7 @@
 
 #include "ctimer_impl.h"
 
-#include <sdl.h>
+#include <SDL.h>
 
 namespace ceng {
 namespace impl {

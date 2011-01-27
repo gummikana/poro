@@ -18,9 +18,9 @@
  *
  ***************************************************************************/
 
+#include "../libraries.h"
 #include "graphics_buffer_win.h"
 #include "texture_win.h"
-
 
 namespace poro {
 namespace {
@@ -37,7 +37,7 @@ Uint32 GetNextPowerOfTwo(Uint32 input)
 } // end of anonymous namespace
 
 void GraphicsBufferWin::InitTexture(int width,int height){
-	
+
 	GLsizei widthP2 = (GLsizei)GetNextPowerOfTwo(width);
 	GLsizei heightP2 = (GLsizei)GetNextPowerOfTwo(height);
 	mTexture.mWidth = width;
@@ -46,7 +46,7 @@ void GraphicsBufferWin::InitTexture(int width,int height){
 	mTexture.mUv[1] = 0;
 	mTexture.mUv[2] = ((GLfloat)width) / (GLfloat)widthP2;
 	mTexture.mUv[3] = ((GLfloat)height) / (GLfloat)heightP2;
-	
+
 	glGenTextures(1, (GLuint *)&mTexture.mTexture);
 	glBindTexture(GL_TEXTURE_2D, mTexture.mTexture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -62,9 +62,9 @@ bool GraphicsBufferWin::Init( int width, int height, bool fullscreen, const type
 {
 	glGenFramebuffersEXT(1, &mBufferId);	// <- this line crashes on windows
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mBufferId);
-	
+
 	InitTexture(width,height);
-	
+
 	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, mTexture.mTexture, 0);
 	GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
 	assert(status==GL_FRAMEBUFFER_COMPLETE_EXT);
@@ -80,7 +80,7 @@ void GraphicsBufferWin::Release()
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	glDeleteFramebuffersEXT(1, &mBufferId);
 }
-	
+
 void GraphicsBufferWin::DrawTexture( ITexture* texture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color )
 {
 	//Flip cords for buffer
@@ -95,7 +95,7 @@ void GraphicsBufferWin::BeginRendering()
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mBufferId);
 	glPushAttrib(GL_VIEWPORT_BIT);
 	glViewport(0,0,mTexture.GetWidth(),mTexture.GetHeight());
-	
+
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }

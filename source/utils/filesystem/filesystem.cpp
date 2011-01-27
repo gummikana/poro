@@ -23,8 +23,7 @@
 
 
 
-#ifndef __APPLE__
-
+#if !defined(__APPLE__) && !defined(__linux__)
 
 
 #include <io.h>
@@ -95,7 +94,7 @@ std::string GetDateForFile( const std::string& filename )
 
 
 #else
-	
+
 
 
 
@@ -106,7 +105,7 @@ namespace ceng {
 		return result;
 	}
 } // end o namespace ceng
-	
+
 
 
 #endif

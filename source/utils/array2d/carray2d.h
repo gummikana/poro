@@ -37,7 +37,9 @@
 #ifndef INC_2D_ARRAY_H
 #define INC_2D_ARRAY_H
 
-#pragma warning ( disable : 4355)	// 'this' : used in base member initializer list
+#ifdef _MSC_VER
+#pragma warning ( disable : 4355 )
+#endif
 
 #include <vector>
 #include <memory>
@@ -59,7 +61,7 @@ public:
 
 	class CArray2DHelper
 	{
-	public: 
+	public:
 		CArray2DHelper( CArray2D& array ) : myArray( array ) { }
 		~CArray2DHelper() { }
 
@@ -71,7 +73,7 @@ public:
 	private:
 		mutable int			myX;
 		CArray2D&	myArray;
-		
+
 	};
 
 	CArray2D() :
@@ -102,8 +104,8 @@ public:
 
 	}
 
-	CArray2DHelper& operator[] ( int _x ) { myArraysLittleHelper.SetX( _x ); return myArraysLittleHelper; } 
-	const CArray2DHelper& operator[] ( int _x ) const { myArraysLittleHelper.SetX( _x ); return myArraysLittleHelper; } 
+	CArray2DHelper& operator[] ( int _x ) { myArraysLittleHelper.SetX( _x ); return myArraysLittleHelper; }
+	const CArray2DHelper& operator[] ( int _x ) const { myArraysLittleHelper.SetX( _x ); return myArraysLittleHelper; }
 
 	const CArray2D< _Ty, _A >& operator=( const CArray2D< _Ty, _A >& other )
 	{
@@ -111,26 +113,26 @@ public:
 		myHeight = other.myHeight;
 		mySize = other.mySize;
 		myDataArray = other.myDataArray;
-	
+
 		return *this;
 	}
 
-	int GetWidth() const 
-	{ 
-		return myWidth; 
+	int GetWidth() const
+	{
+		return myWidth;
 	}
-	
-	int GetHeight() const 
-	{ 
-		return myHeight; 
+
+	int GetHeight() const
+	{
+		return myHeight;
 	}
-	
+
 	void Resize( int _width ) { SetWidth( _width ); }
 	void Resize( int _width, int _height ) { SetWidthAndHeight( _width, _height ); }
 
 	void SetWidth(  int _width  ) { myWidth  = _width; Allocate(); }
 	void SetHeight( int _height ) { myHeight = _height; Allocate(); }
-	
+
 	void SetWidthAndHeight( int _width, int _height ) { myWidth = _width; myHeight = _height; Allocate(); }
 
 	void SetEverythingTo( const _Ty& _who )
@@ -151,7 +153,7 @@ public:
 		return myDataArray[ ( _y * myWidth ) + _x ];
 	}
 
-	
+
 	const_reference At( int _x, int _y ) const
 	{
 		if ( _x < 0 ) _x = 0;
@@ -160,12 +162,12 @@ public:
 		if ( _y > myHeight ) _y = myHeight;
 
 		return myDataArray[ ( _y * myWidth ) + _x ];
-	
+
 	}
 
 
 
-	reference Rand( int _x, int _y ) 
+	reference Rand( int _x, int _y )
 	{
 		return myDataArray[ ( _y * myWidth ) + _x ];
 	}
@@ -175,14 +177,14 @@ public:
 		return myDataArray[ ( _y * myWidth ) + _x ];
 	}
 
-	void Rand( int _x, int _y, const _Ty& _who ) 
+	void Rand( int _x, int _y, const _Ty& _who )
 	{
 		myDataArray[ ( _y * myWidth ) + _x ] = _who;
 	}
 
 	void Set( int _x, int _y, const _Ty& _who )
 	{
-		
+
 		if ( _x > myWidth ) _x = myWidth;
 		if ( _y > myHeight ) _y = myHeight;
 
@@ -192,7 +194,7 @@ public:
 	void Set( int _x, int _y, const CArray2D& _who )
 	{
 		int x, y;
-		
+
 		for ( y = 0; y <= myHeight; y++ )
 		{
 			for ( x = 0; x <= myWidth; x++ )
@@ -212,7 +214,7 @@ public:
 		int right = 0;
 		int top = myHeight;
 		int bottom = 0;
-		
+
 		int x = 0;
 		int y = 0;
 
@@ -279,7 +281,7 @@ private:
 
 	std::vector< _Ty > myDataArray;
 
-	
+
 };
 
 }

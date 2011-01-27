@@ -30,7 +30,7 @@
 
 #include <iostream>
 
-#include <sdl.h>
+#include <SDL.h>
 
 #include "directory_server.h"
 #include "TCPInterface.h"
@@ -61,16 +61,16 @@ void UpdateServersList()
 	//char str[256];
 	//games->PrintColumnHeaders(str, 255, ':'); std::cout << str << std::endl;
 	//__GAME_PORT:__GAME_NAME:__SYSTEM_ADDRESS:__SEC_AFTER_EPOCH_SINCE_LAST_UPDATE
-	
+
 	int gamePortIndex = games->ColumnIndex("__GAME_PORT");
 	int gameNameIndex = games->ColumnIndex("__GAME_NAME");
 	int gameSystemAdressIndex = games->ColumnIndex("__SYSTEM_ADDRESS");
 	int gameTimestampIndex = games->ColumnIndex("__SEC_AFTER_EPOCH_SINCE_LAST_UPDATE");
 	int gameGUIDIndex = games->ColumnIndex("GUID");
-		
+
 	for (unsigned i = 0; i < games->GetRowCount(); ++i) {
 		//80:Foo:192.168.1.8:1284635693
-		//TODO: Data validation. Or should we trust the phpDirectServer2 to dp it for us? 
+		//TODO: Data validation. Or should we trust the phpDirectServer2 to dp it for us?
 		DataStructures::Table::Row* row = games->GetRowByIndex(i,NULL);
 		RakNet::SystemAddress address = RakNet::SystemAddress(row->cells[gameSystemAdressIndex]->c,row->cells[gamePortIndex]->i);
 		RakNet::RakNetGUID guid;
@@ -86,17 +86,17 @@ void UpdateServersList()
 int RunDirectoryServer( void* _serverData )
 {
 	DirectoryServerInfo* serverData = static_cast< DirectoryServerInfo* >( _serverData);
-		
+
 	tcp = RakNet::OP_NEW<RakNet::TCPInterface>(__FILE__,__LINE__);
 	httpConnection = RakNet::OP_NEW<RakNet::HTTPConnection>(__FILE__,__LINE__);
 	phpDirectoryServer2 = RakNet::OP_NEW<RakNet::PHPDirectoryServer2>(__FILE__,__LINE__);
-	
+
 	tcp->Start(0, 64);
 	httpConnection->Init(tcp, LOBBY_SERVER_ADDRESS);
 	phpDirectoryServer2->Init(httpConnection, LOBBY_SERVER_PATH_TO_PHP);
-	
+
 	RakNet::RakString httpResult;
-	
+
 	RakNet::TimeMS nextDownload=0;
 	RakNet::TimeMS nextUpload=0;
 	int serverToUpload=0;
@@ -106,11 +106,11 @@ int RunDirectoryServer( void* _serverData )
 		//So we priorities upload here.
 		if (!myServers.empty() && RakNet::GetTimeMS() > nextUpload)
 		{
-			//We handle keeping the server alive manually so that it dosent mess with our http downloads. 
+			//We handle keeping the server alive manually so that it dosent mess with our http downloads.
 			//phpDirectoryServer2->UploadTable("a", myServer.get()->name, myServer.get()->address.port, false);
 			phpDirectoryServer2->SetField("GUID", myServers[serverToUpload].guid.ToString());
 			phpDirectoryServer2->UploadTable("a", myServers[serverToUpload].name.c_str(), myServers[serverToUpload].address.port, false);
-			
+
 			++serverToUpload;
 			if (serverToUpload>=myServers.size()) {
 				serverToUpload=0;
@@ -122,14 +122,14 @@ int RunDirectoryServer( void* _serverData )
 			phpDirectoryServer2->DownloadTable("a");
 			//std::cout << "Downloading..." << std::endl;
 		}
-		
+
 		RakNet::Packet *packet = tcp->Receive();
 		if(packet)
 		{
 			httpConnection->ProcessTCPPacket(packet);
 			tcp->DeallocatePacket(packet);
 		}
-		
+
 		if (httpConnection->HasRead())
 		{
 			httpResult = httpConnection->Read();
@@ -137,7 +137,7 @@ int RunDirectoryServer( void* _serverData )
 			// If resultCode is not an empty string, then we got something other than a table
 			// (such as delete row success notification, or the message is for HTTP only and not for this class).
 			RakNet::HTTPReadResult readResult = phpDirectoryServer2->ProcessHTTPRead(httpResult);
-			
+
 			if (readResult==RakNet::HTTP_RESULT_GOT_TABLE)
 			{
 				//printf("RR_READ_TABLE\n");
@@ -148,11 +148,11 @@ int RunDirectoryServer( void* _serverData )
 			}
 			UpdateServersList();
 		}
-		
+
 		// Update our two classes so they can do time-based updates
 		httpConnection->Update();
 		phpDirectoryServer2->Update();
-		
+
 		// Don't flood it
 		RakSleep(100);
 	}
@@ -161,19 +161,19 @@ int RunDirectoryServer( void* _serverData )
 	RakNet::OP_DELETE(phpDirectoryServer2,_FILE_AND_LINE_);
 	RakNet::OP_DELETE(httpConnection,_FILE_AND_LINE_);
 	RakNet::OP_DELETE(tcp,_FILE_AND_LINE_);
-	
+
 	return 0;
 }
 
 int StartDirectoryServer()
 {
 	DirectoryServerInfo* serverData = new DirectoryServerInfo();
-	
+
 	SDL_CreateThread( &RunDirectoryServer, (void*)serverData );
 	return 0;
 }
 
-void AddServer( const std::string& gameName, unsigned short gamePort, RakNet::RakNetGUID guid) 
+void AddServer( const std::string& gameName, unsigned short gamePort, RakNet::RakNetGUID guid)
 {
 	//Currently only one server per application ia supported
 	//PHPDirectoryServer2 fetches the public ip address automatically.

@@ -46,7 +46,7 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "Pow2Assert.h"
+#include "pow2assert.h"
 
 #include <cstdio>
 #include <cstdarg>
@@ -57,13 +57,13 @@ namespace pow2
 namespace
 {
 
-Assert::FailBehavior DefaultHandler(const char* condition, 
-									const char* msg, 
-									const char* file, 
+Assert::FailBehavior DefaultHandler(const char* condition,
+									const char* msg,
+									const char* file,
 									const int line)
 {
 	std::printf("%s(%d): Assert Failure: ", file, line);
-	
+
 	if (condition != NULL)
 		std::printf("'%s' ", condition);
 
@@ -93,9 +93,9 @@ void Assert::SetHandler(Assert::Handler newHandler)
 	GetAssertHandlerInstance() = newHandler;
 }
 
-Assert::FailBehavior Assert::ReportFailure(const char* condition, 
-										   const char* file, 
-										   const int line, 
+Assert::FailBehavior Assert::ReportFailure(const char* condition,
+										   const char* file,
+										   const int line,
 										   const char* msg, ...)
 {
 	const char* message = NULL;

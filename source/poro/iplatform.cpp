@@ -34,49 +34,55 @@
 #include "mac/platform_mac.h"
 #endif
 
+#ifdef PORO_PLAT_LINUX
+#include "linux/platform_linux.h"
+#endif
+
 #include <stdlib.h>
 
 
 
 namespace poro {
 
-#if defined(PORO_PLAT_WINDOWS) 
+#if defined(PORO_PLAT_WINDOWS)
 	static PlatformWin platform;
 #elif defined(PORO_PLAT_IPHONE)
 	static PlatformIPhone platform;
 #elif defined(PORO_PLAT_MAC)
 	static PlatformMac platform;
+#elif defined(PORO_PLAT_LINUX)
+	static PlatformLinux platform;
 #else
 	#error "unknown platform"
 #endif
-	
+
 IPlatform * IPlatform::gInstance = &platform;
-	
+
 IPlatform::IPlatform() :
 	mApplication( NULL ),
 	mInternalWidth( 0.f ),
 	mInternalHeight( 0.f )
 {
 }
-	
+
 IPlatform::~IPlatform()
 {
 }
-	
+
 IPlatform * IPlatform::Instance()
 {
 	assert(gInstance!=NULL);
 	return gInstance;
 }
 
-void IPlatform::Init(IApplication *application, 
-					   int screenWidth, 
-					   int screenHeight, 
+void IPlatform::Init(IApplication *application,
+					   int screenWidth,
+					   int screenHeight,
 					   bool fullscreen,
 					   std::string title)
 {
 	mApplication = application;
-	
+
 	if( mInternalWidth == 0.f )
 		mInternalWidth = (types::Float32)screenWidth;
 	if( mInternalHeight == 0.f )
@@ -93,7 +99,7 @@ void IPlatform::Destroy()
 void IPlatform::SetApplication(IApplication* application){
 	mApplication = application;
 }
-	
+
 IApplication * IPlatform::GetApplication(){
 	return mApplication;
 }
@@ -110,7 +116,7 @@ int IPlatform::GetHeight()
 	assert(gInstance!=NULL);
 	return gInstance->GetHeight();
 }
-	
+
 bool IPlatform::GetOrientationIsLandscape(){
 	assert(gInstance!=NULL);
 	return gInstance->GetWidth() > gInstance->GetHeight();
@@ -146,10 +152,10 @@ void IPlatform::SetWorkingDir(poro::types::string dir){
 	assert(gInstance!=NULL);
 	gInstance->SetWorkingDir(dir);
 }
-	
+
 poro::types::string IPlatform::GetDocumentDir(){
 	assert(gInstance!=NULL);
 	return gInstance->GetDocumentDir();
 }
-	
+
 } // end of namespace poro

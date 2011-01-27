@@ -27,13 +27,13 @@
 #include "../poro_macros.h"
 #include "texture_win.h"
 
-#include "graphics_buffer_win.h" 
+#include "graphics_buffer_win.h"
 
 #define PORO_ERROR "ERROR: "
 
 //=============================================================================
 namespace poro {
-		
+
 namespace {
 	Uint32 GetGLVertexMode(int vertex_mode){
 		switch (vertex_mode) {
@@ -55,7 +55,7 @@ namespace {
 		types::vec2 D;
 		D.x = point.x - center.x;
 		D.y = point.y - center.y;
-		
+
 		// D.Rotate( angle );
 		float tx = D.x;
 		D.x = (float)D.x * (float)cos(angle) - D.y * (float)sin(angle);
@@ -79,14 +79,14 @@ namespace {
 	};
 
 	//-------------------------------------------------------------------------
-	
+
 	void drawsprite( TextureWin* texture, Vertex* vertices, const types::fcolor& color, int count, Uint32 vertex_mode  )
 	{
 		Uint32 tex = texture->mTexture;
 		glBindTexture(GL_TEXTURE_2D, tex);
 		glEnable(GL_TEXTURE_2D);
 		// glEnable(GL_BLEND);
-		  
+
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -105,7 +105,7 @@ namespace {
 	}
 
 	//-------------------------------------------------------------------------
-	
+
 	void drawsprite_withalpha( TextureWin* texture, Vertex* vertices, const types::fcolor& color, int count,
 		TextureWin* alpha_texture, Vertex* alpha_vertices, const types::fcolor& alpha_color,
 		Uint32 vertex_mode )
@@ -124,10 +124,10 @@ namespace {
 		glActiveTexture(GL_TEXTURE0);
 		glEnable(GL_TEXTURE_2D);
 		glColor4f(alpha_color[ 0 ], alpha_color[ 1 ], alpha_color[ 2 ], alpha_color[ 3 ] );
-		glBindTexture(GL_TEXTURE_2D, alpha_mask_id ); 
+		glBindTexture(GL_TEXTURE_2D, alpha_mask_id );
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		
+
 		// sprite texture
         glActiveTexture(GL_TEXTURE1);
         glEnable(GL_TEXTURE_2D);
@@ -225,7 +225,7 @@ namespace {
 				++co;
 			}
 		}
-	    
+
 
 		// if rect is smaller than texture, copy rightmost/bottom col/row (and pixel at w,h)
 		// as is from the inner one so that linear sampling works like clamp_to_edge
@@ -242,19 +242,19 @@ namespace {
 		if (srcr.w < image->w && srcr.h < image->h)
 			pixels[srcr.h * w + srcr.w] = pixels[(srcr.h - 1) * w + srcr.w - 1];
 
-	   
+
 
 		SDL_UnlockSurface(image);
 	}
 
 	//-----------------------------------------------------------------------------
-	
+
 	SDL_Surface* CreateSDLSurface(int width,int height){
 		/* Create a 32-bit surface with the bytes of each pixel in R,G,B,A order,
 		 as expected by OpenGL for textures */
 		SDL_Surface *surface;
 		Uint32 rmask, gmask, bmask, amask;
-		
+
 		/* SDL interprets each pixel as a 32-bit number, so our masks must depend
 		 on the endianness (byte order) of the machine */
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
@@ -276,7 +276,7 @@ namespace {
 		}
 		return surface;
 	}
-	
+
 	//-----------------------------------------------------------------------------
 
 	// Based on SDL examples.
@@ -319,7 +319,7 @@ namespace {
 		area.y = 0;
 		area.w = srcw;
 		area.h = srch;
-	    
+
 		srcr = area;
 		SDL_BlitSurface(surface, &srcr, image, &area);
 
@@ -345,7 +345,7 @@ namespace {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		}
 
-	   
+
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
@@ -397,46 +397,50 @@ namespace {
 		TextureWin* result = NULL;
 		SDL_Surface *temp = IMG_Load(filename.c_str());
 
-		if( temp )
+		if( temp ) {
 			result = CreateImage( temp );
+        } else {
+            std::cout << "Unable load image: " << IMG_GetError() << std::endl;
+        }
 
 		SDL_FreeSurface( temp );
 
+
 		return result;
 	}
-	
+
 	//-----------------------------------------------------------------------------
-	
+
 	TextureWin* CreateTextureForReal(int width,int height)
 	{
 		TextureWin* result = NULL;
 		SDL_Surface *temp = CreateSDLSurface(width,height);
 		if( temp )
 			result = CreateImage( temp );
-		
+
 		SDL_FreeSurface( temp );
-		
+
 		return result;
 	}
-	
+
 	void SetTextureDataForReal(TextureWin* texture, void* data){
 		//GLint prevAlignment;
 		//glGetIntegerv(GL_UNPACK_ALIGNMENT, &prevAlignment);
 		//glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		
+
 		//Uint32 w = GetNextPowerOfTwo(texture->mWidth);
 		//Uint32 h = GetNextPowerOfTwo(texture->mHeight);
-		
+
 		// update the texture image:
 		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, (GLuint)texture->mTexture);
  		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, texture->mWidth, texture->mHeight, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		glDisable(GL_TEXTURE_2D);
-		
+
 		//------------------------ back to normal.
 		//glPixelStorei(GL_UNPACK_ALIGNMENT, prevAlignment);
 		//texData.bFlipTexture = false;
-	}		
+	}
 
 } // end o namespace anon
 
@@ -450,7 +454,7 @@ bool GraphicsWin::Init( int width, int height, bool fullscreen, const types::str
 	float screenwidth = 0;
 	float screenheight = 0;
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE) < 0) 
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE) < 0)
     {
 		poro_logger << PORO_ERROR << "Video initialization failed:  " << SDL_GetError() << std::endl;
         SDL_Quit();
@@ -459,20 +463,20 @@ bool GraphicsWin::Init( int width, int height, bool fullscreen, const types::str
 
     info = SDL_GetVideoInfo();
 
-    if (!info) 
+    if (!info)
     {
 		poro_logger << PORO_ERROR << "Video query failed: "<< SDL_GetError() << std::endl;
         SDL_Quit();
         exit(0);
     }
 
-   
+
     {
         screenwidth = float(width);
         screenheight = float(height);
         bpp = info->vfmt->BitsPerPixel;
         flags = SDL_OPENGL;
-		if( fullscreen ) 
+		if( fullscreen )
 			flags |= SDL_FULLSCREEN;
     }
 
@@ -486,7 +490,7 @@ bool GraphicsWin::Init( int width, int height, bool fullscreen, const types::str
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-    if (SDL_SetVideoMode((int)screenwidth, (int)screenheight, bpp, flags) == 0) 
+    if (SDL_SetVideoMode((int)screenwidth, (int)screenheight, bpp, flags) == 0)
     {
         fprintf( stderr, "Video mode set failed: %s\n", SDL_GetError());
         SDL_Quit();
@@ -494,7 +498,7 @@ bool GraphicsWin::Init( int width, int height, bool fullscreen, const types::str
     }
 
     SDL_WM_SetCaption( caption.c_str(), NULL);
-    
+
 
 	if( true )
 	{
@@ -541,7 +545,7 @@ void GraphicsWin::SetInternalSize( types::Float32 width, types::Float32 height )
 }
 
 //=============================================================================
-	
+
 ITexture* GraphicsWin::CreateTexture( int width, int height )
 {
 	return CreateTextureForReal(width,height);
@@ -558,14 +562,14 @@ void GraphicsWin::SetTextureData( ITexture* texture, void* data )
 	SetTextureDataForReal((TextureWin*)texture,data);
 	// return NULL;
 }
-	
+
 ITexture* GraphicsWin::LoadTexture( const types::string& filename )
 {
 	ITexture* result = LoadTextureForReal( filename );
 	TextureWin* textureWin = (TextureWin*)result;
 	if( textureWin )
 		textureWin->SetFilename( filename );
-	
+
 	return result;
 	// return NULL;
 }
@@ -608,11 +612,11 @@ void GraphicsWin::DrawTexture( ITexture* itexture, float x, float y, float w, fl
 
 		for( int i = 0; i < 4; ++i )
 		{
-			types::vec2 result = Vec2Rotate( temp_verts[ i ], center_p, rotation ); 
+			types::vec2 result = Vec2Rotate( temp_verts[ i ], center_p, rotation );
 			temp_verts[ i ] = result;
 		}
 	}
-	
+
 	float tx1 = 0;
 	float ty1 = 0;
 	float tx2 = (float)texture->GetWidth();
@@ -633,14 +637,14 @@ void GraphicsWin::DrawTexture( ITexture* itexture, float x, float y, float w, fl
 	PushVertexMode(poro::IGraphics::VERTEX_MODE_TRIANGLE_STRIP);
 	DrawTexture( texture,  temp_verts, tex_coords, 4, color );
 	PopVertexMode();
-	
+
 }
 //=============================================================================
-	
+
 void GraphicsWin::DrawTexture( ITexture* itexture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color )
 {
 	poro_assert( count <= 8 );
-	
+
 	if( itexture == NULL )
 		return;
 
@@ -651,7 +655,7 @@ void GraphicsWin::DrawTexture( ITexture* itexture, types::vec2* vertices, types:
 
 	for( int i = 0; i < count; ++i )
 	{
-		tex_coords[ i ].x *= texture->mExternalSizeX; 
+		tex_coords[ i ].x *= texture->mExternalSizeX;
 		tex_coords[ i ].y *= texture->mExternalSizeY;
 	}
 
@@ -662,10 +666,10 @@ void GraphicsWin::DrawTexture( ITexture* itexture, types::vec2* vertices, types:
 	float y_text_conv = ( 1.f / texture->mHeight ) * ( texture->mUv[ 3 ] - texture->mUv[ 1 ] );
 	for( int i = 0; i < count; ++i )
 	{
-		vert[i].x = vertices[i].x;	
+		vert[i].x = vertices[i].x;
 		vert[i].y = vertices[i].y;
 		vert[i].tx = texture->mUv[ 0 ] + ( tex_coords[i].x * x_text_conv );
-		vert[i].ty = texture->mUv[ 1 ] + ( tex_coords[i].y * y_text_conv ); 
+		vert[i].ty = texture->mUv[ 1 ] + ( tex_coords[i].y * y_text_conv );
 	}
 
 	drawsprite( texture, vert, color, count, GetGLVertexMode(mVertexMode) );
@@ -673,7 +677,7 @@ void GraphicsWin::DrawTexture( ITexture* itexture, types::vec2* vertices, types:
 
 //-----------------------------------------------------------------------------
 
-void GraphicsWin::DrawTextureWithAlpha( 
+void GraphicsWin::DrawTextureWithAlpha(
 		ITexture* itexture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color,
 		ITexture* ialpha_texture, types::vec2* alpha_vertices, types::vec2* alpha_tex_coords, const types::fcolor& alpha_color )
 {
@@ -688,10 +692,10 @@ void GraphicsWin::DrawTextureWithAlpha(
 
 	for( int i = 0; i < 4; ++i )
 	{
-		tex_coords[ i ].x *= texture->mExternalSizeX; 
+		tex_coords[ i ].x *= texture->mExternalSizeX;
 		tex_coords[ i ].y *= texture->mExternalSizeY;
-		alpha_tex_coords[ i ].x *= alpha_texture->mExternalSizeX; 
-		alpha_tex_coords[ i ].y *= alpha_texture->mExternalSizeY; 
+		alpha_tex_coords[ i ].x *= alpha_texture->mExternalSizeX;
+		alpha_tex_coords[ i ].y *= alpha_texture->mExternalSizeY;
 	}
 
 
@@ -748,7 +752,7 @@ void GraphicsWin::EndRendering()
 void GraphicsWin::DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color )
 {
 	glEnable(GL_BLEND);
-	
+
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glColor4f( color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
 	glBegin(GL_LINE_LOOP);
@@ -767,20 +771,20 @@ void GraphicsWin::DrawFill( const std::vector< poro::types::vec2 >& vertices, co
 {
 	//poro_logger << "DrawLines" << std::endl;
 	int vertCount = vertices.size();
-	
+
 	if(vertCount == 0)
 		return;
-	
+
 	//Internal rescale
 	float xPlatformScale, yPlatformScale;
-	if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight()){	
+	if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight()){
 		xPlatformScale = poro::IPlatform::Instance()->GetWidth() / (float)poro::IPlatform::Instance()->GetInternalWidth();
 		yPlatformScale = poro::IPlatform::Instance()->GetHeight() / (float)poro::IPlatform::Instance()->GetInternalHeight();
 	} else {
 		xPlatformScale = 1.f;
 		yPlatformScale = 1.f;
 	}
-	
+
 	//Consider static buffer size?
 	GLfloat *glVertices = new GLfloat[vertCount*2];
 	int o = -1;
@@ -788,11 +792,11 @@ void GraphicsWin::DrawFill( const std::vector< poro::types::vec2 >& vertices, co
 		glVertices[++o] = vertices[i].x*xPlatformScale;
 		glVertices[++o] = vertices[i].y*yPlatformScale;
 	}
-	
+
 	//for(int i=0; i < vertCount*2; ++i){
 	//	poro_logger << ":" << glVertices[i] << std::endl;
 	//}
-	
+
 	glColor4f(color[0], color[1], color[2], color[3]);
 	glLineWidth(2.0f);
 	glPushMatrix();
@@ -811,7 +815,7 @@ void GraphicsWin::DrawFill( const std::vector< poro::types::vec2 >& vertices, co
 
 	//glDrawArrays (GL_TRIANGLE_FAN, 0, vertCount);
 	glPopMatrix();
-	
+
 	delete glVertices;
 }
 
@@ -826,7 +830,7 @@ IGraphicsBuffer* GraphicsWin::CreateGraphicsBuffer(int width, int height){
 void GraphicsWin::DestroyGraphicsBuffer(IGraphicsBuffer* buffer){
 	delete buffer;
 }
-	
+
 //=============================================================================
-	
+
 } // end o namespace poro

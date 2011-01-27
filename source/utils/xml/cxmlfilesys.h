@@ -30,7 +30,7 @@
 //.............................................................................
 //
 // 14.03.2006 Pete
-//		Fixed a direct filesys calling from the XML_BindAttributeAlias() to 		
+//		Fixed a direct filesys calling from the XML_BindAttributeAlias() to
 //		use the parameter x.
 //
 // 13.03.2005 Pete
@@ -41,25 +41,27 @@
 //		Added XML_BindAlias() macro the help us keep our code more cleaner
 //
 // 24.02.2005 Pete
-//	  * Changed the XML_ConvertTo() macro so that it checks now if a attribute 
+//	  * Changed the XML_ConvertTo() macro so that it checks now if a attribute
 //		named exists before it tryies to convert.
 //	  * Fixed a creepy bug in the HasChildNamed() method
 //
 // 20.02.2005 Pete
-//		Added HasChildNamed() method to help us create more flexible 
+//		Added HasChildNamed() method to help us create more flexible
 //		serialization.
 //
 // 14.02.2005 Pete
-//		Fixed XML_Bind macro because it had a nasty bug. 
+//		Fixed XML_Bind macro because it had a nasty bug.
 //		if ( writing ) { } else if ( writing ) { } should have been
 //		if ( writing ) { } else if ( reading ) { }
 //
 // 05.10.2004 Pete
-//		Added the XML_Bind macro after JP Johansson's suggestion on the 
+//		Added the XML_Bind macro after JP Johansson's suggestion on the
 //		gamedev forum
 //
 //=============================================================================
-#pragma warning(disable:4786)  
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
 
 #ifndef INC_CXMLFILESYS_H
 #define INC_CXMLFILESYS_H
@@ -76,7 +78,7 @@
 //! A wrapper for the CXmlNode datastructure and cast functions.
 /*!
 	Note:	You have to destroy the RootElement by hand after use, because
-			we have absolute no idea if your done with your xml structure 
+			we have absolute no idea if your done with your xml structure
 			or not
 
 	A warpper class for the CXmlNode and for the functions in the CXmlCast.
@@ -88,7 +90,7 @@ namespace ceng {
 class CXmlFileSys
 {
 public:
-		
+
 	//! Represents the current status of the filesystem
 	enum FileSysStatus
 	{
@@ -98,21 +100,21 @@ public:
 	};
 
 	//! Basic constructors
-	CXmlFileSys() : 
-		myUseStrict( false ), 
-		myChildPosition( 0 ), 
-		myRootElement( NULL ), 
-		myCurrentNode( NULL ), 
+	CXmlFileSys() :
+		myUseStrict( false ),
+		myChildPosition( 0 ),
+		myRootElement( NULL ),
+		myCurrentNode( NULL ),
 		myStatus( empty ) { }
-	
+
 	//! Basic constructor with node and status
-	CXmlFileSys( CXmlNode* node, FileSysStatus status ) : 
-		myUseStrict( false ), 
-		myChildPosition( 0 ), 
-		myRootElement( node ), 
-		myCurrentNode( node ), 
+	CXmlFileSys( CXmlNode* node, FileSysStatus status ) :
+		myUseStrict( false ),
+		myChildPosition( 0 ),
+		myRootElement( node ),
+		myCurrentNode( node ),
 		myStatus( status ) { }
-	
+
 	//! Deconstructor which doesn't do a crap.
 	~CXmlFileSys() { }
 
@@ -163,16 +165,16 @@ public:
 	{ myCurrentNode->AddChild( XmlConvertFrom( from, name ) ); }
 
 	//! Basicly to be used while writing, adds a new child to the current element
-	/*! 
-		Note: Remember to call the EndElement( name ) after this. 
+	/*!
+		Note: Remember to call the EndElement( name ) after this.
 	*/
-	void AddElement( const std::string& name ) 
+	void AddElement( const std::string& name )
 	{
 		CXmlNode* tmp = CXmlNode::CreateNewNode();
 		tmp->SetName( name );
 		myCurrentNode->AddChild( tmp );
 		myCurrentNode = tmp;
-		
+
 	}
 
 	//! Adds a attribute to the current node in need
@@ -198,7 +200,7 @@ public:
 		if ( myUseStrict && myChildPosition >= myCurrentNode->GetChildCount() )
 			logger << "Xml warning, ain't no childs left in the current node: " << myCurrentNode->GetName() << " in file: " << myFilename << " at line " << myLine << std::endl;
 
-		if( HasChildNamed( name ) == false ) 
+		if( HasChildNamed( name ) == false )
 			return NULL;
 
 		if ( myCurrentNode->GetChild( myChildPosition )->GetName() == name )
@@ -206,16 +208,16 @@ public:
 			myChildPosition++;
 
 			return myCurrentNode->GetChild( myChildPosition-1 );
-		} 
+		}
 
 		if ( myUseStrict ) logger << "Xml warning a child node wasn't in the place it should be, order fucked up in node: " << myCurrentNode->GetName() << " in file: " << myFilename << " at line " << myLine << std::endl;
-		
-		for (	myChildPosition = 0; 
+
+		for (	myChildPosition = 0;
 				myChildPosition < myCurrentNode->GetChildCount() &&
-					myCurrentNode->GetChild( myChildPosition )->GetName() != name; 
+					myCurrentNode->GetChild( myChildPosition )->GetName() != name;
 				myChildPosition++ );
 
-		if ( myChildPosition == myCurrentNode->GetChildCount() ) 
+		if ( myChildPosition == myCurrentNode->GetChildCount() )
 		{
 			if ( myUseStrict ) logger << "Xml error a child node: " << name << " wasn't found at all in the node: " << myCurrentNode->GetName() << " in file: " << myFilename << " at line " << myLine << std::endl;
 			return NULL;
@@ -228,7 +230,7 @@ public:
 	//! Returns true if the child is found false if not
 	bool HasChildNamed( const std::string& name )
 	{
-		
+
 		if( myChildPosition >= 0 && myChildPosition < myCurrentNode->GetChildCount() &&
 			myCurrentNode->GetChild( myChildPosition )->GetName() == name ) return true;
 
@@ -239,7 +241,7 @@ public:
 		}
 
 		return false;
-		
+
 	}
 
 	//! Sets the line to myLine
@@ -259,7 +261,7 @@ public:
 	bool GetStrict() const { return myUseStrict; }
 
 private:
-	
+
 	std::string		myFilename;
 	unsigned int	myLine;
 	bool			myUseStrict;
@@ -292,7 +294,7 @@ T XML_CAnyContainerCast( const CAnyContainer& any, const T& t )
 #define XML_ConvertToContainer( x, y )		x->SetLineNumber( __LINE__ ); x->SetFileName( __FILE__ ); x->ConvertToContainer( y, #y )
 #define XML_ConvertFromContainer( x, y )	x->SetLineNumber( __LINE__ ); x->SetFileName( __FILE__ ); x->ConvertFromContainer( y, #y )
 
-#define XML_BindAlias( x, y, a) if ( x->IsReading() ) { XML_ConvertToAlias( x, y, a ); } else if ( x->IsWriting() ) { XML_ConvertFromAlias( x, y, a ); } 
+#define XML_BindAlias( x, y, a) if ( x->IsReading() ) { XML_ConvertToAlias( x, y, a ); } else if ( x->IsWriting() ) { XML_ConvertFromAlias( x, y, a ); }
 #define XML_Bind( x, y )		if ( x->IsReading() ) { XML_ConvertTo( x, y ); } else if ( x->IsWriting() ) { XML_ConvertFrom( x, y ); }
 #define XML_BindMulti( x, y )	if ( x->IsReading() ) { XML_ConvertToContainer( x, y ); } else if ( x->IsWriting() ) { XML_ConvertFromContainer( x, y ); }
 #define XML_BindMultiAlias( x, y, a )	if ( x->IsReading() ) { XML_ConvertToContainerAlias( x, y, a ); } else if ( x->IsWriting() ) { XML_ConvertFromContainerAlias( x, y, a ); }

@@ -32,7 +32,7 @@
 //
 //
 
-#include "CDirList.h"
+#include "cdirlist.h"
 #include "../string/string.h"
 #include <vector>
 
@@ -63,14 +63,14 @@ CDirList::CDirList() { Init(); }
 CDirList::CDirList( string directory ) { ReadDir( directory ); }
 CDirList::~CDirList() { ClearData(); }
 
-void CDirList::ReadDirsAndFiles( string directory, bool files ) { 
+void CDirList::ReadDirsAndFiles( string directory, bool files ) {
 
 
 	string pattern;
 
 	pattern	  = GetPattern( directory );
 	directory = ParsePattern( directory );
-	
+
 
 	string return_value = "";
 
@@ -82,12 +82,12 @@ void CDirList::ReadDirsAndFiles( string directory, bool files ) {
 	/////////////////////////////////////////////////////////////////////////////////////////////
 	// MS_DOS
 	#if defined (__MSDOS__)                  /* BORLAND C DOS */
-	
+
 	int i = 0, done;
 	struct ffblk dta;
-		
+
 	done = findfirst(directory.c_str(), &dta, FA_DIREC);
-	
+
 	while (!done){
 		if ( files ) {
 			if ( !((dta.ff_attrib & FA_DIREC) == FA_DIREC) && (dta.ff_name[0] != '.')) {
@@ -95,7 +95,7 @@ void CDirList::ReadDirsAndFiles( string directory, bool files ) {
 				return_value = dta.ff_name;
 				if ( return_value != "" && return_value != ".." ) PushToList( return_value, pattern );
 				// myData.push_back( dta.ff_name );
-           
+
 			}
 		} else {
 			if (((dta.ff_attrib & FA_DIREC) == FA_DIREC) && (dta.ff_name[0] != '.')) {
@@ -103,27 +103,27 @@ void CDirList::ReadDirsAndFiles( string directory, bool files ) {
 				return_value = dta.ff_name;
 				if ( return_value != "" && return_value != ".." ) PushToList( return_value, pattern, true );
 				// myData.push_back( dta.ff_name );
-           
+
 			}
 		}
-		
+
 		done = findnext(&dta);
     }
-		
-    
+
+
 	#endif
 	/////////////////////////////////////////////////////////////////////////////////////////////
-	
+
 
 
 	/////////////////////////////////////////////////////////////////////////////////////////////
 	// UNIX
 	#if defined (unix)                       /* UNIX */
-    
+
 	DIR *dirp;
     struct dirent *dp;
     struct stat buf;
-    
+
     dirp = opendir( directory.c_str() );
     while (dp = readdir(dirp)) {
         if (stat(dp->d_name,&buf) == 0)
@@ -153,46 +153,46 @@ void CDirList::ReadDirsAndFiles( string directory, bool files ) {
 
 	struct _finddata_t c_file;
 	long hFile;
-	
-	
+
+
 	/* Find first .c file in current directory */
 	if((hFile = _findfirst(directory.c_str(), &c_file)) == -1L) {
-		
-		
-		
+
+
+
 	} else {
-		
+
 		/* Find the rest of the *.* files */
 		while(_findnext(hFile, &c_file) == 0) {
 			if ( files ) {
-				
+
 				if(!(c_file.attrib & _A_SUBDIR )) {
 					return_value = c_file.name;
 					if ( return_value != "" && return_value != ".." ) PushToList( return_value, pattern );
 					// myData.push_back( c_file.name );
-					
+
 				}
-			} else { 
-				
+			} else {
+
 				if((c_file.attrib & _A_SUBDIR )) {
 					return_value = c_file.name;
 					if ( return_value != "" && return_value != ".." ) PushToList( return_value, pattern, true );
 					// myData.push_back( c_file.name );
-					
+
 				}
 			}
 
 		}
-		
+
 		_findclose(hFile);
 	}
 	/////////////////////////////////////////////////////////////////////////////////////////////
 
 	#endif
 	// Thats it thats was the brialiant code of Danien Dean, which the core of this class
-	// 
+	//
 
-	
+
 	// if ( return_value != "" || return_value != ".." ) myData.push_back( return_value );
 
 	Init();
@@ -200,7 +200,7 @@ void CDirList::ReadDirsAndFiles( string directory, bool files ) {
 
 void CDirList::ReadDir( std::string directory )	  {	ClearData(); ReadDirsAndFiles( directory, false ); }
 void CDirList::ReadFiles( std::string directory ) {	ClearData(); ReadDirsAndFiles( directory, true  ); }
-void CDirList::Read( std::string directory )	  { ClearData(); ReadDirsAndFiles( directory, false ); 
+void CDirList::Read( std::string directory )	  { ClearData(); ReadDirsAndFiles( directory, false );
 													ReadDirsAndFiles( directory, true  ); }
 
 void CDirList::Init() { myBrowser = myData.begin(); }
@@ -208,16 +208,16 @@ void CDirList::ClearData() { while ( !myData.empty() ) myData.pop_front(); }
 
 void CDirList::PushToList( std::string filename, std::string pattern, bool isdir )
 {
-	if ( isdir ) 
+	if ( isdir )
 	{
-		if ( IsValidFile( filename + ".", pattern ) ) 
+		if ( IsValidFile( filename + ".", pattern ) )
 			myData.push_back( filename );
 	} else {
-		if ( IsValidFile( filename, pattern ) ) 
+		if ( IsValidFile( filename, pattern ) )
 			myData.push_back( filename );
 	}
 
-	
+
 }
 
 string CDirList::Top() {
@@ -226,11 +226,11 @@ string CDirList::Top() {
 
 	myBrowser = myData.begin();
 
-	if ( myBrowser != myData.end() ) 
-		return_value = ( *myBrowser ); 
-	else 
+	if ( myBrowser != myData.end() )
+		return_value = ( *myBrowser );
+	else
 		return_value  = "";
-	
+
 	++myBrowser;
 
 	return return_value;
@@ -244,7 +244,7 @@ string CDirList::Next() {
 	if ( myBrowser != myData.end() ) return_value = ( *myBrowser ); else return_value = "";
 
 	++myBrowser;
-	
+
 	return return_value;
 
 }
@@ -262,15 +262,15 @@ bool CDirList::IsValidFile( const string& filename, const string& pattern )
 	vector<string> Array;
 
 	Array = Split( "*", pattern );
-	
-	
-	
+
+
+
 	//if ( Array.empty() )
 	//	return true;
 
-	
-	
-	
+
+
+
 
 	unsigned int i = 0;
 
@@ -281,39 +281,39 @@ bool CDirList::IsValidFile( const string& filename, const string& pattern )
 
 	while ( i < Array.size() )
 	{
-		
-		
+
+
 
 
 		current_pos = filename.find( Array[ i ], prev_pos );
 
-		// if it is the first 
-		if ( i == 0 && 
-			( char )pattern[ 0 ] != '*' && 
+		// if it is the first
+		if ( i == 0 &&
+			( char )pattern[ 0 ] != '*' &&
 			current_pos != 0 )
 
 			return false;
-		
+
 
 		// if it is the last
-		if ( i == Array.size() - 1 && 
+		if ( i == Array.size() - 1 &&
 			( char )pattern[ pattern.size() - 1 ] != '*' &&
 			current_pos != ( filename.size() - Array[ i ].size() ) )
 			return false;
-		
-		if ( current_pos == filename.npos ) 
+
+		if ( current_pos == filename.npos )
 		{
 			//cout << "Could not find " << Array[ i ] << " in string " << filename << endl;
 			return false;
-		} 
+		}
 			//cout << "Found " << Array[ i ] << " in string " << filename << endl;
 
 		prev_pos = current_pos + Array[ i ].size();
 
 		i++;
-		
+
 	}
-	
+
 	return true;
 }
 
@@ -330,7 +330,7 @@ std::string CDirList::ParsePattern( std::string directory )
 	position = directory.find_last_not_of(" \t");
 	directory.erase( position+1 );
 
-	
+
 	position = directory.find_last_of("/");
 
 	if ( position == directory.npos )
@@ -340,8 +340,8 @@ std::string CDirList::ParsePattern( std::string directory )
 
 	/*if (  ( directory.find(".") == directory.npos ) ||
 	   ( directory.find_last_of(".") <= directory.find_last_of("/") ) )
-	{*/	
-		if ( (char)directory[ directory.length() - 1 ] == '/') 
+	{*/
+		if ( (char)directory[ directory.length() - 1 ] == '/')
 			directory += "*.*";
 	    else
 			directory += "/*.*";
@@ -368,7 +368,7 @@ std::string CDirList::GetPattern( std::string directory )
 	position = directory.find_last_of("/");
 
 	if ( position == directory.npos ) return directory;
-	
+
 	string return_value;
 
 	return_value = directory.substr( position + 1 );
@@ -384,11 +384,11 @@ std::string CDirList::ConvertDosPath( std::string directory )
 
 	if ( directory == "." ) directory = "./*.*";
 
-	
+
 	while ( directory.find("\\") != directory.npos) {
                 directory.replace( directory.find("\\"), 1, "/");
         }
-	
+
 	return directory;
 }
 

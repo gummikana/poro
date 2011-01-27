@@ -26,6 +26,11 @@
 
 #ifdef PORO_TESTER_ENABLED
 
+#ifdef PORO_PLAT_LINUX
+    #define _sleep mssleep
+    void mssleep(int ms) { usleep(ms*1000); return; }
+
+#endif
 
 namespace ceng {
 namespace test {
@@ -45,24 +50,24 @@ namespace {
 	bool CheckFloat( float a, float b )
 	{
 		return ( abs( (double)(a - b) ) < timer_safty_margin_float );
-	}	
-} 
+	}
+}
 
 int CTimerTest()
 {
 	CTimer basetimer;
-	
+
 	{
 		test_assert( CheckInt( basetimer.GetTime(), 0 ) );
 		test_assert( CheckFloat( basetimer.GetSeconds(), 0 ) );
 		test_assert( CheckInt( basetimer.GetDerivate(), 0 ) );
 		test_assert( CheckFloat( basetimer.GetDerivateSeconds(), 0 ) );
 	}
-	
+
 	{
 		types::ticks	time_now_int = basetimer.GetTime();
 		float			time_now_float = basetimer.GetSeconds();
-	
+
 		_sleep( 100 );
 		basetimer.Pause();
 
@@ -78,7 +83,7 @@ int CTimerTest()
 		test_assert( CheckInt( basetimer.GetDerivate(),				time_now_int + 100 ) );
 		test_assert( CheckFloat( basetimer.GetDerivateSeconds(),	time_now_float + 0.1f ) );
 
-		
+
 	}
 
 	{
@@ -86,7 +91,7 @@ int CTimerTest()
 
 		test.SetTime( 10 );
 		test_assert( CheckInt( test.GetTime(), 10 ) );
-		
+
 		test.SetTime( 100 );
 		test.Resume();
 		test_assert( CheckInt( test.GetTime(), 100 ) );
@@ -100,11 +105,11 @@ int CTimerTest()
 		test_assert( CheckInt( test.GetTime(), 120 ) );
 		test.Resume();
 		test_assert( CheckInt( test.GetTime(), 120 ) );
-		
+
 		test -= 50;
 
 		test_assert( CheckInt( test.GetTime(), 70 ) );
-		
+
 
 	}
 

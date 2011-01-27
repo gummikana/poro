@@ -52,6 +52,20 @@
 
 //-----------------------------------------------------------------------------
 
+#ifdef PORO_PLAT_LINUX
+
+#include <SDL.h>
+#include <SDL_image.h>
+#include <SDL_mixer.h>
+#include <GL/glew.h>
+#include <GL/freeglut.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
+
+#endif
+
+//-----------------------------------------------------------------------------
+
 #ifdef PORO_PLAT_WINDOWS
 
 #	pragma comment( lib, "sdl.lib" )

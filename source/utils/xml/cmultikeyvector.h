@@ -26,11 +26,13 @@
 // A vector container that has besides the normal array style reference a other
 // key of the type Key. So you can get data with the normal unsigned int style
 // and through the predifend key.
-// 
+//
 //.............................................................................
 //
 //=============================================================================
-#pragma warning ( disable : 4786 )
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
 
 #ifndef INC_CMULTIKEYVECTOR_H
 #define INC_CMULTIKEYVECTOR_H
@@ -41,7 +43,7 @@
 
 namespace ceng {
 
-//! This is a hybrid between a map and vector so you have random access but 
+//! This is a hybrid between a map and vector so you have random access but
 //! you also have to ability to call it with aprourpiate key
 template< class Key, class Cont >
 class CMultiKeyVector
@@ -88,10 +90,10 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////
 
-	std::vector< Key > GetKeys() const 
+	std::vector< Key > GetKeys() const
 	{
 		typename std::vector< Key > return_vector;
-		
+
 		typename std::map< Key, unsigned int >::const_iterator i;
 		for ( i = myKeys.begin(); i != myKeys.end(); ++i )
 		{
@@ -106,7 +108,7 @@ public:
 	Key GetKey( unsigned int i ) const
 	{
 		typename std::map< Key, unsigned int >::const_iterator j;
-		
+
 		for ( j = myKeys.begin(); j != myKeys.end(); ++j )
 		{
 			if ( j->second == i ) return j->first;

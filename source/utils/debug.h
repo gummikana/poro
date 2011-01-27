@@ -30,10 +30,9 @@
 //----------------------------------------------------
 // define logger
 
-#include "logger/logger.h"
-
-// #define assert_logger std::cout
-// #define logger 		std::cout
+// #include "logger/logger.h"
+#define assert_logger std::cout
+#define logger std::cout
 
 //----------------------------------------------------
 // define cassert
@@ -55,7 +54,7 @@
 
 // testing shit is on
 #ifdef PORO_TESTER_ENABLED
-#define CENG_TESTER_ENABLED
+//#define CENG_TESTER_ENABLED
 #endif
 
 

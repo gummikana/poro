@@ -22,7 +22,9 @@
 #ifndef INC_FILE_SYSTEM_H
 #define INC_FILE_SYSTEM_H
 
-#pragma warning(disable:4786)
+#ifdef _MSC_VER
+#pragma warning ( disable : 4786 )
+#endif
 
 #include <string>
 #include <list>

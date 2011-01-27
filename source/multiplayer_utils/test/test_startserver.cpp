@@ -22,13 +22,14 @@
 #include "test_startserver.h"
 #include "multiplayer_utils/framework/multiplayer_utils.h"
 // #include "../../cpt_farbs/multiplayer/game_messages.h"
+#include "../framework/ipackethandler.h"
 
 void TEST_LOG( const std::string& what )
 {
 	std::cout << "TEST: " << what;
 }
 
-#define TEST_LOGGER std::cout << "TEST: " 
+#define TEST_LOGGER std::cout << "TEST: "
 
 #define TEST_VALUE_INT8		89
 #define TEST_VALUE_INT16	1879
@@ -39,8 +40,8 @@ void TEST_LOG( const std::string& what )
 #define TEST_VALUE_FLOAT32	12345.f
 enum TestMessages
 {
-	ID_TEST_MESSAGE_1=ID_GAME_MESSAGE_LAST+1,
-	
+	//ID_TEST_MESSAGE_1=ID_GAME_MESSAGE_LAST+1,
+
 	// tells what time the server is running in
 	ID_TEST_RAKNET_INT8,
 	ID_TEST_RAKNET_INT16,
@@ -48,7 +49,7 @@ enum TestMessages
 	ID_TEST_RAKNET_UINT8,
 	ID_TEST_RAKNET_UINT16,
 	ID_TEST_RAKNET_UINT32,
-	
+
 	ID_TEST_INT32,
 	ID_TEST_UINT8,
 	ID_TEST_UINT32,
@@ -68,7 +69,7 @@ std::string as_bits( T a )
 	T k , mask;
 
 	std::stringstream ss;
-	
+
 	int size = sizeof( T ) * 8;
 	for( i = size - 1; i >= 0 ; i-- )
 	{
@@ -79,7 +80,7 @@ std::string as_bits( T a )
 		else
 			ss<<"1";
 	}
-	
+
 	return ss.str();
 }
 
@@ -92,7 +93,7 @@ std::string showbits( const T& value )
 
 
 template< typename T >
-void network_compare_impl( const T& x, const T& y, const std::string& file, unsigned int line ) 
+void network_compare_impl( const T& x, const T& y, const std::string& file, unsigned int line )
 {
 	if( !(x == y) )
 	{
@@ -139,7 +140,7 @@ public:
 
 			char packet_shit[1024];
 			bitstream.Read( packet_shit, size  );
-	
+
 			packet_shit[ size ] = '\0';
 			std::string string_data;
 			string_data.resize( size );
@@ -148,7 +149,7 @@ public:
 			std::auto_ptr< network_utils::CSerialLoader > loader( new network_utils::CSerialLoader( string_data ) );
 			this->BitSerialize( loader.get() );
 		}
-		
+
 	}
 
 	virtual void BitSerialize( network_utils::ISerializer* serializer )
@@ -197,7 +198,7 @@ public:
 		{
 			bitstream.Read( mData );
 		}
-		
+
 	}
 
 	Type mData;
@@ -216,7 +217,7 @@ public:
 	int GetType() const { return T_message_id; }
 
 	void InitForSending() { mData = mShouldBe; }
-	
+
 	virtual void BitSerialize( network_utils::ISerializer* serializer )
 	{
 		serializer->IO( mData );
@@ -247,7 +248,7 @@ public:
 	int GetType() const { return ID_TEST_FLOAT32; }
 
 	void InitForSending() { mData = mShouldBe; }
-	
+
 	virtual void BitSerialize( network_utils::ISerializer* serializer )
 	{
 		serializer->IO( mData );
@@ -291,7 +292,7 @@ public:
 			return new TestMessage_RakNet_type< types::uint16, TEST_VALUE_UINT16, ID_TEST_RAKNET_UINT16 >;
 		case ID_TEST_RAKNET_UINT32:
 			return new TestMessage_RakNet_type< types::uint32, TEST_VALUE_UINT32, ID_TEST_RAKNET_UINT32 >;
-			
+
 		case ID_TEST_INT32:
 			return new TestMessage_type< types::int32, TEST_VALUE_INT32, ID_TEST_INT32 >;
 		case ID_TEST_UINT8:
@@ -312,7 +313,7 @@ public:
 
 } // end of anonymous namespace
 
-class CTestPacketHandler 
+class CTestPacketHandler
 {
 public:
 
@@ -325,12 +326,12 @@ public:
 	}
 
 	void HandleTestPacket( RakNet::Packet* packet )
-	{	
+	{
 
 		RakNet::MessageID uc_message_id = packet->data[ 0 ];
 		RakNet::BitStream bsIn(packet->data,packet->length,false);
 		bsIn.IgnoreBytes(sizeof(RakNet::MessageID));
-	
+
 		test_assert( uc_message_id > ID_TEST_MESSAGE_1 &&
 			uc_message_id < ID_TEST_MESSAGE_LAST );
 
@@ -406,14 +407,14 @@ public:
 int RunTestServer( void* data_struct )
 {
 	MultiplayerData* m_data = static_cast< MultiplayerData* >( data_struct );
-	
+
 	RakNet::RakPeerInterface* peer = m_data->peer;
 	bool isServer = m_data->is_server;
 	RakNet::Packet *packet = NULL;
 	CTestPacketHandler mPacketHandler( isServer, peer );
 
 	// CTestPacketHandler	mPacketHandler( isServer, peer );
-	
+
 	while( true )
 	{
 		/*if( IPacketHandler::mInstanceForGame )
@@ -453,7 +454,7 @@ int RunTestServer( void* data_struct )
 					*/
 
 					mPacketHandler.SendNextMessage();
-					
+
 
 					SDL_Delay( 5 );
 
@@ -476,10 +477,10 @@ int RunTestServer( void* data_struct )
 					TEST_LOG("Connection lost.\n");
 				}
 				break;
-				
+
 			case ID_GAME_MESSAGE_1:
 				break;
-			
+
 			default:
 				if( packet->data[0] > ID_GAME_MESSAGE_1 &&
 					packet->data[0] < ID_GAME_MESSAGE_LAST )
@@ -514,7 +515,7 @@ int RunTestServer( void* data_struct )
 
 int Test_StartServer( float update_freq, const MultiplayerData& m_data )
 {
-	
+
 	cassert( ID_USER_PACKET_ENUM == 113 );
 
 	MultiplayerData* server_data = new MultiplayerData;
@@ -522,7 +523,7 @@ int Test_StartServer( float update_freq, const MultiplayerData& m_data )
 	server_data->peer = m_data.peer;
 	server_data->is_server = true;
 
-	
+
 	SDL_CreateThread( &RunTestServer, (void*)server_data );
 
 	return 0;

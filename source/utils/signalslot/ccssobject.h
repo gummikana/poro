@@ -24,18 +24,20 @@
 // CCSSObject
 // ==========
 //
-// A way to serialize the signal / slots 
+// A way to serialize the signal / slots
 //
-// 
+//
 // Created 17.02.2006 by Pete
 //
 //=============================================================================
-// 
+//
 // 24.08.2006 Pete
 //		Fixed AddSlot to use a type specifier.
 //
 //.............................................................................
-#pragma warning( disable: 4503 )
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
 
 #ifndef INC_CCSSOBJECT_H
 #define INC_CCSSOBJECT_H
@@ -84,17 +86,17 @@ public:
 
 	std::pair< std::string, std::string > GetSlotName( CSlot* slot )
 	{
-		
+
 		if( slot && slot->GetGenericEventBase() )
 		{
 			CMapHelper< std::string, pair >::Iterator i;
-			
+
 			for( i = mySlotMap.Begin(); i != mySlotMap.End(); ++i )
 			{
 				CMapHelper< std::string, pair >::ListIterator j;
 				for( j = i->second.begin(); j != i->second.end(); j++ )
 				{
-					if( j->second->GetGenericEventBase() ) 
+					if( j->second->GetGenericEventBase() )
 					{
 						if( j->second->GetGenericEventBase()->CheckEvent( slot->GetGenericEventBase() ) )
 						{
@@ -125,23 +127,23 @@ class ICCSSObject : public CAutoList< ICCSSObject >
 {
 public:
 	CMyIncomingSignals cssIncomingSignals;
-	
-	ICCSSObject() 
-	{ 
+
+	ICCSSObject()
+	{
 	}
-	
-	virtual ~ICCSSObject() 
-	{ 
+
+	virtual ~ICCSSObject()
+	{
 	}
-	
+
 	static ICCSSObject* GetCCSSObject( const std::string& id )
 	{
 		std::list< ICCSSObject* >& list = CAutoList< ICCSSObject >::GetList();
 		std::list< ICCSSObject* >::iterator i;
-		
+
 		for( i = list.begin(); i != list.end(); ++i )
 		{
-			if( (*i)->CssGetId() == id ) 
+			if( (*i)->CssGetId() == id )
 				return ( *i );
 		}
 
@@ -199,12 +201,12 @@ public:
 	virtual CSlot*	CssCreateSlot( const std::string& name )
 	{
 		CSlot* parent = css::CCSSSlotFactory::GetSingletonPtr()->GetSlot( css::CSSObject< T >::GetSingletonPtr()->name, name );
-		
+
 		if( parent == NULL )
 			return NULL;
 
 		CSlot* result = new CSlot( parent );
-		
+
 		result->GetGenericEventBase()->SetPointer( this );
 		this->cssIncomingSignals.AddSignal( result );
 		result->SetRemoveSlot( &(this->cssIncomingSignals) );
@@ -230,12 +232,12 @@ public:
 
 #include <iostream>
 
-template< class T > 
+template< class T >
 class CCSSObjectHelper
 {
 public:
-	
-	CCSSObjectHelper( const std::string& object_name, const std::string& slot_name, CSlot* slot ) 
+
+	CCSSObjectHelper( const std::string& object_name, const std::string& slot_name, CSlot* slot )
 	{
 		css::CSSObject< T >::GetSingletonPtr()->name = object_name;
 		css::CSSObject< T >::GetSingletonPtr()->is_a_css_object = true;

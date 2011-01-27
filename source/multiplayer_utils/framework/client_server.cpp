@@ -26,7 +26,7 @@
 #include <cstring>
 #include <list>
 
-#include <sdl.h>
+#include <SDL.h>
 
 #include "../natpunch/raknet_natpunch.h"
 
@@ -84,7 +84,7 @@ public:
 
 	void*	GetUserData() { return mUserData; }
 	void	SetUserData( void* userdata ) { mUserData = userdata; }
-	
+
 	virtual void SendGameMessage( IGameMessage* message )
 	{
 		mMessageBufferMutex.Enter();
@@ -127,7 +127,7 @@ public:
 
 	types::uint8 PosAsTeam( int pos )
 	{
-		if( pos == 0 ) 
+		if( pos == 0 )
 			return TEAM_1;
 		if( pos == 1 )
 			return TEAM_2;
@@ -145,7 +145,7 @@ public:
 	{
 		std::cout << "ServerManager::NewConnection(): " << address.ToString() << std::endl;
 		PlayerAddress* result = new PlayerAddress;
-		
+
 		int pos = -1;
 
 		for( std::size_t i = 0; i < mPlayers.size(); ++i )
@@ -186,7 +186,7 @@ public:
 	{
 		for( std::size_t i = 0; i < mPlayers.size(); ++i )
 		{
-			if( mPlayers[ i ] && 
+			if( mPlayers[ i ] &&
 				mPlayers[ i ]->mAddress == address )
 			{
 				delete mPlayers[ i ];
@@ -212,7 +212,7 @@ public:
 	virtual IPacketHandler* GetBufferedPacketHandler( Uint32 wait_for );
 
 	void HandleGamePackets( RakNet::Packet* packet )
-	{	
+	{
 
 		cassert( mMessageFactory.get() );
 		cassert( packet );
@@ -220,7 +220,7 @@ public:
 
 		unsigned char uc_message_id = packet->data[ 0 ];
 		int message_id = (int)uc_message_id;
-		
+
 		std::auto_ptr< IGameMessage > message( mMessageFactory->GetNewMessage( message_id ) );
 		mCurrentPacketAddress = mServerManager.GetPlayerForAddress( packet->systemAddress );
 
@@ -228,7 +228,7 @@ public:
 		{
 			RakNet::BitStream bsIn(packet->data,packet->length,false);
 			bsIn.IgnoreBytes(sizeof(RakNet::MessageID));
-		
+
 			if( message->IsSerialized() )
 			{
 				int size = 0;
@@ -240,12 +240,12 @@ public:
 
 				static char packet_shit[16256];
 				bsIn.Read( packet_shit, size  );
-				
+
 				packet_shit[ size ] = '\0';
 				std::string string_data;
 				string_data.resize( size );
 				std::copy( packet_shit, packet_shit + size, string_data.begin() );
-				
+
 
 				std::auto_ptr< network_utils::CSerialLoader > loader( new network_utils::CSerialLoader( string_data ) );
 
@@ -316,7 +316,7 @@ public:
 	virtual PlayerAddress* GetCurrentPacketAddress() { return mParent->GetCurrentPacketAddress(); }
 
 
-	
+
 	void SetWaitTime( Uint32 t ) { mWaitTime = t; }
 
 	virtual void SendGameMessage( IGameMessage* message )
@@ -390,7 +390,7 @@ void UpdateStats()
 	static Uint32 last_time = SDL_GetTicks();
 	static int fps = 0;
 	Uint32 time_now = SDL_GetTicks();
-	
+
 	fps++;
 
 	if( ( time_now - last_time ) > 1000 )
@@ -409,7 +409,7 @@ void UpdateStats()
 int RunServer( void* data_struct )
 {
 	MultiplayerData* m_data = static_cast< MultiplayerData* >( data_struct );
-	
+
 	RakNet::RakPeerInterface* peer = m_data->peer;
 	bool isServer = m_data->is_server;
 	RakNet::Packet *packet = NULL;
@@ -418,10 +418,10 @@ int RunServer( void* data_struct )
 	CPacketHandler	mPacketHandler( isServer, peer, m_data->message_factory );
 	mPacketHandler.SetUserData( userdata );
 
-	
+
 	SampleFramework* nat_framework = NULL;
-	
-	
+
+
 	if( m_data->run_natpunchthrough )
 	{
 		nat_framework = new NatPunchthoughClientFramework( isServer );
@@ -494,10 +494,10 @@ int RunServer( void* data_struct )
 					CGameMsg_SetTeam* set_team = new CGameMsg_SetTeam( team );
 					mPacketHandler.SendGameMessage( set_team );
 
-					// creating a factory unit for the team that 
+					// creating a factory unit for the team that
 					std::vector< types::shippart > new_parts = game->CreateBaseForTeam( team );
 					std::vector< types::resource > new_resources = game->CreateResourcesForTeam( team );
-					
+
 					// types::shippart factory_part = game->GetFactoryFor( team );
 
 					// and send that unit to everyone
@@ -540,8 +540,8 @@ int RunServer( void* data_struct )
 					printf("Connection lost.\n");
 				}
 				// break;
-				
-		
+
+
 			default:
 				mPacketHandler.HandleGamePackets( packet );
 				/*
@@ -554,7 +554,7 @@ int RunServer( void* data_struct )
 					{
 						CGameMsg_SendMeEverything* message = new CGameMsg_SendMeEverything;
 						mPacketHandler.SendGameMessage( message );
-				
+
 					}
 
 				}
@@ -580,7 +580,7 @@ int RunServer( void* data_struct )
 /*int StartDirectoryServer()
 {
 	SDL_CreateThread( &RunDirectoryServer );
-	
+
 	return 0;
 }*/
 

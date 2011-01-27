@@ -22,7 +22,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 //	CXmlNode is a datastructure which reprisents a xml file. Each node can have
-//	a x number of childer. Each of these child can have x number children and 
+//	a x number of childer. Each of these child can have x number children and
 //	so on and so on. Each Node also has attributes and some content. Not all
 //	ofcourse but basicly each node can have attributes and some content.
 //
@@ -40,13 +40,15 @@
 //		Added the HasAttribute( string ) method
 //
 // 08.02.2005 Pete
-//		Implented the Escape Characters in xml. They where put in the 
+//		Implented the Escape Characters in xml. They where put in the
 //		SetContent method. Also a static variable called myReplaceEscapeChars;
-//		was added so you can toggle the option of replacing the escape 
+//		was added so you can toggle the option of replacing the escape
 //		characters with that variable
 //
 //=============================================================================
-#pragma warning ( disable : 4786 )
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
 
 #ifndef INC_CXMLNODE_H
 #define INC_CXMLNODE_H
@@ -57,7 +59,7 @@
 
 namespace ceng {
 
-class CXmlNode;	
+class CXmlNode;
 class CXmlNodeManager
 {
 public:

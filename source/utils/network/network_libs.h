@@ -22,7 +22,8 @@
 #ifndef INC_NETWORK_LIBS_H
 #define INC_NETWORK_LIBS_H
 
-#include <sdl.h>
+//#include <sdl.h>
+#include <SDL/SDL.h>
 // used for mutex
 
 #include <string>
@@ -34,7 +35,7 @@
 
 #define NETWORK_USE_VECTOR2
 
-namespace network_utils { 
+namespace network_utils {
 
 typedef signed char		int8;
 typedef signed short	int16;

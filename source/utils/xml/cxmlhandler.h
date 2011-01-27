@@ -34,7 +34,9 @@
 //.............................................................................
 //
 //=============================================================================
-#pragma warning ( disable : 4786 )
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
 
 #ifndef INC_CXMLHANDLER_H
 #define INC_CXMLHANDLER_H

@@ -25,21 +25,21 @@
 //
 // 23.02.2005 Pete
 //		Moved the non-template functions to their own .cpp file for the fucking
-//		fact that it seemed to break the linker, if they where defined in the 
+//		fact that it seemed to break the linker, if they where defined in the
 //		header.
 //
 // 20.02.2005 Pete
 //		Added support for char and unsigned char
 //
 // 14.02.2005 Pete
-//		Added the support for stl containers vector and list. Could have added 
-//		the support for map if we where not using VC6.0. 
+//		Added the support for stl containers vector and list. Could have added
+//		the support for map if we where not using VC6.0.
 //		The XmlSerializeToContainer and the XmlSerializeFromContainer methods
 //		where added.
 //
 // 13.02.2005 Pete
-//		Added the XmlSerializeTo() and XmlSerializeFrom() methods to help 
-//		couping with classes we don't have access to or the ability to go 
+//		Added the XmlSerializeTo() and XmlSerializeFrom() methods to help
+//		couping with classes we don't have access to or the ability to go
 //		adding methods.
 //
 // 01.10.2004 Pete
@@ -47,7 +47,9 @@
 //		to CXmlNode
 //
 //=============================================================================
-#pragma warning(disable:4786)  
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
 
 #ifndef INC_CXMLCAST_H
 #define INC_CXMLCAST_H
@@ -68,10 +70,10 @@ namespace ceng {
 // so I added #include and commented followin line - Jani Hast/9.6.2009
 //class CXmlFileSys;
 
-//! Used to convert cxmlfilesys to a stl container 
+//! Used to convert cxmlfilesys to a stl container
 //! ( using the insert( to.end(), element ) conversion )
 /*!
-	This adds new elements by the of the name as many as there are in the stl 
+	This adds new elements by the of the name as many as there are in the stl
 	container.
 
 */
@@ -84,7 +86,7 @@ void XmlSerializeToContainer( CXmlFileSys* from, std::vector< T >& to, const std
 	int i = 0;
 	for( i = 0; i < node->GetChildCount(); i++ )
 	{
-		if( node->GetChild( i )->GetName() == name ) 
+		if( node->GetChild( i )->GetName() == name )
 		{
 			XmlConvertTo( node->GetChild( i ), tmp );
 
@@ -102,7 +104,7 @@ void XmlSerializeToContainer( CXmlFileSys* from, std::list< T >& to, const std::
 	int i = 0;
 	for( i = 0; i < node->GetChildCount(); i++ )
 	{
-		if( node->GetChild( i )->GetName() == name ) 
+		if( node->GetChild( i )->GetName() == name )
 		{
 			XmlConvertTo( node->GetChild( i ), tmp );
 
@@ -145,7 +147,7 @@ template< class T >
 void XmlSerializeFrom( CXmlFileSys* to, T& from )
 {
 	if ( to == NULL ) return;
- 
+
 	from.Serialize( to );
 }
 
@@ -160,7 +162,7 @@ template< class T >
 void XmlConvertTo( CXmlNode* from, T* to )
 {
 	if ( from == NULL ) return;
-	
+
 	XmlConvertTo( from, *to );
 
 }
@@ -170,7 +172,7 @@ template< class T >
 void XmlConvertTo( CXmlNode* from, T& to )
 {
 	if ( from == NULL ) return;
-	
+
 	CXmlFileSys tmp_filesys( from, CXmlFileSys::reading );
 	// to.Serialize( &tmp_filesys );
 	XmlSerializeTo( &tmp_filesys, to );
@@ -226,8 +228,8 @@ CXmlNode* XmlConvertFrom( std::string& from, const std::string& name );
 
 //! Creates a CXmlNode from a mesh
 template< class T >
-CXmlNode* XmlConvertFrom( T& from, const std::string& name ) 
-{ 
+CXmlNode* XmlConvertFrom( T& from, const std::string& name )
+{
 	CXmlNode* return_node = CXmlNode::CreateNewNode();
 	return_node->SetName( name );
 	CXmlFileSys tmp_filesys( return_node, CXmlFileSys::writing );

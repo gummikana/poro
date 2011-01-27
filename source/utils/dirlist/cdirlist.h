@@ -35,14 +35,16 @@
 #define INC_CDIRLIST_H
 
 
-#pragma warning(disable:4786) // Poistaa ilkeet warningit mit‰ stl antaa jos k‰ytt‰‰ stringi‰
+#ifdef _MSC_VER
+#pragma warning ( disable : 4786 )
+#endif
 
 #include <string>
 #include <list>
 
 namespace ceng {
 // This is a class that will read files and directories from sertain path
-// 
+//
 class CDirList {
 
 public:
@@ -52,7 +54,7 @@ public:
 	~CDirList();
 
 	// This function will files and dirs. Input is basicly just a path.
-	// like c:/windows/*.dll this will read all files and dirs with .dll 
+	// like c:/windows/*.dll this will read all files and dirs with .dll
 	// extension in c:/windows folder
 	void			Read( std::string directory = "." );
 
@@ -67,26 +69,26 @@ public:
 
 	// This sets the iteration to the top of the list
 	std::string		Top();
-	
+
 
 	// Using these two funtions below ( next and end )
 	// you can read all the files from CDirList
-	// Works something like this: 
+	// Works something like this:
 	/*
 		CDirList dirlist(".");
 		while ( dirlist.End() != false )
 			cout << dirlist.Next() << endl;
 
 	*/
-	
 
-	// This returns the next file. 
+
+	// This returns the next file.
 	std::string		Next();
-	
+
 	// And this tells if we are at the end yet.
 	bool			End();
 
-	
+
 	// This returns the files a std::list < std::string > type
 	// thingie
 	std::list< std::string > GetTheList() { return myData; }
@@ -101,13 +103,13 @@ private:
 	// This clears the list
 	void			ClearData();
 
-	// This reads files and folders, it is used by 
+	// This reads files and folders, it is used by
 	// Read, ReadFiles, ReadDirs functions.
 	void			ReadDirsAndFiles( std::string directory, bool files );
-	
+
 	// This checks if the filename is valid, and pushes it then to the list
 	void			PushToList( std::string filename, std::string pattern, bool isdir = false );
-	
+
 	// This tells PushToList if a certain filename is valid.
 	// For example	IsValidFile( "CDirList.h", "*.*" )		returns true
 	// But			IsValidFile( "CDirList.h", "*.cpp" )	returns false
@@ -122,11 +124,11 @@ private:
 
 	// This converts a dos path ( c:\games\ ) to unix path type ( c:/games/ )
 	std::string		ConvertDosPath( std::string directory );
-	
+
 
 	// This is the list where the files are stored
 	std::list< std::string >			myData;
-	
+
 	// This is the iterator which keeps track where Next() is going
 	std::list< std::string >::iterator	myBrowser;
 	/*

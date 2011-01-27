@@ -33,14 +33,14 @@
 //
 // 06.09.2005 Pete
 //		Changed all the methods to support the template classes. I noticed that
-//		pretty much all the Rect structures and Point structures shared a 
+//		pretty much all the Rect structures and Point structures shared a
 //		internal structure ( x, y, w, h ) and ( x, y ). So I changed these into
-//		templated functions. This was done to support the templated Rect class 
+//		templated functions. This was done to support the templated Rect class
 //		and point class.
 //
 // 26.02.2005 Pete
 //		Added the is CRectIsInside( int x, int y ) method
-//	
+//
 // 26.01.2005 Pete
 //		Moved the CCoord to its own file
 //
@@ -54,9 +54,11 @@
 //		Added the CRectIsInside() and CRectBooleanConst() with list functions
 //		to the collection of rect functions. Also changed the documentation
 //		to doxygen style.
-//	
+//
 //=============================================================================
-#pragma warning ( disable : 4786)
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
 
 #ifndef INC_CRECT_FUNCTIONS_H
 #define INC_CRECT_FUNCTIONS_H
@@ -65,13 +67,15 @@
 #include <list>
 
 
-#pragma warning ( disable : 4786)
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
 
 #ifdef CENG_TEMPLATE_FUNCTION_PROTOTYPE
 namespace ceng {
 
 
-//! Creates a empty rect 
+//! Creates a empty rect
 template< class TRect >
 void	RectMakeEmpty( TRect& rect );
 
@@ -104,7 +108,7 @@ void RectClampInside( TRect& inside, const TRect& borders );
 template< class TRect >
 void RectKeepInside( TRect& inside, const TRect& borders );
 
-//! Makes a boolean operation for the first and second rect. uses the third if its neccisary. 
+//! Makes a boolean operation for the first and second rect. uses the third if its neccisary.
 /*!
 	 eeeee
 	 iooooo
@@ -130,12 +134,12 @@ void RectBooleanConst( const TRect& first, const TRect& second, std::vector< TRe
 template< class TRect >
 void RectBooleanConst( const TRect& first, const TRect& second, std::list< TRect >& left_overs );
 
-//! Finds cross points of two rects and pushes them in to the vector. Uses CRectFindCrossPointsLine() 
+//! Finds cross points of two rects and pushes them in to the vector. Uses CRectFindCrossPointsLine()
 //! for finding the crosspoints
 template< class TRect, class TPoint >
 void	RectFindCrossPoints( const TRect& first, const TRect& second, std::vector< TPoint >& points );
 
-/*! 
+/*!
 	Works only with straight lines. Used by CRectFindCrossPoints(),
 	and this is a quite delicate piece of coding, the first has to first.
 	Í mean it has to be with lower x and y values then the end. Doesn't

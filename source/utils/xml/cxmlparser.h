@@ -24,11 +24,11 @@
 //  CXmlParser
 //  ==========
 //
-//	CXmlParser is a parser which parses open a xml file can calls the 
-//  proprietary methods to the given handler. The handler is of type 
+//	CXmlParser is a parser which parses open a xml file can calls the
+//  proprietary methods to the given handler. The handler is of type
 //  CXmlHandler
 //
-//  
+//
 // Created 01.10.2004 by Pete
 //.............................................................................
 //
@@ -37,14 +37,16 @@
 //		method so now the ParseAttributes actually supporst multiple attributes
 //
 // 13.03.2005 Pete
-//		Fixed a bug in the ParseContentBuffer() method. It didn't take the 
+//		Fixed a bug in the ParseContentBuffer() method. It didn't take the
 //		whitespace remove in to account properly.
 //
 // 20.02.2005 Pete
 //		Fixed a bug in the ParseAttributes() method
 //
 //=============================================================================
-#pragma warning(disable:4786)  
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
 
 #ifndef INC_CXMLTESTPARSER_H
 #define INC_CXMLTESTPARSER_H
@@ -65,10 +67,10 @@ public:
 	};
 
 	//-------------------------------------------------------------------------
-	
-	CXmlParser() : 
-	  myRemoveWhiteSpace( true ), 
-	  myHandler( NULL ), 
+
+	CXmlParser() :
+	  myRemoveWhiteSpace( true ),
+	  myHandler( NULL ),
 	  myStatus( content ) { }
 
 	~CXmlParser() { }
@@ -94,13 +96,13 @@ private:
 	//-------------------------------------------------------------------------
 
 	bool			myRemoveWhiteSpace;
-	ParserStatus	myStatus;	
+	ParserStatus	myStatus;
 
 	CXmlHandler*	myHandler;
 
 	std::string		myContentBuffer;
 	std::string		myTagBuffer;
-	
+
 	std::map< std::string, CAnyContainer > myAttributeBuffer;
 
 	//-------------------------------------------------------------------------
