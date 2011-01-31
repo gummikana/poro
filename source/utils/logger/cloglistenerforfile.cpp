@@ -27,10 +27,12 @@
 #include <iomanip>
 #include <ctime>
 #include <assert.h>
+#include <iostream>
+
 
 // #include "../assert/cassert.h"
 
-namespace ceng { 
+namespace ceng {
 ///////////////////////////////////////////////////////////////////////////////
 
 #define CENG_CFG_COMPILER_STR "Unknown"
@@ -38,8 +40,8 @@ namespace ceng {
 #define CENG_CFG_HEADER_STR "Poro 1.0.0"
 
 // for use of the error logging / reportting
-const static std::string warning_prefix = "[WARNING]";
-const static std::string error_prefix = "[ERROR]";
+const static char* warning_prefix = "[WARNING]";
+const static char* error_prefix = "[ERROR]";
 
 
 class CLogListenerForFile::CLogListenerForFileImpl
@@ -51,7 +53,7 @@ public:
 	bool				myLogErrors;
 	int					myIndent;
 	std::string			myIndentString;
-	
+
 	std::vector< std::string >		myErrors;
 	std::map< int, std::string >	myPrefixes;
 
@@ -98,7 +100,7 @@ public:
 			time_t now;
 			now = time(NULL);
 			strftime(GTime,sizeof GTime,"%a,%b %d,%I:%M %p",localtime(&now));
-			
+
 			WriteLine( "--------------------------------------------------------------\n", CLog::LT_Normal );
 			WriteLine( std::string( "New log created on " ) + GTime + "\n", CLog::LT_Normal );
 			WriteLine( std::string( "Using " ) + myHeader + "\n", CLog::LT_Normal );
@@ -127,13 +129,13 @@ public:
 
 		if( type == CLog::LT_Function )
 			myIndent++;
-		
+
 		if( type == CLog::LT_Success )
 			myIndent--;
 
 		if( i == myPrefixes.end() )
 			return "";
-		
+
 		return i->second;
 	}
 
@@ -152,8 +154,8 @@ public:
 			GetPrefix( type );
 			return;
 		}
-		
-		std::ofstream		myLog; 
+
+		std::ofstream		myLog;
 		myLog.open( myFilename.c_str(), std::ios::app );
 
 		myLog << GetPrefix( type );
@@ -167,7 +169,7 @@ public:
 			std::string tmp_string;
 			for ( int i = 0; i < myIndent; i++ )
 				tmp_string.append( myIndentString );
-				
+
 			myLog << tmp_string;
 		}
 
@@ -176,13 +178,14 @@ public:
 		myLog.close();
 	}
 
-	
+
 	void AddToErrorBuffer( const std::string& line, int type )
 	{
 		if ( type == CLog::LT_Warning ||
-			 type == CLog::LT_Error ) 
+			 type == CLog::LT_Error )
 		{
-			std::string prefix = warning_prefix;
+
+            std::string prefix = warning_prefix;
 
 			if( type == CLog::LT_Warning )
 				prefix = warning_prefix;
@@ -192,15 +195,15 @@ public:
 			struct tm* timeinfo;
 			time_t rt;
 			time( &rt );
-			timeinfo = localtime( &rt );	
+			timeinfo = localtime( &rt );
 
 			std::ostringstream pushback;
-			
+
 			pushback.fill( '0' );
 			pushback << std::setw( 2 ) << timeinfo->tm_hour << ":"
 				<< std::setw( 2 ) << timeinfo->tm_min << ":"
 				<< std::setw( 2 ) << timeinfo->tm_sec << " " << prefix << " " << line;
-			
+
 			myErrors.push_back( pushback.str() );
 		}
 	}
@@ -212,7 +215,7 @@ public:
 		int Errors = 0;
 		int Warnings = 0;
 
-		std::ofstream		myLog; 
+		std::ofstream		myLog;
 		myLog.open( myFilename.c_str(), std::ios::app );
 
 		myLog << std::endl;
@@ -224,13 +227,13 @@ public:
 			if ( myErrors[i].find( warning_prefix ) != myErrors[i].npos ) Warnings++;
 			myLog << myErrors[i] << std::endl;
 		}
-		
+
 		myLog << std::endl;
 		myLog << CENG_CFG_HEADER_STR << " - " << Errors << " error(s), " << Warnings << " warning(s)" << std::endl;
 
 		myLog.close();
 	}
-	
+
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -259,7 +262,7 @@ CLogListenerForFile::~CLogListenerForFile()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-	
+
 void CLogListenerForFile::WriteLine( const std::string& line, int type )
 {
 	if( impl )
