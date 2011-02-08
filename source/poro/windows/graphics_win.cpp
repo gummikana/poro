@@ -769,54 +769,51 @@ void GraphicsWin::DrawLines( const std::vector< poro::types::vec2 >& vertices, c
 
 void GraphicsWin::DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color )
 {
-	//poro_logger << "DrawLines" << std::endl;
 	int vertCount = vertices.size();
-
+	
 	if(vertCount == 0)
 		return;
-
+	
 	//Internal rescale
 	float xPlatformScale, yPlatformScale;
-	if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight()){
+	if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight()){	
 		xPlatformScale = poro::IPlatform::Instance()->GetWidth() / (float)poro::IPlatform::Instance()->GetInternalWidth();
 		yPlatformScale = poro::IPlatform::Instance()->GetHeight() / (float)poro::IPlatform::Instance()->GetInternalHeight();
 	} else {
 		xPlatformScale = 1.f;
 		yPlatformScale = 1.f;
 	}
+	
+	const int max_buffer_size = 256;
+	static GLfloat glVertices[ max_buffer_size ];
 
-	//Consider static buffer size?
-	GLfloat *glVertices = new GLfloat[vertCount*2];
+	poro_assert( vertCount * 2 <= max_buffer_size );
+
 	int o = -1;
 	for(int i=0; i < vertCount; ++i){
 		glVertices[++o] = vertices[i].x*xPlatformScale;
 		glVertices[++o] = vertices[i].y*yPlatformScale;
 	}
-
-	//for(int i=0; i < vertCount*2; ++i){
-	//	poro_logger << ":" << glVertices[i] << std::endl;
-	//}
+	
+	/*glColor4f(color[0], color[1], color[2], color[3]);
+	glVertexPointer(2, GL_FLOAT , 0, glVertices);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glDrawArrays (GL_TRIANGLE_STRIP, 0, vertCount);
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glPopMatrix();*/
 
 	glColor4f(color[0], color[1], color[2], color[3]);
-	glLineWidth(2.0f);
 	glPushMatrix();
-	glVertexPointer(2, GL_FLOAT , 0, glVertices);
-	glDrawArrays (GL_LINE_STRIP, 0, vertCount);
-
-	/*
-	glBegin(GL_TRIANGLE_STRIP);
-	for( int i = 0; i < count; ++i )
-	{
-		glTexCoord2f(vertices[ i ].tx, vertices[ i ].ty );
-		glVertex2f(vertices[ i ].x, vertices[ i ].y );
-	}
-
-	glEnd();*/
-
-	//glDrawArrays (GL_TRIANGLE_FAN, 0, vertCount);
+		//glEnable(GL_POLYGON_SMOOTH);
+		//glEnable(GL_BLEND);
+		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glVertexPointer(2, GL_FLOAT , 0, glVertices);
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glDrawArrays (GL_TRIANGLE_STRIP, 0, vertCount);
+		glDisableClientState(GL_VERTEX_ARRAY);
+		//glDisable(GL_BLEND);
+		//glDisable(GL_POLYGON_SMOOTH);
 	glPopMatrix();
-
-	delete glVertices;
 }
 
 //=============================================================================
