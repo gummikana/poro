@@ -215,7 +215,7 @@ namespace {
 		texture = CreateTexture(data, width, height, pixelFormat);
 		
 		//The data buffer is not needed anymore
-		delete data;
+		delete [] data;
 		
 		
 		poro_logger << "File: " << filename << std::endl;
@@ -624,7 +624,7 @@ void GraphicsOpenGLES::DrawFill( const std::vector< poro::types::vec2 >& vertice
 	}
 	
 	//Consider static buffer size?
-	GLfloat *glVertices = new GLfloat[vertCount*2];
+	static GLfloat glVertices[256];
 	int o = -1;
 	for(int i=0; i < vertCount; ++i){
 		glVertices[++o] = vertices[i].x*xPlatformScale;
@@ -638,8 +638,6 @@ void GraphicsOpenGLES::DrawFill( const std::vector< poro::types::vec2 >& vertice
 	glDrawArrays (GL_TRIANGLE_STRIP, 0, vertCount);
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glPopMatrix();
-	
-	delete glVertices;
 	
 }
 	
