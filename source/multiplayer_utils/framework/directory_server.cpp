@@ -72,7 +72,7 @@ void UpdateServersList()
 		//80:Foo:192.168.1.8:1284635693
 		//TODO: Data validation. Or should we trust the phpDirectServer2 to dp it for us?
 		DataStructures::Table::Row* row = games->GetRowByIndex(i,NULL);
-		RakNet::SystemAddress address = RakNet::SystemAddress(row->cells[gameSystemAdressIndex]->c,row->cells[gamePortIndex]->i);
+		RakNet::SystemAddress address = RakNet::SystemAddress(row->cells[gameSystemAdressIndex]->c,(unsigned short)row->cells[gamePortIndex]->i);
 		RakNet::RakNetGUID guid;
 		if(!guid.FromString(row->cells[gameGUIDIndex]->c))
 			std::cout << "Invalid GUID: " << row->cells[gameGUIDIndex]->c << std::endl;
@@ -112,7 +112,7 @@ int RunDirectoryServer( void* _serverData )
 			phpDirectoryServer2->UploadTable("a", myServers[serverToUpload].name.c_str(), myServers[serverToUpload].address.port, false);
 
 			++serverToUpload;
-			if (serverToUpload>=myServers.size()) {
+			if (serverToUpload>= (int)myServers.size()) {
 				serverToUpload=0;
 				nextUpload=RakNet::GetTimeMS()+DIRECTORY_SERVER_UPLOAD_INTERVAL;
 			}
