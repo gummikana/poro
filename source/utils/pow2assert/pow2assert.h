@@ -75,7 +75,7 @@ namespace pow2 { namespace Assert
 							   const char* msg, ...);
 }}
 
-#if defined(PORO_PLAT_MAC) || defined(PORO_PLAT_IPHONE) || defined(PORO_PLAT_LINUX)
+#if defined(PORO_PLAT_MAC) || defined(PORO_PLAT_IPHONE) || defined(PORO_PLAT_LINUX) || defined(__GNUC__)
 	#define POW2_HALT() __builtin_trap()
 #else
 	#define POW2_HALT() __debugbreak()

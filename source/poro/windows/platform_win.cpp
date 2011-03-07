@@ -89,7 +89,7 @@ public:
 
 };
 */
-
+	int mFrameRateUpdateCounter;
 } // end o anonymous namespace
 
 const int PORO_WINDOWS_JOYSTICK_COUNT = 4;
@@ -122,12 +122,12 @@ void PlatformWin::Init(IApplication *application, int w, int h, bool fullscreen,
 
 	mRunning = true;
 	mFrameCount = 1;
+	mFrameRateUpdateCounter = 0;
 	mFrameRate = -1.0f;
 	mWidth = w;
 	mHeight = h;
 	mApplication = application;
-
-
+	
 	mGraphics = new GraphicsWin;
 	mGraphics->Init(w, h, fullscreen, title);
 
@@ -185,11 +185,12 @@ void PlatformWin::StartMainLoop() {
 
         // frame-rate check
         mFrameCount++;
+        mFrameRateUpdateCounter++;
         if( ( GetUpTime() - mFrameCountLastTime ) > 1000 )
         {
             mFrameCountLastTime = GetUpTime();
-            mFrameRate = (float)mFrameCount;
-            mFrameCount = 0;
+            mFrameRate = (float)mFrameRateUpdateCounter;
+            mFrameRateUpdateCounter = 0;
 
             // std::cout << "Fps: " << mFrameRate << std::endl;
         }
