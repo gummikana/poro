@@ -456,6 +456,8 @@ namespace {
 
 bool GraphicsWin::Init( int width, int height, bool fullscreen, const types::string& caption )
 {
+    mClearBackground=false;
+    
 	const SDL_VideoInfo *info = NULL;
     int bpp = 0;
     int flags = 0;
@@ -743,14 +745,14 @@ void GraphicsWin::DrawTextureWithAlpha(
 
 void GraphicsWin::BeginRendering()
 {
-	glClearColor( mFillColor[ 0 ],
-		mFillColor[ 1 ],
-		mFillColor[ 2 ],
-		mFillColor[ 3 ] );
+    if(mClearBackground){
+        glClearColor( mFillColor[ 0 ],
+            mFillColor[ 1 ],
+            mFillColor[ 2 ],
+            mFillColor[ 3 ] );
 
-	
-	//glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
+        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    }
 }
 
 void GraphicsWin::EndRendering()

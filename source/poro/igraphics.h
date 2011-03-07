@@ -38,8 +38,8 @@ class IGraphics
 public:
 	//-------------------------------------------------------------------------
 	
-	IGraphics() : mVertexMode(VERTEX_MODE_TRIANGLE_FAN) { 
-		mFillColor[0] = 0.f;mFillColor[1] = 0.f; mFillColor[2] = 0.f; mFillColor[3] = 1.f; 
+	IGraphics() : mVertexMode(VERTEX_MODE_TRIANGLE_FAN), mClearBackground(true) { 
+		mFillColor[0] = 0.f;mFillColor[1] = 0.f; mFillColor[2] = 0.f; mFillColor[3] = 1.f;
 	}
 
 	virtual ~IGraphics() { }
@@ -68,7 +68,8 @@ public:
 
 	virtual void		BeginRendering() = 0;
 	virtual void		EndRendering() = 0;
-
+    virtual void		SetClearBackground(bool clear) { mClearBackground=clear; }
+	
 	//-------------------------------------------------------------------------
 
 	enum {
@@ -107,6 +108,7 @@ public:
 	//-------------------------------------------------------------------------
 
 protected:
+    bool mClearBackground;
 	poro::types::fcolor mFillColor;
 	int mVertexMode;
 	std::stack<int> mVertexModes;
