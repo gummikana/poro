@@ -27,7 +27,9 @@
 #include "../poro_macros.h"
 #include "texture_win.h"
 
+#ifndef DONT_USE_GLEW
 #include "graphics_buffer_win.h"
+#endif
 
 #define PORO_ERROR "ERROR: "
 
@@ -110,6 +112,10 @@ namespace {
 		TextureWin* alpha_texture, Vertex* alpha_vertices, const types::fcolor& alpha_color,
 		Uint32 vertex_mode )
 	{
+#ifdef DONT_USE_GLEW
+		poro_logger << "Error: Glew isn't enable alpha masking, this means we can't do alpha masking. " << std::endl;
+		return;
+#else
 		// no glew on mac? We'll maybe we need graphics_mac!?
 		if(!GLEW_VERSION_1_3)
 		{
@@ -152,7 +158,9 @@ namespace {
 
 		glActiveTexture(GL_TEXTURE0);
 		glDisable(GL_TEXTURE_2D);
+#endif
 	}
+
 
 	//-------------------------------------------------------------------------
 
@@ -529,13 +537,14 @@ bool GraphicsWin::Init( int width, int height, bool fullscreen, const types::str
 	SetInternalSize( (types::Float32)screenwidth, (types::Float32)screenheight );
 
 	// no glew for mac? this might cause some problems
+#ifndef DONT_USE_GLEW
 	GLenum glew_err = glewInit();
 	if (GLEW_OK != glew_err)
 	{
 		/* Problem: glewInit failed, something is seriously wrong. */
 		poro_logger << "Error: " << glewGetErrorString(glew_err) << std::endl;
 	}
-
+#endif
 	return 1;
 }
 
@@ -823,13 +832,21 @@ void GraphicsWin::DrawFill( const std::vector< poro::types::vec2 >& vertices, co
 //=============================================================================
 
 IGraphicsBuffer* GraphicsWin::CreateGraphicsBuffer(int width, int height){
+#ifdef DONT_USE_GLEW
+	assert(false); //Buffer implementation needs glew.
+#else
 	GraphicsBufferWin* buffer = new GraphicsBufferWin();
 	buffer->Init(width, height);
 	return (IGraphicsBuffer*)buffer;
+#endif
 }
 
 void GraphicsWin::DestroyGraphicsBuffer(IGraphicsBuffer* buffer){
+#ifdef DONT_USE_GLEW
+	assert(false); //Buffer implementation needs glew.
+#else
 	delete buffer;
+#endif
 }
 
 //=============================================================================
