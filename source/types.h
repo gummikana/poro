@@ -18,8 +18,6 @@
 #include "utils/bitmask/cbitmask_math.h"
 
 
-// #define cassert assert
-
 namespace types {
 
 //-----------------------------------------------------------------------------
