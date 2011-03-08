@@ -54,12 +54,5 @@ typedef ceng::ICamera< vector2 >		camera;
 
 } // end
 
-namespace config
-{
-	const float screen_w = 1280;
-	const float screen_h = 720;
-	const float target_fps = 31.f;
-}
-
 
 #endif
