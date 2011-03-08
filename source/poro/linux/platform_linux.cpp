@@ -235,7 +235,15 @@ void PlatformLinux::HandleEvents() {
 					mMouse->FireMouseMoveEvent( mMousePos );
 				}
 				break;
-		}
+            #ifndef NDEBUG
+            case SDL_VIDEORESIZE:
+                {
+                    mGraphics->SetWindowSize(event.resize.w,event.resize.h);
+                }
+            #endif
+            break;
+        }
+		
 	}
 }
 

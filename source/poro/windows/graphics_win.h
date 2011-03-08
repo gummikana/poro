@@ -36,8 +36,9 @@ public:
 
 	virtual bool		Init( int width, int height, bool fullscreen, const types::string& caption );
 	virtual void		SetInternalSize( types::Float32 width, types::Float32 height );
-
-
+    virtual void        SetWindowSize(int width, int height);
+    virtual void        SetFullscreen(bool fullscreen);
+    
 	virtual ITexture*	CreateTexture( int width, int height );
 	virtual ITexture*	CloneTexture( ITexture* other );
 	virtual void		SetTextureData(ITexture* texture, void* data );
@@ -80,8 +81,13 @@ public:
 	virtual void DestroyGraphicsBuffer(IGraphicsBuffer* buffer);
 	
 private:
-    bool mClearBackground;
-
+    void    ResetWindow();
+    
+    bool    mClearBackground;
+    bool    mFullscreen;
+    int     mWindowWidth;
+    int     mWindowHeight;
+   
 };
 
 } // end o namespace poro
