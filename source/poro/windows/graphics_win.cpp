@@ -456,7 +456,7 @@ namespace {
 
 bool GraphicsWin::Init( int width, int height, bool fullscreen, const types::string& caption )
 {
-    mClearBackground=false;
+    mClearBackground = true;
     
 	const SDL_VideoInfo *info = NULL;
     int bpp = 0;
@@ -768,7 +768,7 @@ void GraphicsWin::DrawLines( const std::vector< poro::types::vec2 >& vertices, c
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glColor4f( color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
-	glBegin(GL_LINE_LOOP);
+	glBegin(GL_LINE_STRIP);
 	for( std::size_t i = 0; i < vertices.size(); ++i )
 	{
 		glVertex2f(vertices[i].x, vertices[i].y);
