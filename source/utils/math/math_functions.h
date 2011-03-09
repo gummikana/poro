@@ -140,7 +140,39 @@ inline Type ConvertAngleToRad( const Type& angle )
 	return angle * ( pi / 180.0f  );
 }
 
+//=============================================================================
 
+template< typename Type >
+inline float Distance( const Type& vector1, const Type& vector2 )
+{
+	static Type d;
+	d.x = vector1.x - vector2.x;
+	d.y = vector2.x - vector2.y;
+
+	return sqrtf( (float)( d.x * d.x + d.y * d.y ) );
+}
+
+template< typename Type >
+inline float Distance( const Type& vector1 )
+{
+	return sqrtf( (float)( vector1.x * vector1.x + vector1.y * vector1.y ) );
+}
+
+template< typename Type >
+inline float DistanceSquared( const Type& vector1, const Type& vector2 )
+{
+	static Type d;
+	d.x = vector1.x - vector2.x;
+	d.y = vector2.x - vector2.y;
+
+	return (float)( d.x * d.x + d.y * d.y );
+}
+
+template< typename Type >
+inline float DistanceSquared( const Type& vector1 )
+{
+	return (float)( vector1.x * vector1.x + vector1.y * vector1.y );
+}
 
 //=============================================================================
 
