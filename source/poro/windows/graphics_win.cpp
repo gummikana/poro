@@ -483,9 +483,8 @@ bool GraphicsWin::Init( int width, int height, bool fullscreen, const types::str
     mDesktopWidth = info->current_w;
 	mDesktopHeight = info->current_h;
 	
-	ResetWindow();
-
-    SetInternalSize( (types::Float32)width, (types::Float32)height );
+	IPlatform::Instance()->SetInternalSize( (types::Float32)width, (types::Float32)height );
+    ResetWindow();
 
     SDL_WM_SetCaption( caption.c_str(), NULL);
 	
@@ -506,7 +505,7 @@ void GraphicsWin::SetInternalSize( types::Float32 width, types::Float32 height )
     //glMatrixMode( GL_PROJECTION );
     //glLoadIdentity();
 	//gluOrtho2D(0, (GLdouble)width, (GLdouble)height, 0);
-	ResetWindow();
+	//ResetWindow();
 }
 
 void GraphicsWin::SetWindowSize(int window_width, int window_height)
