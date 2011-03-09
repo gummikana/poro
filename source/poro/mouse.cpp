@@ -37,7 +37,7 @@ void Mouse::RemoveMouseListener(IMouseListener *listener)
 	
 	std::vector< IMouseListener* >::iterator i = std::find(mMouseListeners.begin(),mMouseListeners.end(),listener);
 
-	poro_assert( i != mMouseListeners.end() );
+	// poro_assert( i != mMouseListeners.end() );
 
 	if( i != mMouseListeners.end() )
 		mMouseListeners.erase( i );
