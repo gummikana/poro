@@ -502,10 +502,9 @@ bool GraphicsWin::Init( int width, int height, bool fullscreen, const types::str
 
 void GraphicsWin::SetInternalSize( types::Float32 width, types::Float32 height )
 {
-    //glMatrixMode( GL_PROJECTION );
-    //glLoadIdentity();
-	//gluOrtho2D(0, (GLdouble)width, (GLdouble)height, 0);
-	//ResetWindow();
+    glMatrixMode( GL_PROJECTION );
+    glLoadIdentity();
+	gluOrtho2D(0, (GLdouble)width, (GLdouble)height, 0);
 }
 
 void GraphicsWin::SetWindowSize(int window_width, int window_height)
@@ -811,6 +810,10 @@ void GraphicsWin::EndRendering()
 
 void GraphicsWin::DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color )
 {
+	//float xPlatformScale, yPlatformScale;
+	//xPlatformScale = (float)mViewportSize.x / (float)poro::IPlatform::Instance()->GetInternalWidth();
+	//yPlatformScale = (float)mViewportSize.y / (float)poro::IPlatform::Instance()->GetInternalHeight();
+	
 	glEnable(GL_BLEND);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -836,13 +839,8 @@ void GraphicsWin::DrawFill( const std::vector< poro::types::vec2 >& vertices, co
 	
 	//Internal rescale
 	float xPlatformScale, yPlatformScale;
-	if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight()){	
-		xPlatformScale = poro::IPlatform::Instance()->GetWidth() / (float)poro::IPlatform::Instance()->GetInternalWidth();
-		yPlatformScale = poro::IPlatform::Instance()->GetHeight() / (float)poro::IPlatform::Instance()->GetInternalHeight();
-	} else {
-		xPlatformScale = 1.f;
-		yPlatformScale = 1.f;
-	}
+	xPlatformScale = (float)mViewportSize.x / (float)poro::IPlatform::Instance()->GetInternalWidth();
+	yPlatformScale = (float)mViewportSize.y / (float)poro::IPlatform::Instance()->GetInternalHeight();
 	
 	const int max_buffer_size = 256;
 	static GLfloat glVertices[ max_buffer_size ];
@@ -880,7 +878,7 @@ void GraphicsWin::DrawFill( const std::vector< poro::types::vec2 >& vertices, co
 
 types::vec2	GraphicsWin::ConvertToInternalPos( int x, int y ) {
 	types::vec2 result( (types::Float32)x, (types::Float32)y );
-    
+
 	result.x -= mViewportOffset.x;
 	result.y -= mViewportOffset.y;
 	
@@ -893,9 +891,12 @@ types::vec2	GraphicsWin::ConvertToInternalPos( int x, int y ) {
         result.x=mViewportSize.x-1;
     if(result.y>mViewportSize.y-1)
         result.y=mViewportSize.y-1;
+
+    float internal_w = IPlatform::Instance()->GetInternalWidth();
+    float internal_h = IPlatform::Instance()->GetInternalHeight();
     
-	result.x *= IPlatform::Instance()->GetInternalWidth() / (types::Float32)mViewportSize.x;
-	result.y *= IPlatform::Instance()->GetInternalHeight() / (types::Float32)mViewportSize.y;
+	result.x *= internal_w / (types::Float32)mViewportSize.x;
+	result.y *= internal_h / (types::Float32)mViewportSize.y;
     
 	return result;
 }
