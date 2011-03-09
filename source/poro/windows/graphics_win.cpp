@@ -480,8 +480,8 @@ bool GraphicsWin::Init( int width, int height, bool fullscreen, const types::str
         SDL_Quit();
         exit(0);
     }
-    mDesktopWidth = info->current_w;
-	mDesktopHeight = info->current_h;
+    mDesktopWidth = (float)info->current_w;
+	mDesktopHeight = (float)info->current_h;
 	
 	ResetWindow();
 
@@ -547,8 +547,8 @@ void GraphicsWin::ResetWindow(){
         
 		if( mFullscreen ){
 			flags |= SDL_FULLSCREEN;
-			window_width = mDesktopWidth;
-			window_height = mDesktopHeight;
+			window_width = (int)mDesktopWidth;
+			window_height = (int)mDesktopHeight;
     	} else {
     		window_width = mWindowWidth;
 			window_height = mWindowHeight;
@@ -577,8 +577,8 @@ void GraphicsWin::ResetWindow(){
         float internal_height = IPlatform::Instance()->GetInternalHeight();
         float screen_aspect = (float)window_width/(float)window_height;
         float internal_aspect = (float)internal_width/(float)internal_height;
-        float width = window_width;
-        float height = window_height;
+        float width = (float)window_width;
+        float height = (float)window_height;
         float offset_w = 0;
         float offset_h = 0;
         if(screen_aspect>internal_aspect){
@@ -595,8 +595,8 @@ void GraphicsWin::ResetWindow(){
         glLoadIdentity();
         glEnable(GL_SCISSOR_TEST);
         //(OpenGL actually wants the x offset from the bottom, but since we are centering the view the direction does not matter.)
-	    glScissor(offset_w, offset_h, width, height);
-        glViewport(offset_w, offset_h, width, height);
+	    glScissor((GLint)offset_w, (GLint)offset_h, (GLint)width, (GLint)height);
+        glViewport((GLint)offset_w, (GLint)offset_h, (GLint)width, (GLint)height);
         glScalef(1,-1,1); //Flip y axis
         gluOrtho2D(0, internal_width, 0, internal_height);
         
