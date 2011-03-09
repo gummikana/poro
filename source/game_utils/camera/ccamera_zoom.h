@@ -42,18 +42,8 @@ public:
 	typedef ceng::math::CMat22< float >	Matrix22;
 	typedef types::camera::Vec2			Vector2;
 
-	CCameraTransformer() :
-		myRotation( 0 ),
-		myRotationMatrix( 0 ),
-		myScale( 1.0f, 1.0f ),
-		myCenterPoint( config::screen_w * 0.5f, config::screen_h * 0.5f ),
-		myCameraOffset( config::screen_w * 0.5f, config::screen_h * 0.5f )
-	{ 
-		myScale.x = 1.0f;		
-		myScale.y = 1.0f;
-		// SetAngle( 1.5f );
-	}
-
+	CCameraTransformer();
+	
 	virtual ~CCameraTransformer() { }
 
 	bool IsNull() const { return false; }
@@ -174,7 +164,7 @@ public:
 	float			myRotation;
 	Matrix22		myRotationMatrix;
 	Vector2			myScale;
-	const Vector2	myCenterPoint;
+	Vector2         myCenterPoint;
 	Vector2			myCameraOffset;
 };
 

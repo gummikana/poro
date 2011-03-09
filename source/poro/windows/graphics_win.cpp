@@ -450,19 +450,21 @@ namespace {
 		//texData.bFlipTexture = false;
 	}
 
+	float mDesktopWidth;
+	float mDesktopHeight;
+	
 } // end o namespace anon
 
 
 
 bool GraphicsWin::Init( int width, int height, bool fullscreen, const types::string& caption )
 {
-    mClearBackground = true;
+    mClearBackground=true;
+    mFullscreen=fullscreen;
+    mWindowWidth=width;
+    mWindowHeight=height;
     
 	const SDL_VideoInfo *info = NULL;
-    int bpp = 0;
-    int flags = 0;
-	float screenwidth = 0;
-	float screenheight = 0;
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE) < 0)
     {
@@ -472,70 +474,21 @@ bool GraphicsWin::Init( int width, int height, bool fullscreen, const types::str
     }
 
     info = SDL_GetVideoInfo();
-
-    if (!info)
+	if (!info)
     {
 		poro_logger << PORO_ERROR << "Video query failed: "<< SDL_GetError() << std::endl;
         SDL_Quit();
         exit(0);
     }
+    mDesktopWidth = info->current_w;
+	mDesktopHeight = info->current_h;
+	
+	ResetWindow();
 
-
-    {
-        screenwidth = float(width);
-        screenheight = float(height);
-        bpp = info->vfmt->BitsPerPixel;
-        flags = SDL_OPENGL;
-		if( fullscreen )
-			flags |= SDL_FULLSCREEN;
-    }
-
-#ifdef _DEBUG
-	flags |= SDL_RESIZABLE;
-#endif
-
-    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
-    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
-    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
-    if (SDL_SetVideoMode((int)screenwidth, (int)screenheight, bpp, flags) == 0)
-    {
-        fprintf( stderr, "Video mode set failed: %s\n", SDL_GetError());
-        SDL_Quit();
-        return 0;
-    }
+    SetInternalSize( (types::Float32)width, (types::Float32)height );
 
     SDL_WM_SetCaption( caption.c_str(), NULL);
-
-
-	if( true )
-	{
-		glViewport( (GLint)( 0 ), 0, (GLsizei)screenwidth, (GLsizei)screenheight );
-	}
-	else
-	{
-		float aspect = 480.0f/320.0f;
-		aspect = screenheight / screenwidth;
-		if (screenheight / screenwidth > aspect )
-		{
-			float realx = screenheight * aspect;
-			float extrax = screenwidth - realx;
-
-			glViewport( (GLint)( extrax / 2 ), 0, (GLsizei)realx, (GLsizei)screenheight );
-		}
-		else
-		{
-			float realy = screenwidth / aspect;
-			float extray = screenheight - realy;
-
-			glViewport( 0, (GLint)( extray / 2 ), (GLsizei)screenwidth, (GLsizei)realy );
-		}
-	}
-
-	SetInternalSize( (types::Float32)screenwidth, (types::Float32)screenheight );
-
+	
 	// no glew for mac? this might cause some problems
 #ifndef DONT_USE_GLEW
 	GLenum glew_err = glewInit();
@@ -550,10 +503,108 @@ bool GraphicsWin::Init( int width, int height, bool fullscreen, const types::str
 
 void GraphicsWin::SetInternalSize( types::Float32 width, types::Float32 height )
 {
-    glMatrixMode( GL_PROJECTION );
-    glLoadIdentity();
-	gluOrtho2D(0, (GLdouble)width, (GLdouble)height, 0);
+    //glMatrixMode( GL_PROJECTION );
+    //glLoadIdentity();
+	//gluOrtho2D(0, (GLdouble)width, (GLdouble)height, 0);
+	ResetWindow();
 }
+
+void GraphicsWin::SetWindowSize(int window_width, int window_height)
+{
+    if( mWindowWidth!=window_width || mWindowHeight!=window_height ){
+        mWindowWidth = window_width;
+        mWindowHeight = window_height;
+        ResetWindow();
+    }
+}
+
+void GraphicsWin::SetFullscreen(bool fullscreen){
+    if( mFullscreen!=fullscreen ){
+        mFullscreen = fullscreen;
+        ResetWindow();
+    }
+}
+
+void GraphicsWin::ResetWindow(){
+    
+	const SDL_VideoInfo *info = NULL;
+    int bpp = 0;
+    int flags = 0;
+    int window_width;
+	int window_height;
+	
+    info = SDL_GetVideoInfo();
+	if (!info)
+    {
+		poro_logger << PORO_ERROR << "Video query failed: "<< SDL_GetError() << std::endl;
+        SDL_Quit();
+        exit(0);
+    }
+    
+    {
+        bpp = info->vfmt->BitsPerPixel;
+        flags = SDL_OPENGL;
+        
+		if( mFullscreen ){
+			flags |= SDL_FULLSCREEN;
+			window_width = mDesktopWidth;
+			window_height = mDesktopHeight;
+    	} else {
+    		window_width = mWindowWidth;
+			window_height = mWindowHeight;
+    	    
+        //#ifdef _DEBUG
+            flags |= SDL_RESIZABLE;
+        //#endif
+    	}
+    }
+
+    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
+    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
+    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+    if (SDL_SetVideoMode((int)window_width, (int)window_height, bpp, flags) == 0)
+    {
+        fprintf( stderr, "Video mode set failed: %s\n", SDL_GetError());
+        SDL_Quit();
+        return;
+    }
+    
+    { //OpenGL view setup
+        float internal_width = IPlatform::Instance()->GetInternalWidth();
+        float internal_height = IPlatform::Instance()->GetInternalHeight();
+        float screen_aspect = (float)window_width/(float)window_height;
+        float internal_aspect = (float)internal_width/(float)internal_height;
+        float width = window_width;
+        float height = window_height;
+        float offset_w = 0;
+        float offset_h = 0;
+        if(screen_aspect>internal_aspect){
+            //Widescreen, Black borders on left and right
+            width = window_height*internal_aspect;
+            offset_w = (window_width-width)*0.5f;
+        } else {
+            //Tallscreen, Black borders on top and bottom
+            height = window_width/internal_aspect;
+            offset_h = (window_height-height)*0.5f;
+        }
+        
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glEnable(GL_SCISSOR_TEST);
+        //(OpenGL actually wants the x offset from the bottom, but since we are centering the view the direction does not matter.)
+	    glScissor(offset_w, offset_h, width, height);
+        glViewport(offset_w, offset_h, width, height);
+        glScalef(1,-1,1); //Flip y axis
+        gluOrtho2D(0, internal_width, 0, internal_height);
+        
+        //impl::CGlobalOpenGL::GetSingletonPtr()->opengl_coordinates->SetExternalCoordinates( width, height );
+        //impl::CGlobalOpenGL::GetSingletonPtr()->opengl_coordinates->SetOffset( offset_w, offset_h );
+    }
+}
+
 
 //=============================================================================
 

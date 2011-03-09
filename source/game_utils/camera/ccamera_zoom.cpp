@@ -21,12 +21,7 @@
 
 #include "ccamera_zoom.h"
 #include "../../utils/random/random.h"
-
-namespace config
-{
-	const float screen_width = config::screen_w;
-	const float screen_height = config::screen_h;
-}
+#include "poro/iplatform.h"
 
 //-----------------------------------------------------------------------------
 
@@ -34,7 +29,6 @@ CCameraZoom::CCameraZoom() :
 	mMinZoom( 0.63f ),
 	mMaxZoom( 7.f ),
 	mTargetScale( 1.f ),
-	mTargetOffset( config::screen_w * 0.5f, config::screen_h * 0.5f ),
 	mCanWeZoomCloser( false ),
 	mCanWeMoveOffset( false ),
 	mCanWeChangeScale( false ),
@@ -44,8 +38,13 @@ CCameraZoom::CCameraZoom() :
 	mCameraShakeAmount( 0 ),
 	mCameraRealRotation( 0 )
 { 
-	mCameraOffsetMin.Set( config::screen_w * 0.5f - 5, config::screen_h * 0.5f - 430 );
-	mCameraOffsetMax.Set( config::screen_w * 0.5f + 5, config::screen_h * 0.5f );
+    float width = poro::IPlatform::Instance()->GetInternalWidth();
+    float height = poro::IPlatform::Instance()->GetInternalHeight();
+    
+    mTargetOffset.Set( width * 0.5f, height * 0.5f ),
+	
+	mCameraOffsetMin.Set( width * 0.5f - 5, height * 0.5f - 430 );
+	mCameraOffsetMax.Set( width * 0.5f + 5, height * 0.5f );
 
 	mCanWeChangeScale = true; 
 	mCanWeZoomCloser = true;
@@ -108,7 +107,10 @@ void CCameraZoom::SetTargetScale( float scale ) {
 		mTargetScale = scale;
 
 	if( mUseCameraClampRect == true && scale!=0 ){
-		float min_scale = ceng::math::Max( config::screen_width/mCameraClampRect.w, config::screen_height/mCameraClampRect.h );
+	    float width = poro::IPlatform::Instance()->GetInternalWidth();
+        float height = poro::IPlatform::Instance()->GetInternalHeight();
+        
+		float min_scale = ceng::math::Max( width/mCameraClampRect.w, height/mCameraClampRect.h );
 		mTargetScale = ceng::math::Max( mTargetScale, min_scale );
 	}
 }
@@ -134,8 +136,11 @@ types::vector2 CCameraZoom::ClampOffsetToRect( const types::vector2& offset, con
 	if( scale == 0 )
 		return offset;
 
-	float half_screen_w = ( config::screen_width * 0.5f ) / scale;
-	float half_screen_h = ( config::screen_height * 0.5f ) / scale;
+    float width = poro::IPlatform::Instance()->GetInternalWidth();
+    float height = poro::IPlatform::Instance()->GetInternalHeight();
+        
+	float half_screen_w = ( width * 0.5f ) / scale;
+	float half_screen_h = ( height * 0.5f ) / scale;
 
 	types::vector2 result( offset );
 	
@@ -265,6 +270,23 @@ void CCameraZoom::DoCameraShake( float time, float shakeness )
 }
 
 //-----------------------------------------------------------------------------
+
+CCameraTransformer::CCameraTransformer() :
+		myRotation( 0 ),
+		myRotationMatrix( 0 ),
+		myScale( 1.0f, 1.0f )
+{ 
+    float width = poro::IPlatform::Instance()->GetInternalWidth();
+    float height = poro::IPlatform::Instance()->GetInternalHeight();
+
+    myCenterPoint.Set( width * 0.5f, height * 0.5f );
+    myCameraOffset.Set( width * 0.5f, height * 0.5f );
+
+    myScale.x = 1.0f;		
+    myScale.y = 1.0f;
+    // SetAngle( 1.5f );
+}
+
 
 float CCameraTransformer::GetFakePerpectiveScale( float y_position )
 {
