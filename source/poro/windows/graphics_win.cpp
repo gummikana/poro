@@ -576,31 +576,28 @@ void GraphicsWin::ResetWindow(){
         float internal_height = IPlatform::Instance()->GetInternalHeight();
         float screen_aspect = (float)window_width/(float)window_height;
         float internal_aspect = (float)internal_width/(float)internal_height;
-        float width = (float)window_width;
-        float height = (float)window_height;
-        float offset_w = 0;
-        float offset_h = 0;
+        mViewportSize.x = (float)window_width;
+        mViewportSize.y = (float)window_height;
+        mViewportOffset = types::vec2(0, 0);
         if(screen_aspect>internal_aspect){
             //Widescreen, Black borders on left and right
-            width = window_height*internal_aspect;
-            offset_w = (window_width-width)*0.5f;
+            mViewportSize.x = window_height*internal_aspect;
+            mViewportOffset.x = (window_width-mViewportSize.x)*0.5f;
         } else {
             //Tallscreen, Black borders on top and bottom
-            height = window_width/internal_aspect;
-            offset_h = (window_height-height)*0.5f;
+            mViewportSize.y = window_width/internal_aspect;
+            mViewportOffset.y = (window_height-mViewportSize.y)*0.5f;
         }
         
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         glEnable(GL_SCISSOR_TEST);
         //(OpenGL actually wants the x offset from the bottom, but since we are centering the view the direction does not matter.)
-	    glScissor((GLint)offset_w, (GLint)offset_h, (GLint)width, (GLint)height);
-        glViewport((GLint)offset_w, (GLint)offset_h, (GLint)width, (GLint)height);
+	    glScissor((GLint)mViewportOffset.x, (GLint)mViewportOffset.y, (GLint)mViewportSize.x, (GLint)mViewportSize.y);
+        glViewport((GLint)mViewportOffset.x, (GLint)mViewportOffset.y, (GLint)mViewportSize.x, (GLint)mViewportSize.y);
         glScalef(1,-1,1); //Flip y axis
         gluOrtho2D(0, internal_width, 0, internal_height);
         
-        //impl::CGlobalOpenGL::GetSingletonPtr()->opengl_coordinates->SetExternalCoordinates( width, height );
-        //impl::CGlobalOpenGL::GetSingletonPtr()->opengl_coordinates->SetOffset( offset_w, offset_h );
     }
 }
 
@@ -877,6 +874,30 @@ void GraphicsWin::DrawFill( const std::vector< poro::types::vec2 >& vertices, co
 		//glDisable(GL_BLEND);
 		//glDisable(GL_POLYGON_SMOOTH);
 	glPopMatrix();
+}
+
+//=============================================================================
+
+types::vec2	GraphicsWin::ConvertToInternalPos( int x, int y ) {
+	types::vec2 result( (types::Float32)x, (types::Float32)y );
+    
+	result.x -= mViewportOffset.x;
+	result.y -= mViewportOffset.y;
+	
+	//Clamp
+    if(result.x<0)
+        result.x=0;
+    if(result.y<0)
+        result.y=0;
+    if(result.x>mViewportSize.x-1)
+        result.x=mViewportSize.x-1;
+    if(result.y>mViewportSize.y-1)
+        result.y=mViewportSize.y-1;
+    
+	result.x *= IPlatform::Instance()->GetInternalWidth() / (types::Float32)mViewportSize.x;
+	result.y *= IPlatform::Instance()->GetInternalHeight() / (types::Float32)mViewportSize.y;
+    
+	return result;
 }
 
 //=============================================================================

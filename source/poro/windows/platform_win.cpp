@@ -340,23 +340,21 @@ void PlatformWin::HandleEvents() {
 			case SDL_MOUSEMOTION:
 				poro_assert( mMouse );
 				{
-					mMousePos = ConvertMouseToInternalSize( event.motion.x, event.motion.y );
+				    mMousePos = mGraphics->ConvertToInternalPos( event.motion.x, event.motion.y );
 					mMouse->FireMouseMoveEvent( mMousePos );
 				}
 				break;
 		}
 	}
 }
-//-----------------------------------------------------------------------------
 
-types::vec2	PlatformWin::ConvertMouseToInternalSize( int x, int y ) {
-	types::vec2 result( (types::Float32)x, (types::Float32)y );
-
-	result.x *= GetInternalWidth() / (types::Float32)GetWidth();
-	result.y *= GetInternalHeight() / (types::Float32)GetHeight();
-
-	return result;
+void PlatformWin::SetWindowSize( int width, int height ) {
+	mWidth = width;
+	mHeight = height;
+	mGraphics->SetWindowSize( width, height );
 }
+
+//-----------------------------------------------------------------------------
 
 void PlatformWin::SetWorkingDir(poro::types::string dir){
 	//TODO implement

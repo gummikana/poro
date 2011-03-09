@@ -70,6 +70,7 @@ public:
 
 
 	//window / screen
+	virtual void SetWindowSize( int width, int height ) {};
 	virtual int GetWidth();
 	virtual int GetHeight();
 	

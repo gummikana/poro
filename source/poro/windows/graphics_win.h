@@ -80,6 +80,11 @@ public:
 	virtual IGraphicsBuffer* CreateGraphicsBuffer(int width, int height);
 	virtual void DestroyGraphicsBuffer(IGraphicsBuffer* buffer);
 	
+	types::vec2     ConvertToInternalPos( int x, int y );
+
+	//types::vec2 GetViewportOffset() const { return mViewportOffset; }
+	//types::vec2 GetViewportSize() const { return mViewportSize; }
+	
 private:
     void    ResetWindow();
     
@@ -87,6 +92,8 @@ private:
     bool    mFullscreen;
     int     mWindowWidth;
     int     mWindowHeight;
+    types::vec2 mViewportOffset;
+    types::vec2 mViewportSize;
    
 };
 

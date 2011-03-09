@@ -47,6 +47,7 @@ public:
 	virtual void Destroy();
 	
 	//window / screen
+	virtual void    SetWindowSize( int width, int height );
 	virtual int		GetWidth() { return mWidth; }
 	virtual int		GetHeight() { return mHeight; }
 
@@ -76,8 +77,6 @@ public:
 
 protected:
 	
-	types::vec2		ConvertMouseToInternalSize( int x, int y );		
-		
 	GraphicsWin*				mGraphics;
 	int							mFrameCount;
 	float						mTargetFrameTime;
