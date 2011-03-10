@@ -25,6 +25,10 @@ void SetLineSmoothing( bool value ) {
 	smooth_lines = value;
 }
 
+void SetLineWidth( float width ) {
+	line_width = width;
+}
+
 //-----------------------------------------------------------------------------
 
 void DrawLine( poro::IGraphics* graphics, const types::vector2& i_p1, const types::vector2& i_p2, const poro::types::fcolor& color, types::camera* camera ) 
@@ -95,6 +99,16 @@ void DrawCircle( poro::IGraphics* graphics, const types::vector2& position, floa
 
 	cassert( graphics );
 	graphics->DrawLines( debug_drawing, color, smooth_lines, line_width );
+}
+
+//-----------------------------------------------------------------------------
+
+void DrawBox( poro::IGraphics* graphics, const types::vector2& min_pos, const types::vector2& max_pos, const poro::types::fcolor& color, types::camera* camera )
+{
+	DrawLine( graphics, types::vector2( min_pos.x, min_pos.y ), types::vector2( max_pos.x, min_pos.y ), color, camera );
+	DrawLine( graphics, types::vector2( max_pos.x, min_pos.y ), types::vector2( max_pos.x, max_pos.y ), color, camera );
+	DrawLine( graphics, types::vector2( max_pos.x, max_pos.y ), types::vector2( min_pos.x, max_pos.y ), color, camera );
+	DrawLine( graphics, types::vector2( min_pos.x, max_pos.y ), types::vector2( min_pos.x, min_pos.y ), color, camera );
 }
 
 //-----------------------------------------------------------------------------
