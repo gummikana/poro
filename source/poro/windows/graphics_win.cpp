@@ -808,7 +808,7 @@ void GraphicsWin::EndRendering()
 
 //=============================================================================
 
-void GraphicsWin::DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color )
+void GraphicsWin::DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth )
 {
 	//float xPlatformScale, yPlatformScale;
 	//xPlatformScale = (float)mViewportSize.x / (float)poro::IPlatform::Instance()->GetInternalWidth();
@@ -817,13 +817,21 @@ void GraphicsWin::DrawLines( const std::vector< poro::types::vec2 >& vertices, c
 	glEnable(GL_BLEND);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	if( smooth ) {
+		glEnable(GL_LINE_SMOOTH);
+		glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+	}
 	glColor4f( color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
 	glBegin(GL_LINE_STRIP);
+
 	for( std::size_t i = 0; i < vertices.size(); ++i )
 	{
 		glVertex2f(vertices[i].x, vertices[i].y);
 	}
 	glEnd();
+
+	if( smooth ) 
+		glDisable( GL_LINE_SMOOTH );
 
 	glDisable(GL_BLEND);
 }
