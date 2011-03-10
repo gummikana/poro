@@ -6,6 +6,7 @@
 namespace {
 
 	bool smooth_lines = true;
+	float line_width = 1.f;
 
 
 	const poro::types::vec2& ToPoro( const types::vector2& v1 )
@@ -42,7 +43,7 @@ void DrawLine( poro::IGraphics* graphics, const types::vector2& i_p1, const type
 	line[ 1 ].x = p2.x;
 	line[ 1 ].y = p2.y;
 
-	graphics->DrawLines( line, color, smooth_lines );
+	graphics->DrawLines( line, color, smooth_lines, line_width );
 }
 
 //-----------------------------------------------------------------------------
@@ -93,7 +94,7 @@ void DrawCircle( poro::IGraphics* graphics, const types::vector2& position, floa
 	
 
 	cassert( graphics );
-	graphics->DrawLines( debug_drawing, color, smooth_lines );
+	graphics->DrawLines( debug_drawing, color, smooth_lines, line_width );
 }
 
 //-----------------------------------------------------------------------------
