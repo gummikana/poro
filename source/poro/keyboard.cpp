@@ -41,7 +41,7 @@ void Keyboard::RemoveKeyboardListener( IKeyboardListener* listener )
 	std::vector< IKeyboardListener* >::iterator i = 
 		std::find( mListeners.begin(), mListeners.end(), listener );
 
-	poro_assert( i != mListeners.end() );
+	// poro_assert( i != mListeners.end() );
 
 	if( i != mListeners.end() )
 		mListeners.erase( i );

@@ -231,21 +231,26 @@ void PlatformLinux::HandleEvents() {
 			case SDL_MOUSEMOTION:
 				poro_assert( mMouse );
 				{
-					mMousePos = ConvertMouseToInternalSize( event.motion.x, event.motion.y );
+					mMousePos = mGraphics->ConvertToInternalPos( event.motion.x, event.motion.y );
 					mMouse->FireMouseMoveEvent( mMousePos );
 				}
 				break;
-		}
+            #ifndef NDEBUG
+            case SDL_VIDEORESIZE:
+                {
+                    SetWindowSize(event.resize.w,event.resize.h);
+                }
+            #endif
+            break;
+        }
+		
 	}
 }
 
-types::vec2	PlatformLinux::ConvertMouseToInternalSize( int x, int y ) {
-	types::vec2 result( (types::Float32)x, (types::Float32)y );
-
-	result.x *= GetInternalWidth() / (types::Float32)GetWidth();
-	result.y *= GetInternalHeight() / (types::Float32)GetHeight();
-
-	return result;
+void PlatformLinux::SetWindowSize( int width, int height ) {
+	mWidth = width;
+	mHeight = height;
+	mGraphics->SetWindowSize( width, height );
 }
 
 void PlatformLinux::SetWorkingDir(poro::types::string dir){

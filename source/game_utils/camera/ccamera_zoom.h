@@ -46,19 +46,20 @@ public:
 		myRotation( 0 ),
 		myRotationMatrix( 0 ),
 		myScale( 1.0f, 1.0f ),
-		myCenterPoint( config::screen_w * 0.5f, config::screen_h * 0.5f ),
-		myCameraOffset( config::screen_w * 0.5f, config::screen_h * 0.5f )
-	{ 
-		myScale.x = 1.0f;		
-		myScale.y = 1.0f;
-		// SetAngle( 1.5f );
-	}
-
+		myCenterPoint(),
+		myCameraOffset()
+    {
+        myScale.x = 1.0f;		
+        myScale.y = 1.0f;
+        // SetAngle( 1.5f );
+    }
+	
+	
 	virtual ~CCameraTransformer() { }
 
 	bool IsNull() const { return false; }
 
-	float GetFakePerpectiveScale( float y_position );
+	//float GetFakePerpectiveScale( float y_position );
 
 	virtual Vector2 Transform( const Vector2& point );
 
@@ -131,6 +132,16 @@ public:
 		return myCameraOffset;
 	}
 
+    void SetCenterPoint( const Vector2& v )
+	{
+		myCenterPoint = v;
+	}
+
+    types::vector2 GetCenterPoint() const
+	{
+		return myCenterPoint;
+	}
+
 	virtual ceng::CPoint< int > ConvertMousePosition( const ceng::CPoint< int >& p )
 	{
 		types::vector2 result = ConvertMousePositionImpl( types::vector2( (float)p.x, (float)p.y) );
@@ -174,7 +185,7 @@ public:
 	float			myRotation;
 	Matrix22		myRotationMatrix;
 	Vector2			myScale;
-	const Vector2	myCenterPoint;
+	Vector2         myCenterPoint;
 	Vector2			myCameraOffset;
 };
 
@@ -187,6 +198,7 @@ public:
 	CCameraZoom();
 	~CCameraZoom();
 
+    void SetCameraSize( float width, float height);
 	// void Important( const types::vector2& center_point, float radius );
 
 	types::vector2	ClampOffsetToRect( const types::vector2& offset, const float scale );
@@ -206,14 +218,13 @@ public:
 
 	float				mMinZoom;
 	float				mMaxZoom;
-	types::vector2		mCameraOffsetMin;
-	types::vector2		mCameraOffsetMax;
 	float				mTargetScale;
 	types::vector2		mTargetOffset;
 
 	bool				mUseCameraClampRect;
 	types::rect			mCameraClampRect;
-
+    types::vector2      mCameraSize;
+	
 	bool				mCanWeZoomCloser;
 	bool				mCanWeChangeScale;
 	bool				mCanWeMoveOffset;

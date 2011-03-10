@@ -27,7 +27,9 @@
 #include "../poro_macros.h"
 #include "texture_win.h"
 
+#ifndef DONT_USE_GLEW
 #include "graphics_buffer_win.h"
+#endif
 
 #define PORO_ERROR "ERROR: "
 
@@ -110,6 +112,10 @@ namespace {
 		TextureWin* alpha_texture, Vertex* alpha_vertices, const types::fcolor& alpha_color,
 		Uint32 vertex_mode )
 	{
+#ifdef DONT_USE_GLEW
+		poro_logger << "Error: Glew isn't enable alpha masking, this means we can't do alpha masking. " << std::endl;
+		return;
+#else
 		// no glew on mac? We'll maybe we need graphics_mac!?
 		if(!GLEW_VERSION_1_3)
 		{
@@ -152,7 +158,9 @@ namespace {
 
 		glActiveTexture(GL_TEXTURE0);
 		glDisable(GL_TEXTURE_2D);
+#endif
 	}
+
 
 	//-------------------------------------------------------------------------
 
@@ -442,17 +450,21 @@ namespace {
 		//texData.bFlipTexture = false;
 	}
 
+	float mDesktopWidth;
+	float mDesktopHeight;
+	
 } // end o namespace anon
 
 
 
 bool GraphicsWin::Init( int width, int height, bool fullscreen, const types::string& caption )
 {
+    mClearBackground=true;
+    mFullscreen=fullscreen;
+    mWindowWidth=width;
+    mWindowHeight=height;
+    
 	const SDL_VideoInfo *info = NULL;
-    int bpp = 0;
-    int flags = 0;
-	float screenwidth = 0;
-	float screenheight = 0;
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE) < 0)
     {
@@ -462,78 +474,29 @@ bool GraphicsWin::Init( int width, int height, bool fullscreen, const types::str
     }
 
     info = SDL_GetVideoInfo();
-
-    if (!info)
+	if (!info)
     {
 		poro_logger << PORO_ERROR << "Video query failed: "<< SDL_GetError() << std::endl;
         SDL_Quit();
         exit(0);
     }
-
-
-    {
-        screenwidth = float(width);
-        screenheight = float(height);
-        bpp = info->vfmt->BitsPerPixel;
-        flags = SDL_OPENGL;
-		if( fullscreen )
-			flags |= SDL_FULLSCREEN;
-    }
-
-#ifdef _DEBUG
-	flags |= SDL_RESIZABLE;
-#endif
-
-    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
-    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
-    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
-    if (SDL_SetVideoMode((int)screenwidth, (int)screenheight, bpp, flags) == 0)
-    {
-        fprintf( stderr, "Video mode set failed: %s\n", SDL_GetError());
-        SDL_Quit();
-        return 0;
-    }
+    mDesktopWidth = (float)info->current_w;
+	mDesktopHeight = (float)info->current_h;
+	
+	IPlatform::Instance()->SetInternalSize( (types::Float32)width, (types::Float32)height );
+    ResetWindow();
 
     SDL_WM_SetCaption( caption.c_str(), NULL);
-
-
-	if( true )
-	{
-		glViewport( (GLint)( 0 ), 0, (GLsizei)screenwidth, (GLsizei)screenheight );
-	}
-	else
-	{
-		float aspect = 480.0f/320.0f;
-		aspect = screenheight / screenwidth;
-		if (screenheight / screenwidth > aspect )
-		{
-			float realx = screenheight * aspect;
-			float extrax = screenwidth - realx;
-
-			glViewport( (GLint)( extrax / 2 ), 0, (GLsizei)realx, (GLsizei)screenheight );
-		}
-		else
-		{
-			float realy = screenwidth / aspect;
-			float extray = screenheight - realy;
-
-			glViewport( 0, (GLint)( extray / 2 ), (GLsizei)screenwidth, (GLsizei)realy );
-		}
-	}
-
-	SetInternalSize( (types::Float32)screenwidth, (types::Float32)screenheight );
-
+	
 	// no glew for mac? this might cause some problems
+#ifndef DONT_USE_GLEW
 	GLenum glew_err = glewInit();
 	if (GLEW_OK != glew_err)
 	{
 		/* Problem: glewInit failed, something is seriously wrong. */
 		poro_logger << "Error: " << glewGetErrorString(glew_err) << std::endl;
 	}
-
+#endif
 	return 1;
 }
 
@@ -543,6 +506,100 @@ void GraphicsWin::SetInternalSize( types::Float32 width, types::Float32 height )
     glLoadIdentity();
 	gluOrtho2D(0, (GLdouble)width, (GLdouble)height, 0);
 }
+
+void GraphicsWin::SetWindowSize(int window_width, int window_height)
+{
+    if( mWindowWidth!=window_width || mWindowHeight!=window_height ){
+        mWindowWidth = window_width;
+        mWindowHeight = window_height;
+        ResetWindow();
+    }
+}
+
+void GraphicsWin::SetFullscreen(bool fullscreen){
+    if( mFullscreen!=fullscreen ){
+        mFullscreen = fullscreen;
+        ResetWindow();
+    }
+}
+
+void GraphicsWin::ResetWindow(){
+    
+	const SDL_VideoInfo *info = NULL;
+    int bpp = 0;
+    int flags = 0;
+    int window_width;
+	int window_height;
+	
+    info = SDL_GetVideoInfo();
+	if (!info)
+    {
+		poro_logger << PORO_ERROR << "Video query failed: "<< SDL_GetError() << std::endl;
+        SDL_Quit();
+        exit(0);
+    }
+    
+    {
+        bpp = info->vfmt->BitsPerPixel;
+        flags = SDL_OPENGL;
+        
+		if( mFullscreen ){
+			flags |= SDL_FULLSCREEN;
+			window_width = (int)mDesktopWidth;
+			window_height = (int)mDesktopHeight;
+    	} else {
+    		window_width = mWindowWidth;
+			window_height = mWindowHeight;
+    	    
+        //#ifdef _DEBUG
+            flags |= SDL_RESIZABLE;
+        //#endif
+    	}
+    }
+
+    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
+    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
+    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+    if (SDL_SetVideoMode((int)window_width, (int)window_height, bpp, flags) == 0)
+    {
+        fprintf( stderr, "Video mode set failed: %s\n", SDL_GetError());
+        SDL_Quit();
+        return;
+    }
+    
+    { //OpenGL view setup
+        float internal_width = IPlatform::Instance()->GetInternalWidth();
+        float internal_height = IPlatform::Instance()->GetInternalHeight();
+        float screen_aspect = (float)window_width/(float)window_height;
+        float internal_aspect = (float)internal_width/(float)internal_height;
+        mViewportSize.x = (float)window_width;
+        mViewportSize.y = (float)window_height;
+        mViewportOffset = types::vec2(0, 0);
+        if(screen_aspect>internal_aspect){
+            //Widescreen, Black borders on left and right
+            mViewportSize.x = window_height*internal_aspect;
+            mViewportOffset.x = (window_width-mViewportSize.x)*0.5f;
+        } else {
+            //Tallscreen, Black borders on top and bottom
+            mViewportSize.y = window_width/internal_aspect;
+            mViewportOffset.y = (window_height-mViewportSize.y)*0.5f;
+        }
+        
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glEnable(GL_SCISSOR_TEST);
+        //(OpenGL actually wants the x offset from the bottom, but since we are centering the view the direction does not matter.)
+	    glScissor((GLint)mViewportOffset.x, (GLint)mViewportOffset.y, (GLint)mViewportSize.x, (GLint)mViewportSize.y);
+        glViewport((GLint)mViewportOffset.x, (GLint)mViewportOffset.y, (GLint)mViewportSize.x, (GLint)mViewportSize.y);
+        glScalef(1,-1,1); //Flip y axis
+        gluOrtho2D(0, internal_width, 0, internal_height);
+        
+    }
+}
+
 
 //=============================================================================
 
@@ -734,12 +791,14 @@ void GraphicsWin::DrawTextureWithAlpha(
 
 void GraphicsWin::BeginRendering()
 {
-	glClearColor( mFillColor[ 0 ],
-		mFillColor[ 1 ],
-		mFillColor[ 2 ],
-		mFillColor[ 3 ] );
+    if(mClearBackground){
+        glClearColor( mFillColor[ 0 ],
+            mFillColor[ 1 ],
+            mFillColor[ 2 ],
+            mFillColor[ 3 ] );
 
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    }
 }
 
 void GraphicsWin::EndRendering()
@@ -749,18 +808,30 @@ void GraphicsWin::EndRendering()
 
 //=============================================================================
 
-void GraphicsWin::DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color )
+void GraphicsWin::DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth )
 {
+	//float xPlatformScale, yPlatformScale;
+	//xPlatformScale = (float)mViewportSize.x / (float)poro::IPlatform::Instance()->GetInternalWidth();
+	//yPlatformScale = (float)mViewportSize.y / (float)poro::IPlatform::Instance()->GetInternalHeight();
+	
 	glEnable(GL_BLEND);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	if( smooth ) {
+		glEnable(GL_LINE_SMOOTH);
+		glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+	}
 	glColor4f( color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
-	glBegin(GL_LINE_LOOP);
+	glBegin(GL_LINE_STRIP);
+
 	for( std::size_t i = 0; i < vertices.size(); ++i )
 	{
 		glVertex2f(vertices[i].x, vertices[i].y);
 	}
 	glEnd();
+
+	if( smooth ) 
+		glDisable( GL_LINE_SMOOTH );
 
 	glDisable(GL_BLEND);
 }
@@ -769,66 +840,93 @@ void GraphicsWin::DrawLines( const std::vector< poro::types::vec2 >& vertices, c
 
 void GraphicsWin::DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color )
 {
-	//poro_logger << "DrawLines" << std::endl;
 	int vertCount = vertices.size();
-
+	
 	if(vertCount == 0)
 		return;
-
+	
 	//Internal rescale
 	float xPlatformScale, yPlatformScale;
-	if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight()){
-		xPlatformScale = poro::IPlatform::Instance()->GetWidth() / (float)poro::IPlatform::Instance()->GetInternalWidth();
-		yPlatformScale = poro::IPlatform::Instance()->GetHeight() / (float)poro::IPlatform::Instance()->GetInternalHeight();
-	} else {
-		xPlatformScale = 1.f;
-		yPlatformScale = 1.f;
-	}
+	xPlatformScale = (float)mViewportSize.x / (float)poro::IPlatform::Instance()->GetInternalWidth();
+	yPlatformScale = (float)mViewportSize.y / (float)poro::IPlatform::Instance()->GetInternalHeight();
+	
+	const int max_buffer_size = 256;
+	static GLfloat glVertices[ max_buffer_size ];
 
-	//Consider static buffer size?
-	GLfloat *glVertices = new GLfloat[vertCount*2];
+	poro_assert( vertCount * 2 <= max_buffer_size );
+
 	int o = -1;
 	for(int i=0; i < vertCount; ++i){
 		glVertices[++o] = vertices[i].x*xPlatformScale;
 		glVertices[++o] = vertices[i].y*yPlatformScale;
 	}
-
-	//for(int i=0; i < vertCount*2; ++i){
-	//	poro_logger << ":" << glVertices[i] << std::endl;
-	//}
+	
+	/*glColor4f(color[0], color[1], color[2], color[3]);
+	glVertexPointer(2, GL_FLOAT , 0, glVertices);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glDrawArrays (GL_TRIANGLE_STRIP, 0, vertCount);
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glPopMatrix();*/
 
 	glColor4f(color[0], color[1], color[2], color[3]);
-	glLineWidth(2.0f);
 	glPushMatrix();
-	glVertexPointer(2, GL_FLOAT , 0, glVertices);
-	glDrawArrays (GL_LINE_STRIP, 0, vertCount);
-
-	/*
-	glBegin(GL_TRIANGLE_STRIP);
-	for( int i = 0; i < count; ++i )
-	{
-		glTexCoord2f(vertices[ i ].tx, vertices[ i ].ty );
-		glVertex2f(vertices[ i ].x, vertices[ i ].y );
-	}
-
-	glEnd();*/
-
-	//glDrawArrays (GL_TRIANGLE_FAN, 0, vertCount);
+		//glEnable(GL_POLYGON_SMOOTH);
+		//glEnable(GL_BLEND);
+		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glVertexPointer(2, GL_FLOAT , 0, glVertices);
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glDrawArrays (GL_TRIANGLE_STRIP, 0, vertCount);
+		glDisableClientState(GL_VERTEX_ARRAY);
+		//glDisable(GL_BLEND);
+		//glDisable(GL_POLYGON_SMOOTH);
 	glPopMatrix();
+}
 
-	delete glVertices;
+//=============================================================================
+
+types::vec2	GraphicsWin::ConvertToInternalPos( int x, int y ) {
+	types::vec2 result( (types::Float32)x, (types::Float32)y );
+
+	result.x -= mViewportOffset.x;
+	result.y -= mViewportOffset.y;
+	
+	//Clamp
+    if(result.x<0)
+        result.x=0;
+    if(result.y<0)
+        result.y=0;
+    if(result.x>mViewportSize.x-1)
+        result.x=mViewportSize.x-1;
+    if(result.y>mViewportSize.y-1)
+        result.y=mViewportSize.y-1;
+
+    float internal_w = IPlatform::Instance()->GetInternalWidth();
+    float internal_h = IPlatform::Instance()->GetInternalHeight();
+    
+	result.x *= internal_w / (types::Float32)mViewportSize.x;
+	result.y *= internal_h / (types::Float32)mViewportSize.y;
+    
+	return result;
 }
 
 //=============================================================================
 
 IGraphicsBuffer* GraphicsWin::CreateGraphicsBuffer(int width, int height){
+#ifdef DONT_USE_GLEW
+	assert(false); //Buffer implementation needs glew.
+#else
 	GraphicsBufferWin* buffer = new GraphicsBufferWin();
 	buffer->Init(width, height);
 	return (IGraphicsBuffer*)buffer;
+#endif
 }
 
 void GraphicsWin::DestroyGraphicsBuffer(IGraphicsBuffer* buffer){
+#ifdef DONT_USE_GLEW
+	assert(false); //Buffer implementation needs glew.
+#else
 	delete buffer;
+#endif
 }
 
 //=============================================================================

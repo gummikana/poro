@@ -36,8 +36,9 @@ public:
 
 	virtual bool		Init( int width, int height, bool fullscreen, const types::string& caption );
 	virtual void		SetInternalSize( types::Float32 width, types::Float32 height );
-
-
+    virtual void        SetWindowSize(int width, int height);
+    virtual void        SetFullscreen(bool fullscreen);
+    
 	virtual ITexture*	CreateTexture( int width, int height );
 	virtual ITexture*	CloneTexture( ITexture* other );
 	virtual void		SetTextureData(ITexture* texture, void* data );
@@ -72,14 +73,28 @@ public:
 
 	virtual void		BeginRendering();
 	virtual void		EndRendering();
-
-	virtual void		DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ); 
+	
+	virtual void		DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth );
 	virtual void		DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color );
 	
 	virtual IGraphicsBuffer* CreateGraphicsBuffer(int width, int height);
 	virtual void DestroyGraphicsBuffer(IGraphicsBuffer* buffer);
 	
+	types::vec2     ConvertToInternalPos( int x, int y );
+
+	//types::vec2 GetViewportOffset() const { return mViewportOffset; }
+	//types::vec2 GetViewportSize() const { return mViewportSize; }
 	
+private:
+    void    ResetWindow();
+    
+    bool    mClearBackground;
+    bool    mFullscreen;
+    int     mWindowWidth;
+    int     mWindowHeight;
+    types::vec2 mViewportOffset;
+    types::vec2 mViewportSize;
+   
 };
 
 } // end o namespace poro

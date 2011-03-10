@@ -229,7 +229,7 @@ void PlatformMac::HandleEvents() {
 			case SDL_MOUSEMOTION:
 				poro_assert( mMouse );
 				{
-					mMousePos = ConvertMouseToInternalSize( event.motion.x, event.motion.y );
+					mMousePos = mGraphics->ConvertToInternalPos( event.motion.x, event.motion.y );
 					mMouse->FireMouseMoveEvent( mMousePos );
 				}
 				break;
@@ -237,13 +237,10 @@ void PlatformMac::HandleEvents() {
 	}
 }
 
-types::vec2	PlatformMac::ConvertMouseToInternalSize( int x, int y ) {
-	types::vec2 result( (types::Float32)x, (types::Float32)y );
-
-	result.x *= GetInternalWidth() / (types::Float32)GetWidth();
-	result.y *= GetInternalHeight() / (types::Float32)GetHeight();
-
-	return result;
+void PlatformMac::SetWindowSize( int width, int height ) {
+	mWidth = width;
+	mHeight = height;
+	mGraphics->SetWindowSize( width, height );
 }
 
 void PlatformMac::SetWorkingDir(poro::types::string dir){

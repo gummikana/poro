@@ -22,16 +22,18 @@
 #include "ccamera.h"
 #include "../../types.h"
 #include "../math/math_utils.h"
-
+#include "poro/iplatform.h"
 
 namespace ceng {
 
 //=============================================================================
 
-CCamera::CCamera() : 
-myConverts( types::vector2( config::screen_w * 0.5f, config::screen_h * 0.5f ), types::vector2( config::screen_w / 32.f / 6.f, -config::screen_w / 32.f / 6.f ) )
+CCamera::CCamera()
 {
-	// ceng::Gfx::SetCamera( myTransformer );
+    float width = poro::IPlatform::Instance()->GetInternalWidth();
+    float height = poro::IPlatform::Instance()->GetInternalHeight();
+    myConverts = PhysicsConverter( types::vector2( width * 0.5f, height * 0.5f ), types::vector2( width / 32.f / 6.f, -height / 32.f / 6.f ) );
+    // ceng::Gfx::SetCamera( myTransformer );
 }
 
 CCamera::~CCamera()

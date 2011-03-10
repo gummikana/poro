@@ -38,8 +38,8 @@ class IGraphics
 public:
 	//-------------------------------------------------------------------------
 	
-	IGraphics() : mVertexMode(VERTEX_MODE_TRIANGLE_FAN) { 
-		mFillColor[0] = 0.f;mFillColor[1] = 0.f; mFillColor[2] = 0.f; mFillColor[3] = 1.f; 
+	IGraphics() : mVertexMode(VERTEX_MODE_TRIANGLE_FAN), mClearBackground(true) { 
+		mFillColor[0] = 0.f;mFillColor[1] = 0.f; mFillColor[2] = 0.f; mFillColor[3] = 1.f;
 	}
 
 	virtual ~IGraphics() { }
@@ -47,6 +47,8 @@ public:
 
 	virtual bool		Init( int width, int height, bool fullscreen, const types::string& caption ) = 0;
 	virtual void		SetInternalSize( types::Float32 width, types::Float32 height ) { poro_assert( false ); /* You have to implement this */ }
+    virtual void        SetWindowSize(int width, int height) { poro_assert( false ); /* You have to implement this */ }
+    virtual void        SetFullscreen(bool fullscreen) { poro_assert( false ); /* You have to implement this */ }
 
 	//-------------------------------------------------------------------------
 
@@ -68,7 +70,8 @@ public:
 
 	virtual void		BeginRendering() = 0;
 	virtual void		EndRendering() = 0;
-
+    virtual void		SetClearBackground(bool clear) { mClearBackground=clear; }
+	
 	//-------------------------------------------------------------------------
 
 	enum {
@@ -96,7 +99,8 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual void		DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) { }
+	virtual void		DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth ) { }
+	virtual void		DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) { DrawLines( vertices, color, false ); }
 	virtual void		DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) { }
 
 	//-------------------------------------------------------------------------
@@ -107,6 +111,7 @@ public:
 	//-------------------------------------------------------------------------
 
 protected:
+    bool mClearBackground;
 	poro::types::fcolor mFillColor;
 	int mVertexMode;
 	std::stack<int> mVertexModes;

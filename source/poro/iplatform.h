@@ -70,6 +70,7 @@ public:
 
 
 	//window / screen
+	virtual void SetWindowSize( int width, int height ) {};
 	virtual int GetWidth();
 	virtual int GetHeight();
 	
@@ -83,8 +84,18 @@ public:
 	//  because that can initialize 
 	virtual void SetInternalSize( types::Float32 width, types::Float32 height );
 
-	types::Float32 GetInternalWidth() const { return mInternalWidth; };
-	types::Float32 GetInternalHeight() const { return mInternalHeight; };
+	types::Float32 GetInternalWidth() const { 
+	    if(!mInternalWidth)
+            poro_assert(false); //Platform has probably not been initialized yet.
+            
+	    return mInternalWidth;
+    };
+	types::Float32 GetInternalHeight() const { 
+	     if(!mInternalHeight)
+            poro_assert(false); //Platform has probably not been initialized yet.
+            
+	    return mInternalHeight; 
+    };
 
 	//timers
 	virtual float	GetFrameRate();

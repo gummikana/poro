@@ -49,6 +49,7 @@ public:
 	virtual void Destroy();
 
 	//window / screen
+	virtual void    SetWindowSize( int width, int height );
 	virtual int		GetWidth() { return mWidth; }
 	virtual int		GetHeight() { return mHeight; }
 
