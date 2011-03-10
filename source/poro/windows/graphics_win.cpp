@@ -459,7 +459,6 @@ namespace {
 
 bool GraphicsWin::Init( int width, int height, bool fullscreen, const types::string& caption )
 {
-    mClearBackground=true;
     mFullscreen=fullscreen;
     mWindowWidth=width;
     mWindowHeight=height;
@@ -791,7 +790,7 @@ void GraphicsWin::DrawTextureWithAlpha(
 
 void GraphicsWin::BeginRendering()
 {
-    if(mClearBackground){
+    if( mClearBackground){
         glClearColor( mFillColor[ 0 ],
             mFillColor[ 1 ],
             mFillColor[ 2 ],

@@ -88,7 +88,6 @@ public:
 private:
     void    ResetWindow();
     
-    bool    mClearBackground;
     bool    mFullscreen;
     int     mWindowWidth;
     int     mWindowHeight;
