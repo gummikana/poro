@@ -32,9 +32,13 @@
 		#endif
 	#endif
 #elif __linux__
-    #define PORO_PLAT_LINUX
+	#ifndef PORO_PLAT_LINUX
+		#define PORO_PLAT_LINUX
+	#endif
 #elif __WIN32__
-    #define PORO_PLAT_WINDOWS
+	#ifndef PORO_PLAT_WINDOWS
+		#define PORO_PLAT_WINDOWS
+	#endif
 #endif
 
 
