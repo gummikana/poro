@@ -54,7 +54,7 @@
 
 // testing shit is on
 #ifdef PORO_TESTER_ENABLED
-//#define CENG_TESTER_ENABLED
+	#define CENG_TESTER_ENABLED
 #endif
 
 
