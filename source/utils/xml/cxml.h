@@ -149,12 +149,28 @@ namespace ceng {
 	//class CXmlStreamHandler;
 
 
-template< class T >
-CXmlNode* XmlSaveToMemory( T& mesh, const std::string& rootnodename = "rootelement" );
+	template< class T >
+	CXmlNode* XmlSaveToMemory( T& mesh, const std::string& rootnodename = "rootelement" );
 
-template< class T >
-void XmlLoadFromMemory( T& mesh, CXmlNode* node, const std::string& rootnodename = "rootelement" );
+	template< class T >
+	void XmlLoadFromMemory( T& mesh, CXmlNode* node, const std::string& rootnodename = "rootelement" );
 
+#ifndef PORO_XCODE_ERROR_HACK_TOGGLE
+	template< class T >
+	CXmlNode* XmlSaveToMemory( T& mesh, const std::string& rootnodename  )
+	{
+		CXmlNode* node;
+		node = XmlConvertFrom( mesh, rootnodename );
+		
+		return node;	
+	}
+
+	template< class T >
+	void XmlLoadFromMemory( T& mesh, CXmlNode* node, const std::string& rootnodename  )
+	{
+		XmlConvertTo( node, mesh );
+	}
+#endif
 
 //! Saves the mesh to the xml file.
 /*!

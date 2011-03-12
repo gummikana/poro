@@ -35,7 +35,8 @@ namespace ceng {
 	//! Base class for Handlers
 	//class CXmlHandlerInterface;
 	//class CXmlStreamHandler;
-	
+#ifdef PORO_XCODE_ERROR_HACK_TOGGLE	 
+
 	template< class T >
 	CXmlNode* XmlSaveToMemory( T& mesh, const std::string& rootnodename  )
 	{
@@ -50,7 +51,8 @@ namespace ceng {
 	{
 		XmlConvertTo( node, mesh );
 	}
-	
+#endif
+
 	
 	//! Saves the mesh to the xml file.
 	/*! 
