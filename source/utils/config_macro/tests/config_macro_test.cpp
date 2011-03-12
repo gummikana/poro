@@ -59,14 +59,17 @@ int CConfigTest()
 	player_magic.player_string = "best of the best";
 
 
-	ceng::XmlSaveToFile( player_magic, "temp/config_test.xml", "player_magic" );
+	ceng::CXmlNode* free_me = XmlSaveToMemory( player_magic, "player_magic" );
 
 	player_magic.player_speed = 24;
 	player_magic.player_hp = 15;
 	player_magic.player_int = 12;
 	player_magic.player_string = "You're the best";
 
-	ceng::XmlLoadFromFile( player_magic, "temp/config_test.xml", "player_magic" );
+	ceng::XmlLoadFromMemory( player_magic, free_me, "player_magic" );
+
+	delete free_me;
+	free_me = NULL;
 
 	test_assert( player_magic.player_speed == 10 );
 	test_assert( player_magic.player_hp == 5 );
