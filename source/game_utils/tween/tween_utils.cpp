@@ -25,7 +25,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void GTweenClearSpriteOfTweens( as::Sprite* sprite )
+void GTweenClearPointerOfTweens( void* pointer )
 {
 	std::list< GTween* >& list_of_gtweens = ceng::CAutoList< GTween >::GetList();
 
@@ -35,12 +35,17 @@ void GTweenClearSpriteOfTweens( as::Sprite* sprite )
 	{
 		GTween* tween = *i;
 		cassert( tween );
-		bool value = tween->ClearPointer( (void*)sprite );
+		bool value = tween->ClearPointer( pointer );
 		if( value ) 
 		{
 			// std::cout << "Found a bastard" << std::endl;
 		}
 	}
+}
+
+void GTweenClearSpriteOfTweens( as::Sprite* sprite )
+{
+	GTweenClearPointerOfTweens( (void*)sprite );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

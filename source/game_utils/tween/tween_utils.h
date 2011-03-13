@@ -24,6 +24,7 @@
 
 #include "../../types.h"
 #include "../../utils/easing/easing.h"
+#include "gtween.h"
 
 class GTween;
 namespace as { class Sprite; }
@@ -31,11 +32,27 @@ namespace as { class Sprite; }
 //-----------------------------------------------------------------------------
 
 void GTweenClearSpriteOfTweens( as::Sprite* sprite );
+void GTweenClearPointerOfTweens( void* pointer );
 
 GTween* GTweenSpriteTo( as::Sprite* sprite, const types::vector2& position, float time = 1.f, ceng::easing::IEasingFunc& math_func = ceng::easing::Linear::easeNone, bool autokill = true );
 GTween* GTweenSpriteRotationTo( as::Sprite* sprite, float rotation, float time = 1.f, ceng::easing::IEasingFunc& math_func = ceng::easing::Linear::easeNone, bool autokill = true );
 GTween* GTweenSpriteScaleTo( as::Sprite* sprite, const types::vector2& scale, float time = 1.f, ceng::easing::IEasingFunc& math_func = ceng::easing::Linear::easeNone, bool autokill = true );
 GTween* GTweenSpriteAlphaTo( as::Sprite* sprite, float alpha, float time = 1.f, ceng::easing::IEasingFunc& math_func = ceng::easing::Linear::easeNone, bool autokill = true );
+
+//-----------------------------------------------------------------------------
+
+template< typename T >
+GTween* GTweenValueTo( T& variable, const T& target, float time = 1.f, ceng::easing::IEasingFunc& math_func = ceng::easing::Linear::easeNone, bool autokill = true, bool clear_previous = true )
+{
+	if( clear_previous ) GTweenClearPointerOfTweens( (void*)&variable );
+
+	GTween* new_tween = new GTween( time, autokill );
+
+	new_tween->SetFunction( math_func );
+	new_tween->AddVariable( variable, target, "variable" );
+
+	return new_tween;
+}
 
 //-----------------------------------------------------------------------------
 
