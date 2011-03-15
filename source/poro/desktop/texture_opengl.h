@@ -18,8 +18,8 @@
  *
  ***************************************************************************/
 
-#ifndef INC_TEXTURE_WIN_H
-#define INC_TEXTURE_WIN_H
+#ifndef INC_TEXTURE_SDL_H
+#define INC_TEXTURE_SDL_H
 
 #include "../itexture.h"
 #include "../libraries.h"
@@ -27,10 +27,10 @@
 
 namespace poro {
 
-class TextureWin : public ITexture
+class TextureOpenGL : public ITexture
 {
 public:
-	TextureWin() : 
+	TextureOpenGL() : 
 		mTexture( 0 ), 
 		mWidth( 0 ), 
 		mHeight( 0 ), 
@@ -45,7 +45,7 @@ public:
 		mUv[ 3 ] = 0; 
 	}
 
-	TextureWin( TextureWin* other ) : 
+	TextureOpenGL( TextureOpenGL* other ) : 
 		mTexture( other->mTexture ), 
 		mWidth( other->mWidth ), 
 		mHeight( other->mHeight ), 

@@ -18,4 +18,25 @@
  *
  ***************************************************************************/
 
-#include "sound_win.h"
+#ifndef INC_PLATFORM_MAC_H
+#define INC_PLATFORM_MAC_H
+
+#include "../platform_desktop.h"
+
+namespace poro {
+
+class PlatformMac : public IPlatform {
+public:
+	//PlatformMac();
+	//virtual ~PlatformMac() {} 
+	
+	//filesystem
+	virtual void SetWorkingDir(poro::types::string dir = poro::types::string("/"));
+	
+private:	
+};
+
+} // end o namespace poro
+
+
+#endif

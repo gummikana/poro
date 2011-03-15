@@ -18,26 +18,25 @@
  *
  ***************************************************************************/
 
-#ifndef INC_JOYSTICK_WIN_H
-#define INC_JOYSTICK_WIN_H
+#ifndef INC_PLATFORM_LINUX_H
+#define INC_PLATFORM_LINUX_H
 
-#include "../joystick.h"
+#include "../platform_desktop.h"
 
 namespace poro {
 
-class JoystickWin : public Joystick 
-{
+class PlatformLinux : public PlatformDesktop {
 public:
-	JoystickWin( int id );
-	
+	//PlatformLinux();
+	//virtual ~PlatformLinux() {}
 
-	// values are between [0 and 1]
-	// can be implemented on the platform is available
-	void Vibrate( const types::vec2& motor_forces );
+	//filesystem
+	virtual void SetWorkingDir(poro::types::string dir = poro::types::string("/"));
+
+private:
 };
 
-void HandleJoystickWindows( JoystickWin* joystick );
-
 } // end o namespace poro
+
 
 #endif

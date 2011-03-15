@@ -18,77 +18,19 @@
  *
  ***************************************************************************/
 
-#include "platform_win.h"
+#include "platform_desktop.h"
 
 #include "../poro_main.h"
 #include "../libraries.h"
 
-#include "graphics_win.h"
-#include "soundplayer_win.h"
-#include "joystick_win.h"
+#include "graphics_opengl.h"
+#include "soundplayer_sdl.h"
+#include "joystick_impl.h"
 
 
 namespace poro {
 
 namespace {
-
-/*
-class TestJoystickListener : public IJoystickListener
-{
-public:
-
-	virtual ~TestJoystickListener() { }
-
-	enum TestFunctions
-	{
-		FUNC_OnJoystickConnected = 1,
-		FUNC_OnJoystickDisconnected = 2,
-		FUNC_OnJoystickButtonDown = 3,
-		FUNC_OnJoystickButtonUp = 4,
-	};
-
-	virtual void OnJoystickConnected( Joystick* jstick ) {
-		std::cout << "FUNC_OnJoystickConnected: " << jstick->GetId() << std::endl;
-	}
-
-	virtual void OnJoystickDisconnected( Joystick* jstick ) {
-		std::cout << "FUNC_OnJoystickDisconnected: " << jstick->GetId() << std::endl;
-	}
-
-	virtual void OnJoystickButtonDown( Joystick* jstick, int button ) {
-		if( button == Joystick::JOY_BUTTON_LEFT_STICK_MOVED ||
-			button == Joystick::JOY_BUTTON_RIGHT_STICK_MOVED ||
-			( button >= Joystick::JOY_BUTTON_ANALOG_00_MOVED &&
-			button <= Joystick::JOY_BUTTON_ANALOG_09_MOVED ) )
-		{
-			std::cout << "Analog button: " << jstick->GetId() << button << " ";
-			if( button == Joystick::JOY_BUTTON_LEFT_STICK_MOVED )
-				std::cout << jstick->GetLeftStick().x << ", " << jstick->GetLeftStick().y << std::endl;
-			if( button == Joystick::JOY_BUTTON_RIGHT_STICK_MOVED )
-				std::cout << jstick->GetRightStick().x << ", " << jstick->GetRightStick().y << std::endl;
-
-			if( button >= Joystick::JOY_BUTTON_ANALOG_00_MOVED &&
-				button <= Joystick::JOY_BUTTON_ANALOG_09_MOVED )
-			{
-				std::cout << jstick->GetAnalogButton( button - Joystick::JOY_BUTTON_ANALOG_00_MOVED ) << std::endl;
-			}
-		}
-		else
-		{
-			// std::cout << "FUNC_OnJoystickButtonDown: " << jstick->GetId() << ", " << button << std::endl;
-		}
-	}
-
-	virtual void OnJoystickButtonUp( Joystick* jstick, int button ) {
-		std::cout << "FUNC_OnJoystickButtonUp: " << jstick->GetId() << ", " << button << std::endl;
-	}
-
-	int			what_was_called;
-	Joystick*	jstick_param;
-	int			button_param;
-
-};
-*/
 	int mFrameRateUpdateCounter;
 } // end o anonymous namespace
 
@@ -96,7 +38,7 @@ const int PORO_WINDOWS_JOYSTICK_COUNT = 4;
 
 //-----------------------------------------------------------------------------
 
-PlatformWin::PlatformWin() :
+PlatformDesktop::PlatformDesktop() :
 	mGraphics( NULL ),
 	mFrameCountLastTime( 0 ),
 	mFrameCount( 0 ),
@@ -114,11 +56,11 @@ PlatformWin::PlatformWin() :
 
 }
 
-PlatformWin::~PlatformWin()
+PlatformDesktop::~PlatformDesktop()
 {
 }
 //-----------------------------------------------------------------------------
-void PlatformWin::Init(IApplication *application, int w, int h, bool fullscreen, std::string title ) {
+void PlatformDesktop::Init(IApplication *application, int w, int h, bool fullscreen, std::string title ) {
 
 	mRunning = true;
 	mFrameCount = 1;
@@ -128,37 +70,25 @@ void PlatformWin::Init(IApplication *application, int w, int h, bool fullscreen,
 	mHeight = h;
 	mApplication = application;
 	
-	mGraphics = new GraphicsWin;
+	mGraphics = new GraphicsOpenGL;
 	mGraphics->Init(w, h, fullscreen, title);
 
-	mSoundPlayer = new SoundPlayerWin;
+	mSoundPlayer = new SoundPlayerSDL;
 	mSoundPlayer->Init();
 
 	mMouse = new Mouse;
 	mKeyboard = new Keyboard;
 
-	mJoysticks.resize( PORO_WINDOWS_JOYSTICK_COUNT );
-	for( int i = 0; i < PORO_WINDOWS_JOYSTICK_COUNT; ++i ) {
-		mJoysticks[ i ] = new JoystickWin( i );
-	}
-
 	SDL_EnableUNICODE(1);
 	
-	// Commented out here and moved to StartMainLoop
-	//		bad policy to have init's in StartMainLoop(), but this the way
-	//		to make it deterministic with windows and iPhone platforms.
-	//
-	// if( mApplication )
-	// 	mApplication->Init();
-
 }
 
-void			PlatformWin::SetApplication( IApplication* application )
+void PlatformDesktop::SetApplication( IApplication* application )
 {
 	mApplication = application;
 }
 
-void PlatformWin::StartMainLoop() {
+void PlatformDesktop::StartMainLoop() {
 
 	// added by Petri on 01.11.2010
 	mRunning = true;
@@ -201,7 +131,7 @@ void PlatformWin::StartMainLoop() {
 		mApplication->Exit();
 }
 
-void PlatformWin::Destroy() {
+void PlatformDesktop::Destroy() {
 
 	delete mGraphics;
 	mGraphics = NULL;
@@ -221,24 +151,24 @@ void PlatformWin::Destroy() {
 	mJoysticks.clear();
 }
 
-void PlatformWin::SetFrameRate( int targetRate) {
+void PlatformDesktop::SetFrameRate( int targetRate) {
 	mFrameRate = (float)targetRate;
 	mOneFrameShouldLast = (int)((1000.f / (float)targetRate) + 0.5f );
 }
 
-int	PlatformWin::GetFrameNum() {
+int	PlatformDesktop::GetFrameNum() {
 	return mFrameCount;
 }
 
-int	PlatformWin::GetUpTime() {
+int	PlatformDesktop::GetUpTime() {
 	return (int)SDL_GetTicks();
 }
 
-void PlatformWin::Sleep(int millis){
+void PlatformDesktop::Sleep(int millis){
 	SDL_Delay( (Uint32)millis );
 }
 
-void PlatformWin::SingleLoop() {
+void PlatformDesktop::SingleLoop() {
 
 	HandleEvents();
 
@@ -253,11 +183,11 @@ void PlatformWin::SingleLoop() {
 }
 //-----------------------------------------------------------------------------
 
-void PlatformWin::HandleEvents() {
+void PlatformDesktop::HandleEvents() {
 
 	//----------------------------------------------------------------------------
 	for( std::size_t i = 0; i < mJoysticks.size(); ++i ) {
-		HandleJoystickWindows( mJoysticks[ i ] );
+		HandleJoystickImpl( mJoysticks[ i ] );
 	}
 
 	//----------------------------------------------------------------------------
@@ -348,7 +278,7 @@ void PlatformWin::HandleEvents() {
 	}
 }
 
-void PlatformWin::SetWindowSize( int width, int height ) {
+void PlatformDesktop::SetWindowSize( int width, int height ) {
 	mWidth = width;
 	mHeight = height;
 	mGraphics->SetWindowSize( width, height );
@@ -356,17 +286,17 @@ void PlatformWin::SetWindowSize( int width, int height ) {
 
 //-----------------------------------------------------------------------------
 
-void PlatformWin::SetWorkingDir(poro::types::string dir){
+void PlatformDesktop::SetWorkingDir(poro::types::string dir){
 	//TODO implement
 	//chdir(dir);
 }
 
-Joystick* PlatformWin::GetJoystick( int n ) {
+
+Joystick* PlatformDesktop::GetJoystick( int n ) {
 	poro_assert( n >= 0 && n < (int)mJoysticks.size() );
 	poro_assert( mJoysticks[ n ] );
 
 	return mJoysticks[ n ];
 }
-//-----------------------------------------------------------------------------
 
 } // end o namespace poro

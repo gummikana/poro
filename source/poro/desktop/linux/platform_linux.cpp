@@ -18,48 +18,25 @@
  *
  ***************************************************************************/
 
-#ifndef INC_GRAPHICSBUFFERWIN_H
-#define INC_GRAPHICSBUFFERWIN_H
+#include "platform_linux.h"
 
-#include "../igraphics_buffer.h"
-#include "../poro_types.h"
-#include "graphics_win.h"
-#include "texture_win.h"
-
-#include <vector>
+#include <unistd.h>
+#include <sys/param.h>
 
 namespace poro {
-	
-class GraphicsBufferWin : public GraphicsWin //, public IGraphicsBuffer
-{
-public:
-	GraphicsBufferWin() : mBufferId( 0 ), mTexture() { }
-	virtual ~GraphicsBufferWin(){ Release(); }
 
-	//IGraphicsBuffer
-	virtual ITexture*	GetTexture() { return &mTexture; }
-	
-	//IGraphics
-	virtual bool		Init( int width, int height, bool fullscreen = false, const types::string& caption = "" );
-	virtual void		Release();
-	
-	virtual void		DrawTexture( ITexture* texture, 
-									types::vec2* vertices, 
-									types::vec2* tex_coords, 
-									int count, 
-									const types::fcolor& color );
+void PlatformLinux::SetWorkingDir(poro::types::string dir){
 
-	virtual void		BeginRendering();
-	virtual void		EndRendering();
-	
-private:
-	void InitTexture(int width, int height);
-	
-	types::Uint32 mBufferId;
-	TextureWin mTexture;
-	
-};
-	
+    if(chdir(dir.c_str())==0){
+        char buffer[MAXPATHLEN];
+        getcwd(buffer, MAXPATHLEN);
+	    poro_logger << "Changing working dir to " << buffer << std::endl;
+	} else {
+        char buffer[MAXPATHLEN];
+        getcwd(buffer, MAXPATHLEN);
+	    poro_logger << "Error: Failed to change working dir to " << buffer << std::endl;
+	}
+
+}
+
 } // end o namespace poro
-
-#endif

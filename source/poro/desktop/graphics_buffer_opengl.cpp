@@ -19,8 +19,8 @@
  ***************************************************************************/
 
 #include "../libraries.h"
-#include "graphics_buffer_win.h"
-#include "texture_win.h"
+#include "graphics_buffer_opengl.h"
+#include "texture_opengl.h"
 
 namespace poro {
 namespace {
@@ -36,7 +36,7 @@ Uint32 GetNextPowerOfTwo(Uint32 input)
 }
 } // end of anonymous namespace
 
-void GraphicsBufferWin::InitTexture(int width,int height){
+void GraphicsBufferOpenGL::InitTexture(int width,int height){
 
 	GLsizei widthP2 = (GLsizei)GetNextPowerOfTwo(width);
 	GLsizei heightP2 = (GLsizei)GetNextPowerOfTwo(height);
@@ -58,7 +58,7 @@ void GraphicsBufferWin::InitTexture(int width,int height){
 
 
 //IGraphics
-bool GraphicsBufferWin::Init( int width, int height, bool fullscreen, const types::string& caption )
+bool GraphicsBufferOpenGL::Init( int width, int height, bool fullscreen, const types::string& caption )
 {
 	glGenFramebuffersEXT(1, &mBufferId);	// <- this line crashes on windows
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mBufferId);
@@ -72,7 +72,7 @@ bool GraphicsBufferWin::Init( int width, int height, bool fullscreen, const type
 	return true;
 }
 
-void GraphicsBufferWin::Release()
+void GraphicsBufferOpenGL::Release()
 {
 	//Delete texture
 	glDeleteTextures(1, &mTexture.mTexture);
@@ -81,16 +81,16 @@ void GraphicsBufferWin::Release()
 	glDeleteFramebuffersEXT(1, &mBufferId);
 }
 
-void GraphicsBufferWin::DrawTexture( ITexture* texture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color )
+void GraphicsBufferOpenGL::DrawTexture( ITexture* texture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color )
 {
 	//Flip cords for buffer
 	for (int i=0; i<count; ++i) {
 		vertices[i].y = mTexture.GetHeight() - vertices[i].y;
 	}
-	GraphicsWin::DrawTexture( texture, vertices, tex_coords, count, color );
+	GraphicsOpenGL::DrawTexture( texture, vertices, tex_coords, count, color );
 }
 
-void GraphicsBufferWin::BeginRendering()
+void GraphicsBufferOpenGL::BeginRendering()
 {
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mBufferId);
 	glPushAttrib(GL_VIEWPORT_BIT);
@@ -100,7 +100,7 @@ void GraphicsBufferWin::BeginRendering()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void GraphicsBufferWin::EndRendering()
+void GraphicsBufferOpenGL::EndRendering()
 {
 	glPopAttrib();
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);

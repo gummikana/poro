@@ -18,34 +18,13 @@
  *
  ***************************************************************************/
 
-#ifndef INC_SOUNDPLAYER_WIN_H
-#define INC_SOUNDPLAYER_WIN_H
-
-#include "../isoundplayer.h"
-#include "../libraries.h"
+#include "platform_win.h"
 
 namespace poro {
 
-class SoundPlayerWin : public ISoundPlayer
-{
-public:
-	SoundPlayerWin() : mInitSDLMixer( false ) { }
-	~SoundPlayerWin() { }
-
-	bool Init();
-
-	ISound* LoadSound( const types::string& filename );
-
-	void Play( ISound* sound, float volume );
-	void Play( ISound* sound, float volume, bool loop );
-
-	void Stop( ISound* sound );
-
-private:
-	bool mInitSDLMixer;
-	
-};
+void PlatformWin::SetWorkingDir(poro::types::string dir){
+	//TODO implement
+	//chdir(dir);
+}
 
 } // end o namespace poro
-
-#endif

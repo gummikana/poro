@@ -18,39 +18,25 @@
  *
  ***************************************************************************/
 
-#ifndef INC_SOUND_WIN_H
-#define INC_SOUND_WIN_H
+#ifndef INC_PLATFORM_WIN_H
+#define INC_PLATFORM_WIN_H
 
-#include "../isound.h"
-#include "../poro_types.h"
-#include "../libraries.h"
+#include "../platform_desktop.h"
 
 namespace poro {
 
-// SDL_Mixer implementation for sound
-class SoundWin : public ISound 
-{
+class PlatformWin : public IPlatform {
 public:
-	SoundWin() :
-		mMixChunk( NULL ),
-		mChannel( 0 ),
-		mFilename(),
-		mType( 0 )
-	{ }
-	
-	~SoundWin() 
-	{
-		if( mMixChunk )
-			Mix_FreeChunk( mMixChunk );
-	}
+	//PlatformWin();
+	//virtual ~PlatformWin();
 
+	//filesystem
+	virtual void SetWorkingDir(poro::types::string dir = poro::types::string("/"));
 
-	Mix_Chunk*		mMixChunk;
-	int				mChannel;
-	types::string	mFilename;
-	int				mType;
+private:
 };
 
 } // end o namespace poro
+
 
 #endif

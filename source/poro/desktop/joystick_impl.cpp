@@ -18,7 +18,7 @@
  *
  ***************************************************************************/
 
-#include "joystick_win.h"
+#include "joystick_impl.h"
 #include "../libraries.h"
 
 namespace poro {
@@ -35,7 +35,7 @@ namespace {
 	}
 }
 
-JoystickWin::JoystickWin( int id ) :
+JoystickImpl::JoystickImpl( int id ) :
 	Joystick( id )
 {
 }
@@ -44,7 +44,7 @@ JoystickWin::JoystickWin( int id ) :
 // controller_n is number of controller
 // left_value is the force (max 65535)
 // right_value is the force (max 65535)
-void JoystickWin::Vibrate( const types::vec2& motor_forces )
+void JoystickImpl::Vibrate( const types::vec2& motor_forces )
 {
 #ifdef PORO_USE_XINPUT
 	int controller_n = this->GetId();
@@ -84,7 +84,7 @@ void JoystickWin::Vibrate( const types::vec2& motor_forces )
 // Thanks to this tutorial for proper handling
 // http://www.codeproject.com/KB/directx/xbox360_cont_xinput.aspx
 //
-void HandleJoystickWindows( JoystickWin* joystick )
+void HandleJoystickImpl( JoystickImpl* joystick )
 {
 #ifdef PORO_USE_XINPUT
 	poro_assert( joystick );

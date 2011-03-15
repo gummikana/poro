@@ -18,5 +18,26 @@
  *
  ***************************************************************************/
 
-#include "texture_win.h"
+#ifndef INC_JOYSTICK_IMPL_H
+#define INC_JOYSTICK_IMPL_H
 
+#include "../joystick.h"
+
+namespace poro {
+
+class JoystickImpl : public Joystick 
+{
+public:
+	JoystickImpl( int id );
+	
+
+	// values are between [0 and 1]
+	// can be implemented on the platform is available
+	void Vibrate( const types::vec2& motor_forces );
+};
+
+void HandleJoystickImpl( JoystickImpl* joystick );
+
+} // end o namespace poro
+
+#endif

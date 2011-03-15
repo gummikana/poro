@@ -18,8 +18,8 @@
  *
  ***************************************************************************/
 
-#ifndef INC_GRAPHICS_WIN_H
-#define INC_GRAPHICS_WIN_H
+#ifndef INC_GRAPHICS_OPENGL_H
+#define INC_GRAPHICS_OPENGL_H
 
 #include "../poro_types.h"
 #include "../igraphics.h"
@@ -30,7 +30,7 @@ namespace poro {
 class ITexture;
 class IGraphicsBuffer;
 
-class GraphicsWin : public IGraphics
+class GraphicsOpenGL : public IGraphics
 {
 public:
 

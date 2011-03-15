@@ -27,15 +27,15 @@
 #endif
 
 #ifdef PORO_PLAT_WINDOWS
-#include "windows/platform_win.h"
+#include "desktop/windows/platform_win.h"
 #endif
 
 #ifdef PORO_PLAT_MAC
-#include "mac/platform_mac.h"
+#include "desktop/mac/platform_mac.h"
 #endif
 
 #ifdef PORO_PLAT_LINUX
-#include "linux/platform_linux.h"
+#include "desktop/linux/platform_linux.h"
 #endif
 
 #include <stdlib.h>

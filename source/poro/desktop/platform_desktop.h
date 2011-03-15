@@ -18,28 +18,28 @@
  *
  ***************************************************************************/
 
-#ifndef INC_PLATFORM_IPHONE_H
-#define INC_PLATFORM_IPHONE_H
+#ifndef INC_PLATFORM_DESKTOP_H
+#define INC_PLATFORM_DESKTOP_H
 
 #include <vector>
 
 #include "../iplatform.h"
 #include "../mouse.h"
 #include "../keyboard.h"
-#include "graphics_win.h"
-#include "soundplayer_win.h"
+#include "graphics_opengl.h"
+#include "soundplayer_sdl.h"
 
 namespace poro {
 
-class JoystickWin;
+class JoystickImpl;
 
-class PlatformWin : public IPlatform {
+class PlatformDesktop : public IPlatform {
+    
 public:
-	PlatformWin();
-	virtual ~PlatformWin();
+	PlatformDesktop();
+	virtual ~PlatformDesktop();
 
 	//platform setup
-	// virtual void Init(IApplication *application, int w, int h, bool fullscreen);
 	virtual void Init(IApplication *application, int w, int h, bool fullscreen, std::string = "Poro Application");
 	virtual void Exit(){ mRunning = false; }
 	
@@ -61,7 +61,6 @@ public:
 	//controllers
 	virtual Mouse*			GetMouse();
 	virtual Keyboard*		GetKeyboard();
-
 	virtual int				GetJoystickCount() const;
 	virtual Joystick*		GetJoystick( int n );
 
@@ -83,7 +82,7 @@ protected:
 
 	types::vec2		ConvertMouseToInternalSize( int x, int y );
 
-	GraphicsWin*				mGraphics;
+	GraphicsOpenGL*				mGraphics;
 	int							mFrameCount;
 	int                         mFrameCountLastTime;
 	float						mFrameRate;
@@ -92,8 +91,8 @@ protected:
 	int							mHeight;
 	Mouse*						mMouse;
 	Keyboard*					mKeyboard;
-	std::vector< JoystickWin* >	mJoysticks;
-	SoundPlayerWin*				mSoundPlayer;
+	std::vector< JoystickImpl* >	mJoysticks;
+	SoundPlayerSDL*		        mSoundPlayer;
 	bool						mRunning;
 	types::vec2					mMousePos;
 
@@ -102,30 +101,29 @@ private:
 
 //-------------------------- inlined functions -------------------------------------
 
-inline Mouse* PlatformWin::GetMouse() {
+inline Mouse* PlatformDesktop::GetMouse() {
 	return mMouse;
 }
 
-inline Keyboard* PlatformWin::GetKeyboard() {
+inline Keyboard* PlatformDesktop::GetKeyboard() {
 	return mKeyboard;
 }
 
-inline IGraphics* PlatformWin::GetGraphics() {
+inline IGraphics* PlatformDesktop::GetGraphics() {
 	return mGraphics;
 }
 
-inline ISoundPlayer* PlatformWin::GetSoundPlayer() {
+inline ISoundPlayer* PlatformDesktop::GetSoundPlayer() {
 	return mSoundPlayer;
 }
 
-inline float PlatformWin::GetFrameRate() {
+inline float PlatformDesktop::GetFrameRate() {
 	return mFrameRate;
 }
 
-inline int	PlatformWin::GetJoystickCount() const  {
+inline int	PlatformDesktop::GetJoystickCount() const  {
 	return (int)mJoysticks.size();
 }
-
 
 } // end o namespace poro
 
