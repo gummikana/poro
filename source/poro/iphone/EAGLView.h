@@ -35,8 +35,8 @@
  * Poro platform framework interface.
  */
 
-#ifndef _EAGLVIEW_H
-#define _EAGLVIEW_H
+#ifndef INC_EAGLVIEW_H
+#define INC_EAGLVIEW_H
 
 #import <UIKit/UIKit.h>
 #import <OpenGLES/EAGL.h>

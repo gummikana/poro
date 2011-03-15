@@ -18,6 +18,9 @@
  *
  ***************************************************************************/
 
+#ifndef INC_GLOBALS_IPHONE_H
+#define INC_GLOBALS_IPHONE_H
+
 #include "../iapplication.h"
 #include "../iwindow.h"
 #include "platform_iphone.h"
@@ -51,3 +54,5 @@ public:
 extern iPhoneGlobalsStruct iPhoneGlobals;
 
 }
+
+#endif

@@ -18,12 +18,11 @@
  *
  ***************************************************************************/
 
-#ifndef INC_TEXTURE_WIN_H
-#define INC_TEXTURE_WIN_H
+#ifndef INC_TEXTURE_OPENGLES_H
+#define INC_TEXTURE_OPENGLES_H
 
 #include "../itexture.h"
 #include "../libraries.h"
-//#include <stdint.h>
 #include "../poro_types.h"
 
 namespace poro {

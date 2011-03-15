@@ -18,8 +18,8 @@
  *
  ***************************************************************************/
 
-#ifndef SOUNDIPHONE_H
-#define SOUNDIPHONE_H
+#ifndef INC_SOUNDIPHONE_H
+#define INC_SOUNDIPHONE_H
 
 #include "../isound.h"
 #include "../poro_types.h"

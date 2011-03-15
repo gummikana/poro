@@ -18,8 +18,8 @@
  *
  ***************************************************************************/
 
-#ifndef SOUNDPLAYERIPHONE_H
-#define SOUNDPLAYERIPHONE_H
+#ifndef INC_SOUNDPLAYERIPHONE_H
+#define INC_SOUNDPLAYERIPHONE_H
 
 #include "../poro_types.h"
 #include "isoundplayer.h"

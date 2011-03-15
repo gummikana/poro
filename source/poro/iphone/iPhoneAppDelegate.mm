@@ -42,10 +42,6 @@
 #import <OpenGLES/ES1/glext.h>
 
 
-//#import "ofMain.h"
-//#import "ofxiPhone.h"
-//#import "ofxiPhoneExtras.h"
-
 @implementation iPhoneAppDelegate
 
 -(void) timerLoop {

@@ -6,6 +6,9 @@
 //  Copyright webbfarbror 2010. All rights reserved.
 //
 
+#ifndef INC_ROOTVIEWCONTROLLER_H
+#define INC_ROOTVIEWCONTROLLER_H
+
 #import <UIKit/UIKit.h>
 #import "EAGLView.h";
 #import "platform_iphone.h"
@@ -20,3 +23,5 @@
 -(void) applyOrientation;
 
 @end
+
+#endif

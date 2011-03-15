@@ -36,7 +36,8 @@
  */
 
 
-#pragma once
+#ifndef INC_IPHONEAPPDELEGATE_H
+#define INC_IPHONEAPPDELEGATE_H
 
 #import <UIKit/UIKit.h>
 
@@ -54,3 +55,4 @@
 
 @end
 
+#endif

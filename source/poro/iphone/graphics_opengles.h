@@ -18,8 +18,8 @@
  *
  ***************************************************************************/
 
-#ifndef INC_GRAPHICS_WIN_H
-#define INC_GRAPHICS_WIN_H
+#ifndef INC_GRAPHICS_OPENGLES_H
+#define INC_GRAPHICS_OPENGLES_H
 
 #include "../poro_types.h"
 #include "../igraphics.h"
