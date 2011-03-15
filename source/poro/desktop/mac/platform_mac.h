@@ -25,7 +25,7 @@
 
 namespace poro {
 
-class PlatformMac : public IPlatform {
+class PlatformMac : public PlatformDesktop {
 public:
 	//PlatformMac();
 	//virtual ~PlatformMac() {} 

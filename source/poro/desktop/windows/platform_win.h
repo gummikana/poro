@@ -25,7 +25,7 @@
 
 namespace poro {
 
-class PlatformWin : public IPlatform {
+class PlatformWin : public PlatformDesktop {
 public:
 	//PlatformWin();
 	//virtual ~PlatformWin();
