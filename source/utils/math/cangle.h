@@ -86,6 +86,10 @@ public:
 		return result;
 	}
 
+	bool operator==( const CAngle& other ) const {
+		return GetValue() == other.GetValue();
+	}
+
 private:
 	T mAng;
 };
