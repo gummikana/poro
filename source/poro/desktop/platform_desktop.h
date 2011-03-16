@@ -72,7 +72,7 @@ public:
 	virtual void	Sleep(int millis);
 
 	//filesystem
-	virtual void	SetWorkingDir(poro::types::string dir = poro::types::string("/"));
+	virtual void	SetWorkingDir(poro::types::string dir = poro::types::string("."));
 
 	void			SingleLoop();
 

@@ -23,21 +23,31 @@
 #include "../../libraries.h"
 
 void PlatformMac::SetWorkingDir(poro::types::string dir){
-	//Set the working directory inside the app pacakge for MAC and iPHOHE.
-	int maxpath = 1024;
-	char path[maxpath];
-	
-	CFBundleRef mainBundle = CFBundleGetMainBundle();
-	CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
-	if (!CFURLGetFileSystemRepresentation(resourcesURL, TRUE, (UInt8 *)path, maxpath))
-	{
-		std::cerr << "Failed to change the working directory!" << std::endl;
-		assert(false);
+    static std::string path_str = "";
+    const int maxpath = 1024;
+    char buffer[maxpath];
+        
+    if(path_str=="") {
+        //Set the default working directory inside the app pacakge for MAC and iPHOHE.
+        CFBundleRef mainBundle = CFBundleGetMainBundle();
+        CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
+        if (!CFURLGetFileSystemRepresentation(resourcesURL, TRUE, (UInt8 *)buffer, maxpath))
+        {
+            std::cerr << "Failed to change to the default working directory!" << std::endl;
+            poro_assert(false);
+        }
+        CFRelease(resourcesURL);
+        chdir(buffer);
 	}
-	CFRelease(resourcesURL);
+    
+    if(chdir(dir.c_str())==0){
+        getcwd(buffer, maxpath);
+	    poro_logger << "Changing working dir to " << buffer << std::endl;
+	} else {
+        getcwd(buffer, maxpath);
+	    poro_logger << "Error: Failed to change working dir to " << buffer << std::endl;
+	}
 	
-	chdir(path);
-	poro_logger << "Changing working dir to " << path << std::endl;
 }
 	
 } // end o namespace poro

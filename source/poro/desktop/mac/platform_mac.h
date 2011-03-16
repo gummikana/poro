@@ -31,7 +31,7 @@ public:
 	//virtual ~PlatformMac() {} 
 	
 	//filesystem
-	virtual void SetWorkingDir(poro::types::string dir = poro::types::string("/"));
+	virtual void SetWorkingDir(poro::types::string dir = poro::types::string("."));
 	
 private:	
 };

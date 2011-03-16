@@ -26,13 +26,12 @@
 namespace poro {
 
 void PlatformLinux::SetWorkingDir(poro::types::string dir){
-
+    char buffer[MAXPATHLEN];
+    
     if(chdir(dir.c_str())==0){
-        char buffer[MAXPATHLEN];
         getcwd(buffer, MAXPATHLEN);
 	    poro_logger << "Changing working dir to " << buffer << std::endl;
 	} else {
-        char buffer[MAXPATHLEN];
         getcwd(buffer, MAXPATHLEN);
 	    poro_logger << "Error: Failed to change working dir to " << buffer << std::endl;
 	}

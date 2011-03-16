@@ -38,7 +38,8 @@ public:
 	virtual void		SetInternalSize( types::Float32 width, types::Float32 height );
     virtual void        SetWindowSize(int width, int height);
     virtual void        SetFullscreen(bool fullscreen);
-    
+    virtual bool        GetFullscreen() { return mFullscreen; }
+
 	virtual ITexture*	CreateTexture( int width, int height );
 	virtual ITexture*	CloneTexture( ITexture* other );
 	virtual void		SetTextureData(ITexture* texture, void* data );
