@@ -40,8 +40,8 @@ const int PORO_WINDOWS_JOYSTICK_COUNT = 4;
 
 PlatformDesktop::PlatformDesktop() :
 	mGraphics( NULL ),
-	mFrameCountLastTime( 0 ),
 	mFrameCount( 0 ),
+	mFrameCountLastTime( 0 ),
 	mFrameRate( 0 ),
 	mOneFrameShouldLast( 16 ),
 	mWidth( 0 ),
@@ -69,7 +69,7 @@ void PlatformDesktop::Init(IApplication *application, int w, int h, bool fullscr
 	mWidth = w;
 	mHeight = h;
 	mApplication = application;
-	
+
 	mGraphics = new GraphicsOpenGL;
 	mGraphics->Init(w, h, fullscreen, title);
 
@@ -80,7 +80,7 @@ void PlatformDesktop::Init(IApplication *application, int w, int h, bool fullscr
 	mKeyboard = new Keyboard;
 
 	SDL_EnableUNICODE(1);
-	
+
 }
 
 void PlatformDesktop::SetApplication( IApplication* application )
@@ -208,7 +208,7 @@ void PlatformDesktop::HandleEvents() {
 					break;
 				}*/
 				if( mKeyboard )
-					mKeyboard->FireKeyDownEvent( 
+					mKeyboard->FireKeyDownEvent(
 						static_cast< int >( event.key.keysym.sym ),
 						static_cast< types::charset >( event.key.keysym.unicode ) );
 			}
@@ -217,7 +217,7 @@ void PlatformDesktop::HandleEvents() {
 			case SDL_KEYUP:
 			{
 				if( mKeyboard )
-					mKeyboard->FireKeyUpEvent( 
+					mKeyboard->FireKeyUpEvent(
 						static_cast< int >( event.key.keysym.sym ),
 						static_cast< types::charset >( event.key.keysym.unicode )  );
 			}

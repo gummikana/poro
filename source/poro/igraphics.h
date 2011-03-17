@@ -32,13 +32,17 @@
 namespace poro {
 
 	class IGraphicsBuffer;
-	
-class IGraphics 
+
+class IGraphics
 {
 public:
 	//-------------------------------------------------------------------------
-	
-	IGraphics() : mVertexMode(VERTEX_MODE_TRIANGLE_FAN), mClearBackground(true) { 
+	IGraphics() :
+        mClearBackground(true),
+        mFillColor(),
+        mVertexMode(VERTEX_MODE_TRIANGLE_FAN),
+        mVertexModes()
+    {
 		mFillColor[0] = 0.f;mFillColor[1] = 0.f; mFillColor[2] = 0.f; mFillColor[3] = 1.f;
 	}
 
@@ -63,16 +67,16 @@ public:
 	void				SetTextureData(ITexture* texture, unsigned char* data ){ SetTextureData(texture, (void*)data ); }
 	void				SetTextureData(ITexture* texture, float* data ){ SetTextureData(texture, (void*)data ); }
 	virtual void		SetTextureData(ITexture* texture, void* data );
-		
+
 	virtual ITexture*	LoadTexture( const types::string& filename ) = 0;
 	virtual void		ReleaseTexture( ITexture* texture )  = 0;
-	
+
 	//-------------------------------------------------------------------------
 
 	virtual void		BeginRendering() = 0;
 	virtual void		EndRendering() = 0;
     virtual void		SetClearBackground(bool clear) { mClearBackground=clear; }
-	
+
 	//-------------------------------------------------------------------------
 
 	enum {
@@ -83,11 +87,11 @@ public:
 	virtual void		PopVertexMode();
 
 	//-------------------------------------------------------------------------
-	
-	virtual void		DrawTexture(	ITexture* texture, 
-										types::Float32 x, types::Float32 y, types::Float32 w, types::Float32 h, 
+
+	virtual void		DrawTexture(	ITexture* texture,
+										types::Float32 x, types::Float32 y, types::Float32 w, types::Float32 h,
 										const types::fcolor& color, types::Float32 rotation )  = 0;
-	
+
 	virtual void		DrawTexture( ITexture* texture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color ) = 0;
 
 	virtual void		DrawTextureWithAlpha( ITexture* texture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color,
@@ -116,9 +120,9 @@ protected:
 	poro::types::fcolor mFillColor;
 	int mVertexMode;
 	std::stack<int> mVertexModes;
-	
+
 };
-	
+
 ///////////////////////////////////////////////////////////////////////////////
 
 inline void	IGraphics::PushVertexMode(int vertex_mode) {
@@ -129,8 +133,8 @@ inline void	IGraphics::PopVertexMode() {
 	mVertexMode = mVertexModes.top();
 	mVertexModes.pop();
 }
-	
-inline ITexture* IGraphics::CreateTexture(int width, int height) { 
+
+inline ITexture* IGraphics::CreateTexture(int width, int height) {
 	// If this fails, it means you have not implemented create texture
 	poro_assert( false );
 	return NULL;
@@ -141,7 +145,7 @@ inline void IGraphics::SetTextureData(ITexture* texture, void* data ) {
 	poro_assert( false );
 }
 
-inline IGraphicsBuffer* IGraphics::CreateGraphicsBuffer(int width, int height) { 
+inline IGraphicsBuffer* IGraphics::CreateGraphicsBuffer(int width, int height) {
 	// If this fails, it means you should implement grafics buffer on your end of things
 	poro_assert( false );
 	return NULL;
@@ -150,7 +154,7 @@ inline void IGraphics::DestroyGraphicsBuffer(IGraphicsBuffer* buffer){
 	// If this fails, it means you should implement grafics buffer on your end of things
 	poro_assert( false );
 }
-	
+
 ///////////////////////////////////////////////////////////////////////////////
 
 } // end o namespace poro

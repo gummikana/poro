@@ -23,9 +23,12 @@
 
 //#define PORO_TEST_REGISTER(x) do { (void)sizeof(x); } while(0)
 
-#include "utils/staticarray/staticarray.h"
-#include "tester/ctester.h"
-#include "tester/tester_utils.h"
+#include "../utils/staticarray/staticarray.h"
+
+#ifdef PORO_TESTER_ENABLED
+#include "../tester/ctester.h"
+#include "../tester/tester_utils.h"
+#endif
 
 namespace poro {
 
