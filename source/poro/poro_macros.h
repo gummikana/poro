@@ -21,13 +21,12 @@
 #ifndef INC_PORO_MACROS_H
 #define INC_PORO_MACROS_H
 
-// #include "../../../tester/ctester.h"
 #include "poro_types.h"
 
 #include <assert.h>
 #include <iostream>
 
-#define poro_logger std::cout 
+#define poro_logger std::cout
 #define poro_assert assert
 
 namespace poro {

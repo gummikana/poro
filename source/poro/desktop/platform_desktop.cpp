@@ -20,7 +20,7 @@
 
 #include "platform_desktop.h"
 
-#include "../poro_main.h"
+#include "../poro.h"
 #include "../libraries.h"
 
 #include "graphics_opengl.h"
