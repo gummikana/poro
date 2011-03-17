@@ -28,7 +28,7 @@
 #ifndef pow2_core_Assert_h
 #define pow2_core_Assert_h
 
-#include "poro/platform_defs.h"
+#include "../../poro/platform_defs.h"
 
 #define POW2_ASSERTS_ENABLED
 

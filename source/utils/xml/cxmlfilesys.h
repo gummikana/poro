@@ -101,19 +101,25 @@ public:
 
 	//! Basic constructors
 	CXmlFileSys() :
+        myFilename(),
+        myLine( 0 ),
 		myUseStrict( false ),
-		myChildPosition( 0 ),
+		myStatus( empty ),
 		myRootElement( NULL ),
 		myCurrentNode( NULL ),
-		myStatus( empty ) { }
+		myChildPosition( 0 )
+    { }
 
 	//! Basic constructor with node and status
 	CXmlFileSys( CXmlNode* node, FileSysStatus status ) :
+        myFilename(),
+        myLine( 0 ),
 		myUseStrict( false ),
-		myChildPosition( 0 ),
+        myStatus( status ),
 		myRootElement( node ),
 		myCurrentNode( node ),
-		myStatus( status ) { }
+		myChildPosition( 0 )
+	{ }
 
 	//! Deconstructor which doesn't do a crap.
 	~CXmlFileSys() { }

@@ -22,7 +22,7 @@
 #ifndef INC_CMEMORYPOOL_H
 #define INC_CMEMORYPOOL_H
 
-#include "poro/platform_defs.h"
+#include "../../poro/platform_defs.h"
 
 #ifdef PORO_PLAT_MAC
 	#include <malloc/malloc.h> // mac os x
@@ -186,8 +186,8 @@ public:
 
 	CMemoryPoolForObjects() :
 		myPools(),
-		myCleanThePoolCount( 0 ),
-		myFreePool( NULL )
+		myFreePool( NULL ),
+		myCleanThePoolCount( 0 )
 	{
 		myPools.push_back( new PoolType );
 		myFreePool = myPools[ 0 ];

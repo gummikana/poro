@@ -48,20 +48,20 @@ myVector[ 0 ] = std::string( "string" );
 //
 // 11.04.2006 Pete
 //		Fixed random bugs in GetType(), GetValue(), GetTypeInfo() and in the
-//		operator==(). Also added a unit test to bust the balls of 
+//		operator==(). Also added a unit test to bust the balls of
 //		CAnyContainer and unfortunaltely for me I found some nasty bugs that
-//		need busting. Also updated the CAnyContainer to use the new 
+//		need busting. Also updated the CAnyContainer to use the new
 //		cvarreference.h.
 //
 // 07.02.2005 Pete
-//		Fixed the std::string bug ( CAnyContainer could not be implicitly 
+//		Fixed the std::string bug ( CAnyContainer could not be implicitly
 //		converted from std::string, now it can )
 //
 // 09.01.2005 Pete
-//		Made the CAnyContainerCast much more efficent. Now it has a nice 
+//		Made the CAnyContainerCast much more efficent. Now it has a nice
 //		back-up functionality so that things don't have to be so strict with
 //		with the template parameters.
-//		
+//
 //=============================================================================
 
 // begin of canycontainer.h
@@ -117,7 +117,7 @@ class CContainer : public CContainerBase
 class CAnyContainer
 {
 public:
-    CAnyContainer() : myContainer( NULL ), myReference( NULL ), myEmpty( true ) {  AddBan( this ); }
+    CAnyContainer() : myEmpty( true ), myContainer( NULL ), myReference( NULL ) {  AddBan( this ); }
 
 	template < class _Ty >
     CAnyContainer( const _Ty& reference ) : myContainer( NULL ), myReference( NULL )
@@ -137,7 +137,7 @@ public:
 
     }
 
-	
+
 	// template<>
 	CAnyContainer( const std::string& reference ) : myContainer( NULL ), myReference( NULL )
 	{
@@ -145,7 +145,7 @@ public:
             {
                     delete myContainer;
                     delete myReference;
-            } 
+            }
             else
             {
                 RemoveBan( this );
@@ -218,7 +218,7 @@ public:
 		return ( tmp == reference );
 	}
 
-	
+
 	template< class _Ty >
 	bool operator < ( const _Ty& reference )
 	{
@@ -251,14 +251,14 @@ public:
             return GetValue();
     }
 
-	std::string GetType() const 
-	{ 
-		return myReference ? myReference->GetType() : ""; 
+	std::string GetType() const
+	{
+		return myReference ? myReference->GetType() : "";
 	}
-	
-	const std::type_info& GetTypeInfo() const  
-	{ 
-		return myContainer ? myContainer->GetTypeInfo() : typeid( void ); 
+
+	const std::type_info& GetTypeInfo() const
+	{
+		return myContainer ? myContainer->GetTypeInfo() : typeid( void );
 	}
 
 	bool IsEmpty()				{ return myEmpty; }
@@ -332,7 +332,7 @@ _Ty* CAnyContainerCasto( const CAnyContainer* container )
 {
 	// return CAnyContainerCast< _Ty >( const_cast< CAnyContainer* >( container ) );
 	CAnyContainer* t = const_cast< CAnyContainer* >( container );
-	
+
 	if ( typeid( _Ty ) == t->GetTypeInfo() )
 		return &static_cast< CContainer< _Ty >* >( t->_getContainerBase() )->myVar;
 	else return NULL;
@@ -344,13 +344,13 @@ _Ty CAnyContainerCast( const CAnyContainer& container )
 {
         _Ty* tmp_var = CAnyContainerCasto< _Ty >( &container );
 
-		if ( tmp_var == NULL ) 
+		if ( tmp_var == NULL )
 		{
 			_Ty temp_var;
 			container.GetValue( temp_var );
 			return temp_var;
 		}
-        
+
 		return (*tmp_var);
 }
 

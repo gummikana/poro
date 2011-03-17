@@ -26,7 +26,6 @@
 // used for mutex
 
 #include <string>
-#include "tester/ctester.h"
 #include "../debug.h"
 #include "../math/cvector2.h"
 
