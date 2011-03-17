@@ -10,6 +10,7 @@
 
 #include "isound.h"
 #include "itexture.h"
+#include "igraphics_buffer.h"
 
 #include "mouse.h"
 #include "keyboard.h"

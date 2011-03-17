@@ -19,6 +19,7 @@
  ***************************************************************************/
 
 #include "../libraries.h"
+#include "../iplatform.h"
 #include "graphics_buffer_opengl.h"
 #include "texture_opengl.h"
 
@@ -27,6 +28,7 @@ namespace {
 Uint32 GetNextPowerOfTwo(Uint32 input)
 {
 	--input;
+	input |= input >> 32;
 	input |= input >> 16;
 	input |= input >> 8;
 	input |= input >> 4;
@@ -85,7 +87,7 @@ void GraphicsBufferOpenGL::DrawTexture( ITexture* texture, types::vec2* vertices
 {
 	//Flip cords for buffer
 	for (int i=0; i<count; ++i) {
-		vertices[i].y = mTexture.GetHeight() - vertices[i].y;
+		vertices[i].y = poro::IPlatform::Instance()->GetInternalHeight() - vertices[i].y;
 	}
 	GraphicsOpenGL::DrawTexture( texture, vertices, tex_coords, count, color );
 }
@@ -94,6 +96,7 @@ void GraphicsBufferOpenGL::BeginRendering()
 {
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mBufferId);
 	glPushAttrib(GL_VIEWPORT_BIT);
+	// glViewport(0,0,mTexture.GetWidth(),mTexture.GetHeight());
 	glViewport(0,0,mTexture.GetWidth(),mTexture.GetHeight());
 
 	glClearColor(0, 0, 0, 0);

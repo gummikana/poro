@@ -21,17 +21,16 @@
 #ifndef INC_IGRAPHICS_H
 #define INC_IGRAPHICS_H
 
-#include "poro_types.h"
-#include "poro_macros.h"
-#include "itexture.h"
-//#include "igraphics_buffer.h"
-
 #include <vector>
 #include <stack>
 
+#include "poro_types.h"
+#include "poro_macros.h"
+#include "itexture.h"
+
 namespace poro {
 
-	class IGraphicsBuffer;
+class IGraphicsBuffer;
 
 class IGraphics
 {
@@ -90,7 +89,7 @@ public:
 
 	virtual void		DrawTexture(	ITexture* texture,
 										types::Float32 x, types::Float32 y, types::Float32 w, types::Float32 h,
-										const types::fcolor& color, types::Float32 rotation )  = 0;
+										const types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ), types::Float32 rotation = 0 )  = 0;
 
 	virtual void		DrawTexture( ITexture* texture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color ) = 0;
 

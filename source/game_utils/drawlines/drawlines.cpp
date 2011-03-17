@@ -46,13 +46,21 @@ void SetLineSmoothing( bool value ) {
 	smooth_lines = value;
 }
 
+bool GetLineSmoothing() {
+    return smooth_lines;
+}
+
 void SetLineWidth( float width ) {
 	line_width = width;
 }
 
+float GetLineWidth() {
+    return line_width;
+}
+
 //-----------------------------------------------------------------------------
 
-void DrawLine( poro::IGraphics* graphics, const types::vector2& i_p1, const types::vector2& i_p2, const poro::types::fcolor& color, types::camera* camera ) 
+void DrawLine( poro::IGraphics* graphics, const types::vector2& i_p1, const types::vector2& i_p2, const poro::types::fcolor& color, types::camera* camera )
 {
 	static std::vector< poro::types::vec2 > line( 2 );
 
@@ -71,12 +79,20 @@ void DrawLine( poro::IGraphics* graphics, const types::vector2& i_p1, const type
 	graphics->DrawLines( line, color, smooth_lines, line_width );
 }
 
+void DrawLines( poro::IGraphics* graphics, const std::vector< poro::types::vec2 >& lines, const poro::types::fcolor& color, types::camera* camera )
+{
+    cassert( camera == NULL );
+
+    graphics->DrawLines( lines, color, smooth_lines, line_width );
+}
+
+
 //-----------------------------------------------------------------------------
 
 void DrawArrow( poro::IGraphics* graphics, const types::vector2& p1, const types::vector2& p2, const poro::types::fcolor& color, float arrow_size, types::camera* camera  )
 {
 	DrawLine( graphics, p1, p2, color, camera );
-	
+
 	types::vector2 delta = p2 - p1;
 
 	types::vector2 a1 = p2 + types::vector2( -arrow_size, -arrow_size ).Rotate( delta.Angle() );
@@ -116,7 +132,7 @@ void DrawCircle( poro::IGraphics* graphics, const types::vector2& position, floa
 
 	// return debug_drawing;
 	// AddDebugLineDrawing( debug_drawing );
-	
+
 
 	cassert( graphics );
 	graphics->DrawLines( debug_drawing, color, smooth_lines, line_width );
