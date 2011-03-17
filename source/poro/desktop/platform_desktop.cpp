@@ -30,10 +30,6 @@
 
 namespace poro {
 
-namespace {
-	int mFrameRateUpdateCounter;
-} // end o anonymous namespace
-
 const int PORO_WINDOWS_JOYSTICK_COUNT = 4;
 
 //-----------------------------------------------------------------------------
@@ -41,9 +37,8 @@ const int PORO_WINDOWS_JOYSTICK_COUNT = 4;
 PlatformDesktop::PlatformDesktop() :
 	mGraphics( NULL ),
 	mFrameCount( 0 ),
-	mFrameCountLastTime( 0 ),
 	mFrameRate( 0 ),
-	mOneFrameShouldLast( 16 ),
+	mOneFrameShouldLast( 1.f / 60.f ),
 	mWidth( 0 ),
 	mHeight( 0 ),
 	mMouse( NULL ),
@@ -60,12 +55,11 @@ PlatformDesktop::~PlatformDesktop()
 {
 }
 //-----------------------------------------------------------------------------
-void PlatformDesktop::Init(IApplication *application, int w, int h, bool fullscreen, std::string title ) {
+void PlatformDesktop::Init( IApplication* application, int w, int h, bool fullscreen, std::string title ) {
 
 	mRunning = true;
 	mFrameCount = 1;
-	mFrameRateUpdateCounter = 0;
-	mFrameRate = -1.0f;
+	mFrameRate = -1;
 	mWidth = w;
 	mHeight = h;
 	mApplication = application;
@@ -96,10 +90,12 @@ void PlatformDesktop::StartMainLoop() {
 	if( mApplication )
 		mApplication->Init();
 
-    mFrameCountLastTime = 0;
+    types::Float32  mFrameCountLastTime = 0;
+    int             mFrameRateUpdateCounter = 0;
+
 	while( mRunning )
 	{
-	    const int time_before = GetUpTime();
+	    const types::Float32 time_before = GetUpTime();
 
 		SingleLoop();
 
@@ -108,18 +104,18 @@ void PlatformDesktop::StartMainLoop() {
 			mRunning = false;
 
 
-        const int time_after = GetUpTime();
-        const int elapsed_time = ( time_after - time_before );
+        const types::Float32 time_after = GetUpTime();
+        const types::Float32 elapsed_time = ( time_after - time_before );
         if( elapsed_time < mOneFrameShouldLast )
             Sleep( mOneFrameShouldLast - elapsed_time );
 
         // frame-rate check
         mFrameCount++;
         mFrameRateUpdateCounter++;
-        if( ( GetUpTime() - mFrameCountLastTime ) > 1000 )
+        if( ( GetUpTime() - mFrameCountLastTime ) >= 1.f )
         {
             mFrameCountLastTime = GetUpTime();
-            mFrameRate = (float)mFrameRateUpdateCounter;
+            mFrameRate = mFrameRateUpdateCounter;
             mFrameRateUpdateCounter = 0;
 
             // std::cout << "Fps: " << mFrameRate << std::endl;
@@ -152,32 +148,32 @@ void PlatformDesktop::Destroy() {
 }
 
 void PlatformDesktop::SetFrameRate( int targetRate) {
-	mFrameRate = (float)targetRate;
-	mOneFrameShouldLast = (int)((1000.f / (float)targetRate) + 0.5f );
+	mFrameRate = (types::Float32)targetRate;
+	mOneFrameShouldLast = 1.f / (types::Float32)targetRate;
 }
 
 int	PlatformDesktop::GetFrameNum() {
 	return mFrameCount;
 }
 
-int	PlatformDesktop::GetUpTime() {
-	return (int)SDL_GetTicks();
+types::Float32	PlatformDesktop::GetUpTime() {
+	return (types::Float32)( SDL_GetTicks() ) * 0.001f;
 }
 
-void PlatformDesktop::Sleep(int millis){
-	SDL_Delay( (Uint32)millis );
+void PlatformDesktop::Sleep( types::Float32 seconds ){
+	SDL_Delay( (Uint32)( seconds * 1000.f ) );
 }
 
 void PlatformDesktop::SingleLoop() {
 
 	HandleEvents();
 
-	poro_assert( poro::IPlatform::Instance()->GetApplication() );
+	poro_assert( GetApplication() );
 
-	poro::IPlatform::Instance()->GetApplication()->Update( mOneFrameShouldLast );
+	GetApplication()->Update( mOneFrameShouldLast );
 
 	mGraphics->BeginRendering();
-	poro::IPlatform::Instance()->GetApplication ()->Draw(mGraphics);
+	GetApplication ()->Draw(mGraphics);
 	mGraphics->EndRendering();
 
 }
@@ -286,7 +282,7 @@ void PlatformDesktop::SetWindowSize( int width, int height ) {
 
 //-----------------------------------------------------------------------------
 
-void PlatformDesktop::SetWorkingDir(poro::types::string dir){
+void PlatformDesktop::SetWorkingDir( poro::types::string dir ){
 	//TODO implement
 	//chdir(dir);
 }

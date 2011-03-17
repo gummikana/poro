@@ -56,7 +56,7 @@ namespace poro {
 	#error "unknown platform"
 #endif
 
-IPlatform * IPlatform::gInstance = &platform;
+IPlatform* IPlatform::gInstance = &platform;
 
 IPlatform::IPlatform() :
 	mApplication( NULL ),
@@ -75,7 +75,7 @@ IPlatform * IPlatform::Instance()
 	return gInstance;
 }
 
-void IPlatform::Init(IApplication *application,
+void IPlatform::Init(IApplication* application,
 					   int screenWidth,
 					   int screenHeight,
 					   bool fullscreen,
@@ -100,61 +100,61 @@ void IPlatform::SetApplication(IApplication* application){
 	mApplication = application;
 }
 
-IApplication * IPlatform::GetApplication(){
+IApplication* IPlatform::GetApplication(){
 	return mApplication;
 }
 
 //Screen and window
 int IPlatform::GetWidth()
 {
-	assert(gInstance!=NULL);
+	poro_assert( gInstance );
 	return gInstance->GetWidth();
 }
 
 int IPlatform::GetHeight()
 {
-	assert(gInstance!=NULL);
+	poro_assert( gInstance );
 	return gInstance->GetHeight();
 }
 
 bool IPlatform::GetOrientationIsLandscape(){
-	assert(gInstance!=NULL);
+	poro_assert( gInstance );
 	return gInstance->GetWidth() > gInstance->GetHeight();
 }
 
 //Timers
 int IPlatform::GetFrameNum(){
-	assert(gInstance!=NULL);
+	poro_assert( gInstance );
 	return gInstance->GetFrameNum();
 }
 
-float IPlatform::GetFrameRate(){
-	assert(gInstance!=NULL);
+int IPlatform::GetFrameRate(){
+	poro_assert( gInstance );
 	return gInstance->GetFrameRate();
 }
 
-int IPlatform::GetUpTime(){
-	assert(gInstance!=NULL);
+types::Float32 IPlatform::GetUpTime(){
+	poro_assert( gInstance );
 	return gInstance->GetUpTime();
 }
 
 void IPlatform::SetFrameRate(int targetRate){
-	assert(gInstance!=NULL);
+	poro_assert( gInstance );
 	gInstance->SetFrameRate(targetRate);
 }
 
-void IPlatform::Sleep(int millis){
-	assert(gInstance!=NULL);
-	gInstance->Sleep(millis);
+void IPlatform::Sleep( types::Float32 secs ){
+	poro_assert( gInstance );
+	gInstance->Sleep( secs );
 }
 
 void IPlatform::SetWorkingDir(poro::types::string dir){
-	assert(gInstance!=NULL);
+	poro_assert( gInstance );
 	gInstance->SetWorkingDir(dir);
 }
 
 poro::types::string IPlatform::GetDocumentDir(){
-	assert(gInstance!=NULL);
+	poro_assert( gInstance );
 	return gInstance->GetDocumentDir();
 }
 

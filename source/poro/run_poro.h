@@ -44,7 +44,7 @@ struct ApplicationConfig
 //=============================================================================<
 
 template< typename AppType >
-int RunApplication( const ApplicationConfig& conf = ApplicationConfig()  )
+int RunPoro( const ApplicationConfig& conf = ApplicationConfig()  )
 {
     poro::IPlatform::Instance()->SetWorkingDir();
 
