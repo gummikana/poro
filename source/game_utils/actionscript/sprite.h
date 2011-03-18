@@ -42,7 +42,6 @@ namespace as {
 // ----------------------------------------------------------------------------
 
 struct Transform;
-struct TextureRect;
 class Animations;
 class SpriteAnimationUpdater;
 
@@ -57,7 +56,7 @@ public:
 	virtual ~Sprite();
 
 	virtual int GetSpriteType() const { return 1; }
-	bool Empty() const { return myTexture == NULL; }
+	bool Empty() const { return mTexture == NULL; }
 
 	void KillSprite();
 	bool IsSpriteDead() const;
@@ -84,8 +83,8 @@ public:
 	const std::vector< float >& GetColor();
 	void 			SetRotation( float r );
 	float 			GetRotation();
-	void			SetVisibility( bool value ) { myVisible = value; }
-	bool			GetVisibility() const		{ return myVisible; }
+	void			SetVisibility( bool value ) { mVisible = value; }
+	bool			GetVisibility() const		{ return mVisible; }
 	
 	virtual types::vector2 GetSize() const;
 	virtual types::vector2 GetTextureSize() const;
@@ -105,21 +104,19 @@ public:
 	void			SetRect( const types::rect& r );
 	void			RemoveRect();
 
-	float		GetX() { return myXForm.position.x; }
-	float		GetY() { return myXForm.position.y; }
-	void		SetX( float x ) { myXForm.position.x = x; }
-	void		SetY( float y ) { myXForm.position.y = y; }
+	float		GetX() { return mXForm.position.x; }
+	float		GetY() { return mXForm.position.y; }
+	void		SetX( float x ) { mXForm.position.x = x; }
+	void		SetY( float y ) { mXForm.position.y = y; }
 
-	void		SetClearTweens( bool value )	{ myClearTweens = value; }
-	bool		GetClearTweens() const			{ return myClearTweens; }
+	void		SetClearTweens( bool value )	{ mClearTweens = value; }
+	bool		GetClearTweens() const			{ return mClearTweens; }
 
 
-	virtual bool Draw( poro::IGraphics* graphics, types::camera* camera, Transform& transform, TextureRect* texture_rect = NULL );
+	virtual bool Draw( poro::IGraphics* graphics, types::camera* camera, Transform& transform );
 protected:
-	virtual bool DrawChildren( poro::IGraphics* graphics, types::camera* camera, Transform& transform, TextureRect* texture_rect = NULL );
+	virtual bool DrawChildren( poro::IGraphics* graphics, types::camera* camera, Transform& transform );
 	virtual bool DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const types::xform& matrix );
-	virtual bool DrawRectWithAlphaMask( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const types::xform& matrix, TextureRect& texture_rect );
-	// bool DrawRectWithAlphaMask( 
 
 public:
 
@@ -128,36 +125,36 @@ public:
 	void Clear();
 
 	Sprite*		GetChildByName( const std::string& name );
-	void		SetName( const std::string& name )	{ myName = name; }
-	std::string	GetName() const						{ return myName; }
+	void		SetName( const std::string& name )	{ mName = name; }
+	std::string	GetName() const						{ return mName; }
 
-	void	SetAlphaMask( Sprite* alpha_mask )	{ myAlphaMask = alpha_mask; }
-	Sprite*	GetAlphaMask()						{ return myAlphaMask; }
+	void	SetAlphaMask( Sprite* alpha_mask )	{ mAlphaMask = alpha_mask; }
+	Sprite*	GetAlphaMask()						{ return mAlphaMask; }
 
 	
 	//-------------------------------------------------------------------------
 	struct RectAnimation
 	{
 		RectAnimation() :
-			myFrameCount( 0 ),
-			myCurrentFrame( 0 ),
-			myWidth( 0 ),
-			myHeight( 0 ),
-			myFramesPerRow( 4 ),
-			myWaitTime( 0 ),
-			myCurrentTime( 0 )
+			mFrameCount( 0 ),
+			mCurrentFrame( 0 ),
+			mWidth( 0 ),
+			mHeight( 0 ),
+			mFramesPerRow( 4 ),
+			mWaitTime( 0 ),
+			mCurrentTime( 0 )
 		{
 		}
 
 
-		int myFrameCount;
-		int myCurrentFrame;
-		int myWidth;
-		int myHeight;
-		int myFramesPerRow;
+		int mFrameCount;
+		int mCurrentFrame;
+		int mWidth;
+		int mHeight;
+		int mFramesPerRow;
 
-		float myWaitTime;
-		float myCurrentTime;
+		float mWaitTime;
+		float mCurrentTime;
 
 		void Update( Sprite* sprite, float dt );
 	};
@@ -168,7 +165,7 @@ public:
 	
 	// this is a global animations sheet that the animation for PlayAnimation is loaded from
 	// no need to release this
-	void SetAnimationsSheet( Animations* animation ) { myAnimations = animation; }
+	void SetAnimationsSheet( Animations* animation ) { mAnimations = animation; }
 
 	// if SetAnimationsSheet has not been called before this will do nothing
 	void PlayAnimation( const std::string& animation_name );
@@ -176,26 +173,30 @@ public:
 
 protected:
 
-	bool						myClearTweens;
-	Sprite*						myAlphaMask;
+	poro::IGraphicsBuffer*		GetAlphaBuffer( poro::IGraphics* graphics );
 
-	std::string					myName;
-	Image*						myTexture;
-	types::vector2				mySize;
-	types::vector2				myCenterOffset;
-	types::xform				myXForm;
-	int							myZ;
+	bool						mClearTweens;
+	Sprite*						mAlphaMask;
+	poro::IGraphicsBuffer*		mAlphaBuffer;
 
-	std::vector< float >		myColor;
-	bool						myDead;
-	bool						myVisible;
 
-	types::rect*				myRect;
+	std::string					mName;
+	Image*						mTexture;
+	types::vector2				mSize;
+	types::vector2				mCenterOffset;
+	types::xform				mXForm;
+	int							mZ;
+
+	std::vector< float >		mColor;
+	bool						mDead;
+	bool						mVisible;
+
+	types::rect*				mRect;
 
 	// animation stuff
-	std::auto_ptr< RectAnimation >			myRectAnimation;
-	Animations*								myAnimations;
-	std::auto_ptr< SpriteAnimationUpdater >	myAnimationUpdater;
+	std::auto_ptr< RectAnimation >			mRectAnimation;
+	Animations*								mAnimations;
+	std::auto_ptr< SpriteAnimationUpdater >	mAnimationUpdater;
 
 };
 
@@ -231,31 +232,6 @@ struct Transform
 
 //-----------------------------------------------------------------------------
 
-struct TextureRect
-{
-	TextureRect();
-	TextureRect( Sprite* sprite, types::rect* subrect );
-	
-	poro::types::vec2 verts[ 8 ];
-	poro::types::vec2 tex_coords[ 8 ];
-	poro::types::vec2 alpha_tex_coords[ 8 ];
-	types::rect m_rect;
-	types::rect m_texture_rect;
-	types::xform m_xform;
-	int count;
-	Sprite* alpha_sprite;
-
-
-	void SetAlphaSprite( Sprite* alpha_sprite_ );
-	void SetSprite( Sprite* sprite, types::rect* subrect );
-
-	types::vector2 GetTexturePos( const types::vector2& world_pos ) const;
-};
-
-//-----------------------------------------------------------------------------
-
-// forward declare
-
 void DrawSprite( Sprite* sprite, poro::IGraphics* graphics, types::camera* camera, Transform& transform );
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -265,23 +241,23 @@ inline types::vector2 Sprite::GetCenterPos() const {
 }
 
 inline void Sprite::MoveTo( const types::vector2& p ) { 
-	myXForm.position = p;
+	mXForm.position = p;
 }
 
 inline void Sprite::MoveBy( const types::vector2& p ) { 
 	MoveTo( GetPos() + p );
-	// myXForm.position += p;
+	// mXForm.position += p;
 }
 
 inline types::vector2 Sprite::GetPos() const {
-	return myXForm.position; 
+	return mXForm.position; 
 }
 
 inline void Sprite::Resize( float w, float h ) { 
-	if( mySize.x == 0 || mySize.y == 0 ) { 
+	if( mSize.x == 0 || mSize.y == 0 ) { 
 		SetScale( 0, 0 ); 
 	} else { 
-		SetScale( w / mySize.x, h / mySize.y );
+		SetScale( w / mSize.x, h / mSize.y );
 	} 
 }
 
@@ -298,7 +274,7 @@ inline void Sprite::SetScaleY( float y ) {
 }
 
 inline types::vector2 Sprite::GetScale() {
-	return myXForm.scale;
+	return mXForm.scale;
 }
 
 inline float Sprite::GetScaleX() { return GetScale().x; }
@@ -306,98 +282,98 @@ inline float Sprite::GetScaleX() { return GetScale().x; }
 inline float Sprite::GetScaleY() { return GetScale().y; }
 
 inline void Sprite::SetAlpha( float v ) { 
-	myColor[ 3 ] = ceng::math::Clamp( v, 0.f, 1.f ); 
+	mColor[ 3 ] = ceng::math::Clamp( v, 0.f, 1.f ); 
 }
 
 inline float Sprite::GetAlpha() { 
-	return myColor[ 3 ]; 
+	return mColor[ 3 ]; 
 }
 
 inline void Sprite::SetColor( float r, float g, float b ) { 
-	myColor[ 0 ] = r; myColor[ 1 ] = g; myColor[ 2 ] = b; 
+	mColor[ 0 ] = r; mColor[ 1 ] = g; mColor[ 2 ] = b; 
 }
 
 inline void Sprite::SetColor( const std::vector<float>& color) { 
-	myColor = color;
+	mColor = color;
 }
 inline const std::vector< float >& Sprite::GetColor() {
-	return myColor;
+	return mColor;
 }
 
 inline void Sprite::SetRotation( float angle ) { 
-	myXForm.R.Set( angle );
+	mXForm.R.Set( angle );
 }
 
 inline float Sprite::GetRotation() {
-	return myXForm.R.GetAngle();
+	return mXForm.R.GetAngle();
 }
 
 inline  types::vector2 Sprite::GetSize() const { 
-	return types::vector2( mySize.x * myXForm.scale.x, mySize.y * myXForm.scale.y ); 
+	return types::vector2( mSize.x * mXForm.scale.x, mSize.y * mXForm.scale.y ); 
 }
 
 inline  types::vector2 Sprite::GetTextureSize() const { 
-	return mySize; 
+	return mSize; 
 }
 
 inline void Sprite::KillSprite() { 
-	myDead = true; 
+	mDead = true; 
 }
 
 inline bool Sprite::IsSpriteDead() const {
-	return myDead;
+	return mDead;
 }
 
 inline void Sprite::SetTexture( Image* texture ) { 
-	myTexture = texture; 
-	// myTextures[ 0 ] = texture; 
+	mTexture = texture; 
+	// mTextures[ 0 ] = texture; 
 }
 
 inline Sprite::Image* Sprite::GetTexture() { 
-	return myTexture;
+	return mTexture;
 }
 
 inline void Sprite::SetZ( int z ) { 
-	myZ = z; 
+	mZ = z; 
 }
 
 inline int Sprite::GetZ() const { 
-	return myZ; 
+	return mZ; 
 }
 
 inline void Sprite::SetCenterOffset( const types::vector2& p ) { 
-	myCenterOffset = p; 
+	mCenterOffset = p; 
 }
 
 inline types::vector2 Sprite::GetCenterOffset() const {
-	return myCenterOffset;
+	return mCenterOffset;
 }
 
 inline void Sprite::SetSize( int w, int h ) { 
-	mySize.Set( (float)w, (float)h );
+	mSize.Set( (float)w, (float)h );
 	/*SetCenterOffset( types::vector2( 0.5f * w, 0.5f * h ) );*/
 }
 
 inline types::rect Sprite::GetRect() const { 
-	if( myRect )	return *myRect;
-	else			return types::rect( 0, 0, mySize.x, mySize.y ); 
+	if( mRect )	return *mRect;
+	else			return types::rect( 0, 0, mSize.x, mSize.y ); 
 }
 
 inline void Sprite::SetRect( const types::rect& r ) {
-	if( myRect == NULL ) myRect = new types::rect;
-	*myRect = r;
+	if( mRect == NULL ) mRect = new types::rect;
+	*mRect = r;
 }
 
 inline void Sprite::RemoveRect() {
-	if( myRect ) {
-		delete myRect;
-		myRect = NULL;
+	if( mRect ) {
+		delete mRect;
+		mRect = NULL;
 	}
 }
 
 
 inline types::xform	Sprite::GetXForm() const {
-	return myXForm;
+	return mXForm;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

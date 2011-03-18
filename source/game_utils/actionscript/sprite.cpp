@@ -28,204 +28,17 @@
 // LoadSprite requires these
 #include "../../poro/iplatform.h"
 #include "../../poro/igraphics.h"
-
-// AlphaMasking requires this
-#include "external/clipper.h"
+#include "../../poro/igraphics_buffer.h"
 
 #include "asset_loading/Animations.h"
 #include "asset_loading/AnimationUpdater.h"
 
 namespace as { 
-///////////////////////////////////////////////////////////////////////////////
-	
-TextureRect::TextureRect() : count( 4 ), alpha_sprite( NULL ) { }
-TextureRect::TextureRect( Sprite* sprite, types::rect* subrect ) : 
-	count( 4 ), 
-	alpha_sprite( NULL )
-{ 
-	// HACK TODO SHIT REMOVE ME
-	// alpha_sprite = sprite;
-	// SetSprite( sprite->GetTexture(), sprite, subrect ); 
-	// cassert( false  && "Fix me" );
-}
-	
-void TextureRect::SetAlphaSprite( Sprite* alpha_sprite_ )
-{
-	alpha_sprite = alpha_sprite_;
-
-	types::rect sub_image_rect = alpha_sprite->GetRect();
-
-	types::vector2 myCenterOffset = alpha_sprite->GetCenterOffset();
-
-	m_rect = sub_image_rect;
-	m_rect.x -= myCenterOffset.x;
-	m_rect.y -= myCenterOffset.y;
-
-	m_texture_rect = sub_image_rect;
-	m_texture_rect.x += myCenterOffset.x;
-	m_texture_rect.y += myCenterOffset.y;
-
-	// m_texture_rect.w /= m_xform.scale.x;
-	// m_texture_rect.h /= m_xform.scale.y;
-
-	verts[ 0 ].x = (float)0 - myCenterOffset.x;
-	verts[ 0 ].y = (float)0 - myCenterOffset.y;
-	verts[ 1 ].x = (float)(sub_image_rect.w) - myCenterOffset.x;
-	verts[ 1 ].y = (float)0 - myCenterOffset.y;
-	verts[ 2 ].x = (float)sub_image_rect.w - myCenterOffset.x;
-	verts[ 2 ].y = (float)sub_image_rect.h - myCenterOffset.y;
-	verts[ 3 ].x = (float)0 - myCenterOffset.x;
-	verts[ 3 ].y = (float)sub_image_rect.h - myCenterOffset.y;
-
-
-	tex_coords[ 0 ].x = sub_image_rect.x;
-	tex_coords[ 0 ].y = sub_image_rect.y;
-	tex_coords[ 1 ].x = sub_image_rect.x + sub_image_rect.w;
-	tex_coords[ 1 ].y = sub_image_rect.y;
-	tex_coords[ 2 ].x = sub_image_rect.x + sub_image_rect.w;
-	tex_coords[ 2 ].y = sub_image_rect.y + sub_image_rect.h;
-	tex_coords[ 3 ].x = sub_image_rect.x;
-	tex_coords[ 3 ].y = sub_image_rect.y + sub_image_rect.h;
-
-	m_xform = alpha_sprite->GetXForm();
-	for( int i = 0; i < 4; ++i )
-	{
-		// if( alphamask_xform ) verts[ i ] = ceng::math::Mul( *alphamask_xform, verts[ i ] );
-		verts[ i ] = ceng::math::Mul( m_xform,  verts[ i ] );
-		// verts[ i ] = ceng::math::Mul( transform, verts[ i ] );
-	}
-
-	// extra_transform = transform;
-	// m_xform = ceng::math::Mul( m_xform, transform );
-}
-
-void TextureRect::SetSprite( Sprite* sprite, types::rect* subrect )
-{
-	cassert( sprite );
-
-	types::rect sub_image_rect = sprite->GetRect();
-	if( subrect )
-		sub_image_rect = *subrect;
-
-	types::vector2 myCenterOffset = sprite->GetCenterOffset();
-	m_xform = sprite->GetXForm();
-
-	m_rect = sub_image_rect;
-	m_rect.x -= myCenterOffset.x;
-	m_rect.y -= myCenterOffset.y;
-
-	m_texture_rect = sub_image_rect;
-	m_texture_rect.x += myCenterOffset.x;
-	m_texture_rect.y += myCenterOffset.y;
-
-	// m_texture_rect.w /= m_xform.scale.x;
-	// m_texture_rect.h /= m_xform.scale.y;
-
-	verts[ 0 ].x = (float)0 - myCenterOffset.x;
-	verts[ 0 ].y = (float)0 - myCenterOffset.y;
-	verts[ 1 ].x = (float)(sub_image_rect.w) - myCenterOffset.x;
-	verts[ 1 ].y = (float)0 - myCenterOffset.y;
-	verts[ 2 ].x = (float)sub_image_rect.w - myCenterOffset.x;
-	verts[ 2 ].y = (float)sub_image_rect.h - myCenterOffset.y;
-	verts[ 3 ].x = (float)0 - myCenterOffset.x;
-	verts[ 3 ].y = (float)sub_image_rect.h - myCenterOffset.y;
-
-
-	tex_coords[ 0 ].x = sub_image_rect.x;
-	tex_coords[ 0 ].y = sub_image_rect.y;
-	tex_coords[ 1 ].x = sub_image_rect.x + sub_image_rect.w;
-	tex_coords[ 1 ].y = sub_image_rect.y;
-	tex_coords[ 2 ].x = sub_image_rect.x + sub_image_rect.w;
-	tex_coords[ 2 ].y = sub_image_rect.y + sub_image_rect.h;
-	tex_coords[ 3 ].x = sub_image_rect.x;
-	tex_coords[ 3 ].y = sub_image_rect.y + sub_image_rect.h;
-
-	for( int i = 0; i < 4; ++i )
-	{
-		verts[ i ] = ceng::math::Mul( m_xform,  verts[ i ] );
-	}
-}
-
-types::vector2 TextureRect::GetTexturePos( const types::vector2& world_pos ) const
-{
-	types::vector2 local_p = world_pos;
-	// local_p = ceng::math::MulT( extra_transform, world_pos );
-	local_p = ceng::math::MulT( m_xform, local_p );
-	
-	// as a float value [0,1], [0,1]
-	// used to be: const types::vector2 as_float( ( local_p.x - m_rect.x ) / m_rect.w, ( local_p.y - m_rect.y ) / m_rect.h );
-	const types::vector2 as_float( ( local_p.x - 0 ) / m_rect.w, ( local_p.y - 0 ) / m_rect.h );
-
-	
-	// convert the float value to texture coords
-	const types::vector2 texture_pos( ( as_float.x * m_texture_rect.w ) + m_texture_rect.x, ( as_float.y * m_texture_rect.h ) + m_texture_rect.y );
-
-	return texture_pos;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
-
 namespace {
 
-std::vector< TextureRect > ClipTextureRects( const TextureRect& one, const TextureRect& two )
-{
-	std::vector< TextureRect > result;
-
-	using namespace clipper;
-	TPolygon poly1;
-	for( int i = 0; i < one.count; ++i )
-		poly1.push_back( DoublePoint( (double)one.verts[i].x, (double)one.verts[i].y ) );
-
-	TPolygon poly2;
-	for( int i = 0; i < two.count; ++i )
-		poly2.push_back( DoublePoint( (double)two.verts[i].x, (double)two.verts[i].y ) );
-
-	TPolyPolygon solution;
-	Clipper c;
-	TPolyPolygon subject;
-	TPolyPolygon clip;
-	subject.push_back( poly2 );
-	clip.push_back( poly1 );
-	c.AddPolyPolygon(subject, clipper::ptSubject);
-	c.AddPolyPolygon(clip, clipper::ptClip);
-	c.Execute(clipper::ctIntersection, solution);
-
-	// create result rect
-	// cassert( solution.size() == 1 );
-	for( std::size_t j = 0; j < solution.size(); ++j )
-	{
-		/*if( j != 0 )
-			continue;*/
-		TextureRect text_rect;
-		text_rect.count = (int)solution[j].size();
-
-		for( std::size_t i = 0; i < solution[j].size(); ++i )
-		{
-			cassert( solution[j].size() <= 8 );
-			text_rect.verts[i].x = (float)solution[j][i].X;
-			text_rect.verts[i].y = (float)solution[j][i].Y;
-
-			const types::vector2 texture_pos = one.GetTexturePos( types::vector2( text_rect.verts[i]  ) );
-			text_rect.tex_coords[i].x = texture_pos.x;
-			text_rect.tex_coords[i].y = texture_pos.y;
-
-			// alpha mask position
-			const types::vector2 alphamask_pos = two.GetTexturePos( types::vector2( text_rect.verts[i]  ) );
-			text_rect.alpha_tex_coords[i].x = alphamask_pos.x;
-			text_rect.alpha_tex_coords[i].y = alphamask_pos.y;
-
-		}
-
-		result.push_back( text_rect );
-	}
-	
-	return result;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-std::map< std::string, poro::ITexture* > mTextureBuffer;
-
+	std::map< std::string, poro::ITexture* > mTextureBuffer;
 
 } // end of anonymous namespace
 //-----------------------------------------------------------------------------
@@ -303,42 +116,44 @@ Sprite* LoadSprite( const std::string& filename )
 
 Sprite::Sprite() : 
 	DisplayObjectContainer(),
-	myClearTweens( true ),
-	myTexture( NULL ),
-	mySize( 0, 0 ),
-	myCenterOffset( 0, 0 ),
-	myXForm(),
-	myZ( 100 ),
-	myColor( 4 ),
-	myDead( false ),
-	myVisible( true ),
-	myAlphaMask( NULL ),
-	myRect( NULL ),
-	myRectAnimation( NULL ),
-	myAnimations( NULL ),
-	myAnimationUpdater( NULL )
+	mClearTweens( true ),
+	mAlphaMask( NULL ),
+	mAlphaBuffer( NULL ),
+	mName( "" ),
+	mTexture( NULL ),
+	mSize( 0, 0 ),
+	mCenterOffset( 0, 0 ),
+	mXForm(),
+	mZ( 100 ),
+	mColor( 4 ),
+	mDead( false ),
+	mVisible( true ),
+	mRect( NULL ),
+	mRectAnimation( NULL ),
+	mAnimations( NULL ),
+	mAnimationUpdater( NULL )
 {
-	myColor[ 0 ] = 1.f;
-	myColor[ 1 ] = 1.f;
-	myColor[ 2 ] = 1.f;
-	myColor[ 3 ] = 1.f;
+	mColor[ 0 ] = 1.f;
+	mColor[ 1 ] = 1.f;
+	mColor[ 2 ] = 1.f;
+	mColor[ 3 ] = 1.f;
 }
 
 Sprite::~Sprite()
 {
 	// for debug reasons
-	if( myClearTweens ) GTweenClearSpriteOfTweens( this );
+	if( mClearTweens ) GTweenClearSpriteOfTweens( this );
 
-	delete myAlphaMask;
-	myAlphaMask = NULL;
+	delete mAlphaMask;
+	mAlphaMask = NULL;
 
-	delete myRect;
-	myRect = NULL;
+	delete mRect;
+	mRect = NULL;
 
-	if( myFather )
-		myFather->removeChild( this );
+	if( mFather )
+		mFather->removeChild( this );
 
-	myFather = NULL;
+	mFather = NULL;
 
 	Clear();
 }
@@ -346,7 +161,7 @@ Sprite::~Sprite()
 Sprite* Sprite::GetChildByName( const std::string& name )
 {
 	ChildList::iterator i;
-	for( i = myChildren.begin(); i != myChildren.end(); ++i )
+	for( i = mChildren.begin(); i != mChildren.end(); ++i )
 	{
 		Sprite* sprite = dynamic_cast< Sprite* >(*i);
 		if( sprite &&
@@ -356,100 +171,134 @@ Sprite* Sprite::GetChildByName( const std::string& name )
 
 	return NULL;
 }
-
 ///////////////////////////////////////////////////////////////////////////////
-
-/*
-void Sprite::AddChild( Sprite* sprite )
-{
-	cassert( sprite->myFather == NULL );
-	sprite->myFather = this;
-	myChildren.push_back( sprite );
-
-	// sort things?
-}
-
-void Sprite::RemoveChild( Sprite* sprite )
-{
-	std::list< DisplayObjectContainer* >::iterator i = std::find( myChildren.begin(), myChildren.end(), sprite );
-	if( i != myChildren.end() )
-		myChildren.erase( i );
-}
-*/
-
-//-----------------------------------------------------------------------------
 
 void Sprite::Clear()
 {
-	std::list< DisplayObjectContainer* > erase_me = myChildren;
+	std::list< DisplayObjectContainer* > erase_me = mChildren;
 	for( std::list< DisplayObjectContainer* >::iterator i = erase_me.begin(); i != erase_me.end(); ++i )
 		delete *i;
 	
 
-	myChildren.clear();
+	mChildren.clear();
 }
 
 //-----------------------------------------------------------------------------
+} // end of namespace as
+namespace ceng {
+namespace math {
 
-bool Sprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& transform, TextureRect* texture_rect ) 
-{ 
-	if( myVisible == false || this->GetScaleX() == 0 || this->GetScaleY() == 0 )
-		return true;
+template< class Type >
+CXForm< Type > MulT( const CXForm< Type >& T, const CXForm< Type >& v )
+{
+	
+	CXForm< Type > result;
 
-	// if we have an alpha mask we set it up drawing with it
-	if( myAlphaMask )
+	result.scale.x = v.scale.x / T.scale.x;
+	result.scale.y = v.scale.y / T.scale.y;
+	result.R = Mul( T.R.Invert(), v.R );
+
+	result.position.x = ( v.position.x - T.position.x ) / T.scale.x;
+	result.position.y = ( v.position.y - T.position.y ) / T.scale.y;
+	// result.position = v.position - T.position;
+	result.position = MulT( T.R, result.position );
+	
+
+
+	return result;
+}
+
+} // end of namespace math
+} // end of namespace ceng
+
+namespace as {
+
+poro::IGraphicsBuffer* Sprite::GetAlphaBuffer( poro::IGraphics* graphics )
+{
+	if( mAlphaBuffer == NULL )
 	{
-		if( myAlphaMask->GetScaleX() == 0 || 
-			myAlphaMask->GetScaleY() == 0 )
-			return true;
-
-
-		static TextureRect m_alphamask_rect;
-		m_alphamask_rect.SetAlphaSprite( myAlphaMask );
-
-		// if you don't want the parent to transform the alpha mask remove this->GetXForm() part
-		types::xform alpha_transform = ceng::math::Mul( transform.GetXForm(), this->GetXForm() );
-		for( int i = 0; i < m_alphamask_rect.count; ++i )
-		{
-			m_alphamask_rect.verts[ i ] = ceng::math::Mul( alpha_transform, m_alphamask_rect.verts[ i ] );
-			if( camera ) m_alphamask_rect.verts[ i ] = camera->Transform( m_alphamask_rect.verts[ i ] );
-		}
-
-		m_alphamask_rect.m_xform = ceng::math::Mul(  alpha_transform, m_alphamask_rect.m_xform );
-		m_alphamask_rect.m_texture_rect.w /= m_alphamask_rect.m_xform.scale.x;
-		m_alphamask_rect.m_texture_rect.h /= m_alphamask_rect.m_xform.scale.y;
-
-		texture_rect = &m_alphamask_rect;
+		cassert( graphics );
+		cassert( GetTextureSize().x > 0 );
+		cassert( GetTextureSize().y > 0 );
+		mAlphaBuffer = graphics->CreateGraphicsBuffer( (int)GetTextureSize().x, (int)GetTextureSize().y );
 	}
 
-	types::rect draw_rect( 0, 0, mySize.x, mySize.y );
-	if( myRect ) 
-		draw_rect = *myRect;
+	cassert( mAlphaBuffer );
+	cassert( GetTextureSize().x > 0 );
+	cassert( GetTextureSize().y > 0 );
+	mAlphaBuffer->SetGraphicsBufferScale( 
+		poro::IPlatform::Instance()->GetInternalWidth() / GetTextureSize().x, 
+		poro::IPlatform::Instance()->GetInternalHeight() / GetTextureSize().y );
 
-	if( texture_rect )
-		DrawRectWithAlphaMask( draw_rect, graphics, camera, transform.GetXForm(), *texture_rect ); 
-	else
-		DrawRect( draw_rect, graphics, camera, transform.GetXForm() ); 
+	return mAlphaBuffer;
+}
 
+bool Sprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& transform ) 
+{ 
+	if( mVisible == false || this->GetScaleX() == 0 || this->GetScaleY() == 0 )
+		return true;
+
+	poro::IGraphicsBuffer* alpha_buffer = NULL;
+	poro::IGraphics* ex_graphics = NULL;
+	// if we have an alpha mask we set it up drawing with it
+	if( mAlphaMask )
+	{
+		if( mAlphaMask->GetScaleX() == 0 || mAlphaMask->GetScaleY() == 0 )
+			return true;
+
+		// the alpha mask is the child of the mask of the other
+		types::xform x = ceng::math::Mul( GetXForm(), mAlphaMask->GetXForm() );
+		
+		types::xform o;
+		x = ceng::math::MulT( x, o );
+		x.position += mAlphaMask->GetCenterOffset(); 
+		transform.PushXForm( x );	
+
+		alpha_buffer = mAlphaMask->GetAlphaBuffer( graphics );
+		cassert( alpha_buffer );
+		alpha_buffer->BeginRendering();
+		ex_graphics = graphics;
+		graphics = alpha_buffer;
+	}
+
+	types::rect draw_rect( 0, 0, mSize.x, mSize.y );
+	if( mRect ) draw_rect = *mRect;
+
+	DrawRect( draw_rect, graphics, camera, transform.GetXForm() ); 
 	
 	// draw all children
-	DrawChildren( graphics, camera, transform, texture_rect );
+	DrawChildren( graphics, camera, transform );
+
+	if( mAlphaMask ) 
+	{
+		cassert( alpha_buffer );
+		cassert( ex_graphics );
+		alpha_buffer->EndRendering();
+		transform.PopXForm();
+
+		graphics = ex_graphics;
+
+		transform.PushXForm( mXForm );
+		mAlphaMask->Draw( graphics, camera, transform );
+		transform.PopXForm();
+
+	}
 	return true;
 }
 
 //-----------------------------------------------------------------------------
 
-bool Sprite::DrawChildren( poro::IGraphics* graphics, types::camera* camera, Transform& transform, TextureRect* texture_rect )
+bool Sprite::DrawChildren( poro::IGraphics* graphics, types::camera* camera, Transform& transform )
 {
-	if( myChildren.empty() )
+	if( mChildren.empty() )
 		return true;
 
-	transform.PushXForm( myXForm );
+	transform.PushXForm( mXForm );
 
 	std::list< DisplayObjectContainer* >::iterator i;
 	Sprite* current = NULL;
 
-	for( i = myChildren.begin(); i != myChildren.end(); )
+	for( i = mChildren.begin(); i != mChildren.end(); )
 	{
 		cassert( *i );
 		cassert( (*i)->GetFather() == this );
@@ -460,14 +309,14 @@ bool Sprite::DrawChildren( poro::IGraphics* graphics, types::camera* camera, Tra
 			cassert( current );
 			if( current->IsSpriteDead() == false )
 			{
-				current->Draw( graphics, camera, transform, texture_rect );
+				current->Draw( graphics, camera, transform );
 				++i;
 			}
 			else 
 			{
 				std::list< DisplayObjectContainer* >::iterator remove = i;
 				++i;
-				myChildren.erase( remove );
+				mChildren.erase( remove );
 				// current->SetFather( NULL );
 				delete current;
 			}
@@ -485,109 +334,9 @@ bool Sprite::DrawChildren( poro::IGraphics* graphics, types::camera* camera, Tra
 
 //-----------------------------------------------------------------------------
 
-bool Sprite::DrawRectWithAlphaMask( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const types::xform& matrix, TextureRect& m_alphamask_rect )
-{
-	if( myTexture == NULL )
-		return false;
-
-	cassert( m_alphamask_rect.alpha_sprite );
-
-	if( true )
-	{
-		types::rect dest_rect(rect.x, rect.y, rect.w, rect.h );
-	
-		poro::types::fcolor color_me = poro::GetFColor( myColor[ 0 ], myColor[ 1 ], myColor[ 2 ], myColor[ 3 ] );
-	
-		if( graphics ) 
-		{
-			TextureRect m_texture_rect;
-			m_texture_rect.SetSprite( this, &dest_rect );
-	
-			if( true )
-			{
-				for( int i = 0; i < m_texture_rect.count; ++i )
-				{
-					// temp_verts[ i ] = ceng::math::Mul( myXForm,  temp_verts[ i ] );
-					m_texture_rect.verts[ i ] = ceng::math::Mul( matrix, m_texture_rect.verts[ i ] );
-					
-					if( camera )
-						m_texture_rect.verts[ i ] = camera->Transform( m_texture_rect.verts[ i ] );
-				}
-
-				m_texture_rect.m_xform = ceng::math::Mul( matrix, m_texture_rect.m_xform );
-				m_texture_rect.m_texture_rect.w /= m_texture_rect.m_xform.scale.x;
-				m_texture_rect.m_texture_rect.h /= m_texture_rect.m_xform.scale.y;
-
-				// m_texture_rect.m_xform = ceng::math::Mul( matrix, m_texture_rect.m_xform );
-			}
-
-	
-
-			// if wireframe
-			const bool draw_wireframe = false;
-			if( draw_wireframe )
-			{
-				{
-					std::vector< poro::types::vec2 > points;
-					for( int i = 0; i < m_alphamask_rect.count; ++i )
-						points.push_back( m_alphamask_rect.verts[ i ] );
-
-					graphics->DrawLines( points, poro::GetFColor( 0, 0, 1, 1 ) );
-				}
-				
-				{
-					std::vector< poro::types::vec2 > points;
-					for( int i = 0; i < m_texture_rect.count; ++i )
-						points.push_back( m_texture_rect.verts[ i ] );
-
-					graphics->DrawLines( points, poro::GetFColor( 1, 0, 0, 1 ) );
-				}
-			}
-
-			std::vector< TextureRect > vresult = ClipTextureRects( m_texture_rect, m_alphamask_rect );
-
-			for( std::size_t j = 0; j < vresult.size(); ++j )
-			{
-				TextureRect& result = vresult[ j ];
-				cassert( result.count > 0 );
-				if( result.count == 0 ) return false;
-
-		
-				if( true )
-				{
-					// graphics->PushVertexMode( poro::IGraphics::VERTEX_MODE_TRIANGLE_STRIP );
-					graphics->DrawTextureWithAlpha( 
-						myTexture, result.verts, result.tex_coords, result.count, color_me,
-						m_alphamask_rect.alpha_sprite->GetTexture(), result.verts, result.alpha_tex_coords, poro::GetFColor( 1, 1, 1, 1 ) );
-					// graphics->PopVertexMode();
-				}
-				
-				// if wireframe
-				if( draw_wireframe )
-				{
-					std::vector< poro::types::vec2 > points;
-					for( int i = 0; i < result.count; ++i )
-						points.push_back( result.verts[ i ] );
-
-					graphics->DrawLines( points, poro::GetFColor( 0, 1, 0, 1 ) );
-				}
-
-				/*
-				graphics->DrawTextureWithAlpha( myTexture, temp_verts, tex_coords, color_me, 
-					myAlphaMask, temp_verts, tex_coords, poro::GetFColor( 1, 1, 1, 1 ) );
-				/*else
-					graphics->DrawTexture( myTexture, result.verts[ i ], tex_coords, color_me );
-					*/
-			}
-		}
-	}
-
-	return true;
-}
-
 bool Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const types::xform& matrix )
 {
-	if( myTexture == NULL )
+	if( mTexture == NULL && mAlphaBuffer == NULL )
 		return false;
 
 	static poro::types::vec2 temp_verts[ 4 ];
@@ -596,19 +345,19 @@ bool Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 	{
 
 		types::rect dest_rect(rect.x, rect.y, rect.w, rect.h );
-		poro::types::fcolor color_me = poro::GetFColor( myColor[ 0 ], myColor[ 1 ], myColor[ 2 ], myColor[ 3 ] );
+		poro::types::fcolor color_me = poro::GetFColor( mColor[ 0 ], mColor[ 1 ], mColor[ 2 ], mColor[ 3 ] );
 	
 		if( graphics ) 
 		{
 
-			temp_verts[ 0 ].x = (float)0 - myCenterOffset.x;
-			temp_verts[ 0 ].y = (float)0 - myCenterOffset.y;
-			temp_verts[ 1 ].x = (float)0 - myCenterOffset.x;
-			temp_verts[ 1 ].y = (float)dest_rect.h - myCenterOffset.y;
-			temp_verts[ 3 ].x = (float)(dest_rect.w) - myCenterOffset.x;
-			temp_verts[ 3 ].y = (float)0 - myCenterOffset.y;
-			temp_verts[ 2 ].x = (float)dest_rect.w - myCenterOffset.x;
-			temp_verts[ 2 ].y = (float)dest_rect.h - myCenterOffset.y;
+			temp_verts[ 0 ].x = (float)0 - mCenterOffset.x;
+			temp_verts[ 0 ].y = (float)0 - mCenterOffset.y;
+			temp_verts[ 1 ].x = (float)0 - mCenterOffset.x;
+			temp_verts[ 1 ].y = (float)dest_rect.h - mCenterOffset.y;
+			temp_verts[ 3 ].x = (float)(dest_rect.w) - mCenterOffset.x;
+			temp_verts[ 3 ].y = (float)0 - mCenterOffset.y;
+			temp_verts[ 2 ].x = (float)dest_rect.w - mCenterOffset.x;
+			temp_verts[ 2 ].y = (float)dest_rect.h - mCenterOffset.y;
 
 			tex_coords[ 0 ].x = dest_rect.x;
 			tex_coords[ 0 ].y = dest_rect.y;
@@ -623,7 +372,7 @@ bool Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 			{
 				for( int i = 0; i < 4; ++i )
 				{
-					temp_verts[ i ] = ceng::math::Mul( myXForm,  temp_verts[ i ] );
+					temp_verts[ i ] = ceng::math::Mul( mXForm,  temp_verts[ i ] );
 					temp_verts[ i ] = ceng::math::Mul( matrix, temp_verts[ i ] );
 					
 					if( camera )
@@ -631,13 +380,16 @@ bool Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 				}
 			}
 
-			/*if( myAlphaMask )
-				graphics->DrawTextureWithAlpha( myTexture, temp_verts, tex_coords, color_me, 
-					myAlphaMask, temp_verts, tex_coords, poro::GetFColor( 1, 1, 1, 1 ) );
-			else*/
-			//graphics->PushVertexMode(poro::IGraphics::VERTEX_MODE_TRIANGLE_STRIP);
-			graphics->DrawTexture( myTexture, temp_verts, tex_coords, 4, color_me );
-			//graphics->PopVertexMode();
+			if( mAlphaBuffer ) 
+			{
+				graphics->DrawTextureWithAlpha( mTexture, temp_verts, tex_coords, 4, color_me,
+					mAlphaBuffer->GetTexture(), temp_verts, tex_coords, color_me );
+				// graphics->DrawTexture( mAlphaBuffer->GetTexture(), temp_verts, tex_coords, 4, color_me );
+			}
+			else
+			{
+				graphics->DrawTexture( mTexture, temp_verts, tex_coords, 4, color_me );
+			}
 		}
 
 		return true;
@@ -659,16 +411,16 @@ void DrawSprite( Sprite* sprite, poro::IGraphics* graphics, types::camera* camer
 void Sprite::Update( float dt )
 {
 	
-	if( myRectAnimation.get() ) 
-		myRectAnimation->Update( this, dt );
+	if( mRectAnimation.get() ) 
+		mRectAnimation->Update( this, dt );
 
-	if( myAnimationUpdater.get() ) 
-		myAnimationUpdater->Update( dt );
+	if( mAnimationUpdater.get() ) 
+		mAnimationUpdater->Update( dt );
 
 
 	// update children as well
 	ChildList::iterator i;
-	for( i = myChildren.begin(); i != myChildren.end(); ++i )
+	for( i = mChildren.begin(); i != mChildren.end(); ++i )
 	{
 		Sprite* sprite = dynamic_cast< Sprite* >(*i);
 		if( sprite )
@@ -678,15 +430,13 @@ void Sprite::Update( float dt )
 //=============================================================================
 
 void Sprite::SetScale( float w, float h ) { 
-	myXForm.scale.x = w; 
-	myXForm.scale.y = h; 
+	mXForm.scale.x = w; 
+	mXForm.scale.y = h; 
 }
 
 //=============================================================================
 
 void Sprite::MoveCenterTo( const types::vector2& p ) { 
-	// BUG BUG BUG
-	// MoveTo( p - ceng::math::Mul( myCenterOffset, myXForm.scale ) );
 	MoveTo( p );
 }
 
@@ -711,70 +461,70 @@ types::rect FigureOutRectPos( int frame, int width, int height, int how_many_per
 
 void Sprite::RectAnimation::Update( Sprite* sprite, float dt )
 {
-	myCurrentTime += dt;
-	if( myWaitTime > 0 ) {
-		while( myCurrentTime >= myWaitTime ) {
-			myCurrentTime -= myWaitTime;
-			myCurrentFrame++;
-			if( myCurrentFrame >= myFrameCount )
-				myCurrentFrame = 0;
+	mCurrentTime += dt;
+	if( mWaitTime > 0 ) {
+		while( mCurrentTime >= mWaitTime ) {
+			mCurrentTime -= mWaitTime;
+			mCurrentFrame++;
+			if( mCurrentFrame >= mFrameCount )
+				mCurrentFrame = 0;
 		}
 	}
 
 	cassert( sprite );
-	sprite->SetRect( FigureOutRectPos( myCurrentFrame, myWidth, myHeight, myFramesPerRow ) );
+	sprite->SetRect( FigureOutRectPos( mCurrentFrame, mWidth, mHeight, mFramesPerRow ) );
 
 
 
-	/*int myFrameCount;
-	int myCurrentFrame;
-	int myWidth;
-	int myHeight;
-	int myFramesPerRow;
+	/*int mFrameCount;
+	int mCurrentFrame;
+	int mWidth;
+	int mHeight;
+	int mFramesPerRow;
 
-	float myWaitTime;
-	float myCurrentTime;*/
+	float mWaitTime;
+	float mCurrentTime;*/
 }
 
 //-------------------------------------------------------------------------
 
 void Sprite::SetRectAnimation( RectAnimation* animation )
 {
-	myRectAnimation.reset( animation );
+	mRectAnimation.reset( animation );
 }
 //-------------------------------------------------------------------------
 
 void Sprite::PlayAnimation( const std::string& animation_name )
 {
-	if( myAnimations == NULL )
+	if( mAnimations == NULL )
 	{
 		logger << "Error trying to play animation before AnimationsSheet has been added: " << animation_name << std::endl;
 		return;
 	}
 
-	if( myAnimationUpdater.get() == NULL )
-		myAnimationUpdater.reset( new SpriteAnimationUpdater );
+	if( mAnimationUpdater.get() == NULL )
+		mAnimationUpdater.reset( new SpriteAnimationUpdater );
 
 
-	impl::Animation* a = myAnimations->GetAnimation( animation_name );
+	impl::Animation* a = mAnimations->GetAnimation( animation_name );
 
 	if( a == NULL )
 	{
 		logger << "Error animation not found in animation sheet: " << animation_name << std::endl;
-		myAnimationUpdater.reset( NULL );
+		mAnimationUpdater.reset( NULL );
 		return;
 	}
 
-	myAnimationUpdater->Reset();
-	myAnimationUpdater->SetAnimation( a  );
-	myAnimationUpdater->SetSprite( this );
-	myAnimationUpdater->Update( 0 );
+	mAnimationUpdater->Reset();
+	mAnimationUpdater->SetAnimation( a  );
+	mAnimationUpdater->SetSprite( this );
+	mAnimationUpdater->Update( 0 );
 }
 
 void Sprite::SetAnimationFrame(int frame) 
 {
-	cassert( myAnimationUpdater.get() );
-	myAnimationUpdater->SetFrame( frame );
+	cassert( mAnimationUpdater.get() );
+	mAnimationUpdater->SetFrame( frame );
 
 }
 
