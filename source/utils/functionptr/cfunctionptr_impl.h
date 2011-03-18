@@ -43,28 +43,28 @@ public:
 
 	virtual CAnyContainer Call() 
 	{ 
-		assert( false ); 
+		cassert( false ); 
 		// Hasn't been implented, you called the wrong type
 		return CAnyContainer();
 	}
 
 	virtual CAnyContainer Call( const CAnyContainer& arg1 ) 
 	{ 
-		assert( false ); 
+		cassert( false ); 
 		// Hasn't been implented, you called the wrong type
 		return CAnyContainer();
 	}
 
 	virtual CAnyContainer Call( const CAnyContainer& arg1, const CAnyContainer& arg2 ) 
 	{ 
-		assert( false ); 
+		cassert( false ); 
 		// Hasn't been implented, you called the wrong type
 		return CAnyContainer();
 	}
 
 	virtual CAnyContainer Call( const CAnyContainer& arg1, const CAnyContainer& arg2, const CAnyContainer& arg3 ) 
 	{ 
-		assert( false ); 
+		cassert( false ); 
 		// Hasn't been implented, you called the wrong type
 		return CAnyContainer();
 	}
@@ -106,7 +106,7 @@ public:
 
 		// Just to check for some multiple inheritance shit 
 		// that can sometimes cause nasty things to happen
-		assert( abs( (int)myPointer - (int)pointer ) > 8 );
+		cassert( abs( (int)myPointer - (int)pointer ) > 8 );
 
 		return false;
 	}
