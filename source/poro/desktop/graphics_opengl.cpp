@@ -45,7 +45,7 @@ namespace {
 			case IGraphics::VERTEX_MODE_TRIANGLE_STRIP:
 				return GL_TRIANGLE_STRIP;
 			default:
-				assert(false);
+				poro_assert(false);
 				break;
 		}
 
@@ -915,17 +915,17 @@ types::vec2	GraphicsOpenGL::ConvertToInternalPos( int x, int y ) {
 
 IGraphicsBuffer* GraphicsOpenGL::CreateGraphicsBuffer(int width, int height){
 #ifdef PORO_DONT_USE_GLEW
-	assert(false); //Buffer implementation needs glew.
+	poro_assert(false); //Buffer implementation needs glew.
 #else
-	GraphicsBufferOpenGL* buffer = new GraphicsBufferOpenGL();
+	GraphicsBufferOpenGL* buffer = new GraphicsBufferOpenGL;
 	buffer->Init(width, height);
-	return (IGraphicsBuffer*)buffer;
+	return buffer;
 #endif
 }
 
 void GraphicsOpenGL::DestroyGraphicsBuffer(IGraphicsBuffer* buffer){
 #ifdef PORO_DONT_USE_GLEW
-	assert(false); //Buffer implementation needs glew.
+	poro_assert(false); //Buffer implementation needs glew.
 #else
 	delete buffer;
 #endif

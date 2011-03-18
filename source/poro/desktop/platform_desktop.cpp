@@ -148,7 +148,7 @@ void PlatformDesktop::Destroy() {
 }
 
 void PlatformDesktop::SetFrameRate( int targetRate) {
-	mFrameRate = (types::Float32)targetRate;
+	mFrameRate = targetRate;
 	mOneFrameShouldLast = 1.f / (types::Float32)targetRate;
 }
 

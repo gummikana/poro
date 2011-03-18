@@ -58,7 +58,7 @@ int RunPoro( const ApplicationConfig& conf = ApplicationConfig()  )
         // initialize the platform:
         poro::IPlatform::Instance()->Init( app.get(), conf.window_w, conf.window_h, conf.fullscreen, conf.title );
 
-        poro::IPlatform::Instance()->SetInternalSize( conf.internal_size_w, conf.internal_size_h );
+        poro::IPlatform::Instance()->SetInternalSize( (float)conf.internal_size_w, (float)conf.internal_size_h );
         poro::IPlatform::Instance()->SetFrameRate( conf.framerate );
 
 

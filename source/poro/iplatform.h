@@ -102,7 +102,7 @@ public:
 	virtual int		        GetFrameNum();
 	virtual types::Float32  GetUpTime();
 	virtual void	        SetFrameRate(int targetRate);
-	virtual void	        Sleep( const types::Float32 seconds );
+	virtual void	        Sleep( types::Float32 seconds );
 
 	//filesystem
 	virtual void	SetWorkingDir(poro::types::string dir = poro::types::string("."));

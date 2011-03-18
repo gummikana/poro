@@ -28,7 +28,6 @@ namespace {
 Uint32 GetNextPowerOfTwo(Uint32 input)
 {
 	--input;
-	input |= input >> 32;
 	input |= input >> 16;
 	input |= input >> 8;
 	input |= input >> 4;
@@ -69,7 +68,7 @@ bool GraphicsBufferOpenGL::Init( int width, int height, bool fullscreen, const t
 
 	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, mTexture.mTexture, 0);
 	GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-	assert(status==GL_FRAMEBUFFER_COMPLETE_EXT);
+	poro_assert(status==GL_FRAMEBUFFER_COMPLETE_EXT);
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	return true;
 }
@@ -87,6 +86,8 @@ void GraphicsBufferOpenGL::DrawTexture( ITexture* texture, types::vec2* vertices
 {
 	//Flip cords for buffer
 	for (int i=0; i<count; ++i) {
+		vertices[i].x *= mBufferScale.x;
+		vertices[i].y *= mBufferScale.y;
 		vertices[i].y = poro::IPlatform::Instance()->GetInternalHeight() - vertices[i].y;
 	}
 	GraphicsOpenGL::DrawTexture( texture, vertices, tex_coords, count, color );
