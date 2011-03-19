@@ -1,0 +1,26 @@
+#common filters
+.DS_Store
+thumbs.db
+.svn
+*.pbxuser
+*.mode1v3
+*.perspectivev3
+
+
+#build trash
+examples/AlphaMasking/build/VC9/*.ncb
+examples/AlphaMasking/build/VC9/*.suo
+examples/AlphaMasking/build/VC9/*.user
+examples/AlphaMasking/build/VC9/Debug/*
+examples/AlphaMasking/build/VC9/Release/*
+
+examples/HelloWorld/build/VC9/*.ncb
+examples/HelloWorld/build/VC9/*.suo
+examples/HelloWorld/build/VC9/*.user
+examples/HelloWorld/build/VC9/Debug/*
+examples/HelloWorld/build/VC9/Release/*
+
+
+# log txt
+examples/AlphaMasking/workdir/log.txt
+examples/HelloWorld/workdir/log.txt
