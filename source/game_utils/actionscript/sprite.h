@@ -209,6 +209,12 @@ struct Transform
 		mXForm.SetIdentity();
 	}
 	
+	void PushXFormButDontMultiply( const types::xform& xform )
+	{
+		mXFormQueue.push_front( mXForm );
+		mXForm = xform;
+	}
+
 	void PushXForm( const types::xform& xform )
 	{
 		mXFormQueue.push_front( mXForm );

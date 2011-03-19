@@ -247,6 +247,8 @@ bool Sprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& 
 			return true;
 
 		// the alpha mask is the child of the mask of the other
+		types::xform orign;
+		transform.PushXFormButDontMultiply( orign );
 		types::xform x = ceng::math::Mul( GetXForm(), mAlphaMask->GetXForm() );
 		
 		types::xform o;
@@ -274,6 +276,7 @@ bool Sprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& 
 		cassert( alpha_buffer );
 		cassert( ex_graphics );
 		alpha_buffer->EndRendering();
+		transform.PopXForm();
 		transform.PopXForm();
 
 		graphics = ex_graphics;
