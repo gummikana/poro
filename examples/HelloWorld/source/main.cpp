@@ -2,7 +2,6 @@
 #include <sstream>
 #include "include_poro.h"
 
-#include "sprite_test.h"
 // #include "../../../source/game_utils/drawlines/linefont.h"
 
 
@@ -25,7 +24,6 @@ public:
     {
         poro::DefaultApplication::Init();
         mBuffer = poro::IPlatform::Instance()->GetGraphics()->CreateGraphicsBuffer( 128, 78 );
-		mBuffer->SetGraphicsBufferScale( 2.f, 2.f );
 
         mImage = poro::IPlatform::Instance()->GetGraphics()->LoadTexture( "test_image.png" );
     }
@@ -39,14 +37,14 @@ public:
 
         // DrawLineText( graphics, poro::types::vec2( 0, 0 ), 16, fps_text, poro::GetFColor( 1, 1, 1, 1 ) );
         mBuffer->BeginRendering();
-        mBuffer->DrawTexture( mImage, 250, 100, 512, 512, poro::GetFColor( 1, 1, 1, 1 ), 0.5f );
+        mBuffer->DrawTexture( mImage, 250, 100, 1024, 1024, poro::GetFColor( 1, 1, 1, 1 ), 0.5f );
         mBuffer->EndRendering();
 
-        graphics->DrawTexture( mImage, 250, 100, 512, 512, poro::GetFColor( 1, 1, 1, 0.5f ), 0.5f );
+        graphics->DrawTexture( mImage, 250, 100, 1024, 1024, poro::GetFColor( 1, 1, 1, 0.5f ), 0.5f );
 
 
         poro::ITexture* t = mBuffer->GetTexture();
-        graphics->DrawTexture( t, 0, 0, 1024, 768 );
+        graphics->DrawTexture( t, 0, 0, 512, 384 );
 
     }
 
@@ -75,7 +73,7 @@ public:
 
 int main( int argc, char** args )
 {
-	poro::RunPoro< SpriteTest >();
+	poro::RunPoro< HelloWorldApplication >();
 
 	return 0;
 }
