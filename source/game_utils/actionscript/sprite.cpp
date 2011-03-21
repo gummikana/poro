@@ -221,6 +221,9 @@ poro::IGraphicsBuffer* Sprite::GetAlphaBuffer( poro::IGraphics* graphics )
 		cassert( GetTextureSize().x > 0 );
 		cassert( GetTextureSize().y > 0 );
 		mAlphaBuffer = graphics->CreateGraphicsBuffer( (int)GetTextureSize().x, (int)GetTextureSize().y );
+
+		if( mAlphaBuffer == NULL )
+			return NULL;
 	}
 
 	cassert( mAlphaBuffer );
@@ -246,21 +249,23 @@ bool Sprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& 
 		if( mAlphaMask->GetScaleX() == 0 || mAlphaMask->GetScaleY() == 0 )
 			return true;
 
-		// the alpha mask is the child of the mask of the other
-		types::xform orign;
-		transform.PushXFormButDontMultiply( orign );
-		types::xform x = ceng::math::Mul( GetXForm(), mAlphaMask->GetXForm() );
-		
-		types::xform o;
-		x = ceng::math::MulT( x, o );
-		x.position += mAlphaMask->GetCenterOffset(); 
-		transform.PushXForm( x );	
-
 		alpha_buffer = mAlphaMask->GetAlphaBuffer( graphics );
-		cassert( alpha_buffer );
-		alpha_buffer->BeginRendering();
-		ex_graphics = graphics;
-		graphics = alpha_buffer;
+		if( alpha_buffer )
+		{
+			// the alpha mask is the child of the mask of the other
+			types::xform orign;
+			transform.PushXFormButDontMultiply( orign );
+			types::xform x = ceng::math::Mul( GetXForm(), mAlphaMask->GetXForm() );
+			
+			types::xform o;
+			x = ceng::math::MulT( x, o );
+			x.position += mAlphaMask->GetCenterOffset(); 
+			transform.PushXForm( x );	
+
+			alpha_buffer->BeginRendering();
+			ex_graphics = graphics;
+			graphics = alpha_buffer;
+		}
 	}
 
 	types::rect draw_rect( 0, 0, mSize.x, mSize.y );
@@ -271,21 +276,23 @@ bool Sprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& 
 	// draw all children
 	DrawChildren( graphics, camera, transform );
 
-	if( mAlphaMask ) 
+	if( mAlphaMask && alpha_buffer ) 
 	{
-		cassert( alpha_buffer );
 		cassert( ex_graphics );
 		alpha_buffer->EndRendering();
 		transform.PopXForm();
 		transform.PopXForm();
 
 		graphics = ex_graphics;
-
+	}
+	
+	if( mAlphaMask )
+	{
 		transform.PushXForm( mXForm );
 		mAlphaMask->Draw( graphics, camera, transform );
 		transform.PopXForm();
-
 	}
+	
 	return true;
 }
 
@@ -385,9 +392,11 @@ bool Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 
 			if( mAlphaBuffer ) 
 			{
+
 				graphics->DrawTextureWithAlpha( mTexture, temp_verts, tex_coords, 4, color_me,
 					mAlphaBuffer->GetTexture(), temp_verts, tex_coords, color_me );
 				// graphics->DrawTexture( mAlphaBuffer->GetTexture(), temp_verts, tex_coords, 4, color_me );
+				// color_me = poro::GetFColor( mColor[ 0 ], mColor[ 1 ], mColor[ 2 ], mColor[ 3 ] * 0.5f ); 
 			}
 			else
 			{

@@ -104,58 +104,5 @@ IApplication* IPlatform::GetApplication(){
 	return mApplication;
 }
 
-//Screen and window
-int IPlatform::GetWidth()
-{
-	poro_assert( gInstance );
-	return gInstance->GetWidth();
-}
-
-int IPlatform::GetHeight()
-{
-	poro_assert( gInstance );
-	return gInstance->GetHeight();
-}
-
-bool IPlatform::GetOrientationIsLandscape(){
-	poro_assert( gInstance );
-	return gInstance->GetWidth() > gInstance->GetHeight();
-}
-
-//Timers
-int IPlatform::GetFrameNum(){
-	poro_assert( gInstance );
-	return gInstance->GetFrameNum();
-}
-
-int IPlatform::GetFrameRate(){
-	poro_assert( gInstance );
-	return gInstance->GetFrameRate();
-}
-
-types::Float32 IPlatform::GetUpTime(){
-	poro_assert( gInstance );
-	return gInstance->GetUpTime();
-}
-
-void IPlatform::SetFrameRate(int targetRate){
-	poro_assert( gInstance );
-	gInstance->SetFrameRate(targetRate);
-}
-
-void IPlatform::Sleep( types::Float32 secs ){
-	poro_assert( gInstance );
-	gInstance->Sleep( secs );
-}
-
-void IPlatform::SetWorkingDir(poro::types::string dir){
-	poro_assert( gInstance );
-	gInstance->SetWorkingDir(dir);
-}
-
-poro::types::string IPlatform::GetDocumentDir(){
-	poro_assert( gInstance );
-	return gInstance->GetDocumentDir();
-}
 
 } // end of namespace poro

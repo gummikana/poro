@@ -56,8 +56,8 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual void				SetFillColor( const poro::types::fcolor& c ) { mFillColor = c; }
-	virtual poro::types::fcolor	GetFillColor() const { return mFillColor; }
+	virtual void				SetFillColor( const poro::types::fcolor& c );
+	virtual poro::types::fcolor	GetFillColor() const;
 
 	//-------------------------------------------------------------------------
 
@@ -152,6 +152,18 @@ inline IGraphicsBuffer* IGraphics::CreateGraphicsBuffer(int width, int height) {
 inline void IGraphics::DestroyGraphicsBuffer(IGraphicsBuffer* buffer){
 	// If this fails, it means you should implement grafics buffer on your end of things
 	poro_assert( false );
+}
+
+inline void	IGraphics::SetFillColor( const poro::types::fcolor& c ) { 
+	mFillColor = c; 
+	
+	// this is here only because if I don't put it here the mFillColor won't get placed on iPhone... 
+	// Fucking iPhoneSDK, this is bullshit
+	std::cout << "SetFillColor: " << mFillColor[ 0 ] << ", " << mFillColor[ 1 ] << ", " << mFillColor[ 2 ] << ", " << mFillColor[ 3 ] << std::endl;
+}
+
+inline poro::types::fcolor IGraphics::GetFillColor() const { 
+	return mFillColor; 
 }
 
 ///////////////////////////////////////////////////////////////////////////////

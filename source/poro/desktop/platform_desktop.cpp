@@ -39,6 +39,7 @@ PlatformDesktop::PlatformDesktop() :
 	mFrameCount( 0 ),
 	mFrameRate( 0 ),
 	mOneFrameShouldLast( 1.f / 60.f ),
+	mFixedTimeStep( true ),
 	mWidth( 0 ),
 	mHeight( 0 ),
 	mMouse( NULL ),
@@ -147,9 +148,10 @@ void PlatformDesktop::Destroy() {
 	mJoysticks.clear();
 }
 
-void PlatformDesktop::SetFrameRate( int targetRate) {
+void PlatformDesktop::SetFrameRate( int targetRate, bool fixed_time_step ) {
 	mFrameRate = targetRate;
 	mOneFrameShouldLast = 1.f / (types::Float32)targetRate;
+	mFixedTimeStep = fixed_time_step;
 }
 
 int	PlatformDesktop::GetFrameNum() {
@@ -170,7 +172,15 @@ void PlatformDesktop::SingleLoop() {
 
 	poro_assert( GetApplication() );
 
-	GetApplication()->Update( mOneFrameShouldLast );
+	float dt = mOneFrameShouldLast;
+	if( mFixedTimeStep == false )
+	{
+		static types::Float32 last_time_update_called = 0;
+		dt = ( GetUpTime() - last_time_update_called );
+		last_time_update_called = GetUpTime();
+	}
+
+	GetApplication()->Update( dt );
 
 	mGraphics->BeginRendering();
 	GetApplication ()->Draw(mGraphics);

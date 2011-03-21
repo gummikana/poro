@@ -65,10 +65,10 @@ public:
 	virtual Joystick*		GetJoystick( int n );
 
 	//timers
+	virtual void	        SetFrameRate( int targetRate, bool fixed_timestep = true );
 	virtual int	            GetFrameRate();
 	virtual int		        GetFrameNum();
 	virtual types::Float32  GetUpTime();
-	virtual void	        SetFrameRate( int targetRate );
 	virtual void	        Sleep( types::Float32 seconds );
 
 	//filesystem
@@ -83,6 +83,7 @@ protected:
 	types::vec2		ConvertMouseToInternalSize( int x, int y );
 
 	GraphicsOpenGL*				    mGraphics;
+	bool							mFixedTimeStep;
 	int							    mFrameCount;
 	int				                mFrameRate;
 	types::Float32                  mOneFrameShouldLast;

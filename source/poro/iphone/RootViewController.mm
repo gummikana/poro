@@ -59,18 +59,24 @@
 	
 	glTranslatef(w/2,h/2,0);
 	
+	int orientation = poro::PlatformIPhone::DO_PORTRAIT;
+	
+	
 	switch ( deviceOrientation_ ) {
 		case UIInterfaceOrientationPortrait:
 			// nothing
 			break;
 		case UIInterfaceOrientationPortraitUpsideDown:
 			glRotatef(180,0,0,1);
+			orientation = poro::PlatformIPhone::DO_UPSIDEDOWN_PORTRAIT;
 			break;
 		case UIInterfaceOrientationLandscapeRight:
 			glRotatef(90,0,0,1);
+			orientation = poro::PlatformIPhone::DO_LANDSCAPE_LEFT;
 			break;
 		case UIInterfaceOrientationLandscapeLeft:
 			glRotatef(-90,0,0,1);
+			orientation = poro::PlatformIPhone::DO_LANDSCAPE_RIGHT;
 			break;
 	}
 	
@@ -83,6 +89,8 @@
 		glTranslatef(-w/2,-h/2,0);
 		poro::iPhoneGlobals.iPhoneWindow->SetOrientationIsLandscape(false);
 	}
+	
+	poro::iPhoneGlobals.iPhoneWindow->SetDeviceOrientation( orientation );
 	
 	[[UIApplication sharedApplication] setStatusBarOrientation: deviceOrientation_ animated:NO];
 	

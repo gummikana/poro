@@ -70,11 +70,11 @@ public:
 
 
 	//window / screen
-	virtual void SetWindowSize( int width, int height ) {};
-	virtual int GetWidth();
-	virtual int GetHeight();
+	virtual void SetWindowSize( int width, int height ) { poro_assert( false ); }
+	virtual int GetWidth()								{ poro_assert( false ); return 0; }
+	virtual int GetHeight()								{ poro_assert( false ); return 0; }
 
-	virtual bool GetOrientationIsLandscape();
+	virtual bool GetOrientationIsLandscape()			{ poro_assert( false ); return 0; }
 
 
 	//InternalScale
@@ -84,33 +84,23 @@ public:
 	//  because that can initialize
 	virtual void SetInternalSize( types::Float32 width, types::Float32 height );
 
-	types::Float32 GetInternalWidth() const {
-	    if(!mInternalWidth)
-            poro_assert(false); //Platform has probably not been initialized yet.
-
-	    return mInternalWidth;
-    };
-	types::Float32 GetInternalHeight() const {
-	     if(!mInternalHeight)
-            poro_assert(false); //Platform has probably not been initialized yet.
-
-	    return mInternalHeight;
-    };
+	types::Float32 GetInternalWidth() const;
+	types::Float32 GetInternalHeight() const;
 
 	//timers
-	virtual int             GetFrameRate();
-	virtual int		        GetFrameNum();
-	virtual types::Float32  GetUpTime();
-	virtual void	        SetFrameRate(int targetRate);
-	virtual void	        Sleep( types::Float32 seconds );
+	virtual void	        SetFrameRate( int targetRate, bool fixed_timestep = true );
+	virtual int             GetFrameRate()					{ poro_assert( false ); return 0; }
+	virtual int		        GetFrameNum()					{ poro_assert( false ); return 0; }
+	virtual types::Float32  GetUpTime()						{ poro_assert( false ); return 0; }
+	virtual void	        Sleep( types::Float32 seconds ) { poro_assert( false ); }
 
 	//filesystem
-	virtual void	SetWorkingDir(poro::types::string dir = poro::types::string("."));
+	virtual void				SetWorkingDir(poro::types::string dir = poro::types::string("."));
 	virtual poro::types::string GetDocumentDir();
 
 private:
 
-	static IPlatform *gInstance;
+	static IPlatform* gInstance;
 
 protected:
 
@@ -162,6 +152,34 @@ inline Keyboard* IPlatform::GetKeyboard() {
 	//poro_assert( false );
 	return NULL;
 }
+
+inline types::Float32 IPlatform::GetInternalWidth() const {
+    if(!mInternalWidth)
+        poro_assert(false); // Platform has probably not been initialized yet.
+
+    return mInternalWidth;
+}
+
+inline types::Float32 IPlatform::GetInternalHeight() const {
+     if(!mInternalHeight)
+        poro_assert(false); // Platform has probably not been initialized yet.
+
+    return mInternalHeight;
+}
+
+inline void IPlatform::SetFrameRate( int targetRate, bool fixed_timestep ) {
+	poro_assert( false );
+}
+
+inline void IPlatform::SetWorkingDir(poro::types::string dir )  {
+	poro_assert( false );
+}
+
+inline poro::types::string IPlatform::GetDocumentDir() {
+	poro_assert( false );
+	return poro::types::string();
+}
+
 
 } // end o namespace poro
 

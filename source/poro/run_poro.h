@@ -10,7 +10,7 @@
 #include <memory>
 #include "platform_defs.h"
 #include "iplatform.h"
-
+#include "poro_libraries.h"
 
 namespace poro {
 //=============================================================================<

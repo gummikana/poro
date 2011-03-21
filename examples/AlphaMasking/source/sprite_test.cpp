@@ -81,9 +81,7 @@ void SpriteTest::Init()
 
 	mSprite->GetAlphaMask()->SetCenterOffset( types::vector2( 50, 75 ) );
 
-	mBackground->addChild( mSprite );
-	mBackground->SetScale( 0.5f, 0.5f );
-	mBackground->MoveTo( types::vector2( 128, 512 ) );
+	// mBackground->addChild( mSprite );
 }
 
 void SpriteTest::Exit()
@@ -109,6 +107,7 @@ void SpriteTest::Draw( poro::IGraphics* graphics  )
 {
 	as::Transform t;
 	DrawSprite( mBackground, graphics, NULL, t );
+	DrawSprite( mSprite, graphics, NULL, t );
 
 	if(!mouseDown)
 		scale += 0.002f;

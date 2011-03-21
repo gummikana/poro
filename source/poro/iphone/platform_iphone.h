@@ -35,6 +35,14 @@ namespace poro {
 	
 	class PlatformIPhone : public IPlatform{
 	public:
+		
+		enum DEVICE_ORIENTATION {
+			DO_PORTRAIT,
+			DO_LANDSCAPE_RIGHT,
+			DO_LANDSCAPE_LEFT,
+			DO_UPSIDEDOWN_PORTRAIT
+		};
+		
 		PlatformIPhone(){};
 		virtual ~PlatformIPhone(){};
 		
@@ -43,14 +51,14 @@ namespace poro {
 		virtual void StartMainLoop();
 		virtual void Destroy();
 		
-		virtual int GetFrameNum();
-		virtual int GetUpTime();
-		virtual	float GetFrameRate();
-		virtual int GetWidth() { return mWidth; };
-		virtual int GetHeight() { return mHeight; };
-		virtual void Sleep(int millis);
+		virtual int				GetFrameNum();
+		virtual types::Float32	GetUpTime();
+		virtual	int				GetFrameRate();
+		virtual int				GetWidth() { return mWidth; };
+		virtual int				GetHeight() { return mHeight; };
+		virtual void			Sleep( types::Float32 seconds );
 
-		virtual void SetFrameRate(int targetRate);
+		virtual void SetFrameRate(int targetRate, bool fixedTimeStep = true);
 
 		virtual void SetOrientationIsLandscape(bool isLandscape);
 		virtual bool GetOrientationIsLandscape();
@@ -67,11 +75,14 @@ namespace poro {
 		virtual void SetWorkingDir(poro::types::string dir = poro::types::string("/"));
 		virtual poro::types::string GetDocumentDir();
 		
+		void SetDeviceOrientation( int orientation ) { mDeviceOrientation =orientation; }
+		int GetDeviceOrientation() const { return mDeviceOrientation; }
+		
 	protected:
 		GraphicsOpenGLES *mGraphics;
 		int mFrameCount;
 		CFTimeInterval mInitTime;
-		float mFrameRate;
+		types::Float32 mFrameRate;
 		int mWidth;
 		int mHeight;
 		Mouse *mMouse;
@@ -79,9 +90,12 @@ namespace poro {
 		SoundPlayerIPhone *mSoundPlayer;
 		
 		bool mIsLandscape;
+		int mDeviceOrientation;
 		
 	private:
-		int mFrameTimePrevious;
+		types::Float32	mFrameTimePrevious;
+		types::Float32	mOneFrameShouldLast;
+		bool			mFixedTimeStep;
 	};
 	
 } // end o namespace poro
