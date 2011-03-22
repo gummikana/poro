@@ -808,7 +808,7 @@ void GraphicsOpenGL::EndRendering()
 
 //=============================================================================
 
-void GraphicsOpenGL::DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth, float width )
+void GraphicsOpenGL::DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth, float width, bool loop )
 {
 	//float xPlatformScale, yPlatformScale;
 	//xPlatformScale = (float)mViewportSize.x / (float)poro::IPlatform::Instance()->GetInternalWidth();
@@ -824,7 +824,7 @@ void GraphicsOpenGL::DrawLines( const std::vector< poro::types::vec2 >& vertices
 		glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 	}
 	glColor4f( color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
-	glBegin(GL_LINE_STRIP);
+	glBegin(loop?GL_LINE_LOOP:GL_LINE_STRIP);
 
 	for( std::size_t i = 0; i < vertices.size(); ++i )
 	{

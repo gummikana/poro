@@ -25,8 +25,7 @@ namespace poro {
 
 class IGraphics;
 
-class IApplication{
-
+class IApplication {
 public:
 
 	IApplication() { }
