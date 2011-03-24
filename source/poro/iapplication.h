@@ -25,19 +25,17 @@ namespace poro {
 
 class IGraphics;
 
-class IApplication{
-	
+class IApplication {
 public:
-	
+
 	IApplication() { }
 	virtual ~IApplication() { }
-	
+
 	virtual void Init() { }
-	virtual void Update(int deltaTime) = 0;
+	virtual void Update(float deltaTime) = 0;
 	virtual void Draw(poro::IGraphics * graphics) { }
 	virtual void Exit() { }
-	
-	// haxored for Maze of Space 
+
 	virtual bool IsDead() const { return false; }
 };
 

@@ -20,7 +20,7 @@
 
 #include "platform_desktop.h"
 
-#include "../poro_main.h"
+#include "../poro.h"
 #include "../libraries.h"
 
 #include "graphics_opengl.h"
@@ -30,20 +30,16 @@
 
 namespace poro {
 
-namespace {
-	int mFrameRateUpdateCounter;
-} // end o anonymous namespace
-
 const int PORO_WINDOWS_JOYSTICK_COUNT = 4;
 
 //-----------------------------------------------------------------------------
 
 PlatformDesktop::PlatformDesktop() :
 	mGraphics( NULL ),
-	mFrameCountLastTime( 0 ),
 	mFrameCount( 0 ),
 	mFrameRate( 0 ),
-	mOneFrameShouldLast( 16 ),
+	mOneFrameShouldLast( 1.f / 60.f ),
+	mFixedTimeStep( true ),
 	mWidth( 0 ),
 	mHeight( 0 ),
 	mMouse( NULL ),
@@ -60,16 +56,15 @@ PlatformDesktop::~PlatformDesktop()
 {
 }
 //-----------------------------------------------------------------------------
-void PlatformDesktop::Init(IApplication *application, int w, int h, bool fullscreen, std::string title ) {
+void PlatformDesktop::Init( IApplication* application, int w, int h, bool fullscreen, std::string title ) {
 
 	mRunning = true;
 	mFrameCount = 1;
-	mFrameRateUpdateCounter = 0;
-	mFrameRate = -1.0f;
+	mFrameRate = -1;
 	mWidth = w;
 	mHeight = h;
 	mApplication = application;
-	
+
 	mGraphics = new GraphicsOpenGL;
 	mGraphics->Init(w, h, fullscreen, title);
 
@@ -80,7 +75,7 @@ void PlatformDesktop::Init(IApplication *application, int w, int h, bool fullscr
 	mKeyboard = new Keyboard;
 
 	SDL_EnableUNICODE(1);
-	
+
 }
 
 void PlatformDesktop::SetApplication( IApplication* application )
@@ -96,10 +91,12 @@ void PlatformDesktop::StartMainLoop() {
 	if( mApplication )
 		mApplication->Init();
 
-    mFrameCountLastTime = 0;
+    types::Float32  mFrameCountLastTime = 0;
+    int             mFrameRateUpdateCounter = 0;
+
 	while( mRunning )
 	{
-	    const int time_before = GetUpTime();
+	    const types::Float32 time_before = GetUpTime();
 
 		SingleLoop();
 
@@ -108,18 +105,18 @@ void PlatformDesktop::StartMainLoop() {
 			mRunning = false;
 
 
-        const int time_after = GetUpTime();
-        const int elapsed_time = ( time_after - time_before );
+        const types::Float32 time_after = GetUpTime();
+        const types::Float32 elapsed_time = ( time_after - time_before );
         if( elapsed_time < mOneFrameShouldLast )
             Sleep( mOneFrameShouldLast - elapsed_time );
 
         // frame-rate check
         mFrameCount++;
         mFrameRateUpdateCounter++;
-        if( ( GetUpTime() - mFrameCountLastTime ) > 1000 )
+        if( ( GetUpTime() - mFrameCountLastTime ) >= 1.f )
         {
             mFrameCountLastTime = GetUpTime();
-            mFrameRate = (float)mFrameRateUpdateCounter;
+            mFrameRate = mFrameRateUpdateCounter;
             mFrameRateUpdateCounter = 0;
 
             // std::cout << "Fps: " << mFrameRate << std::endl;
@@ -151,33 +148,42 @@ void PlatformDesktop::Destroy() {
 	mJoysticks.clear();
 }
 
-void PlatformDesktop::SetFrameRate( int targetRate) {
-	mFrameRate = (float)targetRate;
-	mOneFrameShouldLast = (int)((1000.f / (float)targetRate) + 0.5f );
+void PlatformDesktop::SetFrameRate( int targetRate, bool fixed_time_step ) {
+	mFrameRate = targetRate;
+	mOneFrameShouldLast = 1.f / (types::Float32)targetRate;
+	mFixedTimeStep = fixed_time_step;
 }
 
 int	PlatformDesktop::GetFrameNum() {
 	return mFrameCount;
 }
 
-int	PlatformDesktop::GetUpTime() {
-	return (int)SDL_GetTicks();
+types::Float32	PlatformDesktop::GetUpTime() {
+	return (types::Float32)( SDL_GetTicks() ) * 0.001f;
 }
 
-void PlatformDesktop::Sleep(int millis){
-	SDL_Delay( (Uint32)millis );
+void PlatformDesktop::Sleep( types::Float32 seconds ){
+	SDL_Delay( (Uint32)( seconds * 1000.f ) );
 }
 
 void PlatformDesktop::SingleLoop() {
 
 	HandleEvents();
 
-	poro_assert( poro::IPlatform::Instance()->GetApplication() );
+	poro_assert( GetApplication() );
 
-	poro::IPlatform::Instance()->GetApplication()->Update( mOneFrameShouldLast );
+	float dt = mOneFrameShouldLast;
+	if( mFixedTimeStep == false )
+	{
+		static types::Float32 last_time_update_called = 0;
+		dt = ( GetUpTime() - last_time_update_called );
+		last_time_update_called = GetUpTime();
+	}
+
+	GetApplication()->Update( dt );
 
 	mGraphics->BeginRendering();
-	poro::IPlatform::Instance()->GetApplication ()->Draw(mGraphics);
+	GetApplication ()->Draw(mGraphics);
 	mGraphics->EndRendering();
 
 }
@@ -208,7 +214,7 @@ void PlatformDesktop::HandleEvents() {
 					break;
 				}*/
 				if( mKeyboard )
-					mKeyboard->FireKeyDownEvent( 
+					mKeyboard->FireKeyDownEvent(
 						static_cast< int >( event.key.keysym.sym ),
 						static_cast< types::charset >( event.key.keysym.unicode ) );
 			}
@@ -217,7 +223,7 @@ void PlatformDesktop::HandleEvents() {
 			case SDL_KEYUP:
 			{
 				if( mKeyboard )
-					mKeyboard->FireKeyUpEvent( 
+					mKeyboard->FireKeyUpEvent(
 						static_cast< int >( event.key.keysym.sym ),
 						static_cast< types::charset >( event.key.keysym.unicode )  );
 			}
@@ -286,7 +292,7 @@ void PlatformDesktop::SetWindowSize( int width, int height ) {
 
 //-----------------------------------------------------------------------------
 
-void PlatformDesktop::SetWorkingDir(poro::types::string dir){
+void PlatformDesktop::SetWorkingDir( poro::types::string dir ){
 	//TODO implement
 	//chdir(dir);
 }

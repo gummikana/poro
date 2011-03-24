@@ -31,11 +31,11 @@ namespace network_utils
 {
 
 	// from here: http://www.gamedev.net/community/forums/topic.asp?topic_id=517289
-	template< typename To, typename From > To ConvertBits( From what ) 
+	template< typename To, typename From > To ConvertBits( From what )
 	{
 		cassert( sizeof(To) == sizeof(From) );
 		union { From from; To to; } n = {what};
-		return n.to;	
+		return n.to;
 	}
 
 	types::ustring	ConvertUint32ToHex( uint32 value );
@@ -46,18 +46,18 @@ namespace network_utils
 
 	types::ustring	FloatToHexString( float32 value );
 	float32			HexStringToFloat( const types::ustring& value );
-	
+
 	//-------------------------------------------------------------------------
 
 
-	
+
 	class SimpleMutex
 	{
 	public:
-		SimpleMutex() :	
-			mLock( NULL ),
-			mLocked( false )
-		{ 
+		SimpleMutex() :
+			mLocked( false ),
+			mLock( NULL )
+		{
 			mLock = SDL_CreateMutex();
 		}
 
@@ -102,7 +102,7 @@ namespace network_utils
 		}
 
 		bool IsLocked() const { return mLocked; }
-		
+
 		bool		mLocked;
 		SDL_mutex*	mLock;
 	};

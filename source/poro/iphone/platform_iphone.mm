@@ -19,7 +19,7 @@
  ***************************************************************************/
 
 #include "platform_iphone.h"
-#include "../poro_main.h"
+#include "../poro.h"
 #include "globals_iphone.h"
 #include "graphics_opengles.h"
 
@@ -36,8 +36,12 @@ namespace poro {
 		mHeight = h;
 		mApplication = application;
 		mInitTime = CFAbsoluteTimeGetCurrent();
+		mFrameTimePrevious = mInitTime;
+		mFixedTimeStep = true;
+		mOneFrameShouldLast = 1.f / 60.f; // default is 60 fps
 		
 		mIsLandscape = false;
+		mDeviceOrientation = DO_PORTRAIT;
 		
 		iPhoneGlobals.iPhoneWindow=this;
 		iPhoneGlobals.baseApp = application;
@@ -72,8 +76,14 @@ namespace poro {
 	}
 	
 
-	void PlatformIPhone::SetFrameRate(int targetRate) {
+	void PlatformIPhone::SetFrameRate(int targetRate, bool fixedTimeStep ) {
 		[iPhoneGlobals.appDelegate setFrameRate:targetRate];
+		
+		mOneFrameShouldLast = 0;
+		if( targetRate > 0 ) 
+			mOneFrameShouldLast = 1.f / (types::Float32)targetRate;
+		
+		mFixedTimeStep = fixedTimeStep;
 	}
 	
 	void PlatformIPhone::SetOrientationIsLandscape( bool isLandscape){
@@ -88,37 +98,49 @@ namespace poro {
 		return mFrameCount;
 	}
 
-	int	PlatformIPhone::GetUpTime() {
-		return (CFAbsoluteTimeGetCurrent() - mInitTime)*1000;
+	types::Float32 PlatformIPhone::GetUpTime() {
+		return (types::Float32)(CFAbsoluteTimeGetCurrent() - mInitTime);
 	}
 	
-	void PlatformIPhone::Sleep(int millis){
-		[NSThread sleepForTimeInterval:(millis*1000)];
+	void PlatformIPhone::Sleep( types::Float32 seconds ){
+		// std::cout << "Sleep called: " << seconds << std::endl;
+		[NSThread sleepForTimeInterval:(seconds)];
 	}
 	
 	void PlatformIPhone::timerLoop() {
-		if(!mFrameTimePrevious)
-			mFrameTimePrevious = mInitTime;
-		int upTime = GetUpTime();
-		int deltaTime = upTime - mFrameTimePrevious;
-		mFrameRate = 1.0/((deltaTime)/1000.0); //FPS
+		const types::Float32 upTime = GetUpTime();
+		types::Float32 deltaTime = upTime - mFrameTimePrevious;
 		mFrameTimePrevious = upTime;
 		mFrameCount++;
 		
-		poro::IPlatform::Instance()->GetApplication()->Update(deltaTime);
+		static types::Float32 last_frame_rate = 0;
+		if( upTime - last_frame_rate > 1.f ) {
+			std::cout << "FPS: " << mFrameCount << "\t" << GetUpTime() << std::endl;
+			mFrameRate = mFrameCount;
+			mFrameCount = 0;
+			last_frame_rate = upTime;
+		}
+		
+		if( mFixedTimeStep ) deltaTime = mOneFrameShouldLast;
+		
+		GetApplication()->Update( deltaTime );
 		
 		mGraphics->BeginRendering();
-		poro::IPlatform::Instance()->GetApplication()->Draw(mGraphics);
+		GetApplication()->Draw(mGraphics);
 		mGraphics->EndRendering();
 		
-		//[iPhoneGlobals.glView swapBuffers];
+				
+		// elapsed time and sleep
+		const types::Float32 elapsed_time = GetUpTime() - upTime;
+		if( elapsed_time < mOneFrameShouldLast )
+			Sleep( mOneFrameShouldLast - elapsed_time );
 	}
 
-	IGraphics * PlatformIPhone::GetGraphics(){
+	IGraphics* PlatformIPhone::GetGraphics() {
 		return mGraphics;
 	}
 	
-	ISoundPlayer * PlatformIPhone::GetSoundPlayer(){
+	ISoundPlayer* PlatformIPhone::GetSoundPlayer() {
 		return mSoundPlayer;
 	}
 	
@@ -158,9 +180,9 @@ namespace poro {
 	}
 	
 	
-	float PlatformIPhone::GetFrameRate()
+	int PlatformIPhone::GetFrameRate()
 	{
-		return mFrameRate;
+		return (int)mFrameRate;
 	}
 
 }

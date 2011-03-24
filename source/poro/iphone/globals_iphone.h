@@ -22,7 +22,6 @@
 #define INC_GLOBALS_IPHONE_H
 
 #include "../iapplication.h"
-#include "../iwindow.h"
 #include "platform_iphone.h"
 #include "iPhoneAppDelegate.h"
 #include "EAGLView.h"

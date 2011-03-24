@@ -43,8 +43,6 @@ public:
 	TextSprite();
 	~TextSprite();
 
-	// virtual int GetType() const { return sprite_text; }
-
 	void SetText( const std::string& text );
 	
 	virtual void				MoveCenterTo( const types::vector2& p );
@@ -56,8 +54,6 @@ public:
 	void SetAlign( int align_type );
 	void SetTextBox( const types::rect& text_box );
 
-	// virtual void Serialize( ceng::CXmlFileSys* filesys );
-
 	void	SetFont( CFont* font );
 	CFont*	GetFont();
 	
@@ -67,30 +63,27 @@ public:
 	types::vector2	GetCursorGfxPosition( int position );
 	int				GetCursorTextPosition( const types::vector2& p );
 
-	virtual bool Draw( poro::IGraphics* graphics, types::camera* camera, Transform& transform, TextureRect* texture_rect = NULL );
+
+	virtual bool Draw( poro::IGraphics* graphics, types::camera* camera, Transform& transform );
 protected:
 	virtual bool DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const types::xform& matrix );
-	virtual bool DrawRectWithAlphaMask( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const types::xform& matrix, TextureRect& texture_rect );
 
 protected:
-	CFont*			myFont;
-	IFontAlign*		myFontAlign;
+	CFont*			mFont;
+	IFontAlign*		mFontAlign;
 
-	bool			mySingleLine;
-	int				myCursorPosition;
+	bool			mSingleLine;
+	int				mCursorPosition;
 	
-	types::vector2	myRealSize;
-	// float myRealW;
-	// float myRealH;
+	types::vector2	mRealSize;
 
-	std::string	myText;
-	std::vector< types::rect > myInRects;
-	std::vector< types::rect > myOutRects;
-	types::rect myTextBox;
-
+	std::string	mText;
+	std::vector< types::rect > mInRects;
+	std::vector< types::rect > mOutRects;
+	types::rect mTextBox;
 };
 
 // ----------------------------------------------------------------------------
-
 } // end of namespace as
+
 #endif 

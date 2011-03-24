@@ -36,104 +36,96 @@ namespace as {
 ///////////////////////////////////////////////////////////////////////////////
 
 TextSprite::TextSprite() :	
-	myFont( NULL ), 
-	myFontAlign( NULL ), 	
-	mySingleLine( false ),
-	myCursorPosition( -1 )
+	Sprite(),
+	mFont( NULL ), 
+	mFontAlign( NULL ), 	
+	mSingleLine( false ),
+	mCursorPosition( -1 ),
+	mRealSize(),
+	mText(),
+	mInRects(),
+	mOutRects(),
+	mTextBox()
 { 
 }
 
 TextSprite::~TextSprite()
 {
 	
-	/*if( myFactory )
-		myFactory->ReleaseFont( myFont );
+	/*if( mFactory )
+		mFactory->ReleaseFont( mFont );
 	*/
-	myFont = NULL;
+	mFont = NULL;
 }
 //-----------------------------------------------------------------------------
 
 void TextSprite::MoveCenterTo( const types::vector2& p )		
 { 
 	Sprite::MoveCenterTo( p );
-	
-	// MoveTo( GetPos() - types::vector2( myRealSize.x * 0.5f * GetScaleX(), myRealSize.y * 0.5f * GetScaleX() );
 }
 
 types::vector2 TextSprite::GetCenterPos() const
 { 
 	return Sprite::GetCenterPos();
-	// return types::vector2( GetX() + myRealSize.x * 0.5f * myScale.x, GetY() + myRealSize.y * 0.5f * myScale.y ); 
 }
-
-
 
 types::vector2 TextSprite::GetSize() const 
 {
-	// return types::vector2( mySize.x * myXForm.scale.x, mySize.y * myXForm.scale.y ); 
-
-	return types::vector2( myRealSize.x * myXForm.scale.x, myRealSize.y * myXForm.scale.y ); 
+	return types::vector2( mRealSize.x * mXForm.scale.x, mRealSize.y * mXForm.scale.y ); 
 }
 
 types::vector2 TextSprite::GetTextureSize() const
 {
-	return types::vector2( myRealSize.x , myRealSize.y ); 
+	return types::vector2( mRealSize.x , mRealSize.y ); 
 }
 
 //-----------------------------------------------------------------------------
 void TextSprite::SetText( const std::string& text )
 {
-	//std::cout << "Text: " << text << std::endl;
-
-	// debug hack
-	// myScale.x = 1.f;
-	// myScale.y = 1.f;
-
-	if( myFont && myText != text )
+	if( mFont && mText != text )
 	{
-		
-		myText = text;
+		mText = text;
 
-		myInRects = myFont->GetRectsForText( text );
-		myOutRects.clear();
+		mInRects = mFont->GetRectsForText( text );
+		mOutRects.clear();
 
-		if( myFontAlign == NULL )
+		if( mFontAlign == NULL )
 		{
 			types::vector2 f_pos( 0, 0 );
-			for( std::size_t i = 0; i < myInRects.size(); ++i )
+			for( std::size_t i = 0; i < mInRects.size(); ++i )
 			{
-				types::rect font_rect = myInRects[ i ];
+				types::rect font_rect = mInRects[ i ];
 				font_rect.x = f_pos.x;
 				font_rect.y = f_pos.y;
 
-				myOutRects.push_back( font_rect );
+				mOutRects.push_back( font_rect );
 
-				f_pos.x += ( font_rect.w + myFont->GetCharSpace() );  /* GetScale().x;*/
+				f_pos.x += ( font_rect.w + mFont->GetCharSpace() );  /* GetScale().x;*/
 			}
 
-			// figure out myRealSize.x && myRealSize.y
+			// figure out mRealSize.x && mRealSize.y
 			types::vector2 min_p( 100000.f, 100000.f );
 			types::vector2 max_p( -100000.f, -100000.f );
-			for( std::size_t i = 0; i < myOutRects.size(); ++i )
+			for( std::size_t i = 0; i < mOutRects.size(); ++i )
 			{
-				if( myOutRects[ i ].w >= 0 &&
-					myOutRects[ i ].h >= 0 )
+				if( mOutRects[ i ].w >= 0 &&
+					mOutRects[ i ].h >= 0 )
 				{
-					min_p.x = ceng::math::Min( min_p.x, myOutRects[ i ].x );
-					min_p.y = ceng::math::Min( min_p.y, myOutRects[ i ].y );
-					max_p.x = ceng::math::Max( max_p.x, myOutRects[ i ].x + myOutRects[ i ].w );
-					max_p.y = ceng::math::Max( max_p.y, myOutRects[ i ].y + myOutRects[ i ].h );
+					min_p.x = ceng::math::Min( min_p.x, mOutRects[ i ].x );
+					min_p.y = ceng::math::Min( min_p.y, mOutRects[ i ].y );
+					max_p.x = ceng::math::Max( max_p.x, mOutRects[ i ].x + mOutRects[ i ].w );
+					max_p.y = ceng::math::Max( max_p.y, mOutRects[ i ].y + mOutRects[ i ].h );
 				}
 
-				myRealSize.x = max_p.x - min_p.x;
-				myRealSize.y = max_p.y - min_p.y;
+				mRealSize.x = max_p.x - min_p.x;
+				mRealSize.y = max_p.y - min_p.y;
 			}
 		}
-		else if( myFontAlign )
+		else if( mFontAlign )
 		{
-			myOutRects = myFontAlign->GetRectPositions( myInRects, myText, types::rect( 0, 0, myTextBox.w, myTextBox.h ), myFont );
-			myRealSize.x = myTextBox.w;
-			myRealSize.y = myTextBox.h;
+			mOutRects = mFontAlign->GetRectPositions( mInRects, mText, types::rect( 0, 0, mTextBox.w, mTextBox.h ), mFont );
+			mRealSize.x = mTextBox.w;
+			mRealSize.y = mTextBox.h;
 		}
 	}
 }
@@ -144,10 +136,6 @@ bool TextSprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, t
 	return Sprite::DrawRect( rect, graphics, camera, matrix );
 }
 
-bool TextSprite::DrawRectWithAlphaMask( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const types::xform& matrix, TextureRect& texture_rect )
-{
-	return Sprite:: DrawRectWithAlphaMask( rect, graphics, camera, matrix, texture_rect );
-}
 //-----------------------------------------------------------------------------
 namespace {
 types::rect MultiRect( const types::xform& xform, types::rect r, const types::vector2& center_pos )
@@ -168,56 +156,39 @@ types::rect MultiRect( const types::xform& xform, types::rect r, const types::ve
 } // end of anonymous namespace
 //-----------------------------------------------------------------------------
 
-bool TextSprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& transform, TextureRect* texture_rect )
+bool TextSprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& transform )
 { 
 	//-------------------------------------------
-	if( myVisible == false )
+	if( mVisible == false )
 		return true;
 
 	// if we have an alpha mask we set it up drawing with it
-	if( myAlphaMask )
+	if( mAlphaMask )
 	{
-		if( myAlphaMask->GetScaleX() == 0 || 
-			myAlphaMask->GetScaleY() == 0 )
+		if( mAlphaMask->GetScaleX() == 0 || 
+			mAlphaMask->GetScaleY() == 0 )
 			return true;
-
-		static TextureRect m_alphamask_rect;
-		m_alphamask_rect.SetAlphaSprite( myAlphaMask );
-
-		// if you don't want the parent to transform the alpha mask remove this->GetXForm() part
-		types::xform alpha_transform = ceng::math::Mul( transform.GetXForm(), this->GetXForm() );
-		for( int i = 0; i < m_alphamask_rect.count; ++i )
-		{
-			m_alphamask_rect.verts[ i ] = ceng::math::Mul( alpha_transform, m_alphamask_rect.verts[ i ] );
-			if( camera ) m_alphamask_rect.verts[ i ] = camera->Transform( m_alphamask_rect.verts[ i ] );
-		}
-
-		m_alphamask_rect.m_xform = ceng::math::Mul(  alpha_transform, m_alphamask_rect.m_xform );
-		m_alphamask_rect.m_texture_rect.w /= m_alphamask_rect.m_xform.scale.x;
-		m_alphamask_rect.m_texture_rect.h /= m_alphamask_rect.m_xform.scale.y;
-
-		texture_rect = &m_alphamask_rect;
 	}
 
 	//------------------------------------
 
-	const types::xform		m_xform = myXForm;
-	const types::vector2	m_centerpos = myCenterOffset;
+	const types::xform		m_xform = mXForm;
+	const types::vector2	m_centerpos = mCenterOffset;
 
-	types::vector2 c = ceng::math::Mul( myXForm.R, myCenterOffset );
-	c.x *= myXForm.scale.x;
-	c.y *= myXForm.scale.y;
-	types::vector2 start_pos = myXForm.position - c;
+	types::vector2 c = ceng::math::Mul( mXForm.R, mCenterOffset );
+	c.x *= mXForm.scale.x;
+	c.y *= mXForm.scale.y;
+	types::vector2 start_pos = mXForm.position - c;
 	{
-		myCenterOffset.Set( 0, 0 );
+		mCenterOffset.Set( 0, 0 );
 
-		for( std::size_t i = 0; i < myOutRects.size(); ++i )
+		for( std::size_t i = 0; i < mOutRects.size(); ++i )
 		{
-			cassert( i < myInRects.size() );
+			cassert( i < mInRects.size() );
 
-			myXForm.position.x = 0;
-			myXForm.position.y = 0;
-			types::rect r = MultiRect( myXForm, myOutRects[ i ], types::vector2( 0, 0 )  );
+			mXForm.position.x = 0;
+			mXForm.position.y = 0;
+			types::rect r = MultiRect( mXForm, mOutRects[ i ], types::vector2( 0, 0 )  );
 
 			r.x += start_pos.x;
 			r.y += start_pos.y;
@@ -225,58 +196,52 @@ bool TextSprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transfo
 			if( r.w == 0 || r.h == 0 ) {
 				// don't do anything
 			} else {
+				mXForm.position.x = r.x;
+				mXForm.position.y = r.y;
 				
-				//myXForm.position.x = myOutRects[ i ].x + temp_pos.x;
-				//myXForm.position.y = myOutRects[ i ].y + temp_pos.y;
-				myXForm.position.x = r.x;
-				myXForm.position.y = r.y;
-				
-				if( texture_rect )
-					DrawRectWithAlphaMask( myInRects[ i ], graphics, camera, transform.GetXForm(), *texture_rect );
-				else
-					DrawRect( myInRects[ i ], graphics, camera, transform.GetXForm() );
+				DrawRect( mInRects[ i ], graphics, camera, transform.GetXForm() );
 			}
 		}
 	}
 
-	myXForm = m_xform;
-	myCenterOffset = m_centerpos;
+	mXForm = m_xform;
+	mCenterOffset = m_centerpos;
 
 	// drawing children
-	DrawChildren( graphics, camera, transform, texture_rect );
+	DrawChildren( graphics, camera, transform );
 	return true;
 }
 
 void TextSprite::SetAlign( int align_type )
 {
-	myFontAlign = IFontAlign::GetAlign( align_type );
+	mFontAlign = IFontAlign::GetAlign( align_type );
 }
 
 void TextSprite::SetTextBox( const types::rect& text_box )
 {
-	myTextBox = text_box;	
+	mTextBox = text_box;	
 }
 //=============================================================================
 
-void TextSprite::SetSingleLine( bool value ) { mySingleLine = value; }
+void TextSprite::SetSingleLine( bool value ) { mSingleLine = value; }
 
 void TextSprite::SetCursorPosition( int position )
 {
-	myCursorPosition = position;
+	mCursorPosition = position;
 }
 
 types::vector2 TextSprite::GetCursorGfxPosition( int position )
 {
-	if( position >= 0 && position < (int)myOutRects.size() )
+	if( position >= 0 && position < (int)mOutRects.size() )
 	{
-		return types::vector2( myOutRects[ position ].x + GetX(), myOutRects[ position ].y + GetY() );
+		return types::vector2( mOutRects[ position ].x + GetX(), mOutRects[ position ].y + GetY() );
 	}
 
 	// it's at the end of the text
-	if( position == (int)myOutRects.size() && myOutRects.empty() == false )
+	if( position == (int)mOutRects.size() && mOutRects.empty() == false )
 	{
-		int end_pos = (int)myOutRects.size() - 1;
-		return types::vector2( myOutRects[ end_pos ].x + GetX() + myOutRects[ end_pos ].w, myOutRects[ end_pos ].y + GetY() );
+		int end_pos = (int)mOutRects.size() - 1;
+		return types::vector2( mOutRects[ end_pos ].x + GetX() + mOutRects[ end_pos ].w, mOutRects[ end_pos ].y + GetY() );
 	}
 
 	return types::vector2( GetX(), GetY() );
@@ -305,9 +270,9 @@ int	 TextSprite::GetCursorTextPosition( const types::vector2& p )
 	float closest_distance = 10000.f;
 	int closest_i = 0;
 
-	for( std::size_t i = 0; i < myOutRects.size(); ++i )
+	for( std::size_t i = 0; i < mOutRects.size(); ++i )
 	{
-		float distance = DistanceBetweenPointAndRect( pos, myOutRects[ i ] );
+		float distance = DistanceBetweenPointAndRect( pos, mOutRects[ i ] );
 		if( distance < closest_distance )
 		{
 			closest_distance = distance;
@@ -317,9 +282,9 @@ int	 TextSprite::GetCursorTextPosition( const types::vector2& p )
 
 	// now we know which is the closest character
 	// the we have to figure out should we be on the left or the right side of it?
-	if( closest_i >= 0 && closest_i < (int)myOutRects.size() )
+	if( closest_i >= 0 && closest_i < (int)mOutRects.size() )
 	{
-		types::rect r = myOutRects[ closest_i ];
+		types::rect r = mOutRects[ closest_i ];
 		
 		float dist_to_left = ceng::math::Absolute( pos.x - r.x );
 		float dist_to_right = ceng::math::Absolute( pos.x - ( r.x + r.w ) );
@@ -379,21 +344,18 @@ namespace
 
 void TextSprite::SetFont( CFont* font )
 {
-	// cassert( false && "needs impl" );
-	//cassert( myFactory );
-	if( myFont == font )
+	if( mFont == font )
 		return;
 
-	if( true /*myFactory*/ )
+	if( true )
 	{
-		// myfactory->releasefont( myfont );
-		myFont = NULL;
+		// mfactory->releasefont( mfont );
+		mFont = NULL;
+		mFont = font;
 
-		myFont = font;
-
-		if( myFont )
+		if( mFont )
 		{
-			std::string image_filename = myFont->GetTextureFilename();
+			const std::string image_filename = mFont->GetTextureFilename();
 
 			if( image_filename.empty() == false )
 			{
@@ -406,57 +368,5 @@ void TextSprite::SetFont( CFont* font )
 	}
 }
 //=============================================================================
-#if 0
-void TextSprite::Serialize( ceng::CXmlFileSys* filesys )
-{
-	CSprite::SerializeImpl( filesys, false );
 
-	std::string font_filename = "";
-	if( myFont )
-	{
-		font_filename = myFont->GetFilename();
-	}
-
-	XML_BindAlias( filesys, font_filename, "FontFile" );
-
-	if( filesys->IsReading() )
-	{
-		cassert( myFactory );
-		if( myFactory )
-		{
-			myFactory->ReleaseFont( myFont );
-			myFont = NULL;
-
-			CFont* font = myFactory->LoadFont( font_filename );
-			SetFont( font );
-		}
-	}
-
-	// GetAlignmentType
-	int align = -1;
-	if( myFontAlign )
-		align = myFontAlign->GetAlignmentType();	
-	
-	XML_BindAlias( filesys, align, "Align" );
-	
-	if( align != -1 && 
-		filesys->IsReading() )
-	{
-		myFontAlign = IFontAlign::GetAlign( align );
-	}
-
-	XML_BindAlias( filesys, myText, "Text" );
-	
-	Rect_Serializer< types::rect > serialize_rect( myTextBox );
-	XML_BindAlias( filesys, serialize_rect, "TextBox" );
-
-	if( filesys->IsReading() )
-	{
-		std::string text_to_set = myText;
-		SetText( "" );
-		SetText( text_to_set );
-	}
-}
-#endif
-//=============================================================================
 } // end of namespace as

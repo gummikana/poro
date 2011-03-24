@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="CB Project" />
+		<Option execution_dir="/home/gummikana/Projects/poro/build/CB Project/" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/CB Project" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="../../examples/AlphaMasking/workdir" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/CB Project" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+			<Add directory="$(#sdl)" />
+			<Add directory="$(#glut)" />
+		</Compiler>
+		<Linker>
+			<Add option="-lSDL -lSDL_mixer -lSDL_image -lGL -lGLU -lglut -lGLEW" />
+		</Linker>
+		<Unit filename="../../examples/AlphaMasking/source/include_poro.h" />
+		<Unit filename="../../examples/AlphaMasking/source/main.cpp" />
+		<Unit filename="../../source/game_utils/drawlines/linefont.cpp" />
+		<Unit filename="../../source/game_utils/drawlines/linefont.h" />
+		<Unit filename="../../source/poro/default_application.cpp" />
+		<Unit filename="../../source/poro/default_application.h" />
+		<Unit filename="../../source/poro/desktop/graphics_buffer_opengl.cpp" />
+		<Unit filename="../../source/poro/desktop/graphics_buffer_opengl.h" />
+		<Unit filename="../../source/poro/desktop/graphics_opengl.cpp" />
+		<Unit filename="../../source/poro/desktop/graphics_opengl.h" />
+		<Unit filename="../../source/poro/desktop/joystick_impl.cpp" />
+		<Unit filename="../../source/poro/desktop/joystick_impl.h" />
+		<Unit filename="../../source/poro/desktop/linux/platform_linux.cpp" />
+		<Unit filename="../../source/poro/desktop/linux/platform_linux.h" />
+		<Unit filename="../../source/poro/desktop/platform_desktop.cpp" />
+		<Unit filename="../../source/poro/desktop/platform_desktop.h" />
+		<Unit filename="../../source/poro/desktop/sound_sdl.cpp" />
+		<Unit filename="../../source/poro/desktop/sound_sdl.h" />
+		<Unit filename="../../source/poro/desktop/soundplayer_sdl.cpp" />
+		<Unit filename="../../source/poro/desktop/soundplayer_sdl.h" />
+		<Unit filename="../../source/poro/desktop/texture_opengl.cpp" />
+		<Unit filename="../../source/poro/desktop/texture_opengl.h" />
+		<Unit filename="../../source/poro/iapplication.h" />
+		<Unit filename="../../source/poro/igraphics.h" />
+		<Unit filename="../../source/poro/igraphics_buffer.h" />
+		<Unit filename="../../source/poro/ijoystick_listener.h" />
+		<Unit filename="../../source/poro/ikeyboard_listener.h" />
+		<Unit filename="../../source/poro/imouse_listener.h" />
+		<Unit filename="../../source/poro/iplatform.cpp" />
+		<Unit filename="../../source/poro/iplatform.h" />
+		<Unit filename="../../source/poro/isound.h" />
+		<Unit filename="../../source/poro/isoundplayer.h" />
+		<Unit filename="../../source/poro/itexture.h" />
+		<Unit filename="../../source/poro/itouch_listener.h" />
+		<Unit filename="../../source/poro/iwindow.h" />
+		<Unit filename="../../source/poro/joystick.cpp" />
+		<Unit filename="../../source/poro/joystick.h" />
+		<Unit filename="../../source/poro/keyboard.cpp" />
+		<Unit filename="../../source/poro/keyboard.h" />
+		<Unit filename="../../source/poro/libraries.h" />
+		<Unit filename="../../source/poro/mouse.cpp" />
+		<Unit filename="../../source/poro/mouse.h" />
+		<Unit filename="../../source/poro/platform_defs.h" />
+		<Unit filename="../../source/poro/poro.h" />
+		<Unit filename="../../source/poro/poro_libraries.h" />
+		<Unit filename="../../source/poro/poro_macros.h" />
+		<Unit filename="../../source/poro/poro_main.h" />
+		<Unit filename="../../source/poro/poro_types.h" />
+		<Unit filename="../../source/poro/run_poro.h" />
+		<Unit filename="../../source/poro/tests/joystick_test.cpp" />
+		<Unit filename="../../source/poro/touch.cpp" />
+		<Unit filename="../../source/poro/touch.h" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

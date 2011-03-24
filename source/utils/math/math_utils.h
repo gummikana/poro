@@ -190,7 +190,6 @@ CXForm< Type > Mul( const CXForm< Type >& T, const CXForm< Type >& v )
 	result.scale.y = T.scale.y * v.scale.y;
 
 	return result;
-
 }
 
 

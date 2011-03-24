@@ -38,13 +38,13 @@
 
 namespace ceng {
 
-template< class T, int N > 
+template< class T, int N >
 class StaticArray
 {
 public:
 	StaticArray() :
-		data(),
-		length( N )
+		length( N ),
+        data()
 	{
 		for( int i = 0; i< N; ++i )
 		{
@@ -53,9 +53,10 @@ public:
 	}
 
 	StaticArray( const StaticArray< T, N >& other ) :
-		data(),
-		length( N )
-	{	for( int i = 0; i < N; ++i )
+        length( N ),
+		data()
+	{
+	    for( int i = 0; i < N; ++i )
 		{
 			data[ i ] = other.data[ i ];
 		}
@@ -92,7 +93,7 @@ public:
 	const int length;
 
 private:
-	
+
 	T data[ N ];
 
 };

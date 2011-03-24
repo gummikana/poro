@@ -41,27 +41,27 @@ class DisplayObjectContainer : public EventDispatcher
 public:
 	typedef std::list< DisplayObjectContainer* > ChildList;
 
-	DisplayObjectContainer() : myFather( NULL ) { }
+	DisplayObjectContainer() : mFather( NULL ) { }
 	virtual ~DisplayObjectContainer() 
 	{ 
 		// this is the only case where we go up the ladder
-		if( myFather )
-			myFather->removeChild( this );
+		if( mFather )
+			mFather->removeChild( this );
 
-		myFather = NULL;
+		mFather = NULL;
 
 		RemoveAllChildren();
 	}
 
 	virtual int GetSpriteType() const = 0;
 	
-	int GetChildCount() const { return (int)myChildren.size(); }
+	int GetChildCount() const { return (int)mChildren.size(); }
 
 	// warning this is a super slow method of iterationg though 
 	// children and should not be used in time critical places
 	DisplayObjectContainer* GetChildAt( int index )
 	{
-		for( ChildList::iterator i = myChildren.begin(); i != myChildren.end(); ++i, --index )
+		for( ChildList::iterator i = mChildren.begin(); i != mChildren.end(); ++i, --index )
 		{
 			if( index == 0 ) return *i;
 		}
@@ -75,7 +75,7 @@ public:
 		cassert( child );
 		cassert( child != this );
 
-		myChildren.push_back( child );
+		mChildren.push_back( child );
 		child->SetFather( this );
 	}
 
@@ -85,10 +85,10 @@ public:
 	{
 		cassert( child != this );
 
-		ChildList::iterator i = std::find( myChildren.begin(), myChildren.end(), child );
+		ChildList::iterator i = std::find( mChildren.begin(), mChildren.end(), child );
 		
-		cassert( i != myChildren.end() );
-		myChildren.erase( i );
+		cassert( i != mChildren.end() );
+		mChildren.erase( i );
 		
 		// this triggers RemoveAllChildren in the removed child
 		child->SetFather( NULL );
@@ -98,10 +98,10 @@ public:
 	{
 		cassert( child != this );
 
-		ChildList::iterator i = std::find( myChildren.begin(), myChildren.end(), child );
+		ChildList::iterator i = std::find( mChildren.begin(), mChildren.end(), child );
 		
-		cassert( i != myChildren.end() );
-		myChildren.erase( i );
+		cassert( i != mChildren.end() );
+		mChildren.erase( i );
 		
 		// this triggers RemoveAllChildren in the removed child
 		// child->SetFather( NULL );
@@ -110,25 +110,25 @@ public:
 
 	virtual void SetFather( DisplayObjectContainer* father )
 	{
-		// cassert( myFather == NULL );
+		// cassert( mFather == NULL );
 		cassert( father != this );
 
-		if( myFather != father )
+		if( mFather != father )
 		{
 			// the direction is always down the tree, to avoid loops
-			myFather = father;
+			mFather = father;
 
 			// this means that father has been removed?
 			// remove all childs... 
-			if( myFather == NULL )
+			if( mFather == NULL )
 			{
 				// RemoveAllChildren();
 			}
 		}
 	}
 
-	DisplayObjectContainer* GetFather() const { return myFather; }
-	DisplayObjectContainer* getParent() const { return myFather; }
+	DisplayObjectContainer* GetFather() const { return mFather; }
+	DisplayObjectContainer* getParent() const { return mFather; }
 
 
 	bool dispatchEvent( const ceng::CSmartPtr< Event >& event );
@@ -142,15 +142,15 @@ protected:
 
 	virtual void RemoveAllChildren()
 	{
-		while( myChildren.empty() == false )
+		while( mChildren.empty() == false )
 		{
-			DisplayObjectContainer* child = myChildren.front();
+			DisplayObjectContainer* child = mChildren.front();
 			removeChild( child );
 		}
 	}
 
-	DisplayObjectContainer* myFather;
-	ChildList myChildren;
+	DisplayObjectContainer* mFather;
+	ChildList mChildren;
 };
 
 //-----------------------------------------------------------------------------

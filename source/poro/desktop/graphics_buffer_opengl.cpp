@@ -19,6 +19,7 @@
  ***************************************************************************/
 
 #include "../libraries.h"
+#include "../iplatform.h"
 #include "graphics_buffer_opengl.h"
 #include "texture_opengl.h"
 
@@ -67,7 +68,7 @@ bool GraphicsBufferOpenGL::Init( int width, int height, bool fullscreen, const t
 
 	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, mTexture.mTexture, 0);
 	GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-	assert(status==GL_FRAMEBUFFER_COMPLETE_EXT);
+	poro_assert(status==GL_FRAMEBUFFER_COMPLETE_EXT);
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	return true;
 }
@@ -85,7 +86,9 @@ void GraphicsBufferOpenGL::DrawTexture( ITexture* texture, types::vec2* vertices
 {
 	//Flip cords for buffer
 	for (int i=0; i<count; ++i) {
-		vertices[i].y = mTexture.GetHeight() - vertices[i].y;
+		vertices[i].x *= mBufferScale.x;
+		vertices[i].y *= mBufferScale.y;
+		vertices[i].y = poro::IPlatform::Instance()->GetInternalHeight() - vertices[i].y;
 	}
 	GraphicsOpenGL::DrawTexture( texture, vertices, tex_coords, count, color );
 }
@@ -94,6 +97,7 @@ void GraphicsBufferOpenGL::BeginRendering()
 {
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mBufferId);
 	glPushAttrib(GL_VIEWPORT_BIT);
+	// glViewport(0,0,mTexture.GetWidth(),mTexture.GetHeight());
 	glViewport(0,0,mTexture.GetWidth(),mTexture.GetHeight());
 
 	glClearColor(0, 0, 0, 0);

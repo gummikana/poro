@@ -18,18 +18,23 @@
  *
  ***************************************************************************/
 
-#include "../iplatform.h"
-#import "globals_iphone.h"
 #include "graphics_opengles.h"
-#include "../libraries.h"
-#include "../poro_macros.h"
-#include "texture_opengles.h"
-#include <cmath>
-#include "../../freeimage/include/FreeImage.h"
 
+
+#include <cmath>
 #include <OpenGLES/EAGL.h>
 #include <OpenGLES/ES1/gl.h>
 #include <OpenGLES/ES1/glext.h>
+
+#include "../../freeimage/include/FreeImage.h"
+
+#include "../iplatform.h"
+#include "../libraries.h"
+#include "../poro_macros.h"
+#import "globals_iphone.h"
+#include "texture_opengles.h"
+#include "graphics_buffer_opengles.h"
+
 
 
 using namespace poro::types;
@@ -543,6 +548,9 @@ void GraphicsOpenGLES::BeginRendering()
 				 mFillColor[ 2 ],
 				 mFillColor[ 3 ] );
 	
+	/*std::cout << "fillColor: " << mFillColor[ 0 ] << ", " << mFillColor[ 1 ] << ", " 
+	<< mFillColor[ 2 ] << ", " << mFillColor[ 3 ] << std::endl;
+	*/
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	
 }
@@ -640,6 +648,22 @@ void GraphicsOpenGLES::DrawFill( const std::vector< poro::types::vec2 >& vertice
 	glPopMatrix();
 	
 }
+	
+//=============================================================================
+
+IGraphicsBuffer* GraphicsOpenGLES::CreateGraphicsBuffer(int width, int height)
+{
+	// return NULL;
+	GraphicsBufferOpenGLES* buffer = new GraphicsBufferOpenGLES;
+	buffer->Init( width, height );
+	return buffer;
+}
+
+void GraphicsOpenGLES::DestroyGraphicsBuffer(IGraphicsBuffer* buffer)
+{
+	delete buffer;
+}
+
 	
 //=============================================================================
 } // end o namespace poro

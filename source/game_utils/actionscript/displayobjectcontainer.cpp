@@ -40,8 +40,8 @@ bool DisplayObjectContainer::dispatchEvent( const ceng::CSmartPtr< Event >& even
 bool DisplayObjectContainer::contains( DisplayObjectContainer* child )
 {
 	ChildList::iterator i;
-	i = std::find( myChildren.begin(), myChildren.end(), child );
-	return ( i != myChildren.end() );
+	i = std::find( mChildren.begin(), mChildren.end(), child );
+	return ( i != mChildren.end() );
 }
 
 void DisplayObjectContainer::addChildAt( DisplayObjectContainer* child, int index )
@@ -52,17 +52,17 @@ void DisplayObjectContainer::addChildAt( DisplayObjectContainer* child, int inde
 	child->SetFather( this );
 
 	int pos = 0;
-	for( ChildList::iterator i = myChildren.begin(); i != myChildren.end(); ++i )
+	for( ChildList::iterator i = mChildren.begin(); i != mChildren.end(); ++i )
 	{
 		if( pos == index )
 		{
-			myChildren.insert( i, child );
+			mChildren.insert( i, child );
 			return;
 		}
 
 		pos++;
 	}
-	myChildren.push_back( child );	
+	mChildren.push_back( child );	
 }
 
 } // end of namespace as

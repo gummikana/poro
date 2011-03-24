@@ -30,11 +30,22 @@ namespace poro {
 	public:
 		virtual ~IGraphicsBuffer() { }
 		virtual ITexture*	GetTexture() = 0;
-		virtual void		Release() {};
+		virtual void		Release() { }
 		
+		virtual ITexture*	LoadTexture( const types::string& filename ) { return NULL; }
+		virtual void		ReleaseTexture( ITexture* texture )  {  }
+
 		//IGraphics
 		virtual bool		Init( int width, int height, bool fullscreen = false, const types::string& caption = "" ) = 0;
 		
+		virtual void		SetGraphicsBufferScale( float x, float y ) { }
+
+		void		DrawTexture( ITexture* texture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color ) { }
+
+		void		DrawTexture( ITexture* texture,
+										types::Float32 x, types::Float32 y, types::Float32 w, types::Float32 h,
+										const types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ), types::Float32 rotation = 0 )  { }
+
 	};
 		
 } // end o namespace poro

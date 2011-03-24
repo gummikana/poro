@@ -34,15 +34,15 @@ namespace poro {
 class JoystickImpl;
 
 class PlatformDesktop : public IPlatform {
-    
+
 public:
 	PlatformDesktop();
 	virtual ~PlatformDesktop();
 
 	//platform setup
-	virtual void Init(IApplication *application, int w, int h, bool fullscreen, std::string = "Poro Application");
-	virtual void Exit(){ mRunning = false; }
-	
+	virtual void Init( IApplication* application, int w, int h, bool fullscreen, std::string = "Poro Application" );
+	virtual void Exit();
+
 	virtual void StartMainLoop();
 
 	//destroy
@@ -65,14 +65,14 @@ public:
 	virtual Joystick*		GetJoystick( int n );
 
 	//timers
-	virtual float	GetFrameRate();
-	virtual int		GetFrameNum();
-	virtual int		GetUpTime();
-	virtual void	SetFrameRate(int targetRate);
-	virtual void	Sleep(int millis);
+	virtual void	        SetFrameRate( int targetRate, bool fixed_timestep = true );
+	virtual int	            GetFrameRate();
+	virtual int		        GetFrameNum();
+	virtual types::Float32  GetUpTime();
+	virtual void	        Sleep( types::Float32 seconds );
 
 	//filesystem
-	virtual void	SetWorkingDir(poro::types::string dir = poro::types::string("."));
+	virtual void	SetWorkingDir( poro::types::string dir = poro::types::string(".") );
 
 	void			SingleLoop();
 
@@ -82,24 +82,28 @@ protected:
 
 	types::vec2		ConvertMouseToInternalSize( int x, int y );
 
-	GraphicsOpenGL*				mGraphics;
-	int							mFrameCount;
-	int                         mFrameCountLastTime;
-	float						mFrameRate;
-	int                         mOneFrameShouldLast;
-	int							mWidth;
-	int							mHeight;
-	Mouse*						mMouse;
-	Keyboard*					mKeyboard;
+	GraphicsOpenGL*				    mGraphics;
+	bool							mFixedTimeStep;
+	int							    mFrameCount;
+	int				                mFrameRate;
+	types::Float32                  mOneFrameShouldLast;
+	int							    mWidth;
+	int							    mHeight;
+	Mouse*						    mMouse;
+	Keyboard*					    mKeyboard;
 	std::vector< JoystickImpl* >	mJoysticks;
-	SoundPlayerSDL*		        mSoundPlayer;
-	bool						mRunning;
-	types::vec2					mMousePos;
+	SoundPlayerSDL*		            mSoundPlayer;
+	bool						    mRunning;
+	types::vec2					    mMousePos;
 
 private:
 };
 
 //-------------------------- inlined functions -------------------------------------
+
+inline void PlatformDesktop::Exit() {
+    mRunning = false;
+}
 
 inline Mouse* PlatformDesktop::GetMouse() {
 	return mMouse;
@@ -117,7 +121,7 @@ inline ISoundPlayer* PlatformDesktop::GetSoundPlayer() {
 	return mSoundPlayer;
 }
 
-inline float PlatformDesktop::GetFrameRate() {
+inline int PlatformDesktop::GetFrameRate() {
 	return mFrameRate;
 }
 

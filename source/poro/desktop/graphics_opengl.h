@@ -75,7 +75,7 @@ public:
 	virtual void		BeginRendering();
 	virtual void		EndRendering();
 	
-	virtual void		DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth, float width );
+	virtual void		DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth, float width, bool loop );
 	virtual void		DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color );
 	
 	virtual IGraphicsBuffer* CreateGraphicsBuffer(int width, int height);

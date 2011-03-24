@@ -22,8 +22,8 @@
 #ifndef INC_UTILS_DEBUG_H
 #define INC_UTILS_DEBUG_H
 
-#include "tester/ctester.h"
-#include "tester/tester_utils.h"
+#include "../tester/ctester.h"
+#include "../tester/tester_utils.h"
 #include <iostream>
 #include <assert.h>
 

@@ -80,11 +80,11 @@ types::rect FigureOutRectPos( int frame, int width, int height )
 void DoAnimationTo( Sprite* sprite, int frameCount, int width, int height ) 
 {
 	Sprite::RectAnimation* animation = new Sprite::RectAnimation;
-	animation->myFrameCount = frameCount;
-	animation->myWidth = width;
-	animation->myHeight = height;
-	animation->myWaitTime = 1.f / ANIMATION_FRAMES_PER_SECOND;
-	animation->myFramesPerRow = 4;
+	animation->mFrameCount = frameCount;
+	animation->mWidth = width;
+	animation->mHeight = height;
+	animation->mWaitTime = 1.f / ANIMATION_FRAMES_PER_SECOND;
+	animation->mFramesPerRow = 4;
 	
 	sprite->SetRectAnimation( animation );
 	sprite->Update( 0 );

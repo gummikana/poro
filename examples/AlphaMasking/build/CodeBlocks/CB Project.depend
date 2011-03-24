@@ -1,0 +1,527 @@
+# depslib dependency file v1.0
+1300376430 source:/home/gummikana/Projects/poro/examples/AlphaMasking/source/main.cpp
+	<iostream>
+	<sstream>
+	"include_poro.h"
+	"../../../source/game_utils/drawlines/linefont.h"
+
+1300352114 /home/gummikana/Projects/poro/examples/AlphaMasking/source/include_poro.h
+	"../../../source/poro/poro.h"
+
+1300372842 /home/gummikana/Projects/poro/source/poro/poro.h
+	"iplatform.h"
+	"iapplication.h"
+	"igraphics.h"
+	"isoundplayer.h"
+	"isound.h"
+	"itexture.h"
+	"igraphics_buffer.h"
+	"mouse.h"
+	"keyboard.h"
+	"joystick.h"
+	"imouse_listener.h"
+	"ikeyboard_listener.h"
+	"ijoystick_listener.h"
+	"default_application.h"
+	"run_poro.h"
+
+1300357521 /home/gummikana/Projects/poro/source/poro/iplatform.h
+	"poro_types.h"
+	"iapplication.h"
+	"igraphics.h"
+	"isoundplayer.h"
+	"mouse.h"
+	"touch.h"
+	"joystick.h"
+	"keyboard.h"
+
+1300348314 /home/gummikana/Projects/poro/source/poro/poro_types.h
+	<string>
+	"poro_libraries.h"
+
+1300350945 /home/gummikana/Projects/poro/source/poro/poro_libraries.h
+	"../utils/staticarray/staticarray.h"
+	"../tester/ctester.h"
+	"../tester/tester_utils.h"
+
+1300351016 /home/gummikana/Projects/poro/source/utils/staticarray/staticarray.h
+	<cassert>
+
+1300348314 /home/gummikana/Projects/poro/source/tester/ctester.h
+	<string>
+	<vector>
+	"ctester_numeric.h"
+	"tester_macros.h"
+
+1300348314 /home/gummikana/Projects/poro/source/tester/ctester_numeric.h
+
+1300348314 /home/gummikana/Projects/poro/source/tester/tester_macros.h
+	<iostream>
+	<assert.h>
+	"../utils/singleton/csingleton.h"
+	"../utils/singleton/csingletonptr.h"
+	"../utils/pow2assert/pow2assert.h"
+
+1300348314 /home/gummikana/Projects/poro/source/utils/singleton/csingleton.h
+	<memory>
+
+1300348314 /home/gummikana/Projects/poro/source/utils/singleton/csingletonptr.h
+	<memory>
+
+1300363476 /home/gummikana/Projects/poro/source/utils/pow2assert/pow2assert.h
+	"../../poro/platform_defs.h"
+
+1300348314 /home/gummikana/Projects/poro/source/poro/platform_defs.h
+	"TargetConditionals.h"
+
+1300348314 /home/gummikana/Projects/poro/source/tester/tester_utils.h
+
+1300356214 /home/gummikana/Projects/poro/source/poro/iapplication.h
+
+1300372956 /home/gummikana/Projects/poro/source/poro/igraphics.h
+	<vector>
+	<stack>
+	"poro_types.h"
+	"poro_macros.h"
+	"itexture.h"
+
+1300355922 /home/gummikana/Projects/poro/source/poro/poro_macros.h
+	"poro_types.h"
+	<assert.h>
+	<iostream>
+
+1300348314 /home/gummikana/Projects/poro/source/poro/itexture.h
+	<assert.h>
+	"poro_types.h"
+
+1300348314 /home/gummikana/Projects/poro/source/poro/isoundplayer.h
+	"isound.h"
+	"poro_types.h"
+
+1300348314 /home/gummikana/Projects/poro/source/poro/isound.h
+
+1300348314 /home/gummikana/Projects/poro/source/poro/mouse.h
+	<vector>
+	"poro_types.h"
+	"imouse_listener.h"
+
+1300348314 /home/gummikana/Projects/poro/source/poro/imouse_listener.h
+	"poro_types.h"
+
+1300348314 /home/gummikana/Projects/poro/source/poro/touch.h
+	"itouch_listener.h"
+	<vector>
+	"poro_types.h"
+
+1300348314 /home/gummikana/Projects/poro/source/poro/itouch_listener.h
+	"poro_types.h"
+
+1300348314 /home/gummikana/Projects/poro/source/poro/joystick.h
+	<vector>
+	"poro_types.h"
+	"poro_macros.h"
+	"ijoystick_listener.h"
+
+1300348314 /home/gummikana/Projects/poro/source/poro/ijoystick_listener.h
+
+1300348314 /home/gummikana/Projects/poro/source/poro/keyboard.h
+	<vector>
+	"poro_types.h"
+	"ikeyboard_listener.h"
+
+1300348314 /home/gummikana/Projects/poro/source/poro/ikeyboard_listener.h
+
+1300348314 /home/gummikana/Projects/poro/source/poro/igraphics_buffer.h
+	"igraphics.h"
+
+1300356224 /home/gummikana/Projects/poro/source/poro/default_application.h
+	"iapplication.h"
+	"imouse_listener.h"
+	"ikeyboard_listener.h"
+
+1300357715 /home/gummikana/Projects/poro/source/poro/run_poro.h
+	<memory>
+	"platform_defs.h"
+	"iplatform.h"
+
+1300364414 /home/gummikana/Projects/poro/source/game_utils/drawlines/linefont.h
+	<string>
+	"../../poro/poro_types.h"
+
+1300365697 source:/home/gummikana/Projects/poro/source/game_utils/drawlines/linefont.cpp
+	"linefont.h"
+	<vector>
+	<string>
+	<stdio.h>
+	<stdarg.h>
+	"../../poro/igraphics.h"
+	"../../poro/poro_types.h"
+
+1300353901 source:/home/gummikana/Projects/poro/source/poro/default_application.cpp
+	"default_application.h"
+	"iplatform.h"
+	"poro_macros.h"
+
+1300376333 source:/home/gummikana/Projects/poro/source/poro/desktop/graphics_buffer_opengl.cpp
+	"../libraries.h"
+	"../iplatform.h"
+	"graphics_buffer_opengl.h"
+	"texture_opengl.h"
+
+1300348314 /home/gummikana/Projects/poro/source/poro/libraries.h
+	"platform_defs.h"
+	<CoreFoundation/CoreFoundation.h>
+	"../freeimage/include/FreeImage.h"
+	<CoreFoundation/CoreFoundation.h>
+	<SDL.h>
+	<SDL_image.h>
+	<SDL_mixer.h>
+	<GLEW/GLEW.h>
+	<GLUT/glut.h>
+	<SDL.h>
+	<SDL_image.h>
+	<SDL_mixer.h>
+	<GL/glew.h>
+	<GL/freeglut.h>
+	<GL/gl.h>
+	<GL/glu.h>
+	<windows.h>
+	<SDL.h>
+	<SDL_image.h>
+	<sdl_mixer.h>
+	<GL/glew.h>
+	<xinput.h>
+
+1278057020 /usr/include/SDL/SDL.h
+	"SDL_main.h"
+	"SDL_stdinc.h"
+	"SDL_audio.h"
+	"SDL_cdrom.h"
+	"SDL_cpuinfo.h"
+	"SDL_endian.h"
+	"SDL_error.h"
+	"SDL_events.h"
+	"SDL_loadso.h"
+	"SDL_mutex.h"
+	"SDL_rwops.h"
+	"SDL_thread.h"
+	"SDL_timer.h"
+	"SDL_video.h"
+	"SDL_version.h"
+	"begin_code.h"
+	"close_code.h"
+
+1278057020 /usr/include/SDL/SDL_main.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+	"begin_code.h"
+	"close_code.h"
+
+1278057020 /usr/include/SDL/SDL_stdinc.h
+	"SDL_config.h"
+	<sys/types.h>
+	<stdio.h>
+	<stdlib.h>
+	<stddef.h>
+	<stdarg.h>
+	<stdlib.h>
+	<malloc.h>
+	<stddef.h>
+	<stdarg.h>
+	<memory.h>
+	<string.h>
+	<strings.h>
+	<inttypes.h>
+	<stdint.h>
+	<ctype.h>
+	<iconv.h>
+	"begin_code.h"
+	<alloca.h>
+	<malloc.h>
+	<malloc.h>
+	<malloc.h>
+	<stdlib.h>
+	"close_code.h"
+
+1278057020 /usr/include/SDL/SDL_config.h
+	"SDL_platform.h"
+	<stdarg.h>
+
+1278057020 /usr/include/SDL/SDL_platform.h
+
+1278057020 /usr/include/SDL/begin_code.h
+
+1278057020 /usr/include/SDL/close_code.h
+
+1278057020 /usr/include/SDL/SDL_audio.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_endian.h"
+	"SDL_mutex.h"
+	"SDL_thread.h"
+	"SDL_rwops.h"
+	"begin_code.h"
+	"close_code.h"
+
+1278057020 /usr/include/SDL/SDL_error.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1278057020 /usr/include/SDL/SDL_endian.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1278057020 /usr/include/SDL/SDL_mutex.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1278057020 /usr/include/SDL/SDL_thread.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_mutex.h"
+	"begin_code.h"
+	<process.h>
+	"close_code.h"
+
+1278057020 /usr/include/SDL/SDL_rwops.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1278057020 /usr/include/SDL/SDL_cdrom.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1278057020 /usr/include/SDL/SDL_cpuinfo.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1278057020 /usr/include/SDL/SDL_events.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_active.h"
+	"SDL_keyboard.h"
+	"SDL_mouse.h"
+	"SDL_joystick.h"
+	"SDL_quit.h"
+	"begin_code.h"
+	"close_code.h"
+
+1278057020 /usr/include/SDL/SDL_active.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1278057020 /usr/include/SDL/SDL_keyboard.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_keysym.h"
+	"begin_code.h"
+	"close_code.h"
+
+1278057020 /usr/include/SDL/SDL_keysym.h
+
+1278057020 /usr/include/SDL/SDL_mouse.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_video.h"
+	"begin_code.h"
+	"close_code.h"
+
+1278057020 /usr/include/SDL/SDL_video.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_rwops.h"
+	"begin_code.h"
+	"close_code.h"
+
+1278057020 /usr/include/SDL/SDL_joystick.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1278057020 /usr/include/SDL/SDL_quit.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+
+1278057020 /usr/include/SDL/SDL_loadso.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1278057020 /usr/include/SDL/SDL_timer.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1278057020 /usr/include/SDL/SDL_version.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1273659171 /usr/include/SDL/SDL_image.h
+	"SDL.h"
+	"SDL_version.h"
+	"begin_code.h"
+	"close_code.h"
+
+1250558254 /usr/include/SDL/SDL_mixer.h
+	"SDL_types.h"
+	"SDL_rwops.h"
+	"SDL_audio.h"
+	"SDL_endian.h"
+	"SDL_version.h"
+	"begin_code.h"
+	"close_code.h"
+
+1278057020 /usr/include/SDL/SDL_types.h
+	"SDL_stdinc.h"
+
+1300348314 /home/gummikana/Projects/poro/source/poro/desktop/graphics_buffer_opengl.h
+	"../igraphics_buffer.h"
+	"../poro_types.h"
+	"graphics_opengl.h"
+	"texture_opengl.h"
+	<vector>
+
+1300348314 /home/gummikana/Projects/poro/source/poro/desktop/graphics_opengl.h
+	"../poro_types.h"
+	"../igraphics.h"
+
+1300348314 /home/gummikana/Projects/poro/source/poro/desktop/texture_opengl.h
+	"../itexture.h"
+	"../libraries.h"
+	"../poro_types.h"
+
+1300348314 source:/home/gummikana/Projects/poro/source/poro/desktop/graphics_opengl.cpp
+	"graphics_opengl.h"
+	<cmath>
+	"../iplatform.h"
+	"../libraries.h"
+	"../poro_macros.h"
+	"texture_opengl.h"
+	"graphics_buffer_opengl.h"
+
+1300348314 source:/home/gummikana/Projects/poro/source/poro/desktop/joystick_impl.cpp
+	"joystick_impl.h"
+	"../libraries.h"
+
+1300348314 /home/gummikana/Projects/poro/source/poro/desktop/joystick_impl.h
+	"../joystick.h"
+
+1300348314 source:/home/gummikana/Projects/poro/source/poro/desktop/linux/platform_linux.cpp
+	"platform_linux.h"
+	<unistd.h>
+	<sys/param.h>
+
+1300348314 /home/gummikana/Projects/poro/source/poro/desktop/linux/platform_linux.h
+	"../platform_desktop.h"
+
+1300357593 /home/gummikana/Projects/poro/source/poro/desktop/platform_desktop.h
+	<vector>
+	"../iplatform.h"
+	"../mouse.h"
+	"../keyboard.h"
+	"graphics_opengl.h"
+	"soundplayer_sdl.h"
+
+1300348314 /home/gummikana/Projects/poro/source/poro/desktop/soundplayer_sdl.h
+	"../isoundplayer.h"
+	"../libraries.h"
+
+1300357620 source:/home/gummikana/Projects/poro/source/poro/desktop/platform_desktop.cpp
+	"platform_desktop.h"
+	"../poro.h"
+	"../libraries.h"
+	"graphics_opengl.h"
+	"soundplayer_sdl.h"
+	"joystick_impl.h"
+
+1300348314 source:/home/gummikana/Projects/poro/source/poro/desktop/sound_sdl.cpp
+	"sound_sdl.h"
+
+1300348314 /home/gummikana/Projects/poro/source/poro/desktop/sound_sdl.h
+	"../isound.h"
+	"../poro_types.h"
+	"../libraries.h"
+
+1300348314 source:/home/gummikana/Projects/poro/source/poro/desktop/soundplayer_sdl.cpp
+	"soundplayer_sdl.h"
+	"sound_sdl.h"
+	"../poro_macros.h"
+
+1300348314 source:/home/gummikana/Projects/poro/source/poro/desktop/texture_opengl.cpp
+	"texture_opengl.h"
+
+1300357533 source:/home/gummikana/Projects/poro/source/poro/iplatform.cpp
+	"platform_defs.h"
+	"iplatform.h"
+	"iphone/platform_iphone.h"
+	<unistd.h>
+	"desktop/windows/platform_win.h"
+	"desktop/mac/platform_mac.h"
+	"desktop/linux/platform_linux.h"
+	<stdlib.h>
+
+1300348314 /home/gummikana/Projects/poro/source/poro/iphone/platform_iphone.h
+	"../iplatform.h"
+	"graphics_opengles.h"
+	"soundplayer_iphone.h"
+	<iostream>
+	<CoreFoundation/CoreFoundation.h>
+	<vector>
+
+1300348314 /home/gummikana/Projects/poro/source/poro/iphone/graphics_opengles.h
+	"../poro_types.h"
+	"../igraphics.h"
+
+1300348314 /home/gummikana/Projects/poro/source/poro/iphone/soundplayer_iphone.h
+	"../poro_types.h"
+	"isoundplayer.h"
+	<CoreAudio/CoreAudioTypes.h>
+
+1300348314 /home/gummikana/Projects/poro/source/poro/desktop/windows/platform_win.h
+	"../platform_desktop.h"
+
+1300348314 /home/gummikana/Projects/poro/source/poro/desktop/mac/platform_mac.h
+	"../platform_desktop.h"
+
+1300348314 source:/home/gummikana/Projects/poro/source/poro/joystick.cpp
+	"joystick.h"
+
+1300348314 source:/home/gummikana/Projects/poro/source/poro/keyboard.cpp
+	"keyboard.h"
+	"poro_macros.h"
+	<iostream>
+	<algorithm>
+
+1300348314 source:/home/gummikana/Projects/poro/source/poro/mouse.cpp
+	"mouse.h"
+	"poro_macros.h"
+	<iostream>
+	<algorithm>
+
+1300354268 source:/home/gummikana/Projects/poro/source/poro/tests/joystick_test.cpp
+	"../joystick.h"
+	"../poro_libraries.h"
+	<memory>
+
+1300348314 source:/home/gummikana/Projects/poro/source/poro/touch.cpp
+	"touch.h"
+	"poro_macros.h"
+	<iostream>
+	<algorithm>
+

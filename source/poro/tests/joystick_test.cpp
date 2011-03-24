@@ -44,32 +44,32 @@ public:
 		FUNC_OnJoystickButtonUp = 4,
 	};
 
-	virtual void OnJoystickConnected( Joystick* jstick ) { 
+	virtual void OnJoystickConnected( Joystick* jstick ) {
 		what_was_called = FUNC_OnJoystickConnected;
 		jstick_param = jstick;
 		button_param = -1;
 	}
 
-	virtual void OnJoystickDisconnected( Joystick* jstick ) { 
+	virtual void OnJoystickDisconnected( Joystick* jstick ) {
 		what_was_called = FUNC_OnJoystickDisconnected;
 		jstick_param = jstick;
 		button_param = -1;
 	}
 
-	virtual void OnJoystickButtonDown( Joystick* jstick, int button ) { 
+	virtual void OnJoystickButtonDown( Joystick* jstick, int button ) {
 		what_was_called = FUNC_OnJoystickButtonDown;
 		jstick_param = jstick;
 		button_param = button;
 	}
 
-	virtual void OnJoystickButtonUp( Joystick* jstick, int button ) { 
+	virtual void OnJoystickButtonUp( Joystick* jstick, int button ) {
 		what_was_called = FUNC_OnJoystickButtonUp;
 		jstick_param = jstick;
 		button_param = button;
 	}
 
 
-	
+
 	int			what_was_called;
 	Joystick*	jstick_param;
 	int			button_param;
@@ -119,13 +119,13 @@ int Joystick_Test()
 		{
 			float analog_values[] = { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f };
 			int analog_count = 9;
-			
-			for( int i = 0; i < analog_count; ++i ) 
+
+			for( int i = 0; i < analog_count; ++i )
 			{
 				joy_test.SetAnalogButton( i, analog_values[ i ] );
 			}
 
-			for( int i = 0; i < analog_count; ++i ) 
+			for( int i = 0; i < analog_count; ++i )
 			{
 				test_float( joy_test.GetAnalogButton( i ) == analog_values[ i ] );
 			}
@@ -148,7 +148,7 @@ int Joystick_Test()
 		}
 	}
 
-	
+
 
 	// listener add and remove work
 	{
@@ -210,7 +210,7 @@ int Joystick_Test()
 			for( int i = 0; i < Joystick::JOY_BUTTON_COUNT; ++i )
 			{
 				joy_test.SetButtonState( i, true );
-				
+
 				test_assert( listener1->what_was_called == JStickListener::FUNC_OnJoystickButtonDown );
 				test_assert( listener2->what_was_called == JStickListener::FUNC_OnJoystickButtonDown );
 				test_assert( listener1->jstick_param == &joy_test );
@@ -227,7 +227,34 @@ int Joystick_Test()
 				test_assert( listener1->button_param == i );
 				test_assert( listener2->button_param == i );
 			}
-		}
+		}//-----------------------------------------------------------------------------
+
+void ITask::Init()
+{
+if( mInitializedListeners == false )
+{
+mInitializedListeners = true;
+
+if( poro::IPlatform::Instance()->GetMouse() )
+poro::IPlatform::Instance()->GetMouse()->AddMouseListener( this );
+
+if( poro::IPlatform::Instance()->GetKeyboard() )
+poro::IPlatform::Instance()->GetKeyboard()->AddKeyboardListener( this );
+}
+}
+//-----------------------------------------------------------------------------
+
+void ITask::Exit()
+{
+if( poro::IPlatform::Instance()->GetMouse() )
+poro::IPlatform::Instance()->GetMouse()->RemoveMouseListener( this );
+
+if( poro::IPlatform::Instance()->GetKeyboard() )
+poro::IPlatform::Instance()->GetKeyboard()->RemoveKeyboardListener( this );
+}
+//-----------------------------------------------------------------------------
+
+
 
 		// analog buttons
 		{
@@ -254,7 +281,7 @@ int Joystick_Test()
 			test_assert( listener2->jstick_param == &joy_test );
 			test_assert( listener1->button_param == Joystick::JOY_BUTTON_ANALOG_01_MOVED );
 			test_assert( listener2->button_param == Joystick::JOY_BUTTON_ANALOG_01_MOVED );
-			
+
 			joy_test.SetAnalogButton( 2, analog_test_value );
 
 			test_assert( listener1->what_was_called == JStickListener::FUNC_OnJoystickButtonDown );
@@ -300,7 +327,7 @@ int Joystick_Test()
 			test_assert( listener2->jstick_param == &joy_test );
 			test_assert( listener1->button_param == Joystick::JOY_BUTTON_RIGHT_STICK_MOVED );
 			test_assert( listener2->button_param == Joystick::JOY_BUTTON_RIGHT_STICK_MOVED );
-		
+
 			// testing that there's no fucked up implementation that prevents two calls to be made back to back
 			left_stick_expected.x = 0.45f;
 			joy_test.SetLeftStick( left_stick_expected );

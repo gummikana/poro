@@ -31,99 +31,89 @@
 #include "keyboard.h"
 
 namespace poro {
-	
+
 class IPlatform
 {
 public:
-	
+
 	// static access method:
-	static IPlatform * Instance();
-	
+	static IPlatform* Instance();
+
 	virtual ~IPlatform();
-	
+
 	//platform setup
 	// If you implement your own Init for your platform as you should! Make sure
-	// you set the mInternalWidth and mInternalHeight to proper sizes if they 
+	// you set the mInternalWidth and mInternalHeight to proper sizes if they
 	// haven't been set already!
 	// mInternalWidth is 0 if nobody has set it by hand same goes for mInternalHeight
-	virtual void Init(IApplication *application, int w, int h, bool fullscreen, std::string = "Poro Application");
+	virtual void Init(IApplication* application, int w, int h, bool fullscreen, std::string = "Poro Application");
 	virtual void Exit(){};
-	
+
 	virtual void StartMainLoop() = 0;
-	
+
 	//destroy
 	virtual void Destroy();
-	
+
 	//global pointers
 	virtual void			SetApplication( IApplication* application );
-	virtual IApplication *	GetApplication();
-	virtual IGraphics *		GetGraphics() = 0;
-	virtual ISoundPlayer *	GetSoundPlayer() = 0;
-	
+	virtual IApplication*	GetApplication();
+	virtual IGraphics*		GetGraphics() = 0;
+	virtual ISoundPlayer*	GetSoundPlayer() = 0;
+
 	//controllers
-	virtual Mouse *			GetMouse() = 0;
-	virtual Touch *			GetTouch();
+	virtual Mouse*			GetMouse() = 0;
+	virtual Touch*			GetTouch();
 	virtual Keyboard*		GetKeyboard();
-	
+
 	virtual int				GetJoystickCount() const;
 	virtual Joystick*		GetJoystick( int n );
 
 
 	//window / screen
-	virtual void SetWindowSize( int width, int height ) {};
-	virtual int GetWidth();
-	virtual int GetHeight();
-	
-	virtual bool GetOrientationIsLandscape();
-	
-	
+	virtual void SetWindowSize( int width, int height ) { poro_assert( false ); }
+	virtual int GetWidth()								{ poro_assert( false ); return 0; }
+	virtual int GetHeight()								{ poro_assert( false ); return 0; }
+
+	virtual bool GetOrientationIsLandscape()			{ poro_assert( false ); return 0; }
+
+
 	//InternalScale
-	//  This sets the internal resolution of the application! 
+	//  This sets the internal resolution of the application!
 	//  The internal resolution can be different from the windows resolution.
 	//  You should call this function before calling IPlatform::Instance()->Init()
-	//  because that can initialize 
+	//  because that can initialize
 	virtual void SetInternalSize( types::Float32 width, types::Float32 height );
 
-	types::Float32 GetInternalWidth() const { 
-	    if(!mInternalWidth)
-            poro_assert(false); //Platform has probably not been initialized yet.
-            
-	    return mInternalWidth;
-    };
-	types::Float32 GetInternalHeight() const { 
-	     if(!mInternalHeight)
-            poro_assert(false); //Platform has probably not been initialized yet.
-            
-	    return mInternalHeight; 
-    };
+	types::Float32 GetInternalWidth() const;
+	types::Float32 GetInternalHeight() const;
 
 	//timers
-	virtual float	GetFrameRate();
-	virtual int		GetFrameNum();
-	virtual int		GetUpTime();
-	virtual void	SetFrameRate(int targetRate);
-	virtual void	Sleep(int millis);
-	
+	virtual void	        SetFrameRate( int targetRate, bool fixed_timestep = true );
+	virtual int             GetFrameRate()					{ poro_assert( false ); return 0; }
+	virtual int		        GetFrameNum()					{ poro_assert( false ); return 0; }
+	virtual types::Float32  GetUpTime()						{ poro_assert( false ); return 0; }
+	virtual void	        Sleep( types::Float32 seconds ) { poro_assert( false ); }
+
 	//filesystem
-	virtual void	SetWorkingDir(poro::types::string dir = poro::types::string("."));
-	virtual poro::types::string GetDocumentDir();		
-	
+	virtual void				SetWorkingDir(poro::types::string dir = poro::types::string("."));
+	virtual poro::types::string GetDocumentDir();
+
 private:
 
-	static IPlatform *gInstance;
-	
+	static IPlatform* gInstance;
+
 protected:
-		
-	// moved here so that it's made clear that there's no way you can create an 
+
+	// moved here so that it's made clear that there's no way you can create an
 	// instance of a platform
 	IPlatform();
 
 
 	// the game:
-	IApplication *mApplication;
+	IApplication* mApplication;
 	types::Float32 mInternalWidth;
 	types::Float32 mInternalHeight;
-	
+
 };
 
 //-------------------------- inlined stuff ------------------------------------
@@ -137,24 +127,24 @@ inline void IPlatform::SetInternalSize( types::Float32 width, types::Float32 hei
 
 	if( graphics )
 		graphics->SetInternalSize( width, height );
-} 
-
-inline int IPlatform::GetJoystickCount() const { 
-	// If this fails, it means you should implement joysticks on your end of things
-	poro_assert( false ); 
-	return 0; 
 }
 
-inline Joystick* IPlatform::GetJoystick( int n ) { 
+inline int IPlatform::GetJoystickCount() const {
 	// If this fails, it means you should implement joysticks on your end of things
-	poro_assert( false ); 
-	return NULL; 
+	poro_assert( false );
+	return 0;
 }
 
-inline Touch* IPlatform::GetTouch() { 
+inline Joystick* IPlatform::GetJoystick( int n ) {
+	// If this fails, it means you should implement joysticks on your end of things
+	poro_assert( false );
+	return NULL;
+}
+
+inline Touch* IPlatform::GetTouch() {
 	// If this fails, it means you should implement touch on your end of things
 	poro_assert( false );
-	return NULL; 
+	return NULL;
 }
 
 inline Keyboard* IPlatform::GetKeyboard() {
@@ -162,7 +152,35 @@ inline Keyboard* IPlatform::GetKeyboard() {
 	//poro_assert( false );
 	return NULL;
 }
-	
+
+inline types::Float32 IPlatform::GetInternalWidth() const {
+    if(!mInternalWidth)
+        poro_assert(false); // Platform has probably not been initialized yet.
+
+    return mInternalWidth;
+}
+
+inline types::Float32 IPlatform::GetInternalHeight() const {
+     if(!mInternalHeight)
+        poro_assert(false); // Platform has probably not been initialized yet.
+
+    return mInternalHeight;
+}
+
+inline void IPlatform::SetFrameRate( int targetRate, bool fixed_timestep ) {
+	poro_assert( false );
+}
+
+inline void IPlatform::SetWorkingDir(poro::types::string dir )  {
+	poro_assert( false );
+}
+
+inline poro::types::string IPlatform::GetDocumentDir() {
+	poro_assert( false );
+	return poro::types::string();
+}
+
+
 } // end o namespace poro
 
 #endif

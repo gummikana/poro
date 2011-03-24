@@ -70,8 +70,9 @@ public:
 
 	CXmlParser() :
 	  myRemoveWhiteSpace( true ),
-	  myHandler( NULL ),
-	  myStatus( content ) { }
+	  myStatus( content ),
+	  myHandler( NULL )
+    { }
 
 	~CXmlParser() { }
 

@@ -30,19 +30,26 @@
 
 namespace poro {
 	
-class GraphicsBufferOpenGL : public GraphicsOpenGL //, public IGraphicsBuffer
+class GraphicsBufferOpenGL :  public IGraphicsBuffer, public GraphicsOpenGL
 {
 public:
-	GraphicsBufferOpenGL() : mBufferId( 0 ), mTexture() { }
+	GraphicsBufferOpenGL() : IGraphicsBuffer(), GraphicsOpenGL(), mBufferId( 0 ), mTexture(), mBufferScale( 1, 1 ) { }
 	virtual ~GraphicsBufferOpenGL(){ Release(); }
 
-	//IGraphicsBuffer
+	// IGraphicsBuffer
 	virtual ITexture*	GetTexture() { return &mTexture; }
+
+	virtual void		SetGraphicsBufferScale( float x, float y ) { mBufferScale.x = x; mBufferScale.y = y; }
 	
-	//IGraphics
+	// IGraphics
 	virtual bool		Init( int width, int height, bool fullscreen = false, const types::string& caption = "" );
 	virtual void		Release();
 	
+	virtual void DrawTexture( ITexture* itexture, float x, float y, float w, float h, const types::fcolor& color, float rotation )
+	{
+		GraphicsOpenGL::DrawTexture( itexture, x, y, w, h, color, rotation );
+	}
+
 	virtual void		DrawTexture( ITexture* texture, 
 									types::vec2* vertices, 
 									types::vec2* tex_coords, 
@@ -57,6 +64,8 @@ private:
 	
 	types::Uint32 mBufferId;
 	TextureOpenGL mTexture;
+
+	types::vec2 mBufferScale;
 	
 };
 	
