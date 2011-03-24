@@ -73,6 +73,17 @@ public:
 		return key_value;
 	}
 
+    bool RemoveElement( const Key& k )
+	{
+		typename MapType::const_iterator i = mHandleMap.find( k );
+		if( i == mHandleMap.end() )
+			return false;
+		else {
+			mHandleMap.erase(k);
+            return true;
+		}
+	}
+
 	bool HasElement( const Key& k ) const
 	{
 		typename MapType::const_iterator i = mHandleMap.find( k );
@@ -93,6 +104,19 @@ public:
 
 		return AddElement( const_cast< Type* >( t ) );
 	}
+
+	Key ReverseFindKeyFor( const Type* t )
+	{
+	    typename MapType::reverse_iterator i = mHandleMap.rbegin();
+        for( ; i != mHandleMap.rend(); ++i )
+		{
+			if( i->second == t )
+				return i->first;
+		}
+
+		return AddElement( const_cast< Type* >( t ) );
+	}
+
 
 	MapType& GetAllElements() { return mHandleMap; }
 
