@@ -23,6 +23,7 @@
 #define INC_START_CLIENT_H
 
 #include "multiplayer_data.h"
+#include "lag_simulator.h"
 
 int StartClient( float update_freq, const MultiplayerData& m_data );
 

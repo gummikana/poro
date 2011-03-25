@@ -406,6 +406,73 @@ void UpdateStats()
 	}
 }
 
+namespace {
+
+class LagSimulator
+{
+    struct LagPacket
+	{
+		LagPacket() : packet( NULL ), timestamp( 0 ) { }
+		LagPacket( RakNet::Packet* packet, Uint32 t ) : packet( packet ), timestamp( t ) { }
+
+		//bool operator< ( const BufferMessage& other ) const { return  ( time_to_fire < other.time_to_fire ); }
+
+		RakNet::Packet* packet;
+		Uint32 timestamp;
+	};
+    
+public:
+    LagSimulator() : mDelay( 0 ) { }
+    void SetDelay(Uint32 delay){ mDelay=delay; }
+    Uint32 GetDelay(){ return mDelay; }
+    void AddPacket(RakNet::Packet* packet){
+        mBuffer.push_back(LagPacket(packet,SDL_GetTicks()));
+    }
+    void ProcessPackets(CPacketHandler* handler){
+        
+        Uint32 time_to_process = SDL_GetTicks() - mDelay;
+        while( mBuffer.empty() == false &&
+			mBuffer.front().timestamp <= time_to_process )
+		{
+			RakNet::Packet* packet = mBuffer.front().packet;
+			mBuffer.pop_front();
+			cassert( packet );
+			
+			handler->HandleGamePackets(packet);
+			handler->mRakPeer->DeallocatePacket(packet);
+		}
+        
+    }
+private:
+    std::list<LagPacket> mBuffer;
+    Uint32 mDelay;
+};
+
+LagSimulator lag_simulator;
+} //anon namespace end
+
+bool IsLagSimulationOn(){
+    if(lag_simulator.GetDelay()>0)
+        return true;
+    else
+        return false;
+}
+
+void SetLagSimulation(int delay){
+    if(delay<=0){
+        lag_simulator.SetDelay(0);
+        std::cout << "Lag simulation off" << std::endl;
+    }else{
+        lag_simulator.SetDelay(delay);
+        std::cout << "Warning: Simulating lag of " << delay << " milliseconds" << std::endl;
+    }
+}
+
+int GetLagSimulation(){
+    return lag_simulator.GetDelay();
+}
+
+
 int RunServer( void* data_struct )
 {
 	MultiplayerData* m_data = static_cast< MultiplayerData* >( data_struct );
@@ -418,9 +485,7 @@ int RunServer( void* data_struct )
 	CPacketHandler	mPacketHandler( isServer, peer, m_data->message_factory );
 	mPacketHandler.SetUserData( userdata );
 
-
 	SampleFramework* nat_framework = NULL;
-
 
 	if( m_data->run_natpunchthrough )
 	{
@@ -428,7 +493,7 @@ int RunServer( void* data_struct )
 		nat_framework->Init( peer );
 	}
 
-	while( running )
+    while( running )
 	{
 		if( isServer )
 			UpdateStats();
@@ -443,9 +508,11 @@ int RunServer( void* data_struct )
 
 		mPacketHandler.SendAllMessagesFromBuffer();
 
- 		for (packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
+ 		for (packet=peer->Receive(); packet; packet=peer->Receive())
 		{
-			if( nat_framework )
+            bool deallocate_packet=true;
+            
+            if( nat_framework )
 				nat_framework->ProcessPacket(packet);
 
 			switch (packet->data[0])
@@ -543,6 +610,13 @@ int RunServer( void* data_struct )
 
 
 			default:
+			
+                if(IsLagSimulationOn()){
+                    deallocate_packet=false;
+                    lag_simulator.AddPacket(packet);
+                    break;
+                }
+
 				mPacketHandler.HandleGamePackets( packet );
 				/*
 				if( packet->data[0] > ID_GAME_MESSAGE_1 &&
@@ -564,7 +638,14 @@ int RunServer( void* data_struct )
 				}*/
 				break;
 			}
+			
+			//Lag simulation can clear packets later on, thats why this is conditional.
+			if(deallocate_packet)
+                peer->DeallocatePacket(packet);
 		}
+		
+		//Even if you turn of lag simulation, make sure old packets are processed.
+		lag_simulator.ProcessPackets(&mPacketHandler);
 
 		if( isServer == false )
 			SDL_Delay( 1 );
