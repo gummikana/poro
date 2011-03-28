@@ -115,14 +115,16 @@ namespace poro {
 		
 		static types::Float32 last_frame_rate = 0;
 		if( upTime - last_frame_rate > 1.f ) {
-			std::cout << "FPS: " << mFrameCount << "\t" << GetUpTime() << std::endl;
+			//std::cout << "FPS: " << mFrameCount << "\t" << GetUpTime() << std::endl;
 			mFrameRate = mFrameCount;
 			mFrameCount = 0;
 			last_frame_rate = upTime;
 		}
-		
+        
 		if( mFixedTimeStep ) deltaTime = mOneFrameShouldLast;
 		
+        if( deltaTime < 0 ) deltaTime = 0;
+        
 		GetApplication()->Update( deltaTime );
 		
 		mGraphics->BeginRendering();

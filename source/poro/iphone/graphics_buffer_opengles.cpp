@@ -77,8 +77,6 @@ bool GraphicsBufferOpenGLES::Init( int width, int height, bool fullscreen, const
 	GLint oldFBO;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING_OES, &oldFBO);
 	
-	std::cout << "oldFBO: " << oldFBO << std::endl;
-
 	glGenFramebuffersOES(1, &mBufferId);	
 	glBindFramebufferOES(GL_FRAMEBUFFER_OES, mBufferId);
 
@@ -88,13 +86,14 @@ bool GraphicsBufferOpenGLES::Init( int width, int height, bool fullscreen, const
 	GLenum status = glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES);
 	poro_assert(status==GL_FRAMEBUFFER_COMPLETE_OES);
 	glBindFramebufferOES(GL_FRAMEBUFFER_OES, oldFBO);
+    
 	return true;
 }
 
 void GraphicsBufferOpenGLES::Release()
 {
-	//Delete texture
 	glDeleteTextures(1, &mTexture.mTextureId);
+
 	//Bind 0, which means render to back buffer, as a result, fb is unbound
 	glBindFramebufferOES(GL_FRAMEBUFFER_OES, 0);
 	glDeleteFramebuffersOES(1, &mBufferId);
@@ -135,15 +134,11 @@ void GraphicsBufferOpenGLES::DrawTexture( ITexture* texture, types::vec2* vertic
 	}
 	GraphicsOpenGLES::DrawTexture( texture, vertices, tex_coords, count, color );
 }
-
-	namespace {
-		GLint oldFBO = 0;
-	}
 	
 void GraphicsBufferOpenGLES::BeginRendering()
 {
 
-	glGetIntegerv(GL_FRAMEBUFFER_BINDING_OES, &oldFBO);
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING_OES, &mOldFBO);
 	glBindFramebufferOES(GL_FRAMEBUFFER_OES, mBufferId);
 	// glPushAttrib(GL_VIEWPORT_BIT);
 	// glViewport(0,0,mTexture.GetWidth(),mTexture.GetHeight());
@@ -157,7 +152,7 @@ void GraphicsBufferOpenGLES::BeginRendering()
 void GraphicsBufferOpenGLES::EndRendering()
 {
 	// glPopAttrib();
-	glBindFramebufferOES(GL_FRAMEBUFFER_OES, oldFBO);
+	glBindFramebufferOES(GL_FRAMEBUFFER_OES, mOldFBO);
 
 	glViewport(0,0,poro::IPlatform::Instance()->GetInternalWidth(),poro::IPlatform::Instance()->GetInternalHeight());
 }

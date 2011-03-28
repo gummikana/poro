@@ -262,6 +262,7 @@ bool Sprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& 
 			x.position += mAlphaMask->GetCenterOffset(); 
 			transform.PushXForm( x );	
 
+
 			alpha_buffer->BeginRendering();
 			ex_graphics = graphics;
 			graphics = alpha_buffer;
@@ -351,7 +352,9 @@ bool Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 
 	static poro::types::vec2 temp_verts[ 4 ];
 	static poro::types::vec2 tex_coords[ 4 ];
+	static poro::types::vec2 alpha_tex_coords[ 4 ];
 
+	if( true  )
 	{
 
 		types::rect dest_rect(rect.x, rect.y, rect.w, rect.h );
@@ -378,6 +381,24 @@ bool Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 			tex_coords[ 2 ].x = dest_rect.x + dest_rect.w;
 			tex_coords[ 2 ].y = dest_rect.y + dest_rect.h;
 
+			if( mAlphaBuffer ) { 
+				types::rect alpha_rect( 0, 0, 0, 0 );
+
+				alpha_rect.w = (float)mAlphaBuffer->GetTexture()->GetWidth();
+				alpha_rect.h = (float)mAlphaBuffer->GetTexture()->GetHeight();
+
+				alpha_rect.w = dest_rect.w;
+				alpha_rect.h = dest_rect.h;
+				alpha_tex_coords[ 0 ].x = alpha_rect.x;
+				alpha_tex_coords[ 0 ].y = alpha_rect.y;
+				alpha_tex_coords[ 1 ].x = alpha_rect.x;
+				alpha_tex_coords[ 1 ].y = alpha_rect.y + alpha_rect.h;
+				alpha_tex_coords[ 3 ].x = alpha_rect.x + alpha_rect.w;
+				alpha_tex_coords[ 3 ].y = alpha_rect.y;
+				alpha_tex_coords[ 2 ].x = alpha_rect.x + alpha_rect.w;
+				alpha_tex_coords[ 2 ].y = alpha_rect.y + alpha_rect.h;
+			}
+
 			if( true )
 			{
 				for( int i = 0; i < 4; ++i )
@@ -392,18 +413,14 @@ bool Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 
 			if( mAlphaBuffer ) 
 			{
-
 				graphics->DrawTextureWithAlpha( mTexture, temp_verts, tex_coords, 4, color_me,
-					mAlphaBuffer->GetTexture(), temp_verts, tex_coords, color_me );
-				// graphics->DrawTexture( mAlphaBuffer->GetTexture(), temp_verts, tex_coords, 4, color_me );
-				// color_me = poro::GetFColor( mColor[ 0 ], mColor[ 1 ], mColor[ 2 ], mColor[ 3 ] * 0.5f ); 
+					mAlphaBuffer->GetTexture(), temp_verts, alpha_tex_coords, color_me );
 			}
 			else
 			{
 				graphics->DrawTexture( mTexture, temp_verts, tex_coords, 4, color_me );
 			}
 		}
-
 		return true;
 	}
 
@@ -438,6 +455,8 @@ void Sprite::Update( float dt )
 		if( sprite )
 			sprite->Update( dt );
 	}
+
+	if( mAlphaMask ) mAlphaMask->Update( dt );
 }
 //=============================================================================
 
@@ -473,6 +492,7 @@ types::rect FigureOutRectPos( int frame, int width, int height, int how_many_per
 
 void Sprite::RectAnimation::Update( Sprite* sprite, float dt )
 {
+	int frame = mCurrentFrame;
 	mCurrentTime += dt;
 	if( mWaitTime > 0 ) {
 		while( mCurrentTime >= mWaitTime ) {
@@ -483,19 +503,11 @@ void Sprite::RectAnimation::Update( Sprite* sprite, float dt )
 		}
 	}
 
-	cassert( sprite );
-	sprite->SetRect( FigureOutRectPos( mCurrentFrame, mWidth, mHeight, mFramesPerRow ) );
-
-
-
-	/*int mFrameCount;
-	int mCurrentFrame;
-	int mWidth;
-	int mHeight;
-	int mFramesPerRow;
-
-	float mWaitTime;
-	float mCurrentTime;*/
+	if( frame == 0 || frame != mCurrentFrame ) 
+	{
+		cassert( sprite );
+		sprite->SetRect( FigureOutRectPos( mCurrentFrame, mWidth, mHeight, mFramesPerRow ) );
+	}
 }
 
 //-------------------------------------------------------------------------

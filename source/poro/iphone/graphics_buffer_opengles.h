@@ -33,7 +33,7 @@ namespace poro {
 class GraphicsBufferOpenGLES :  public IGraphicsBuffer, public GraphicsOpenGLES
 {
 public:
-	GraphicsBufferOpenGLES() : IGraphicsBuffer(), GraphicsOpenGLES(), mBufferId( 0 ), mTexture(), mBufferScale( 1, 1 ) { }
+	GraphicsBufferOpenGLES() : IGraphicsBuffer(), GraphicsOpenGLES(), mBufferId( 0 ), mTexture(), mBufferScale( 1, 1 ), mOldFBO( 0 ) { }
 	virtual ~GraphicsBufferOpenGLES(){ Release(); }
 
 	// IGraphicsBuffer
@@ -66,6 +66,8 @@ private:
 	TextureOpenGLES mTexture;
 
 	types::vec2 mBufferScale;
+    
+    int mOldFBO;
 	
 };
 	

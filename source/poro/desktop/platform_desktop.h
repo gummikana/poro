@@ -53,6 +53,8 @@ public:
 	virtual int		GetWidth() { return mWidth; }
 	virtual int		GetHeight() { return mHeight; }
 
+	virtual bool GetOrientationIsLandscape() { return false; }
+
 	//global pointers
 	virtual void			SetApplication( IApplication* application );
 	virtual IGraphics*		GetGraphics();
