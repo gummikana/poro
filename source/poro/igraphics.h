@@ -39,7 +39,9 @@ public:
 	IGraphics() :
         mClearBackground(true),
         mFillColor(),
-        mVertexMode(VERTEX_MODE_TRIANGLE_FAN),
+		mBlendMode( BLEND_MODE_NORMAL ),
+		mBlendModes(),
+		mVertexMode(VERTEX_MODE_TRIANGLE_FAN),
         mVertexModes()
     {
 		mFillColor[0] = 0.f;mFillColor[1] = 0.f; mFillColor[2] = 0.f; mFillColor[3] = 1.f;
@@ -75,6 +77,17 @@ public:
 	virtual void		BeginRendering() = 0;
 	virtual void		EndRendering() = 0;
     virtual void		SetClearBackground(bool clear) { mClearBackground=clear; }
+
+	//-------------------------------------------------------------------------
+
+	enum BLEND_MODES {
+		BLEND_MODE_NORMAL = 0,
+		BLEND_MODE_MULTIPLY = 1,
+		BLEND_MODE_SCREEN = 2
+	};
+
+	virtual void PushBlendMode( int blend_mode );
+	virtual void PopBlendMode();
 
 	//-------------------------------------------------------------------------
 
@@ -117,6 +130,10 @@ public:
 protected:
     bool mClearBackground;
 	poro::types::fcolor mFillColor;
+	
+	int mBlendMode;
+	std::stack<int> mBlendModes;
+	
 	int mVertexMode;
 	std::stack<int> mVertexModes;
 
@@ -124,10 +141,21 @@ protected:
 
 ///////////////////////////////////////////////////////////////////////////////
 
+inline void	IGraphics::PushBlendMode(int blend_mode) {
+	mBlendModes.push(mBlendMode);
+	mBlendMode=blend_mode;
+}
+
+inline void	IGraphics::PopBlendMode() {
+	mBlendMode = mBlendModes.top();
+	mBlendModes.pop();
+}
+
 inline void	IGraphics::PushVertexMode(int vertex_mode) {
 	mVertexModes.push(mVertexMode);
 	mVertexMode=vertex_mode;
 }
+
 inline void	IGraphics::PopVertexMode() {
 	mVertexMode = mVertexModes.top();
 	mVertexModes.pop();

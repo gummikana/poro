@@ -83,7 +83,7 @@ namespace {
 
 	//-------------------------------------------------------------------------
 
-	void drawsprite( TextureOpenGL* texture, Vertex* vertices, const types::fcolor& color, int count, Uint32 vertex_mode  )
+	void drawsprite( TextureOpenGL* texture, Vertex* vertices, const types::fcolor& color, int count, Uint32 vertex_mode, int blend_mode )
 	{
 		Uint32 tex = texture->mTexture;
 		glBindTexture(GL_TEXTURE_2D, tex);
@@ -91,7 +91,20 @@ namespace {
 		// glEnable(GL_BLEND);
 
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		if( blend_mode == 0 ) {
+			glColor4f(color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		} else if( blend_mode == 1 ) {
+			if( color[ 3 ] == 0 ) 
+				return;
+
+			glColor4f(
+				color[ 0 ] / color[ 3 ], 
+				color[ 1 ] / color[ 3 ], 
+				color[ 2 ] / color[ 3 ], color[ 3 ] );
+
+			glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+		}
 
 		glColor4f(color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
 
@@ -729,7 +742,7 @@ void GraphicsOpenGL::DrawTexture( ITexture* itexture, types::vec2* vertices, typ
 		vert[i].ty = texture->mUv[ 1 ] + ( tex_coords[i].y * y_text_conv );
 	}
 
-	drawsprite( texture, vert, color, count, GetGLVertexMode(mVertexMode) );
+	drawsprite( texture, vert, color, count, GetGLVertexMode(mVertexMode), mBlendMode );
 }
 
 //-----------------------------------------------------------------------------
