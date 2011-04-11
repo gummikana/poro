@@ -119,6 +119,7 @@ Sprite::Sprite() :
 	mClearTweens( true ),
 	mAlphaMask( NULL ),
 	mAlphaBuffer( NULL ),
+	mBlendMode( poro::IGraphics::BLEND_MODE_NORMAL ),
 	mName( "" ),
 	mTexture( NULL ),
 	mSize( 0, 0 ),
@@ -411,6 +412,10 @@ bool Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 				}
 			}
 
+			// blend mode
+			if( mBlendMode != poro::IGraphics::BLEND_MODE_NORMAL )
+				graphics->PushBlendMode( mBlendMode );
+
 			if( mAlphaBuffer ) 
 			{
 				graphics->DrawTextureWithAlpha( mTexture, temp_verts, tex_coords, 4, color_me,
@@ -420,6 +425,10 @@ bool Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 			{
 				graphics->DrawTexture( mTexture, temp_verts, tex_coords, 4, color_me );
 			}
+
+			if( mBlendMode != poro::IGraphics::BLEND_MODE_NORMAL )
+				graphics->PopBlendMode();
+
 		}
 		return true;
 	}
