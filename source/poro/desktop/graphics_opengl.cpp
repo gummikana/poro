@@ -27,6 +27,7 @@
 #include "../poro_macros.h"
 #include "texture_opengl.h"
 
+#include "../external/stb_image.h"
 
 #ifndef PORO_DONT_USE_GLEW
 #include "graphics_buffer_opengl.h"
@@ -176,219 +177,96 @@ namespace {
 		 return input + 1;
 	}
 
-	//-----------------------------------------------------------------------------
+	///////////////////////////////////////////////////////////////////////////
 
-	void GetSimpleFixAlphaChannel(SDL_Surface *image, const SDL_Rect &srcr)
+	unsigned char* ResizeImage( unsigned char* pixels, int w, int h, int new_size_x, int new_size_y )
 	{
-		if (image->w < 2 || image->h < 2)
-			return;
+		const int bpp = 4;
 
-		if (SDL_LockSurface(image) != 0)
-			return;
+		unsigned char* result = new unsigned char[ ( bpp * new_size_x * new_size_y ) ];
 
-		Uint32 *pixels = (Uint32 *)image->pixels;
-		Sint32 x, y;
-		Sint32 w = image->w, h = image->h;
-		const Uint32 alphaMask = image->format->Amask;
-		//const Uint32 colorMask =
-		//	image->format->Rmask | image->format->Gmask | image->format->Bmask;
-
-		Sint32 co = 0;
-		for (y = 0; y < h; ++y)
+		for( int y = 0; y < new_size_y; ++y )
 		{
-			for (x = 0; x < w; ++x)
+			for( int x = 0; x < new_size_x; ++x )
 			{
-				if ((pixels[co] & alphaMask) == 0)
+				
+				int pixel_pos = ( ( y * w ) + x ) * bpp;
+				int new_pos = ( ( y * new_size_x ) + x ) * bpp;
+				for( int i = 0; i < bpp; ++i )
 				{
-					// iterate through 3x3 window around pixel
-					Sint32 left = x - 1, right = x + 1, top = y - 1, bottom = y + 1;
-					if (left < 0) left = 0;
-					if (right >= w) right = w - 1;
-					if (top < 0) top = 0;
-					if (bottom >= h) bottom = h - 1;
-					Sint32 x2, y2, colors = 0, co2 = top * w + left;
-					Sint32 red = 0, green = 0, blue = 0;
-					for (y2 = top; y2 <= bottom; ++y2)
-					{
-						for (x2 = left; x2 <= right; ++x2)
-						{
-							Uint32 px = pixels[co2++];
-							if (px & alphaMask)
-							{
-								red += (px & image->format->Rmask) >> image->format->Rshift;
-								green += (px & image->format->Gmask) >> image->format->Gshift;
-								blue += (px & image->format->Bmask) >> image->format->Bshift;
-								++colors;
-							}
-						}
-						co2 += w - (right - left + 1);
-					}
-					if (colors > 0)
-					{
-						pixels[co] &= alphaMask;
-						pixels[co] |= (red / colors) << image->format->Rshift;
-						pixels[co] |= (green / colors) << image->format->Gshift;
-						pixels[co] |= (blue / colors) << image->format->Bshift;
-					}
+					unsigned char c = 0;
+					if( x < w && y < h ) 
+						c = pixels[ pixel_pos + i ];
+
+					result[ new_pos + i ] = c;
 				}
-				++co;
 			}
 		}
-
-
-		// if rect is smaller than texture, copy rightmost/bottom col/row (and pixel at w,h)
-		// as is from the inner one so that linear sampling works like clamp_to_edge
-		if (srcr.w < image->w)
-		{
-			for (y = 0; y < srcr.h; ++y)
-				pixels[y * w + srcr.w] = pixels[y * w + srcr.w - 1];
-		}
-		if (srcr.h < image->h)
-		{
-			for (x = 0; x < srcr.w; ++x)
-				pixels[srcr.h * w + x] = pixels[(srcr.h - 1) * w + x];
-		}
-		if (srcr.w < image->w && srcr.h < image->h)
-			pixels[srcr.h * w + srcr.w] = pixels[(srcr.h - 1) * w + srcr.w - 1];
-
-
-
-		SDL_UnlockSurface(image);
+		return result;
 	}
+	
+	///////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------------
-
-	SDL_Surface* CreateSDLSurface(int width,int height){
-		/* Create a 32-bit surface with the bytes of each pixel in R,G,B,A order,
-		 as expected by OpenGL for textures */
-		SDL_Surface *surface;
-		Uint32 rmask, gmask, bmask, amask;
-
-		/* SDL interprets each pixel as a 32-bit number, so our masks must depend
-		 on the endianness (byte order) of the machine */
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-		rmask = 0xff000000;
-		gmask = 0x00ff0000;
-		bmask = 0x0000ff00;
-		amask = 0x000000ff;
-#else
-		rmask = 0x000000ff;
-		gmask = 0x0000ff00;
-		bmask = 0x00ff0000;
-		amask = 0xff000000;
-#endif
-		surface = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32,
-									   rmask, gmask, bmask, amask);
-		if(surface == NULL) {
-			fprintf(stderr, "CreateRGBSurface failed: %s\n", SDL_GetError());
-			exit(1);
-		}
-		return surface;
-	}
-
-	//-----------------------------------------------------------------------------
-
-	// Based on SDL examples.
-	bool CreateTexture( Uint32 &oTexture, float *oUV, SDL_Surface *surface, int* real_size )
+	TextureOpenGL* CreateImage( unsigned char* pixels, int w, int h, int bpp )
 	{
-		Uint32 w, h;
-		SDL_Surface *image;
-		SDL_Rect area;
-		SDL_Rect srcr;
-		Uint32 savedFlags;
-		Uint8 savedAlpha;
-		Uint32 srcw, srch;
-
-		srcw = surface->w;
-		srch = surface->h;
-
-		// Use the surface width and height expanded to powers of 2.
-		w = GetNextPowerOfTwo(srcw);
-		h = GetNextPowerOfTwo(srch);
-		oUV[0] = 0;                  // Min X
-		oUV[1] = 0;                  // Min Y
-		oUV[2] = ((GLfloat)srcw/* - 0.0001f*/) / w;  // Max X
-		oUV[3] = ((GLfloat)srch/* - 0.0001f*/) / h;  // Max Y
-
-		real_size[ 0 ] = w;
-		real_size[ 1 ] = h;
-
-		image = CreateSDLSurface(w,h);
-		if (image == NULL)
-			return false;
-
-		// Save the alpha blending attributes.
-		savedFlags = surface->flags & (SDL_SRCALPHA | SDL_RLEACCELOK);
-		savedAlpha = surface->format->alpha;
-		if ((savedFlags & SDL_SRCALPHA) == SDL_SRCALPHA)
-			SDL_SetAlpha(surface, 0, 0);
-
-		// Copy the surface into the GL texture image.
-		area.x = 0;
-		area.y = 0;
-		area.w = srcw;
-		area.h = srch;
-
-		srcr = area;
-		SDL_BlitSurface(surface, &srcr, image, &area);
-
-		// TODO: Should this "fix" be optional?
-		GetSimpleFixAlphaChannel(image, area);
-
-		// Restore the alpha blending attributes.
-		if ((savedFlags & SDL_SRCALPHA) == SDL_SRCALPHA)
-			SDL_SetAlpha(surface, savedFlags, savedAlpha);
-
-		// Create an OpenGL texture from the image.
-		glGenTextures(1, (GLuint *)&oTexture);
-		glBindTexture(GL_TEXTURE_2D, oTexture);
-
-		if( true )
-		{
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		}
-		else
-		{
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		}
-
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-
-		// for some tests - bright green border color
-		//GLfloat col[4] = { 0, 1, 0, 1 };
-		//glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, col);
-
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image->pixels);
-		SDL_FreeSurface(image); // No longer needed.
-
-		return true;
-	}
-
-	//-----------------------------------------------------------------------------
-
-	TextureOpenGL* CreateImage(SDL_Surface* surface )
-	{
-		bool success;
-		Uint32 texture;
+		Uint32 oTexture = 0;
 		float uv[4];
 		int real_size[2];
-		int w = surface->w;
-		int h = surface->h;
+		
+		int nw = w; 
+		int nh = h; 
 
-		if (surface == NULL)
-			return NULL;
+		uv[0]=0;
+		uv[1]=0;
+		uv[2]=1;
+		uv[3]=1;
+		real_size[0] = w;
+		real_size[1] = h;
+		bool resize_to_power_of_two = true;
 
-		success = CreateTexture( texture, uv, surface, real_size );
-		if (!success)
-			return NULL;
+		bool release_new_pixels = false;
+		unsigned char* new_pixels = pixels;
+		
+	
+		// --- power of 2
+		if( resize_to_power_of_two )
+		{
+			nw = GetNextPowerOfTwo(w);
+			nh = GetNextPowerOfTwo(h);
+			if( nw != w || nh != h )
+			{
+				
+				new_pixels = ResizeImage( pixels, w, h, nw, nh );
+				release_new_pixels = true;
+
+				uv[0] = 0;						// Min X
+				uv[1] = 0;						// Min Y
+				uv[2] = ((GLfloat)w ) / nw;	// Max X
+				uv[3] = ((GLfloat)h ) / nh;	// Max Y
+
+				real_size[ 0 ] = nw;
+				real_size[ 1 ] = nh;
+			}
+		}
+		// --- /power of 2 
+
+		glGenTextures(1, (GLuint*)&oTexture);
+		glBindTexture(GL_TEXTURE_2D, oTexture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, nw, nh, 0,
+			 GL_RGBA, GL_UNSIGNED_BYTE, new_pixels);
+	
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+
+		if( release_new_pixels )
+			delete [] new_pixels;
 
 		TextureOpenGL* result = new TextureOpenGL;
-		result->mTexture = texture;
+		result->mTexture = oTexture;
 		result->mWidth = w;
 		result->mHeight = h;
 		result->mRealSizeX = real_size[ 0 ];
@@ -398,22 +276,23 @@ namespace {
 			result->mUv[ i ] = uv[ i ];
 		return result;
 	}
+			
 
 	//-----------------------------------------------------------------------------
 
 	TextureOpenGL* LoadTextureForReal( const types::string& filename )
 	{
 		TextureOpenGL* result = NULL;
-		SDL_Surface *temp = IMG_Load(filename.c_str());
-
-		if( temp ) {
-			result = CreateImage( temp );
-        } else {
-            std::cout << "Unable load image: " << IMG_GetError() << std::endl;
-        }
-
-		SDL_FreeSurface( temp );
-
+		
+		int x,y,bpp;
+		unsigned char *data = stbi_load(filename.c_str(), &x, &y, &bpp, 4);
+		
+		// ... process data if not NULL ... 
+		// ... x = width, y = height, n = # 8-bit components per pixel ...
+		// ... replace '0' with '1'..'4' to force that many components per pixel
+		
+		result = CreateImage( data, x, y, bpp );
+		stbi_image_free(data);
 
 		return result;
 	}
@@ -423,16 +302,27 @@ namespace {
 	TextureOpenGL* CreateTextureForReal(int width,int height)
 	{
 		TextureOpenGL* result = NULL;
-		SDL_Surface *temp = CreateSDLSurface(width,height);
-		if( temp )
-			result = CreateImage( temp );
+		
+		int bpp = 4;
+		int char_size = width * height * bpp;
+		unsigned char* data = new unsigned char[ char_size ];
 
-		SDL_FreeSurface( temp );
+		for( int i = 0; i < char_size; ++i )
+		{
+			data[ i ] = 0;
+		}
+
+		if( data )
+			result = CreateImage( data, width, height, bpp );
+
+		delete [] data;
+		data = NULL;
 
 		return result;
 	}
 
-	void SetTextureDataForReal(TextureOpenGL* texture, void* data){
+	void SetTextureDataForReal(TextureOpenGL* texture, void* data)
+	{
 		//GLint prevAlignment;
 		//glGetIntegerv(GL_UNPACK_ALIGNMENT, &prevAlignment);
 		//glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -451,8 +341,8 @@ namespace {
 		//texData.bFlipTexture = false;
 	}
 
-	float mDesktopWidth;
-	float mDesktopHeight;
+	float mDesktopWidth = 0;
+	float mDesktopHeight = 0;
 	
 } // end o namespace anon
 

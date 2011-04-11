@@ -14,38 +14,23 @@ public:
     HelloWorldApplication() :
         mTimer( 0 ),
         mFrameCount( 0 ),
-        mImage( NULL )
+        mImage( NULL ),
+		mOtherImage( NULL )
     {
     }
 
-    poro::ITexture* mImage;
 
     void Init()
     {
         poro::DefaultApplication::Init();
-        mBuffer = poro::IPlatform::Instance()->GetGraphics()->CreateGraphicsBuffer( 128, 78 );
-
-        mImage = poro::IPlatform::Instance()->GetGraphics()->LoadTexture( "test_image.png" );
+        mImage = poro::IPlatform::Instance()->GetGraphics()->LoadTexture( "test_alpha.png" );
+		mOtherImage = poro::IPlatform::Instance()->GetGraphics()->LoadTexture( "hello.png" );
     }
 
     void Draw( poro::IGraphics* graphics )
     {
-        poro::types::fcolor c = graphics->GetFillColor();
-        c[0] += 0.01f;
-        graphics->SetFillColor( c );
-
-
-        // DrawLineText( graphics, poro::types::vec2( 0, 0 ), 16, fps_text, poro::GetFColor( 1, 1, 1, 1 ) );
-        mBuffer->BeginRendering();
-        mBuffer->DrawTexture( mImage, 250, 100, 1024, 1024, poro::GetFColor( 1, 1, 1, 1 ), 0.5f );
-        mBuffer->EndRendering();
-
-        graphics->DrawTexture( mImage, 250, 100, 1024, 1024, poro::GetFColor( 1, 1, 1, 0.5f ), 0.5f );
-
-
-        poro::ITexture* t = mBuffer->GetTexture();
-        graphics->DrawTexture( t, 0, 0, 512, 384 );
-
+		graphics->DrawTexture( mOtherImage, 256, 256, 512, 512, poro::GetFColor( 1, 1, 1, 1 ), 0 );
+        graphics->DrawTexture( mImage, 0, 0, 1024, 288, poro::GetFColor( 1, 1, 1, 1 ), 0 );
     }
 
     void Update( float dt )
@@ -65,7 +50,8 @@ public:
     float mTimer;
     int mFrameCount;
     std::string fps_text;
-    poro::IGraphicsBuffer* mBuffer;
+    poro::ITexture* mImage;
+	poro::ITexture* mOtherImage;
 };
 
 //-----------------------------------------------------------------------------

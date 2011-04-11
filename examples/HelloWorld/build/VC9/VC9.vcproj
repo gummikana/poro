@@ -412,6 +412,14 @@
 						</File>
 					</Filter>
 				</Filter>
+				<Filter
+					Name="external"
+					>
+					<File
+						RelativePath="..\..\..\..\source\poro\external\stb_image.h"
+						>
+					</File>
+				</Filter>
 			</Filter>
 			<Filter
 				Name="HelloWorld"

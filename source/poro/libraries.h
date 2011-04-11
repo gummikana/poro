@@ -28,11 +28,6 @@
 #ifdef PORO_PLAT_IPHONE
 
 #include <CoreFoundation/CoreFoundation.h>
-//#include <Foundation/Foundation.h>
-//#include <UIKit/UIKit.h>
-//#include <OpenGLES/EAGL.h>
-//#include <OpenGLES/ES1/gl.h>
-//#include <OpenGLES/ES1/glext.h>
 #include "../freeimage/include/FreeImage.h"
 
 #endif
@@ -43,7 +38,7 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <SDL.h>
-#include <SDL_image.h>
+// #include <SDL_image.h>
 #include <SDL_mixer.h>
 #include <GLEW/GLEW.h>
 #include <GLUT/glut.h>
@@ -55,7 +50,7 @@
 #ifdef PORO_PLAT_LINUX
 
 #include <SDL.h>
-#include <SDL_image.h>
+// #include <SDL_image.h>
 #include <SDL_mixer.h>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
@@ -70,7 +65,7 @@
 
 #	pragma comment( lib, "sdl.lib" )
 #	pragma comment( lib, "sdlmain.lib" )
-#	pragma comment( lib, "sdl_image.lib" )
+// #	pragma comment( lib, "sdl_image.lib" )
 #	pragma comment( lib, "opengl32.lib" )
 #	pragma comment( lib, "glu32.lib" )
 #	pragma comment( lib, "glew32.lib" )
@@ -86,7 +81,7 @@
 #	endif
 
 #	include <SDL.h>
-#	include <SDL_image.h>
+// #	include <SDL_image.h>
 #	include <sdl_mixer.h>
 #	include <GL/glew.h>
 
