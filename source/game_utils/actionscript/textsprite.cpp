@@ -45,7 +45,7 @@ TextSprite::TextSprite() :
 	mText(),
 	mInRects(),
 	mOutRects(),
-	mTextBox()
+	mTextBox( 0, 0, -1, -1 )
 { 
 }
 
@@ -87,7 +87,7 @@ void TextSprite::RecalcuateRects()
 		mInRects = mFont->GetRectsForText( mText );
 		mOutRects.clear();
 
-		if( mFontAlign == NULL )
+		if( mFontAlign == NULL || mTextBox.w < 0 )
 		{
 			types::vector2 f_pos( 0, 0 );
 			for( std::size_t i = 0; i < mInRects.size(); ++i )
