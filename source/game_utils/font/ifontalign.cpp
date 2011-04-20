@@ -25,68 +25,86 @@
 //-----------------------------------------------------------------------------
 namespace {
 
-bool IsLineBreak( char c )
-{
-	if( c == '\r' || c == '\n' )
-		return true;
-	else
-		return false;
-}
+//=============================================================================
 
-int FindLineBreak( CFont* font, const std::string& text, const types::rect& rect, int start_pos )
-{
-	float gfx_w = 0;
-	float gfx_add_w = 0;
-	int str_pos = start_pos;
-	int str_next_pos = 0;
-
-	/*
-	myGfxBreakWidth = 0;
-	myEndOfLine = false;
-	*/
-
-	int end_of_line = text.find( "\n", start_pos );
-	if ( end_of_line == text.npos ) end_of_line = text.size();
-
-	while( true )
-	{
-		str_next_pos = text.find_first_of( " \n", str_pos );
-		
-		if ( str_next_pos == text.npos ) str_next_pos = text.size();
-		gfx_add_w = font->GetWidth( text.substr( str_pos, str_next_pos - str_pos ) );
-
-		if ( gfx_w + gfx_add_w >= rect.w ) 
-			break;
-
-		gfx_w += gfx_add_w;
-
-		str_pos = str_next_pos;
-
-		/*if ( text[ str_pos ] == ' ' )
-			gfx_w += font->GetWordSpace();*/
-		
-		str_pos++;
-
-		if( str_pos >= end_of_line )
-		{
-			if ( (unsigned)str_pos > text.size() ) str_pos = text.size();
-			// myEndOfLine = true;
-			break;
-		}
-	}
-
-	// myGfxBreakWidth = gfx_w;
-	// BUGBUG for bughunting
-	// myBugLine = text.substr( start_pos, ( str_pos - start_pos ) );
-
-	return ( str_pos );
-}
-
-class CFontAlignLeft : public IFontAlign
+class IFontAlignImpl : public IFontAlign
 {
 public:
 
-	std::vector< types::rect > GetRectPositions( const std::vector< types::rect >& texture_rects, const std::string& text, const types::rect& fit_in_here, CFont* font )
+	//-------------------------------------------------------------------------
+
+	virtual bool IsLineBreak( char c )
+	{
+		if( c == '\r' || c == '\n' )
+			return true;
+		else
+			return false;
+	}
+
+	//-------------------------------------------------------------------------
+
+	virtual int FindLineBreak( CFont* font, const std::string& text, const types::rect& rect, int start_pos, float& gfx_line_width )
+	{
+		float gfx_w = 0;
+		float gfx_add_w = 0;
+		int str_pos = start_pos;
+		int str_next_pos = 0;
+		gfx_line_width = 0;
+
+		/*
+		myGfxBreakWidth = 0;
+		myEndOfLine = false;
+		*/
+
+		int end_of_line = text.find( "\n", start_pos );
+		if ( end_of_line == text.npos ) end_of_line = text.size();
+
+		bool there_is_atleast_one_word = false;
+
+		while( true )
+		{
+			str_next_pos = text.find_first_of( " \n", str_pos );
+			
+			if ( str_next_pos == text.npos ) str_next_pos = text.size();
+			gfx_add_w = font->GetWidth( text.substr( str_pos, str_next_pos - str_pos ) );
+
+			if ( gfx_w + gfx_add_w >= rect.w && there_is_atleast_one_word ) 
+				break;
+
+			there_is_atleast_one_word = true;
+
+			gfx_w += gfx_add_w;
+
+			str_pos = str_next_pos;
+
+			if ( text[ str_pos ] == ' ' )
+				gfx_w += font->GetCharPosition( ' ' ).w;
+			
+			str_pos++;
+
+			if( str_pos >= end_of_line )
+			{
+				if ( (unsigned)str_pos > text.size() ) str_pos = text.size();
+				// myEndOfLine = true;
+				break;
+			}
+		}
+
+		// myGfxBreakWidth = gfx_w;
+		// BUGBUG for bughunting
+		// myBugLine = text.substr( start_pos, ( str_pos - start_pos ) );
+
+		gfx_line_width = gfx_w - font->GetCharPosition( ' ' ).w;
+		return ( str_pos );
+	}
+
+	//-------------------------------------------------------------------------
+
+	virtual float FigureOutXPosition( const types::rect& fit_in_here, float line_width ) = 0;
+
+	//-------------------------------------------------------------------------
+
+	virtual std::vector< types::rect > GetRectPositions( const std::vector< types::rect >& texture_rects, const std::string& text, const types::rect& fit_in_here, CFont* font )
 	{
 		cassert( texture_rects.size() == text.size() );
 		
@@ -96,13 +114,20 @@ public:
 		// f_pos.y += font->GetLineHeight();
 
 		int text_i = 0;
+		float graphics_width = 0;
 		while( text_i < (int)texture_rects.size() )
 		{
-			int line_break = FindLineBreak( font, text, fit_in_here, text_i );
+			int line_break = FindLineBreak( font, text, fit_in_here, text_i, graphics_width );
+			f_pos.x = FigureOutXPosition( fit_in_here, graphics_width );
+
+			if( graphics_width > fit_in_here.w )
+			{
+				int debug_break = 1;
+			}
 
 			for( int i = text_i; i < line_break && i < (int)texture_rects.size(); ++i )
 			{
-				float w = texture_rects[ i ].w + font->GetCharSpace();
+				float w = texture_rects[ i ].w /*+ font->GetCharSpace()*/;
 				if( IsLineBreak( text[ i ] ) )
 				{
 					result.push_back( types::rect( 0, 0, -1, -1 ) );
@@ -116,7 +141,7 @@ public:
 				}
 			}
 
-			f_pos.x = fit_in_here.x;
+			
 			f_pos.y += font->GetLineHeight();
 
 			if( line_break <= text_i )
@@ -124,43 +149,152 @@ public:
 			
 			text_i = line_break;
 		}
-
-		/*
-		for( std::size_t i = 0; i < texture_rects.size(); ++i )
-		{
-			float w = texture_rects[ i ].w + font->GetCharSpace();
-
-			if( ( f_pos.x + w ) -  fit_in_here.x > fit_in_here.w || IsLineBreak( text[ i ] ) )
-			{
-				f_pos.x = fit_in_here.x;
-				f_pos.y += font->GetLineHeight();
-			}
-
-			if( IsLineBreak( text[ i ] ) )
-			{
-				result.push_back( types::rect( 0, 0, -1, -1 ) );
-				continue;
-			}
-			else
-			{
-				types::rect r( f_pos.x, f_pos.y, w, texture_rects[ i ].h );
-				result.push_back( r );
-
-				f_pos.x += w;
-			}
-		}*/
-
 		return result;
 	}
 
-	FONT_ALIGN GetAlignmentType() const 
-	{
-		return FONT_ALIGN_LEFT;
-	}
+	//-------------------------------------------------------------------------
 
 };
+//=============================================================================
 
-CFontAlignLeft font_align_left;
+class CFontAlignLeft : public IFontAlignImpl
+{
+	float FigureOutXPosition( const types::rect& fit_in_here, float line_width ) {
+		return fit_in_here.x;
+	}
+
+	FONT_ALIGN GetAlignmentType() const	{
+		return FONT_ALIGN_LEFT;
+	}
+};
+
+//=============================================================================
+
+class CFontAlignRight : public IFontAlignImpl
+{
+	float FigureOutXPosition( const types::rect& fit_in_here, float line_width ) {
+		return ( fit_in_here.w - line_width ) + fit_in_here.x;
+	}
+
+	FONT_ALIGN GetAlignmentType() const {
+		return FONT_ALIGN_RIGHT;
+	}
+};
+
+//=============================================================================
+
+class CFontAlignCenter : public IFontAlignImpl
+{
+	float FigureOutXPosition( const types::rect& fit_in_here, float line_width ) {
+		return ( ( fit_in_here.w - line_width ) * 0.5f ) + fit_in_here.x;
+	}
+
+	FONT_ALIGN GetAlignmentType() const {
+		return FONT_ALIGN_CENTER;
+	}
+};
+
+//=============================================================================
+
+class CFontAlignJustify : public IFontAlignImpl
+{
+	float FigureOutXPosition( const types::rect& fit_in_here, float line_width ) {
+		return fit_in_here.x;
+	}
+
+	FONT_ALIGN GetAlignmentType() const {
+		return FONT_ALIGN_JUSTIFY;
+	}
+
+	bool IsSpace( char c )
+	{
+		if( c == ' ' ) return true;
+		if( c == '\t' ) return true;
+
+		return false;
+	}
+
+	int StringCount( const std::string& what, const std::string& in_where )
+	{
+		int i = 0;
+		int j = 0;
+		while( true )
+		{
+			i = in_where.find( what, i+1 );
+			if ( i == in_where.npos ) break;
+			j++;
+		} 
+
+		return j;
+	}
+
+
+
+	virtual std::vector< types::rect > GetRectPositions( const std::vector< types::rect >& texture_rects, const std::string& text, const types::rect& fit_in_here, CFont* font )
+	{
+		cassert( texture_rects.size() == text.size() );
+		
+		std::vector< types::rect > result;
+
+		types::vector2 f_pos( fit_in_here.x, fit_in_here.y );
+		// f_pos.y += font->GetLineHeight();
+
+		int text_i = 0;
+		float graphics_width = 0;
+		while( text_i < (int)texture_rects.size() )
+		{
+			int line_break = FindLineBreak( font, text, fit_in_here, text_i, graphics_width );
+			f_pos.x = FigureOutXPosition( fit_in_here, graphics_width );
+
+			std::string line = text.substr( text_i, line_break - text_i );
+			// cassert( line.empty() == false );
+			// cassert( line.size() == ( line_break - text_i ) );
+
+			float space_w = 0;
+			int space_count = StringCount( " ", line );	
+			space_count--;
+			if ( space_count >= 0 )
+				space_w = float( ( fit_in_here.w - graphics_width ) - ( font->GetCharSpace() * line.size() ) ) / float(space_count);
+
+
+			for( int i = text_i; i < line_break && i < (int)texture_rects.size(); ++i )
+			{
+				float w = texture_rects[ i ].w + font->GetCharSpace();
+
+				if( IsSpace( text[ i ] ) )
+					w += space_w;
+
+				if( IsLineBreak( text[ i ] ) )
+				{
+					result.push_back( types::rect( 0, 0, -1, -1 ) );
+				}
+				else
+				{
+					types::rect r( f_pos.x, f_pos.y, w, texture_rects[ i ].h );
+					result.push_back( r );
+
+					f_pos.x += w;
+				}
+			}
+			
+			f_pos.y += font->GetLineHeight();
+
+			if( line_break <= text_i )
+				line_break = text_i + 1;
+			
+			text_i = line_break;
+		}
+		return result;
+	}
+};
+
+
+//=============================================================================
+
+CFontAlignLeft		font_align_left;
+CFontAlignRight		font_align_right;
+CFontAlignCenter	font_align_center;
+CFontAlignJustify	font_align_justify;
 
 }
 //-----------------------------------------------------------------------------
@@ -171,6 +305,12 @@ IFontAlign* IFontAlign::GetAlign( int i )
 	{
 	case FONT_ALIGN_LEFT:
 		return &font_align_left;
+	case FONT_ALIGN_RIGHT:
+		return &font_align_right;
+	case FONT_ALIGN_CENTER:
+		return &font_align_center;
+	case FONT_ALIGN_JUSTIFY:
+		return &font_align_justify;
 	}
 	return NULL; 
 }

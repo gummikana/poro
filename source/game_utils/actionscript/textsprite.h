@@ -40,9 +40,23 @@ class TextSprite : public Sprite
 protected:
 	
 public:
+
+	//-------------------------------------------------------------------------
+
+	enum FONT_ALIGN
+	{
+		FONT_ALIGN_LEFT = 0,
+		FONT_ALIGN_RIGHT = 1,
+		FONT_ALIGN_CENTER = 2,
+		FONT_ALIGN_JUSTIFY
+	};
+
+	//-------------------------------------------------------------------------
+	
 	TextSprite();
 	~TextSprite();
 
+	//-------------------------------------------------------------------------
 	void SetText( const std::string& text );
 	
 	virtual void				MoveCenterTo( const types::vector2& p );
@@ -69,6 +83,9 @@ protected:
 	virtual bool DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const types::xform& matrix );
 
 protected:
+
+	void		RecalcuateRects();
+
 	CFont*			mFont;
 	IFontAlign*		mFontAlign;
 

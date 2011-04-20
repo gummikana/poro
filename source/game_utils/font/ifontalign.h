@@ -49,7 +49,9 @@ public:
 	enum FONT_ALIGN
 	{
 		FONT_ALIGN_LEFT = 0,
-		FONT_ALIGN_CENTER
+		FONT_ALIGN_RIGHT = 1,
+		FONT_ALIGN_CENTER = 2,
+		FONT_ALIGN_JUSTIFY
 	};
 
 	//! This gets called from the font when it need to write longer texts that 

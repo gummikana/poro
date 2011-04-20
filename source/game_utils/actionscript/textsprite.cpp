@@ -80,13 +80,11 @@ types::vector2 TextSprite::GetTextureSize() const
 }
 
 //-----------------------------------------------------------------------------
-void TextSprite::SetText( const std::string& text )
+void TextSprite::RecalcuateRects()
 {
-	if( mFont && mText != text )
+	if( mFont ) 
 	{
-		mText = text;
-
-		mInRects = mFont->GetRectsForText( text );
+		mInRects = mFont->GetRectsForText( mText );
 		mOutRects.clear();
 
 		if( mFontAlign == NULL )
@@ -127,6 +125,15 @@ void TextSprite::SetText( const std::string& text )
 			mRealSize.x = mTextBox.w;
 			mRealSize.y = mTextBox.h;
 		}
+	}
+}
+
+void TextSprite::SetText( const std::string& text )
+{
+	if( mFont && mText != text )
+	{
+		mText = text;
+		RecalcuateRects();
 	}
 }
 
@@ -214,12 +221,20 @@ bool TextSprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transfo
 
 void TextSprite::SetAlign( int align_type )
 {
-	mFontAlign = IFontAlign::GetAlign( align_type );
+	if( mFontAlign == NULL || mFontAlign->GetAlignmentType() != align_type )
+	{
+		mFontAlign = IFontAlign::GetAlign( align_type );
+		RecalcuateRects();
+	}
 }
 
 void TextSprite::SetTextBox( const types::rect& text_box )
 {
-	mTextBox = text_box;	
+	if( text_box != mTextBox ) 
+	{
+		mTextBox = text_box;	
+		RecalcuateRects();
+	}
 }
 //=============================================================================
 
