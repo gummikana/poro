@@ -494,6 +494,8 @@ void GraphicsOpenGL::ResetWindow(){
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         glEnable(GL_SCISSOR_TEST);
+        glClearColor(0,0,0,1.0f);
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
         //(OpenGL actually wants the x offset from the bottom, but since we are centering the view the direction does not matter.)
 	    glScissor((GLint)mViewportOffset.x, (GLint)mViewportOffset.y, (GLint)mViewportSize.x, (GLint)mViewportSize.y);
         glViewport((GLint)mViewportOffset.x, (GLint)mViewportOffset.y, (GLint)mViewportSize.x, (GLint)mViewportSize.y);
