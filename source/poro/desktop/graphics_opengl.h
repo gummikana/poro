@@ -86,8 +86,8 @@ public:
 	//types::vec2 GetViewportOffset() const { return mViewportOffset; }
 	//types::vec2 GetViewportSize() const { return mViewportSize; }
 	
-private:
     void    ResetWindow();
+private:
     
     bool    mFullscreen;
     int     mWindowWidth;
