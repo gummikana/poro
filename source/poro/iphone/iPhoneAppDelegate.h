@@ -47,11 +47,15 @@
 	NSTimer				*animationTimer;
     BOOL				animating;
     BOOL				displayLinkSupported;
-    NSInteger			animationFrameInterval;
+    float				animationFrameInterval;
     id					displayLink;
+	
+	NSLock				*glLock;
 }
 
--(void) setFrameRate:(int)frameRate;
+-(void) setFrameRate:(float)frameRate;
+-(void)lockGL;
+-(void)unlockGL;
 
 @end
 
