@@ -120,11 +120,6 @@ public:
 			int line_break = FindLineBreak( font, text, fit_in_here, text_i, graphics_width );
 			f_pos.x = FigureOutXPosition( fit_in_here, graphics_width );
 
-			if( graphics_width > fit_in_here.w )
-			{
-				int debug_break = 1;
-			}
-
 			for( int i = text_i; i < line_break && i < (int)texture_rects.size(); ++i )
 			{
 				float w = texture_rects[ i ].w /*+ font->GetCharSpace()*/;
