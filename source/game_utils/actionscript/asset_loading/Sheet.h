@@ -52,6 +52,7 @@ namespace impl {
 	struct Texture
 	{
 		Texture() : 
+			atlas( "" ),
 			name( "" ), 
 			registrationPoint(), 
 			frameCount( 0 ),
@@ -65,6 +66,7 @@ namespace impl {
 
 		void Serialize( ceng::CXmlFileSys* filesys )
 		{
+			XML_BindAttributeAlias( filesys, atlas, "atlas" );
 			XML_BindAttributeAlias( filesys, name, "name" );
 			XML_BindAttributeAlias( filesys, registrationPoint.x, "registrationPointX" );
 			XML_BindAttributeAlias( filesys, registrationPoint.y, "registrationPointY" );
@@ -81,6 +83,7 @@ namespace impl {
 
 		void BitSerialize( network_utils::ISerializer* serializer )
 		{
+			serializer->IO( atlas );
 			serializer->IO( name );
 			serializer->IO( registrationPoint.x );
 			serializer->IO( registrationPoint.y );
@@ -100,6 +103,8 @@ namespace impl {
 		types::vector2		registrationPoint;
 		int					frameCount;
 
+		std::string			atlas;
+		
 		int					width;
 		int					height;
 		float				left;
