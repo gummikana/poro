@@ -45,12 +45,34 @@ namespace {
 
 Sprite* LoadSpriteFromAtlas( const Texture& t )
 {
-	poro::ITexture* from_memory = GetTexture( "data/1.png" );
-	cassert( from_memory );
+	std::string atlas_name = "data/" + t.atlas;
+	poro::ITexture* from_memory = GetTexture( atlas_name );
+	if( from_memory == NULL ) 
+	{
+		std::cout << "ERROR! Couldn't load atlas: " << atlas_name << std::endl;
+		return NULL;
+	}
+
 	poro::ITexture* clone = poro::IPlatform::Instance()->GetGraphics()->CloneTexture( from_memory );
+	
+	int w = t.width;
+	int h = t.height;
+	
+	// HACK LOADING FOR ANIMATIONS, THAT HAVE MORE FRAME COUNTS THAN 1
+	if( t.frameCount > 1 )
+	{
+		if( t.frameCount < 4 ) {
+			w = t.frameCount * t.width;
+		}
+		else
+		{
+			w = 4 * t.width;
+			h = (int)ceil( t.frameCount / 4.f ) * t.height;
+		}
+	}
 
 	clone->SetUVCoords( t.left, t.top, t.right, t.bottom );
-	clone->SetExternalSize( t.width, t.height );
+	clone->SetExternalSize( w, h );
 
 	Sprite* result = new Sprite;
 	result->SetTexture( clone );
