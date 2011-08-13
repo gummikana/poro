@@ -39,6 +39,7 @@ public:
 	static int round( Number x ) { return (int)floor( x + 0.5 ); }
 
 	static Number sin( Number x ) { return ::sin(x); }
+	static Number cos( Number x ) { return ::cos(x); }
 	
 	static Number PI;
 
