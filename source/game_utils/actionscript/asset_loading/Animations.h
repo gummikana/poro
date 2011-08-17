@@ -25,17 +25,6 @@
 #include "../sprite.h"
 #include "../actionscript_utils.h"
 
-/*
-<Animations>
-  <Animation name="battle idle" frameCount="71" loopAt="68">
-    <Part name="shadow">
-      <Frame index="0" y="0.2" />
-      <Frame index="1" y="0.2" />
-      <Frame index="2" y="0.2" />
-    </Part>
-  </Animation>
-</Animation>
-*/
 namespace as {
 //-----------------------------------------------------------------------------
 namespace impl  {
@@ -196,9 +185,21 @@ struct Part
 
 struct Animation
 {
-	Animation() : name(), frameCount( 0 ), loopAt( -1 ) { }
+	Animation() :
+		parts(),
+		name(),
+		mask(),
+		frameCount( 0 ),
+		loopAt( -1 )
+	{ }
 
-	Animation( const std::string& name, int frameCount, int loopAt ) : name( name ), frameCount( frameCount ), loopAt( loopAt ) { }
+	Animation( const std::string& name, int frameCount, int loopAt ) : 
+		parts(),
+		name( name ), 
+		mask(),
+		frameCount( frameCount ), 
+		loopAt( loopAt ) 
+	{ }
 
 
 	void Serialize( ceng::CXmlFileSys* filesys )
@@ -206,6 +207,7 @@ struct Animation
 		XML_BindAttributeAlias( filesys, name, "name" );
 		XML_BindAttributeAlias( filesys, frameCount, "frameCount" );
 		XML_BindAttributeAlias( filesys, loopAt, "loopAt" );
+		XML_BindAttributeAlias( filesys, mask, "mask" );
 
 		VectorSerializer< Part > serialize_helper( parts, "Part" );
 		serialize_helper.Serialize( filesys );
@@ -216,6 +218,7 @@ struct Animation
 		serializer->IO( name );
 		serializer->IO( frameCount );
 		serializer->IO( loopAt );
+		serializer->IO( mask );
 
 		VectorBitSerializer< Part > serialize_helper( parts, "Part" );
 		serialize_helper.BitSerialize( serializer );
@@ -232,6 +235,7 @@ struct Animation
 
 	std::vector< Part > parts;
 	std::string name;
+	std::string mask;
 	int frameCount;
 	int loopAt;
 };
