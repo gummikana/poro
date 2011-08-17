@@ -512,9 +512,16 @@ void Sprite::RectAnimation::Update( Sprite* sprite, float dt )
 		}
 	}
 
-	if( frame == 0 || frame != mCurrentFrame ) 
+	SetFrame(sprite, frame);
+}
+	
+void Sprite::RectAnimation::SetFrame( Sprite* sprite, int frame )
+{
+	if( frame == 0 || 
+	   frame != mCurrentFrame ) 
 	{
 		cassert( sprite );
+		mCurrentFrame = frame;
 		sprite->SetRect( FigureOutRectPos( mCurrentFrame, mWidth, mHeight, mFramesPerRow ) );
 	}
 }
@@ -556,8 +563,8 @@ void Sprite::PlayAnimation( const std::string& animation_name )
 
 void Sprite::SetAnimationFrame(int frame) 
 {
-	cassert( mAnimationUpdater.get() );
-	mAnimationUpdater->SetFrame( frame );
+	if(mAnimationUpdater.get()) mAnimationUpdater->SetFrame( frame );
+	if(mRectAnimation.get()) mRectAnimation->SetFrame( this, frame );
 
 }
 

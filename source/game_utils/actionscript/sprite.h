@@ -159,6 +159,7 @@ public:
 		float mCurrentTime;
 
 		void Update( Sprite* sprite, float dt );
+		void SetFrame( Sprite* sprite, int frame );
 	};
 
 	//-------------------------------------------------------------------------
