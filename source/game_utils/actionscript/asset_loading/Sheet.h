@@ -30,38 +30,26 @@ namespace as
 
 namespace impl {
 
-	/*
-	<Texture 
-		path="common/shadow.png" 
-		name="shadow" 
-
-		registrationPointX="42.00" 
-		registrationPointY="17.00" 
-
-		frameCount="0"
-
-		left="0.507568359375" 
-		top="0.1455078125" 
-		right="0.528076171875" 
-		bottom="0.15380859375" 
-		width="84"  
-		height="34" 
-		/>        
-	*/
-
 	struct Texture
 	{
 		Texture() : 
-			atlas( "" ),
-			name( "" ), 
-			registrationPoint(), 
+			filename(),
+			name(),
+			registrationPoint(),
 			frameCount( 0 ),
+			columns( 0 ),
+			frameHeight( 0 ),
+			frameWidth( 0 ),
+			atlas(),
+			mask( false ),
 			width( 0 ),
 			height( 0 ),
 			left( 0 ),
 			top( 0 ),
 			right( 1 ),
-			bottom( 1 )
+			bottom( 1 ),
+			x ( 0 ), 
+			y ( 0 )
 		{ }
 
 		void Serialize( ceng::CXmlFileSys* filesys )
@@ -70,8 +58,15 @@ namespace impl {
 			XML_BindAttributeAlias( filesys, name, "name" );
 			XML_BindAttributeAlias( filesys, registrationPoint.x, "registrationPointX" );
 			XML_BindAttributeAlias( filesys, registrationPoint.y, "registrationPointY" );
+			
 			XML_BindAttributeAlias( filesys, frameCount, "frameCount" );
+			XML_BindAttributeAlias( filesys, columns, "columns" );
+			XML_BindAttributeAlias( filesys, frameHeight, "frameHeight" );
+			XML_BindAttributeAlias( filesys, frameWidth, "frameWidth" );
+
 			XML_BindAttributeAlias( filesys, filename, "path" );
+
+			XML_BindAttributeAlias( filesys, mask, "mask" );
 
 			XML_BindAttributeAlias( filesys, width, "width" );
 			XML_BindAttributeAlias( filesys, height, "height" );
@@ -79,6 +74,9 @@ namespace impl {
 			XML_BindAttributeAlias( filesys, top, "top" );
 			XML_BindAttributeAlias( filesys, right, "right" );
 			XML_BindAttributeAlias( filesys, bottom, "bottom" );
+			
+			XML_BindAttributeAlias( filesys, x, "x" );
+			XML_BindAttributeAlias( filesys, y, "y" );
 		}
 
 		void BitSerialize( network_utils::ISerializer* serializer )
@@ -87,8 +85,16 @@ namespace impl {
 			serializer->IO( name );
 			serializer->IO( registrationPoint.x );
 			serializer->IO( registrationPoint.y );
-			serializer->IO( frameCount );
 			serializer->IO( filename );
+
+			serializer->IO( frameCount );
+			if( frameCount > 0 ) {
+				serializer->IO( columns );
+				serializer->IO( frameHeight );
+				serializer->IO( frameWidth );
+			}
+
+			serializer->IO( mask );
 
 			serializer->IO( width );
 			serializer->IO( height );
@@ -96,14 +102,22 @@ namespace impl {
 			serializer->IO( top );
 			serializer->IO( right );
 			serializer->IO( bottom );
+			
+			serializer->IO( x );
+			serializer->IO( y );
 		}
 
 		std::string			filename;
 		std::string			name;
 		types::vector2		registrationPoint;
+
 		int					frameCount;
+		int					columns;
+		int					frameHeight;
+		int					frameWidth;
 
 		std::string			atlas;
+		bool				mask;
 		
 		int					width;
 		int					height;
@@ -111,6 +125,9 @@ namespace impl {
 		float				top;
 		float				right;
 		float				bottom;
+		
+		float				x;
+		float				y;
 	};
 
 	struct TextureSheet
