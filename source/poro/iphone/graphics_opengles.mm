@@ -237,9 +237,10 @@ namespace {
 		glBindTexture(GL_TEXTURE_2D, texture->mTextureId);
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_BLEND);
-		glColor4f(color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
+		
         
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        glColor4f(color[ 0 ] * color[3], color[ 1 ] * color[3], color[ 2 ] * color[3], color[ 3 ] );
 		
 		glEnableClientState( GL_TEXTURE_COORD_ARRAY );
 		glTexCoordPointer(2, GL_FLOAT, 0, glTexCoords );
@@ -270,14 +271,15 @@ namespace {
 		// Enable 2D texturing
 		glActiveTexture(GL_TEXTURE0);
 		glEnable(GL_TEXTURE_2D);
-		glColor4f(alpha_color[ 0 ], alpha_color[ 1 ], alpha_color[ 2 ], alpha_color[ 3 ] );
+        glColor4f(alpha_color[ 0 ] * alpha_color[3], alpha_color[ 1 ] * alpha_color[3], alpha_color[ 2 ] * alpha_color[3], alpha_color[ 3 ] );
 		glBindTexture(GL_TEXTURE_2D, alpha_texture->mTextureId );
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		
+		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        
+
 		glActiveTexture(GL_TEXTURE1);
 		glEnable(GL_TEXTURE_2D);
-		glColor4f(color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
+		glColor4f(color[ 0 ] * color[ 3 ], color[ 1 ] * color[ 3 ], color[ 2 ] * color[ 3 ], color[ 3 ] );
 		glBindTexture(GL_TEXTURE_2D, texture->mTextureId );
 		
 		glDisable(GL_CULL_FACE);
@@ -536,9 +538,6 @@ void GraphicsOpenGLES::BeginRendering()
 				 mFillColor[ 2 ],
 				 mFillColor[ 3 ] );
 	
-	/*std::cout << "fillColor: " << mFillColor[ 0 ] << ", " << mFillColor[ 1 ] << ", " 
-	<< mFillColor[ 2 ] << ", " << mFillColor[ 3 ] << std::endl;
-	*/
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	
 }
