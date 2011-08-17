@@ -56,6 +56,8 @@ public:
 	virtual int GetSpriteType() const = 0;
 	
 	int GetChildCount() const { return (int)mChildren.size(); }
+	
+	ChildList& GetRawChildren();
 
 	// warning this is a super slow method of iterationg though 
 	// children and should not be used in time critical places

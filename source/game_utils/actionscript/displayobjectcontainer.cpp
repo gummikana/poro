@@ -62,7 +62,12 @@ void DisplayObjectContainer::addChildAt( DisplayObjectContainer* child, int inde
 
 		pos++;
 	}
-	mChildren.push_back( child );	
+	mChildren.push_back( child );
 }
+
+std::list< DisplayObjectContainer* >& DisplayObjectContainer::GetRawChildren(){
+	return mChildren;
+}
+
 
 } // end of namespace as
