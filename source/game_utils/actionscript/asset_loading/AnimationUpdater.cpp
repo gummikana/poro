@@ -35,6 +35,36 @@ namespace {
 void AnimationUpdater::SetFrame( int frame_i )
 {
 	cassert( animation );
+	cassert( sprite_container );
+
+	if( animation->mask.empty() == false && sprite_container->GetAlphaMask() == NULL )
+	{
+		// apply alpha_mask
+		as::Sprite* alpha_mask = sprite_container->GetChildByName( animation->mask );
+		if( alpha_mask == NULL ) 
+		{
+			std::cout << "Error! Couldn't find alpha mask: " << animation->mask << std::endl;
+		}
+		else 
+		{
+			sprite_container->removeChild( alpha_mask );
+			alpha_mask->SetVisibility( true );
+			sprite_container->SetAlphaMask( alpha_mask );
+		}
+	}
+	else if( animation->mask.empty() && sprite_container->GetAlphaMask() )
+	{
+		// remove alpha_mask
+		as::Sprite* alpha_mask = sprite_container->GetAlphaMask();
+		cassert( alpha_mask );
+		alpha_mask->SetVisibility( false );
+		sprite_container->addChild( alpha_mask );
+		sprite_container->SetAlphaMask( NULL );
+
+	}
+
+
+
 	std::vector< impl::Part >& parts = animation->parts;
 	for( std::size_t i = 0; i < parts.size(); ++i )
 	{
@@ -57,7 +87,7 @@ void AnimationUpdater::ApplyFrameTo( impl::Frame* frame, Sprite* sprite )
 {
 	if( frame == NULL )
 	{
-		
+		sprite->SetVisibility( false );
 	}
 	else
 	{
