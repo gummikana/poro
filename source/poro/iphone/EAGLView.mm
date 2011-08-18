@@ -49,16 +49,6 @@
 	return [CAEAGLLayer class];
 }
 
-- (BOOL) _isLandscape
-{
-	if (poro::IPlatform::Instance()->GetWidth() > poro::IPlatform::Instance()->GetHeight()) {
-		return true;
-	} else {
-		return false;
-	}
-	
-}
-
 - (id) initWithFrame:(CGRect)frame
 {
 	if((self = [super initWithFrame:frame])) {
@@ -94,7 +84,7 @@
 		
 		_size = [eaglLayer bounds].size;
 		//Rotate axis for landscape
-		if([self _isLandscape]){
+		if(poro::iPhoneGlobals.iPhoneWindow->GetOrientationIsLandscape()){
 			glScalef(1, -1, 1); //Flip axis
 			glTranslatef(1.0, -1.0, 0);
 			glScalef((2.0/_size.width), (2.0/_size.height), 1);
@@ -160,10 +150,24 @@
 	poro::types::vec2 result;
 	
 	//Landscape flip
-	if([self _isLandscape])
-		result = poro::types::vec2((poro::types::Float32)y,(poro::types::Float32)_size.width-x);
+	if(poro::iPhoneGlobals.iPhoneWindow->GetOrientationIsLandscape())
+		result = poro::types::vec2((poro::types::Float32)y,(poro::types::Float32)x);
 	else
 		result = poro::types::vec2((poro::types::Float32)x,(poro::types::Float32)y);
+	
+	// Even more flipping for rotated states, portrait does without since it's the "default" state
+	switch(poro::iPhoneGlobals.iPhoneWindow->GetDeviceOrientation()){
+		case poro::PlatformIPhone::DO_LANDSCAPE_LEFT :	
+			result.x = _size.height - result.x;
+			break;
+		case poro::PlatformIPhone::DO_LANDSCAPE_RIGHT :	
+			result.y = _size.width - result.y;
+			break;
+		case poro::PlatformIPhone::DO_UPSIDEDOWN_PORTRAIT :	
+			result.x = _size.width - result.x;
+			result.y = _size.height - result.y;
+			break;
+	}	
 	
 	//Internal size
 	result.x *= poro::IPlatform::Instance()->GetInternalWidth() / (poro::types::Float32)poro::IPlatform::Instance()->GetWidth();
