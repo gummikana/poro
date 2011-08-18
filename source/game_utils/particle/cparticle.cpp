@@ -21,23 +21,26 @@
 
 #include "cparticle.h"
 
-void CParticle::Update( float dt )
+bool CParticle::Update( float dt )
 {
 	if (myPaused)
-		return;
+		return false;
+	
+	myDelay -= dt;
+	if(myDelay > 0) return false;
 	
 	myTimeNow += dt;
 	
 	if( myTimeNow < 0 )
 	{
-		return;
+		return false;
 	}
 	
 	if( myTimeNow >= myLifeTime )
 		myDead = true;
 		
 	if( mySprite == NULL )
-		return;
+		return false;
 		
 	std::vector< float > color = mySprite->GetColor();
 	for( int i = 0; i < 4; ++i )
@@ -53,9 +56,11 @@ void CParticle::Update( float dt )
 		
 	myVelocity += myGravity * dt;
 	myVelocity -= myVelocity * myVelocitySlow * dt;
+	
+	return true;
 }
 
-void CParticle::Draw(poro::IGraphics* graphics)
+void CParticle::Draw(poro::IGraphics* graphics, as::Transform t)
 {
-	mySprite->Draw(graphics);
+	if(!myDead && myDelay <= 0) as::DrawSprite( mySprite, graphics, NULL, t );
 }

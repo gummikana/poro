@@ -23,14 +23,16 @@
 #define INC_CPARTICLES_H
 
 #include "../../types.h"
-#include "../sprite/csprite.h"
+#include "../actionscript/sprite.h"
 
+typedef as::Sprite CSprite;
 
 class CParticle
 {
 public:
 	CParticle( CSprite* sprite ) :
 		mySprite( sprite ),
+		myDelay( 0 ),
 		myDead( false ),
 		myTimeNow( 0 ),
 		myLifeTime( 1.f ),
@@ -47,17 +49,18 @@ public:
 		Update( 0 );
 	}
 
-	~CParticle()
+	virtual ~CParticle()
 	{
 		if( myReleaseSprite )
 			delete mySprite;
 	}
 
-	void Update( float dt );
-	void Draw(poro::IGraphics* graphics);
+	virtual bool Update( float dt );
+	void Draw(poro::IGraphics* graphics, as::Transform t);
 	
 	CSprite* mySprite;
 	bool myDead;
+	float myDelay;
 	float myTimeNow;
 	float myColorChanges[ 4 ];
 	float myLifeTime;

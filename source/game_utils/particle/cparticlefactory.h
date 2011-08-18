@@ -42,8 +42,9 @@ public:
 	~CParticleFactory(){};
 	
 	CParticle* 	NewParticle( CSprite* sprite, float life_time, const types::vector2& velocity, float rotation );
+	CParticle*	AddParticle( CParticle *particle );
 	void 		Update( float dt );
-	void 		Draw( poro::IGraphics* graphics );
+	void 		Draw( poro::IGraphics* graphics, as::Transform t );
 	void		Clear();
 	
 private:
