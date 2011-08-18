@@ -42,6 +42,10 @@ namespace poro {
 		
 		mIsLandscape = false;
 		mDeviceOrientation = DO_PORTRAIT;
+		mSupportedOrientations[DO_PORTRAIT] 			= true;
+		mSupportedOrientations[DO_UPSIDEDOWN_PORTRAIT] 	= true;
+		mSupportedOrientations[DO_LANDSCAPE_LEFT] 		= true;
+		mSupportedOrientations[DO_LANDSCAPE_RIGHT] 		= true;
 		
 		iPhoneGlobals.iPhoneWindow=this;
 		iPhoneGlobals.baseApp = application;
@@ -93,7 +97,15 @@ namespace poro {
 	bool PlatformIPhone::GetOrientationIsLandscape(){
 		return mIsLandscape;
 	}
-
+	
+	void PlatformIPhone::SetOrientationSupported(poro::PlatformIPhone::DEVICE_ORIENTATION orientation, bool supported){
+		mSupportedOrientations[orientation] = supported;
+	}
+	
+	bool PlatformIPhone::GetOrientationSupported(poro::PlatformIPhone::DEVICE_ORIENTATION orientation){
+		return mSupportedOrientations[orientation];
+	}
+	
 	int	PlatformIPhone::GetFrameNum() {
 		return mFrameCount;
 	}

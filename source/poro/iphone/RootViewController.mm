@@ -13,37 +13,24 @@
 @implementation RootViewController
 
 // support ALL rotations
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-	[self setDeviceOrientation: interfaceOrientation];	
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation) interfaceOrientation {
+	[self setDeviceOrientation: interfaceOrientation];
 	return NO;
 }
 
 - (void) setDeviceOrientation:(UIInterfaceOrientation) orientation {
-	if( deviceOrientation_ != orientation ) {
-		deviceOrientation_ = orientation;
-		switch( deviceOrientation_) {
-			case UIInterfaceOrientationPortrait:
-				[[UIApplication sharedApplication] setStatusBarOrientation: UIInterfaceOrientationPortrait animated:NO];
-				break;
-			case UIInterfaceOrientationPortraitUpsideDown:
-				[[UIApplication sharedApplication] setStatusBarOrientation: UIInterfaceOrientationPortraitUpsideDown animated:NO];
-				break;
-			case UIInterfaceOrientationLandscapeLeft:
-				[[UIApplication sharedApplication] setStatusBarOrientation: UIInterfaceOrientationLandscapeRight animated:NO];
-				break;
-			case UIInterfaceOrientationLandscapeRight:
-				[[UIApplication sharedApplication] setStatusBarOrientation: UIInterfaceOrientationLandscapeLeft animated:NO];
-				break;
-			default:
-				NSLog(@"Director: Unknown device orientation");
-				break;
-		}
-		
-		[self applyOrientation];
-	}
+	poro::PlatformIPhone::DEVICE_ORIENTATION poro_orientation = [self convertOrientationIOsToPoro: orientation];
+	
+	poro_logger << "orientation: " << poro_orientation << ": " << poro::iPhoneGlobals.iPhoneWindow->GetOrientationSupported(poro_orientation) << std::endl;
+	
+	if( !poro::iPhoneGlobals.iPhoneWindow->GetOrientationSupported(poro_orientation)) return;
+	if( poro_orientation == poro::iPhoneGlobals.iPhoneWindow->GetDeviceOrientation()) return;
+	
+	[[UIApplication sharedApplication] setStatusBarOrientation: orientation animated:NO];
+	[self applyOrientation: poro_orientation];
 }
 
--(void) applyOrientation {	
+-(void) applyOrientation : (poro::PlatformIPhone::DEVICE_ORIENTATION) newOrientation {	
 	if (mMatrixLoaded)
 		glPopMatrix(); //Restore original matrix.
 	
@@ -55,28 +42,22 @@
 	float w = newSize.width;
 	float h = newSize.height;
 	
-	bool isLandscape = deviceOrientation_ == UIInterfaceOrientationLandscapeLeft || deviceOrientation_ == UIInterfaceOrientationLandscapeRight;
+	bool isLandscape = (newOrientation == poro::PlatformIPhone::DO_LANDSCAPE_LEFT) || (newOrientation == poro::PlatformIPhone::DO_LANDSCAPE_RIGHT);
 	
 	glTranslatef(w/2,h/2,0);
 	
-	int orientation = poro::PlatformIPhone::DO_PORTRAIT;
-	
-	
-	switch ( deviceOrientation_ ) {
-		case UIInterfaceOrientationPortrait:
+	switch ( newOrientation ) {
+		case poro::PlatformIPhone::DO_PORTRAIT:
 			// nothing
 			break;
-		case UIInterfaceOrientationPortraitUpsideDown:
+		case poro::PlatformIPhone::DO_UPSIDEDOWN_PORTRAIT:
 			glRotatef(180,0,0,1);
-			orientation = poro::PlatformIPhone::DO_UPSIDEDOWN_PORTRAIT;
 			break;
-		case UIInterfaceOrientationLandscapeRight:
+		case poro::PlatformIPhone::DO_LANDSCAPE_RIGHT:
 			glRotatef(90,0,0,1);
-			orientation = poro::PlatformIPhone::DO_LANDSCAPE_LEFT;
 			break;
-		case UIInterfaceOrientationLandscapeLeft:
+		case poro::PlatformIPhone::DO_LANDSCAPE_LEFT:
 			glRotatef(-90,0,0,1);
-			orientation = poro::PlatformIPhone::DO_LANDSCAPE_RIGHT;
 			break;
 	}
 	
@@ -90,18 +71,26 @@
 		poro::iPhoneGlobals.iPhoneWindow->SetOrientationIsLandscape(false);
 	}
 	
-	poro::iPhoneGlobals.iPhoneWindow->SetDeviceOrientation( orientation );
-	
-	[[UIApplication sharedApplication] setStatusBarOrientation: deviceOrientation_ animated:NO];
+	poro::iPhoneGlobals.iPhoneWindow->SetDeviceOrientation( newOrientation );	
+	[[UIApplication sharedApplication] setStatusBarOrientation: [self convertOrientationPoroToIOs: newOrientation] animated:NO];
 	
 	glViewport(0, 0, w, h);
 	glScissor(0, 0, w, h);
-	
-
-	
 }
 
+-(poro::PlatformIPhone::DEVICE_ORIENTATION) convertOrientationIOsToPoro:(UIInterfaceOrientation) orientation {
+	if ( orientation == UIInterfaceOrientationPortrait ) 			return poro::PlatformIPhone::DO_PORTRAIT;
+	if ( orientation == UIInterfaceOrientationPortraitUpsideDown ) 	return poro::PlatformIPhone::DO_UPSIDEDOWN_PORTRAIT;
+	if ( orientation == UIInterfaceOrientationLandscapeLeft ) 		return poro::PlatformIPhone::DO_LANDSCAPE_LEFT;
+	return poro::PlatformIPhone::DO_LANDSCAPE_RIGHT;
+}
 
+-(UIInterfaceOrientation) convertOrientationPoroToIOs:(poro::PlatformIPhone::DEVICE_ORIENTATION) orientation {
+	if ( orientation == poro::PlatformIPhone::DO_PORTRAIT ) 			return UIInterfaceOrientationPortrait;
+	if ( orientation == poro::PlatformIPhone::DO_UPSIDEDOWN_PORTRAIT ) 	return UIInterfaceOrientationPortraitUpsideDown;
+	if ( orientation == poro::PlatformIPhone::DO_LANDSCAPE_LEFT ) 		return UIInterfaceOrientationLandscapeLeft;
+	return UIInterfaceOrientationLandscapeRight;
+}
 
 - (void)dealloc {
     [super dealloc];
