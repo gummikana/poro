@@ -28,10 +28,10 @@ namespace ceng {
 
 void ClearLogs();
 
-#define logger			ceng::CLog::GetSingleton()
-#define logger_error	ceng::CLog::GetSingleton().Error()
-#define logger_warning	ceng::CLog::GetSingleton().Warning()
-#define logger_debug	ceng::CLog::GetSingleton().Debug()
+#define logger std::cout
+#define logger_error	std::cout
+#define logger_warning	std::cout
+#define logger_debug	std::cout
 
 extern CLog assert_logger;
 
