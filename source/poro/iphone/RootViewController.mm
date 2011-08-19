@@ -21,8 +21,6 @@
 - (void) setDeviceOrientation:(UIInterfaceOrientation) orientation {
 	poro::PlatformIPhone::DEVICE_ORIENTATION poro_orientation = [self convertOrientationIOsToPoro: orientation];
 	
-	poro_logger << "orientation: " << poro_orientation << ": " << poro::iPhoneGlobals.iPhoneWindow->GetOrientationSupported(poro_orientation) << std::endl;
-	
 	if( !poro::iPhoneGlobals.iPhoneWindow->GetOrientationSupported(poro_orientation)) return;
 	if( poro_orientation == poro::iPhoneGlobals.iPhoneWindow->GetDeviceOrientation()) return;
 	
