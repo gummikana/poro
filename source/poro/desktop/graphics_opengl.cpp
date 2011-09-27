@@ -357,8 +357,8 @@ namespace {
 	float mDesktopWidth = 0;
 	float mDesktopHeight = 0;
 	
+    bool mGlContextInitialized = false;
 } // end o namespace anon
-
 
 
 bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::string& caption )
@@ -405,9 +405,12 @@ bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::
 
 void GraphicsOpenGL::SetInternalSize( types::Float32 width, types::Float32 height )
 {
-    glMatrixMode( GL_PROJECTION );
-    glLoadIdentity();
-	gluOrtho2D(0, (GLdouble)width, (GLdouble)height, 0);
+    if(mGlContextInitialized){
+        glMatrixMode( GL_PROJECTION );
+        glLoadIdentity();
+        gluOrtho2D(0, (GLdouble)width, (GLdouble)height, 0);
+    }
+    
 }
 
 void GraphicsOpenGL::SetWindowSize(int window_width, int window_height)
@@ -472,6 +475,8 @@ void GraphicsOpenGL::ResetWindow(){
         SDL_Quit();
         return;
     }
+    mGlContextInitialized = true;
+    
     
     { //OpenGL view setup
         float internal_width = IPlatform::Instance()->GetInternalWidth();
@@ -778,13 +783,13 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 	glColor4f(color[0], color[1], color[2], color[3]);
 	glPushMatrix();
 		//glEnable(GL_POLYGON_SMOOTH);
-		//glEnable(GL_BLEND);
-		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        //glEnable(GL_BLEND);
+        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glVertexPointer(2, GL_FLOAT , 0, glVertices);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glDrawArrays (GL_TRIANGLE_STRIP, 0, vertCount);
 		glDisableClientState(GL_VERTEX_ARRAY);
-		//glDisable(GL_BLEND);
+        //glDisable(GL_BLEND);
 		//glDisable(GL_POLYGON_SMOOTH);
 	glPopMatrix();
 }

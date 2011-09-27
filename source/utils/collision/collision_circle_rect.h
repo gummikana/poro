@@ -25,6 +25,7 @@
 #include <vector>
 #include "../math/math_utils.h"
 #include "../rect/crect_functions.h"
+#include "../math/point_inside.h"
 
 namespace ceng {
 
@@ -66,6 +67,7 @@ VectorT CircleRectResolveByPushingCircle( const VectorT& circle_p, float circle_
 	rect_p[ 2 ].Set( rect.x + rect.w, rect.y + rect.h );
 	rect_p[ 3 ].Set( rect.x, rect.y + rect.h );
 
+    
 	float dist = 0;
 	VectorT point;
 	float closest_dist = ceng::math::Square( circle_r );
@@ -86,7 +88,9 @@ VectorT CircleRectResolveByPushingCircle( const VectorT& circle_p, float circle_
 
 	VectorT delta = circle_p - closest_point;
 	delta = ( delta.Normalize() * ( circle_r + extra_push ) );
-	
+	if(ceng::math::IsPointInsideAABB(circle_p, rect_p[ 0 ], rect_p[ 2 ])){
+        delta = -delta;
+    }
 	return closest_point + delta;
 }
 
