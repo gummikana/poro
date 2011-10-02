@@ -66,6 +66,9 @@ int Random( int low, int high );
 //! Returns a number in float
 float Randomf( float low, float high );
 
+// Generates a random value from the seed
+float RandomizeValue( float seed, float low, float high );
+
 //! Same shit but templated
 template< class T, class RandomFunc >
 T TemplateRandom( T low, T high )
@@ -80,17 +83,7 @@ T TemplateRandom( T low, T high )
 //! Creates a weighted random
 int CreateWeightedRandom( int low, int high, const std::vector< int >& data, float constant = 0.5f );
 
-/*
-template<>
-int TemplateRandom< int, LGMRandom >( int low, int high )
-{
-	int t = high - low;
-	LGMRandom func;
 
-	// return ( rand()%(t+1) ) + low;
-	return (int)(func() * (double)t + 0.5) + low;
-}
-*/
 } // end of namespace ceng
 
 #endif
