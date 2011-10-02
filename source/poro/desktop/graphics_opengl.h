@@ -83,9 +83,6 @@ public:
 	
 	types::vec2     ConvertToInternalPos( int x, int y );
 
-	//types::vec2 GetViewportOffset() const { return mViewportOffset; }
-	//types::vec2 GetViewportSize() const { return mViewportSize; }
-	
     void    ResetWindow();
 private:
     
