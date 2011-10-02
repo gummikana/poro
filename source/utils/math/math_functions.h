@@ -176,6 +176,14 @@ inline float DistanceSquared( const Type& vector1 )
 
 //=============================================================================
 
+template< typename Type >
+inline Type Lerp( const Type& a, const Type& b, float t )
+{
+	return (Type)( a + t * (b - a) );
+}
+
+//=============================================================================
+
 } // end of namespace math
 } // end of namespace ceng
 
