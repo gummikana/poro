@@ -27,22 +27,22 @@ CParticle::~CParticle()
 }
 
 
-void CParticle::Update( float dt )
+bool CParticle::Update( float dt )
 {
 	if (myPaused)
-		return;
+		return false;
 	
-	if( mySprite == NULL ) { myDead = true; return; }
+	if( mySprite == NULL ) { myDead = true; return false; }
 
 	myDelay -= dt;
-	if(myDelay > 0) return;
+	if(myDelay > 0) return false;
 	
 	myTimeNow += dt;
 	
 	if( myTimeNow < 0 )
 	{
 		mySprite->SetVisibility( false );
-		return;
+		return false;
 	} else {
 		mySprite->SetVisibility( true );
 	}
@@ -66,4 +66,6 @@ void CParticle::Update( float dt )
 
 	myVelocity += myGravity * dt;
 	myVelocity -= myVelocity * myVelocitySlowDown * dt;
+
+	return true;
 }

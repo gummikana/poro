@@ -13,7 +13,7 @@ public:
 	~CParticle();
 
 
-	void Update( float dt );
+	bool Update( float dt );
 	// void Draw(poro::IGraphics* graphics, as::Transform t);
 	
 	CSprite* mySprite;
