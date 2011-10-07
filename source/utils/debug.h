@@ -32,7 +32,17 @@
 
 //#define assert_logger std::cout
 //#define logger std::cout
-#include "logger/logger.h"
+
+#ifdef PORO_PLAT_WINDOWS
+
+#	define PORO_USE_LOGGER
+#	include "logger/logger.h"
+
+#else
+
+#	define logger std::cout
+
+#endif
 
 //----------------------------------------------------
 // define cassert
