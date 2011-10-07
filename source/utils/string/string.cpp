@@ -322,11 +322,11 @@ std::string RemoveWhiteSpace( std::string line )
 
 std::string RemoveQuotes( std::string line )
 {
-	if( line.empty() == false && line[ 0 ] == '"' ||line[ 0 ] == '\'' )
+	if( line.empty() == false && line[ 0 ] == '"' || line[ 0 ] == '\'' )
 		line = line.substr( 1, line.size() - 1 );
 	
 	int end = ((int)line.size()) - 1;
-	if( end >= 0 && ( line[ end ] == '"' ||line[ end ] == '\'' ) )
+	if( end >= 0 && ( line[ end ] == '"' || line[ end ] == '\'' ) )
 		line = line.substr( 0, end );
 
 	return line;
