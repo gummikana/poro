@@ -32,17 +32,6 @@ class IGraphicsBuffer;
 
 //---------------
 
-struct GraphicsOpenGLSettings
-{
-	GraphicsOpenGLSettings() : 
-		textures_resize_to_power_of_two( true ), 
-		textures_fix_alpha_channel( true ) 
-	{
-	}
-
-	bool textures_resize_to_power_of_two;
-	bool textures_fix_alpha_channel;
-};
 //---------------
 
 
@@ -56,7 +45,7 @@ public:
     virtual void        SetFullscreen(bool fullscreen);
     virtual bool        GetFullscreen() { return mFullscreen; }
 
-	void				SetSettings( const GraphicsOpenGLSettings& settings );
+	virtual void		SetSettings( const GraphicsSettings& settings );
 
 	virtual ITexture*	CreateTexture( int width, int height );
 	virtual ITexture*	CloneTexture( ITexture* other );

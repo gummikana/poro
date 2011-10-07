@@ -46,7 +46,7 @@ namespace poro {
 
 namespace {
 
-	GraphicsOpenGLSettings OPENGL_SETTINGS;
+	GraphicsSettings OPENGL_SETTINGS;
 
 	Uint32 GetGLVertexMode(int vertex_mode){
 		switch (vertex_mode) {
@@ -438,7 +438,7 @@ namespace {
 
 } // end o namespace anon
 
-void GraphicsOpenGL::SetSettings( const GraphicsOpenGLSettings& settings )
+void GraphicsOpenGL::SetSettings( const GraphicsSettings& settings )
 {
 	OPENGL_SETTINGS = settings;
 }

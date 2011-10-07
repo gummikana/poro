@@ -46,7 +46,8 @@ PlatformDesktop::PlatformDesktop() :
 	mJoysticks(),
 	mSoundPlayer( NULL ),
 	mRunning( 0 ),
-	mMousePos()
+	mMousePos(),
+	mSleepingMode( PORO_MAXIMIZE_SLEEP )
 {
 
 }
@@ -81,11 +82,28 @@ void PlatformDesktop::Init( IApplication* application, int w, int h, bool fullsc
 
 	SDL_EnableUNICODE(1);
 }
+//-----------------------------------------------------------------------------
 
-void PlatformDesktop::SetApplication( IApplication* application )
+void PlatformDesktop::Destroy() 
 {
-	mApplication = application;
+	delete mGraphics;
+	mGraphics = NULL;
+
+	delete mSoundPlayer;
+	mSoundPlayer = NULL;
+
+	delete mMouse;
+	mMouse = NULL;
+
+	delete mKeyboard;
+	mKeyboard = NULL;
+
+	for( std::size_t i = 0; i < mJoysticks.size(); ++i )
+		delete mJoysticks[ i ];
+
+	mJoysticks.clear();
 }
+//-----------------------------------------------------------------------------
 
 void PlatformDesktop::StartMainLoop() 
 {
@@ -112,6 +130,8 @@ void PlatformDesktop::StartMainLoop()
         if( elapsed_time < mOneFrameShouldLast )
             Sleep( mOneFrameShouldLast - elapsed_time );
 
+		while( ( GetUpTime() - time_before ) < mOneFrameShouldLast ) { Sleep( 0 ); }
+
         // frame-rate check
         mFrameCount++;
         mFrameRateUpdateCounter++;
@@ -129,48 +149,7 @@ void PlatformDesktop::StartMainLoop()
 	if( mApplication )
 		mApplication->Exit();
 }
-
-void PlatformDesktop::Destroy() 
-{
-	delete mGraphics;
-	mGraphics = NULL;
-
-	delete mSoundPlayer;
-	mSoundPlayer = NULL;
-
-	delete mMouse;
-	mMouse = NULL;
-
-	delete mKeyboard;
-	mKeyboard = NULL;
-
-	for( std::size_t i = 0; i < mJoysticks.size(); ++i )
-		delete mJoysticks[ i ];
-
-	mJoysticks.clear();
-}
-
-void PlatformDesktop::SetFrameRate( int targetRate, bool fixed_time_step ) 
-{
-	mFrameRate = targetRate;
-	mOneFrameShouldLast = 1.f / (types::Float32)targetRate;
-	mFixedTimeStep = fixed_time_step;
-}
-
-int	PlatformDesktop::GetFrameNum() 
-{
-	return mFrameCount;
-}
-
-types::Float32	PlatformDesktop::GetUpTime() 
-{
-	return (types::Float32)( SDL_GetTicks() ) * 0.001f;
-}
-
-void PlatformDesktop::Sleep( types::Float32 seconds )
-{
-	SDL_Delay( (Uint32)( seconds * 1000.f ) );
-}
+//-----------------------------------------------------------------------------
 
 void PlatformDesktop::SingleLoop() 
 {
@@ -195,15 +174,28 @@ void PlatformDesktop::SingleLoop()
 }
 //-----------------------------------------------------------------------------
 
+void PlatformDesktop::Sleep( types::Float32 seconds )
+{
+	if( mSleepingMode == PORO_NEVER_SLEEP ) {
+		return;
+	}
+	else if( mSleepingMode == PORO_USE_SLEEP_0 ) {
+		SDL_Delay( 0 );
+	}
+	else if( mSleepingMode == PORO_MAXIMIZE_SLEEP ) {
+		SDL_Delay( (Uint32)( seconds * 1000.f ) );
+	}
+}
+//-----------------------------------------------------------------------------
+
 void PlatformDesktop::HandleEvents() 
 {
-
-	//----------------------------------------------------------------------------
+	//---------
 	for( std::size_t i = 0; i < mJoysticks.size(); ++i ) {
 		HandleJoystickImpl( mJoysticks[ i ] );
 	}
 
-	//----------------------------------------------------------------------------
+	//---------
 
 	SDL_Event event;
 	while( SDL_PollEvent( &event ) )
@@ -212,14 +204,6 @@ void PlatformDesktop::HandleEvents()
 		{
 			case SDL_KEYDOWN:
 			{
-				/*switch( event.key.keysym.sym )
-				{
-				case SDLK_ESCAPE:
-					mRunning = false;
-					break;
-				default:
-					break;
-				}*/
 				if( mKeyboard )
 					mKeyboard->FireKeyDownEvent(
 						static_cast< int >( event.key.keysym.sym ),
@@ -290,6 +274,12 @@ void PlatformDesktop::HandleEvents()
 		}
 	}
 }
+//-----------------------------------------------------------------------------
+
+types::Float32 PlatformDesktop::GetUpTime() 
+{
+	return (types::Float32)( SDL_GetTicks() ) * 0.001f;
+}
 
 void PlatformDesktop::SetWindowSize( int width, int height ) 
 {
@@ -298,21 +288,12 @@ void PlatformDesktop::SetWindowSize( int width, int height )
 	mGraphics->SetWindowSize( width, height );
 }
 
-//-----------------------------------------------------------------------------
-
-void PlatformDesktop::SetWorkingDir( poro::types::string dir )
-{
-	//TODO implement
-	//chdir(dir);
-}
-
-
-Joystick* PlatformDesktop::GetJoystick( int n ) 
-{
+Joystick* PlatformDesktop::GetJoystick( int n ) {
 	poro_assert( n >= 0 && n < (int)mJoysticks.size() );
 	poro_assert( mJoysticks[ n ] );
 
 	return mJoysticks[ n ];
 }
 
+//-----------------------------------------------------------------------------
 } // end o namespace poro
