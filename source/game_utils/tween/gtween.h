@@ -118,8 +118,8 @@ public:
 	// if you put delay the start values could have changes which causes a glitch instead of a smooth transformation
 	void SetDelay( float delay );
 
-	bool GetIsComplete();
-	bool GetIsRunning();
+	bool GetIsCompleted() const;
+	bool GetIsRunning() const;
 	
 	void Update( float dt );
 

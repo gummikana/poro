@@ -53,12 +53,13 @@ void UpdateGTweens( float dt )
 ///////////////////////////////////////////////////////////////////////////////
 
 GTween::GTween() :
+	ceng::CAutoList< GTween >(),
 	mDirty( false ),
 	mDelay( 0 ),
 	mDuration( 1.f ),
 	mTimer( 0 ),
 	mDead( false ),
-	mCompleted ( true ),
+	mCompleted( false ),
 	mKillMeAutomatically( false ),
 	mMathFunc( NULL )
 {
@@ -67,12 +68,13 @@ GTween::GTween() :
 //-----------------------------------------------------------------------------
 
 GTween::GTween( float duration, bool auto_kill ) :
+	ceng::CAutoList< GTween >(),
 	mDirty( false ),
 	mDelay( 0 ),
 	mDuration( duration ),
 	mTimer( 0 ),
 	mDead( false ),
-	mCompleted ( true ),
+	mCompleted( false ),
 	mKillMeAutomatically( auto_kill ),
 	mMathFunc( NULL )
 {
@@ -141,11 +143,13 @@ void GTween::SetDelay( float delay )
 	}
 }
 
-bool GTween::GetIsComplete(){
+bool GTween::GetIsCompleted() const
+{
 	return mCompleted;
 }
 
-bool GTween::GetIsRunning(){
+bool GTween::GetIsRunning() const
+{
 	return mDelay > 0 && mTimer <= mDuration;
 }
 
