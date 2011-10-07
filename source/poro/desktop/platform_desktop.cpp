@@ -27,7 +27,6 @@
 #include "soundplayer_sdl.h"
 #include "joystick_impl.h"
 
-
 namespace poro {
 
 const int PORO_WINDOWS_JOYSTICK_COUNT = 4;
@@ -56,8 +55,9 @@ PlatformDesktop::~PlatformDesktop()
 {
 }
 //-----------------------------------------------------------------------------
-void PlatformDesktop::Init( IApplication* application, int w, int h, bool fullscreen, std::string title ) {
 
+void PlatformDesktop::Init( IApplication* application, int w, int h, bool fullscreen, std::string title ) 
+{
 	mRunning = true;
 	mFrameCount = 1;
 	mFrameRate = -1;
@@ -74,8 +74,12 @@ void PlatformDesktop::Init( IApplication* application, int w, int h, bool fullsc
 	mMouse = new Mouse;
 	mKeyboard = new Keyboard;
 
-	SDL_EnableUNICODE(1);
+	mJoysticks.resize( PORO_WINDOWS_JOYSTICK_COUNT );
+	for( int i = 0; i < PORO_WINDOWS_JOYSTICK_COUNT; ++i ) {
+		mJoysticks[ i ] = new JoystickImpl( i );
+	}
 
+	SDL_EnableUNICODE(1);
 }
 
 void PlatformDesktop::SetApplication( IApplication* application )
@@ -83,9 +87,8 @@ void PlatformDesktop::SetApplication( IApplication* application )
 	mApplication = application;
 }
 
-void PlatformDesktop::StartMainLoop() {
-
-	// added by Petri on 01.11.2010
+void PlatformDesktop::StartMainLoop() 
+{
 	mRunning = true;
 
 	if( mApplication )
@@ -100,7 +103,6 @@ void PlatformDesktop::StartMainLoop() {
 
 		SingleLoop();
 
-		// added by Petri on 01.11.2010
 		if( mApplication && mApplication->IsDead() == true )
 			mRunning = false;
 
@@ -128,8 +130,8 @@ void PlatformDesktop::StartMainLoop() {
 		mApplication->Exit();
 }
 
-void PlatformDesktop::Destroy() {
-
+void PlatformDesktop::Destroy() 
+{
 	delete mGraphics;
 	mGraphics = NULL;
 
@@ -148,26 +150,30 @@ void PlatformDesktop::Destroy() {
 	mJoysticks.clear();
 }
 
-void PlatformDesktop::SetFrameRate( int targetRate, bool fixed_time_step ) {
+void PlatformDesktop::SetFrameRate( int targetRate, bool fixed_time_step ) 
+{
 	mFrameRate = targetRate;
 	mOneFrameShouldLast = 1.f / (types::Float32)targetRate;
 	mFixedTimeStep = fixed_time_step;
 }
 
-int	PlatformDesktop::GetFrameNum() {
+int	PlatformDesktop::GetFrameNum() 
+{
 	return mFrameCount;
 }
 
-types::Float32	PlatformDesktop::GetUpTime() {
+types::Float32	PlatformDesktop::GetUpTime() 
+{
 	return (types::Float32)( SDL_GetTicks() ) * 0.001f;
 }
 
-void PlatformDesktop::Sleep( types::Float32 seconds ){
+void PlatformDesktop::Sleep( types::Float32 seconds )
+{
 	SDL_Delay( (Uint32)( seconds * 1000.f ) );
 }
 
-void PlatformDesktop::SingleLoop() {
-
+void PlatformDesktop::SingleLoop() 
+{
 	HandleEvents();
 
 	poro_assert( GetApplication() );
@@ -189,7 +195,8 @@ void PlatformDesktop::SingleLoop() {
 }
 //-----------------------------------------------------------------------------
 
-void PlatformDesktop::HandleEvents() {
+void PlatformDesktop::HandleEvents() 
+{
 
 	//----------------------------------------------------------------------------
 	for( std::size_t i = 0; i < mJoysticks.size(); ++i ) {
@@ -284,7 +291,8 @@ void PlatformDesktop::HandleEvents() {
 	}
 }
 
-void PlatformDesktop::SetWindowSize( int width, int height ) {
+void PlatformDesktop::SetWindowSize( int width, int height ) 
+{
 	mWidth = width;
 	mHeight = height;
 	mGraphics->SetWindowSize( width, height );
@@ -292,13 +300,15 @@ void PlatformDesktop::SetWindowSize( int width, int height ) {
 
 //-----------------------------------------------------------------------------
 
-void PlatformDesktop::SetWorkingDir( poro::types::string dir ){
+void PlatformDesktop::SetWorkingDir( poro::types::string dir )
+{
 	//TODO implement
 	//chdir(dir);
 }
 
 
-Joystick* PlatformDesktop::GetJoystick( int n ) {
+Joystick* PlatformDesktop::GetJoystick( int n ) 
+{
 	poro_assert( n >= 0 && n < (int)mJoysticks.size() );
 	poro_assert( mJoysticks[ n ] );
 
