@@ -30,6 +30,22 @@ namespace poro {
 class ITexture;
 class IGraphicsBuffer;
 
+//---------------
+
+struct GraphicsOpenGLSettings
+{
+	GraphicsOpenGLSettings() : 
+		textures_resize_to_power_of_two( true ), 
+		textures_fix_alpha_channel( true ) 
+	{
+	}
+
+	bool textures_resize_to_power_of_two;
+	bool textures_fix_alpha_channel;
+};
+//---------------
+
+
 class GraphicsOpenGL : public IGraphics
 {
 public:
@@ -39,6 +55,8 @@ public:
     virtual void        SetWindowSize(int width, int height);
     virtual void        SetFullscreen(bool fullscreen);
     virtual bool        GetFullscreen() { return mFullscreen; }
+
+	void				SetSettings( const GraphicsOpenGLSettings& settings );
 
 	virtual ITexture*	CreateTexture( int width, int height );
 	virtual ITexture*	CloneTexture( ITexture* other );
@@ -92,6 +110,11 @@ private:
     types::vec2 mViewportOffset;
     types::vec2 mViewportSize;
    
+	float mDesktopWidth;
+	float mDesktopHeight;
+	
+    bool mGlContextInitialized;
+
 };
 
 } // end o namespace poro

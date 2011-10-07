@@ -27,18 +27,27 @@
 #include "../poro_macros.h"
 #include "texture_opengl.h"
 
+
 #include "../external/stb_image.h"
 
 #ifndef PORO_DONT_USE_GLEW
-#include "graphics_buffer_opengl.h"
+#	include "graphics_buffer_opengl.h"
 #endif
 
 #define PORO_ERROR "ERROR: "
+
+#ifdef PORO_SAVE_ALPHA_FIXED_PNG_FILES
+#	define STB_IMAGE_WRITE_IMPLEMENTATION
+#	include "../external/stb_image_write.h"
+#endif
 
 //=============================================================================
 namespace poro {
 
 namespace {
+
+	GraphicsOpenGLSettings OPENGL_SETTINGS;
+
 	Uint32 GetGLVertexMode(int vertex_mode){
 		switch (vertex_mode) {
 			case IGraphics::VERTEX_MODE_TRIANGLE_FAN:
@@ -235,7 +244,7 @@ namespace {
 		uv[3]=1;
 		real_size[0] = w;
 		real_size[1] = h;
-		bool resize_to_power_of_two = true;
+		bool resize_to_power_of_two = OPENGL_SETTINGS.textures_resize_to_power_of_two;
 
 		bool release_new_pixels = false;
 		unsigned char* new_pixels = pixels;
@@ -293,6 +302,74 @@ namespace {
 
 	//-----------------------------------------------------------------------------
 
+	// Thanks to Jetro Lauha for allowing me to use this. 
+	// ripped from: http://code.google.com/p/turska/ 
+	// T2GraphicsOpenGL.cpp
+	// 
+	void GetSimpleFixAlphaChannel( unsigned char* pixels, int w, int h, int bpp )
+	{
+
+		using namespace types;
+		if( w < 2 || h < 2)
+			return;
+		
+		Sint32 x, y;
+		Sint32 co = 0;
+
+		for (y = 0; y < h; ++y)
+		{
+			for (x = 0; x < w; ++x)
+			{
+				co = ( ( y * w ) + x ) * bpp;
+
+				if ((pixels[co + 3]) == 0)
+				{
+					// iterate through 3x3 window around pixel
+					Sint32 left = x - 1, right = x + 1, top = y - 1, bottom = y + 1;
+					if( left < 0 ) left = 0;
+					if( right >= w ) right = w - 1;
+					if( top < 0 ) top = 0;
+					if( bottom >= h ) bottom = h - 1;
+					Sint32 x2, y2, colors = 0, co2 = top * w + left;
+					Sint32 red = 0, green = 0, blue = 0;
+					for(y2 = top; y2 <= bottom; ++y2)
+					{
+						for(x2 = left; x2 <= right; ++x2)
+						{
+							co2 = ( ( y2 * w ) + x2 ) * bpp;
+							
+							if(pixels[co2 + 3])
+							{
+								red += pixels[co2 + 0];
+								green += pixels[co2 + 1];
+								blue += pixels[co2 + 2];
+								++colors;
+							}
+						}
+					}
+					if( colors > 0)
+					{
+						pixels[co + 3 ] = 0;
+						pixels[co + 0 ] = (red / colors);
+						pixels[co + 1 ] = (green / colors);
+						pixels[co + 2 ] = (blue / colors);
+					}
+				}
+			}
+		}
+	}
+
+	//-------------------------------------------------------------------------
+
+	std::string GetFileExtension( const std::string& filename )
+	{
+		unsigned int p = filename.find_last_of( "." );
+		if( p < ( filename.size() - 1 ) )
+			return filename.substr( p + 1 );
+
+		return "";
+	}
+
 	TextureOpenGL* LoadTextureForReal( const types::string& filename )
 	{
 		TextureOpenGL* result = NULL;
@@ -307,6 +384,19 @@ namespace {
 		// ... x = width, y = height, n = # 8-bit components per pixel ...
 		// ... replace '0' with '1'..'4' to force that many components per pixel
 		
+		if( OPENGL_SETTINGS.textures_fix_alpha_channel && bpp == 4 ) 
+		{
+			GetSimpleFixAlphaChannel( data, x, y, bpp );
+			
+#ifdef PORO_SAVE_ALPHA_FIXED_PNG_FILES
+			if( false && GetFileExtension( filename ) == "png" )
+			{
+				int result = stbi_write_png( filename.c_str(), x, y, 4, data, x * 4 );
+				if( result == 0 ) std::cout << "problems saving: " << filename << std::endl;
+			}
+#endif
+		}
+
 		result = CreateImage( data, x, y, bpp );
 		stbi_image_free(data);
 
@@ -346,19 +436,23 @@ namespace {
 		glDisable(GL_TEXTURE_2D);
 	}
 
-	float mDesktopWidth = 0;
-	float mDesktopHeight = 0;
-	
-    bool mGlContextInitialized = false;
 } // end o namespace anon
+
+void GraphicsOpenGL::SetSettings( const GraphicsOpenGLSettings& settings )
+{
+	OPENGL_SETTINGS = settings;
+}
 
 
 bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::string& caption )
 {
-    mFullscreen=fullscreen;
-    mWindowWidth=width;
-    mWindowHeight=height;
-    
+    mFullscreen = fullscreen;
+    mWindowWidth = width;
+    mWindowHeight = height;
+    mDesktopWidth = 0;
+	mDesktopHeight = 0;
+    mGlContextInitialized = false;
+
 	const SDL_VideoInfo *info = NULL;
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE) < 0)
@@ -426,7 +520,6 @@ void GraphicsOpenGL::SetFullscreen(bool fullscreen)
 
 void GraphicsOpenGL::ResetWindow()
 {
-    
 	const SDL_VideoInfo *info = NULL;
     int bpp = 0;
     int flags = 0;
@@ -771,30 +864,19 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 		glVertices[++o] = vertices[i].y*yPlatformScale;
 	}
 	
-	/*glColor4f(color[0], color[1], color[2], color[3]);
-	glVertexPointer(2, GL_FLOAT , 0, glVertices);
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glDrawArrays (GL_TRIANGLE_STRIP, 0, vertCount);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glPopMatrix();*/
-
 	glColor4f(color[0], color[1], color[2], color[3]);
 	glPushMatrix();
-		//glEnable(GL_POLYGON_SMOOTH);
-        //glEnable(GL_BLEND);
-        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glVertexPointer(2, GL_FLOAT , 0, glVertices);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glDrawArrays (GL_TRIANGLE_STRIP, 0, vertCount);
 		glDisableClientState(GL_VERTEX_ARRAY);
-        //glDisable(GL_BLEND);
-		//glDisable(GL_POLYGON_SMOOTH);
 	glPopMatrix();
 }
 
 //=============================================================================
 
-types::vec2	GraphicsOpenGL::ConvertToInternalPos( int x, int y ) {
+types::vec2	GraphicsOpenGL::ConvertToInternalPos( int x, int y ) 
+{
 	types::vec2 result( (types::Float32)x, (types::Float32)y );
 
 	result.x -= mViewportOffset.x;
@@ -821,7 +903,8 @@ types::vec2	GraphicsOpenGL::ConvertToInternalPos( int x, int y ) {
 
 //=============================================================================
 
-IGraphicsBuffer* GraphicsOpenGL::CreateGraphicsBuffer(int width, int height){
+IGraphicsBuffer* GraphicsOpenGL::CreateGraphicsBuffer(int width, int height)
+{
 #ifdef PORO_DONT_USE_GLEW
 	poro_assert(false); //Buffer implementation needs glew.
 	return NULL;
@@ -832,7 +915,8 @@ IGraphicsBuffer* GraphicsOpenGL::CreateGraphicsBuffer(int width, int height){
 #endif
 }
 
-void GraphicsOpenGL::DestroyGraphicsBuffer(IGraphicsBuffer* buffer){
+void GraphicsOpenGL::DestroyGraphicsBuffer(IGraphicsBuffer* buffer)
+{
 #ifdef PORO_DONT_USE_GLEW
 	poro_assert(false); //Buffer implementation needs glew.
 #else
