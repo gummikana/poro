@@ -504,11 +504,11 @@ void Sprite::RectAnimation::Update( Sprite* sprite, float dt )
 	int frame = mCurrentFrame;
 	mCurrentTime += dt;
 	if( mWaitTime > 0 ) {
-		while( mCurrentTime >= mWaitTime ) {
+		while( frame >= mWaitTime ) {
 			mCurrentTime -= mWaitTime;
-			mCurrentFrame++;
-			if( mCurrentFrame >= mFrameCount )
-				mCurrentFrame = 0;
+			frame++;
+			if( frame >= mFrameCount )
+				frame = 0;
 		}
 	}
 
@@ -565,7 +565,6 @@ void Sprite::SetAnimationFrame(int frame)
 {
 	if(mAnimationUpdater.get()) mAnimationUpdater->SetFrame( frame );
 	if(mRectAnimation.get()) mRectAnimation->SetFrame( this, frame );
-
 }
 
 } // end of namespace as
