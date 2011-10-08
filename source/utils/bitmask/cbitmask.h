@@ -72,6 +72,12 @@ public:
 			return i->second;
 	}
 
+	bool HasAnything( const Pos& p ) const 
+	{
+		typename std::map< Pos, T >::const_iterator i = mData.find( p );
+		return ( i != mData.end() );
+	}
+
 	// multiply stuff
 	const CBitMask< T >&		Multiply( const bitmask::PointXForm& xform )	{ return MultiplyImpl( xform ); }
 	const CBitMask< T >&		Multiply( const bitmask::PointMatrix& matrix )	{ return MultiplyImpl( matrix ); }

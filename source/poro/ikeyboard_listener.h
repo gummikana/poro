@@ -21,6 +21,8 @@
 #ifndef INC_IKEYBOARD_LISTENER_H
 #define INC_IKEYBOARD_LISTENER_H
 
+#include "poro_types.h"
+
 namespace poro {
 
 class IKeyboardListener

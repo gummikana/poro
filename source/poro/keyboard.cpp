@@ -41,7 +41,7 @@ void Keyboard::RemoveKeyboardListener( IKeyboardListener* listener )
 	std::vector< IKeyboardListener* >::iterator i = 
 		std::find( mListeners.begin(), mListeners.end(), listener );
 
-	// poro_assert( i != mListeners.end() );
+	poro_assert( i != mListeners.end() );
 
 	if( i != mListeners.end() )
 		mListeners.erase( i );
@@ -54,6 +54,8 @@ void Keyboard::FireKeyDownEvent( int button, types::charset unicode )
 		poro_assert( mListeners[ i ] );
 		mListeners[ i ]->OnKeyDown( button, unicode );
 	}
+
+	SetKeyDown( button, true );
 }
 
 void Keyboard::FireKeyUpEvent( int button, types::charset unicode )
@@ -63,7 +65,28 @@ void Keyboard::FireKeyUpEvent( int button, types::charset unicode )
 		poro_assert( mListeners[ i ] );
 		mListeners[ i ]->OnKeyUp( button, unicode );
 	}
+
+	SetKeyDown( button, false );
 }
 
+bool Keyboard::IsKeyDown( int button ) const
+{
+	if( button >= 0 &&
+		button < (int)mKeysDown.size() ) 
+		return mKeysDown[ button ];
+
+	return false;
+}
+
+void Keyboard::SetKeyDown( int key, bool down )
+{
+	if( key < 0 ) return;
+	if( key > 10000 ) return;
+
+	if( key >= (int)mKeysDown.size() ) 
+		mKeysDown.resize( key + 1 );
+
+	mKeysDown[ key ] = down;
+}
 
 } // end of namespace poro

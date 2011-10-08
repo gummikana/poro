@@ -113,9 +113,13 @@ public:
     //=========================================================================
 
     //istream& operator>> ( int& val ) { return istringstream::operator>>(val); }
+    
+    
+    //Mac error: binding of reference to type 'istream' (aka 'basic_istream<char>') to a value of type 'const ceng::stl::stringstream' drops qualifiers
+#ifndef __APPLE__    
     template< typename T >
     istream& operator>> ( const T& val ) const  { return *this; }
-
+#endif
     template< typename T >
     istream& operator>> ( T& val ) { return *this; }
 

@@ -40,9 +40,16 @@ public:
 	void FireKeyDownEvent( int button, types::charset unicode  );
 	void FireKeyUpEvent( int button, types::charset unicode );
 
+	bool IsKeyDown( int button ) const;
+
 private:
+	void SetKeyDown( int button, bool down );
+
 	std::vector< IKeyboardListener* > mListeners;
 	
+	std::vector< bool > mKeysDown;
+
+
 };
 
 } // end of namespace poro

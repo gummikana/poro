@@ -87,7 +87,9 @@ void CXmlParser::ParseLine( const std::string& in_line )
 {
 	std::string line = in_line;
 	
-	if ( myRemoveWhiteSpace ) line = RemoveWhiteSpace( line );
+	// added " " to fix the white space bug in attribute parsing
+	if ( myRemoveWhiteSpace ) 
+		line = RemoveWhiteSpace( line ) + " ";
 	
 	size_t i;
 
