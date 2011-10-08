@@ -65,17 +65,20 @@ void AnimationUpdater::SetFrame( int frame_i )
 
 
 
-	std::vector< impl::Part >& parts = animation->parts;
+	std::vector< impl::Part* >& parts = animation->parts;
 	for( std::size_t i = 0; i < parts.size(); ++i )
 	{
-		const std::string& name = parts[ i ].name;
-		impl::Frame* frame = parts[ i ].GetFrame( frame_i );
-
-
-		Sprite* sprite_part = sprite_container->GetChildByName( name );
-		if( sprite_part )
+		if( parts[ i ] )
 		{
-			ApplyFrameTo( frame, sprite_part );
+			const std::string& name = parts[ i ]->name;
+			impl::Frame* frame = parts[ i ]->GetFrame( frame_i );
+
+
+			Sprite* sprite_part = sprite_container->GetChildByName( name );
+			if( sprite_part )
+			{
+				ApplyFrameTo( frame, sprite_part );
+			}
 		}
 
 	}
@@ -123,7 +126,7 @@ void SpriteAnimationUpdater::Update( float dt )
 	} else if (animation->getLoops()) {
 		frame = mTimer / mFrameTimeDelta;
 		
-		if (frame > animation->getPreLoopFrameCount()) {
+		if( Math::round( frame ) > animation->getPreLoopFrameCount()) {
 			frame = (float)( animation->getPreLoopFrameCount() + ((int)(frame - animation->getPreLoopFrameCount()) % (int)animation->getLoopFrameCount()) );
 		}
 		
@@ -131,7 +134,7 @@ void SpriteAnimationUpdater::Update( float dt )
 	} else {
 		frame = animation->getStartFrame() + mTimer / mFrameTimeDelta;
 
-		if( frame >= animation->getTotalFrameCount() )
+		if( Math::round( frame ) >= animation->getTotalFrameCount() )
 			frame = (float)( animation->getTotalFrameCount() - 1 );
 	}
 	
