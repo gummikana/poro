@@ -504,7 +504,7 @@ void Sprite::RectAnimation::Update( Sprite* sprite, float dt )
 	int frame = mCurrentFrame;
 	mCurrentTime += dt;
 	if( mWaitTime > 0 ) {
-		while( frame >= mWaitTime ) {
+		while( mCurrentTime >= mWaitTime ) {
 			mCurrentTime -= mWaitTime;
 			frame++;
 			if( frame >= mFrameCount )
