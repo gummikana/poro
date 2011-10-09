@@ -22,7 +22,7 @@
 #ifndef INC_ANIMATIONUPDATER_H
 #define INC_ANIMATIONUPDATER_H
 
-#include <stdio.h> // needed for NULL
+#include <string> // needed for NULL
 
 namespace as {
 class Sprite;
