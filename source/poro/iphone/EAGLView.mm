@@ -84,7 +84,7 @@
 		
 		_size = [eaglLayer bounds].size;
 		//Rotate axis for landscape
-		if(poro::iPhoneGlobals.iPhoneWindow->GetOrientationIsLandscape()){
+		/*if(poro::iPhoneGlobals.iPhoneWindow->GetOrientationIsLandscape()){
 			glScalef(1, -1, 1); //Flip axis
 			glTranslatef(1.0, -1.0, 0);
 			glScalef((2.0/_size.width), (2.0/_size.height), 1);
@@ -93,7 +93,7 @@
 			glScalef(1, -1, 1); //Flip axis
 			glTranslatef(-1.0, -1.0, 0);
 			glScalef((2.0/_size.width), (2.0/_size.height), 1);
-		}
+		}*/
 		
 	}
 	

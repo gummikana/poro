@@ -107,7 +107,7 @@ void GraphicsBufferOpenGLES::DrawTexture( ITexture* texture, types::vec2* vertic
 	if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight()){	
 		xPlatformScale = poro::IPlatform::Instance()->GetWidth() / (float)poro::IPlatform::Instance()->GetInternalWidth();
 		yPlatformScale = poro::IPlatform::Instance()->GetHeight() / (float)poro::IPlatform::Instance()->GetInternalHeight();
-	} 
+	}
 
 	bool flip_x = false;
 	bool flip_y = false;
@@ -123,10 +123,10 @@ void GraphicsBufferOpenGLES::DrawTexture( ITexture* texture, types::vec2* vertic
 		vertices[i].y *= mBufferScale.y * yPlatformScale;
 		
 		if( flip_x )
-			vertices[i].x = poro::IPlatform::Instance()->GetInternalWidth() - vertices[i].x;
+			vertices[i].x = poro::IPlatform::Instance()->GetWidth() - vertices[i].x;
 
 		if( flip_y )
-			vertices[i].y = poro::IPlatform::Instance()->GetInternalHeight() - vertices[i].y;
+			vertices[i].y = poro::IPlatform::Instance()->GetHeight() - vertices[i].y;
 		
 		if( poro::IPlatform::Instance()->GetOrientationIsLandscape() )
 			std::swap( vertices[i].x, vertices[i].y );
@@ -134,18 +134,18 @@ void GraphicsBufferOpenGLES::DrawTexture( ITexture* texture, types::vec2* vertic
 	}
 	GraphicsOpenGLES::DrawTexture( texture, vertices, tex_coords, count, color );
 }
-	
+
 void GraphicsBufferOpenGLES::BeginRendering()
 {
-
+    //glPushMatrix();
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING_OES, &mOldFBO);
 	glBindFramebufferOES(GL_FRAMEBUFFER_OES, mBufferId);
-	// glPushAttrib(GL_VIEWPORT_BIT);
+	//glPushAttrib(GL_VIEWPORT_BIT);
 	// glViewport(0,0,mTexture.GetWidth(),mTexture.GetHeight());
 	
 	glViewport(0,0,mTexture.GetWidth(),mTexture.GetHeight());
 
-	glClearColor(0, 0, 0, 0); 
+	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -154,7 +154,14 @@ void GraphicsBufferOpenGLES::EndRendering()
 	// glPopAttrib();
 	glBindFramebufferOES(GL_FRAMEBUFFER_OES, mOldFBO);
 
-	glViewport(0,0,poro::IPlatform::Instance()->GetInternalWidth(),poro::IPlatform::Instance()->GetInternalHeight());
+	//glPopMatrix();
+    glViewport(0,0,poro::IPlatform::Instance()->GetWidth(),poro::IPlatform::Instance()->GetHeight());
+    /*float w = poro::IPlatform::Instance()->GetInternalWidth();
+    float h = poro::IPlatform::Instance()->GetInternalHeight();
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrthof(0, w, h, 0, -1.f, 1.f);
+    //glViewport(0,0,w,h);*/
 }
 
 } // end of namespace poro

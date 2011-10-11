@@ -402,7 +402,10 @@ void GraphicsOpenGLES::DrawTexture( ITexture* itexture, float x, float y, float 
 	tex_coords[ 3 ].x = tx2;
 	tex_coords[ 3 ].y = ty2;
 	
+	PushVertexMode(poro::IGraphics::VERTEX_MODE_TRIANGLE_STRIP);
 	DrawTexture( texture,  temp_verts, tex_coords, 4, color );
+    PopVertexMode();
+	
 }
 
 //=============================================================================
@@ -419,10 +422,10 @@ void GraphicsOpenGLES::DrawTexture( ITexture* itexture, types::vec2* vertices, t
 	
 	// Internal size convertion.
 	float xPlatformScale = 1.f, yPlatformScale = 1.f;
-	if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight()){	
+	/*if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight()){	
 		xPlatformScale = poro::IPlatform::Instance()->GetWidth() / (float)poro::IPlatform::Instance()->GetInternalWidth();
 		yPlatformScale = poro::IPlatform::Instance()->GetHeight() / (float)poro::IPlatform::Instance()->GetInternalHeight();
-	} 
+	}*/
     
 	poro_assert( count > 2 );
 	poro_assert( count <= 8 );
@@ -475,10 +478,10 @@ void GraphicsOpenGLES::DrawTextureWithAlpha( ITexture* itexture, types::vec2* ve
 	
 	//Internal size convertion.
 	float xPlatformScale = 1.f, yPlatformScale = 1.f;
-	if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight()){	
+	/*if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight()){	
 		xPlatformScale = poro::IPlatform::Instance()->GetWidth() / (float)poro::IPlatform::Instance()->GetInternalWidth();
 		yPlatformScale = poro::IPlatform::Instance()->GetHeight() / (float)poro::IPlatform::Instance()->GetInternalHeight();
-	} 
+	} */
 
     poro_assert( count > 2 );
 	poro_assert( count <= 8 );
@@ -558,14 +561,11 @@ void GraphicsOpenGLES::DrawLines( const std::vector< poro::types::vec2 >& vertic
 		return;
 	
 	//Internal rescale
-	float xPlatformScale, yPlatformScale;
-	if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight()){	
+	float xPlatformScale = 1.f, yPlatformScale = 1.f;
+	/*if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight()){	
 		xPlatformScale = poro::IPlatform::Instance()->GetWidth() / (float)poro::IPlatform::Instance()->GetInternalWidth();
 		yPlatformScale = poro::IPlatform::Instance()->GetHeight() / (float)poro::IPlatform::Instance()->GetInternalHeight();
-	} else {
-		xPlatformScale = 1.f;
-		yPlatformScale = 1.f;
-	}
+	}*/
 	
 	const int buffer_size = 64;
 	static GLfloat glVertices[buffer_size];
@@ -600,14 +600,11 @@ void GraphicsOpenGLES::DrawFill( const std::vector< poro::types::vec2 >& vertice
 		return;
 	
 	//Internal rescale
-	float xPlatformScale, yPlatformScale;
-	if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight()){	
+	float xPlatformScale = 1.f, yPlatformScale = 1.f;
+	/*if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight()){	
 		xPlatformScale = poro::IPlatform::Instance()->GetWidth() / (float)poro::IPlatform::Instance()->GetInternalWidth();
 		yPlatformScale = poro::IPlatform::Instance()->GetHeight() / (float)poro::IPlatform::Instance()->GetInternalHeight();
-	} else {
-		xPlatformScale = 1.f;
-		yPlatformScale = 1.f;
-	}
+	}*/
 	
 	//Consider static buffer size?
 	static GLfloat glVertices[256];
@@ -626,7 +623,14 @@ void GraphicsOpenGLES::DrawFill( const std::vector< poro::types::vec2 >& vertice
 	glPopMatrix();
 	
 }
-	
+
+    void GraphicsOpenGLES::SetInternalSize( types::Float32 width, types::Float32 height ){
+        //glMatrixMode( GL_PROJECTION );
+        //glLoadIdentity();
+        //glOrthof(0,  width, height,  0,  -1.f,  1.f);
+    }
+
+    
 //=============================================================================
 
 IGraphicsBuffer* GraphicsOpenGLES::CreateGraphicsBuffer(int width, int height)

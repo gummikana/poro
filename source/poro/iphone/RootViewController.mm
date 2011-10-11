@@ -29,12 +29,12 @@
 }
 
 -(void) applyOrientation : (poro::PlatformIPhone::DEVICE_ORIENTATION) newOrientation {	
-	if (mMatrixLoaded)
-		glPopMatrix(); //Restore original matrix.
+	//if (mMatrixLoaded)
+	//	glPopMatrix(); //Restore original matrix.
 	
-	glPushMatrix();
-	mMatrixLoaded = true;
-	
+	//glPushMatrix();
+	//mMatrixLoaded = true;
+	/*
 	CGSize newSize = [poro::iPhoneGlobals.glView bounds].size;
 		
 	float w = newSize.width;
@@ -68,12 +68,40 @@
 		glTranslatef(-w/2,-h/2,0);
 		poro::iPhoneGlobals.iPhoneWindow->SetOrientationIsLandscape(false);
 	}
-	
+	*/
 	poro::iPhoneGlobals.iPhoneWindow->SetDeviceOrientation( newOrientation );	
 	[[UIApplication sharedApplication] setStatusBarOrientation: [self convertOrientationPoroToIOs: newOrientation] animated:NO];
 	
-	glViewport(0, 0, w, h);
-	glScissor(0, 0, w, h);
+    /* glViewport(0, 0, w, h);
+     glScissor(0, 0, w, h); */
+    
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    //float h = 1024;
+    //float w = 768;
+    //glViewport(0, 0, w, h);
+    float hi = poro::IPlatform::Instance()->GetInternalHeight();
+    float wi = poro::IPlatform::Instance()->GetInternalWidth();
+    glOrthof(0, wi, hi, 0, -1.f, 1.f);
+    
+    switch ( newOrientation ) {
+		case poro::PlatformIPhone::DO_PORTRAIT:
+			// nothing
+			break;
+		case poro::PlatformIPhone::DO_UPSIDEDOWN_PORTRAIT:
+			glRotatef(180,0,0,1);
+			break;
+		case poro::PlatformIPhone::DO_LANDSCAPE_RIGHT:
+            glTranslatef(wi,0,0);
+    		glRotatef(90,0,0,1);
+			break;
+		case poro::PlatformIPhone::DO_LANDSCAPE_LEFT:
+			glRotatef(-90,0,0,1);
+			break;
+	}
+	//glTranslatef(wi,0,0);
+    //glRotatef(90,0,0,1);
+
 }
 
 -(poro::PlatformIPhone::DEVICE_ORIENTATION) convertOrientationIOsToPoro:(UIInterfaceOrientation) orientation {
