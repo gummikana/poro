@@ -28,7 +28,8 @@
 namespace poro {
 	
 	void PlatformIPhone::Init(IApplication * application, int w, int h, bool fullscreen, std::string title) {
-		SetWorkingDir();
+        IPlatform::Init(application, w, h, fullscreen, title);
+        SetWorkingDir();
 		
 		mFrameCount = 1;
 		mFrameRate = -1.0f;
@@ -40,9 +41,14 @@ namespace poro {
 		mFixedTimeStep = true;
 		mOneFrameShouldLast = 1.f / 60.f; // default is 60 fps
 		
-		mIsLandscape = false;
-		mDeviceOrientation = DO_PORTRAIT;
-		mSupportedOrientations[DO_PORTRAIT] 			= true;
+        if(false){
+            mIsLandscape = true;
+            mDeviceOrientation = DO_LANDSCAPE_LEFT;
+        } else {
+            mIsLandscape = false;
+            mDeviceOrientation = DO_PORTRAIT;
+        }
+        mSupportedOrientations[DO_PORTRAIT] 			= true;
 		mSupportedOrientations[DO_UPSIDEDOWN_PORTRAIT] 	= true;
 		mSupportedOrientations[DO_LANDSCAPE_LEFT] 		= true;
 		mSupportedOrientations[DO_LANDSCAPE_RIGHT] 		= true;

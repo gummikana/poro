@@ -35,7 +35,7 @@ public:
 	virtual ~GraphicsOpenGLES(){};
 
 	virtual bool		Init( int width, int height, bool fullscreen, const types::string& caption );
-	virtual void		SetInternalSize( types::Float32 width, types::Float32 height ) {};
+	virtual void		SetInternalSize( types::Float32 width, types::Float32 height );
 
 	virtual ITexture*	CloneTexture( ITexture* other );
 	
