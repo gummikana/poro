@@ -18,8 +18,8 @@
  *
  ***************************************************************************/
 
-#ifndef MOUSE_H
-#define MOUSE_H
+#ifndef INC_MOUSE_H
+#define INC_MOUSE_H
 
 
 #include <vector>
