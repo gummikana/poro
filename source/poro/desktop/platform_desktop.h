@@ -26,6 +26,7 @@
 #include "../iplatform.h"
 #include "../mouse.h"
 #include "../keyboard.h"
+#include "../touch.h"
 #include "graphics_opengl.h"
 #include "soundplayer_sdl.h"
 
@@ -63,6 +64,7 @@ public:
 	//controllers
 	virtual Mouse*			GetMouse();
 	virtual Keyboard*		GetKeyboard();
+	virtual Touch*			GetTouch();
 	virtual int				GetJoystickCount() const;
 	virtual Joystick*		GetJoystick( int n );
 
@@ -94,6 +96,7 @@ protected:
 	int							    mHeight;
 	Mouse*						    mMouse;
 	Keyboard*					    mKeyboard;
+	Touch*							mTouch;
 	std::vector< JoystickImpl* >	mJoysticks;
 	SoundPlayerSDL*		            mSoundPlayer;
 	bool						    mRunning;
@@ -140,6 +143,10 @@ inline Mouse* PlatformDesktop::GetMouse() {
 
 inline Keyboard* PlatformDesktop::GetKeyboard() {
 	return mKeyboard;
+}
+
+inline Touch* PlatformDesktop::GetTouch() {
+	return mTouch;
 }
 
 inline int	PlatformDesktop::GetJoystickCount() const  {

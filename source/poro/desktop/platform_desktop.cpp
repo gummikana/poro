@@ -43,6 +43,7 @@ PlatformDesktop::PlatformDesktop() :
 	mHeight( 0 ),
 	mMouse( NULL ),
 	mKeyboard( NULL ),
+	mTouch( NULL ),
 	mJoysticks(),
 	mSoundPlayer( NULL ),
 	mRunning( 0 ),
@@ -59,6 +60,7 @@ PlatformDesktop::~PlatformDesktop()
 
 void PlatformDesktop::Init( IApplication* application, int w, int h, bool fullscreen, std::string title ) 
 {
+	IPlatform::Init( application, w, h, fullscreen, title );
 	mRunning = true;
 	mFrameCount = 1;
 	mFrameRate = -1;
@@ -74,6 +76,7 @@ void PlatformDesktop::Init( IApplication* application, int w, int h, bool fullsc
 
 	mMouse = new Mouse;
 	mKeyboard = new Keyboard;
+	mTouch = new Touch;
 
 	mJoysticks.resize( PORO_WINDOWS_JOYSTICK_COUNT );
 	for( int i = 0; i < PORO_WINDOWS_JOYSTICK_COUNT; ++i ) {
@@ -97,6 +100,9 @@ void PlatformDesktop::Destroy()
 
 	delete mKeyboard;
 	mKeyboard = NULL;
+
+	delete mTouch;
+	mTouch = NULL;
 
 	for( std::size_t i = 0; i < mJoysticks.size(); ++i )
 		delete mJoysticks[ i ];
@@ -229,6 +235,8 @@ void PlatformDesktop::HandleEvents()
 				if( event.button.button == SDL_BUTTON_LEFT )
 				{
 					mMouse->FireMouseDownEvent( mMousePos, Mouse::MOUSE_BUTTON_LEFT );
+					if( mTouch ) 
+						mTouch->FireTouchDownEvent( mMousePos, 0 );
 				}
 				else if( event.button.button == SDL_BUTTON_RIGHT )
 				{
@@ -253,6 +261,8 @@ void PlatformDesktop::HandleEvents()
 				if( event.button.button == SDL_BUTTON_LEFT )
 				{
 					mMouse->FireMouseUpEvent( mMousePos, Mouse::MOUSE_BUTTON_LEFT );
+					if( mTouch ) 
+						mTouch->FireTouchUpEvent( mMousePos, 0 );
 				}
 				else if( event.button.button == SDL_BUTTON_RIGHT )
 				{
@@ -269,6 +279,8 @@ void PlatformDesktop::HandleEvents()
 				{
 				    mMousePos = mGraphics->ConvertToInternalPos( event.motion.x, event.motion.y );
 					mMouse->FireMouseMoveEvent( mMousePos );
+					if( mTouch && mTouch->IsTouchIdDown( 0 ) ) 
+						mTouch->FireTouchMoveEvent( mMousePos, 0 );
 				}
 				break;
 		}
