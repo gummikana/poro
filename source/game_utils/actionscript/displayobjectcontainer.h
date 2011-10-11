@@ -85,6 +85,8 @@ public:
 
 	virtual void removeChild( DisplayObjectContainer* child )
 	{
+		if( child == NULL ) return;
+
 		cassert( child != this );
 
 		ChildList::iterator i = std::find( mChildren.begin(), mChildren.end(), child );
