@@ -84,7 +84,8 @@ namespace poro {
 		
         virtual void SetWindowSize( int width, int height ) { mWidth=width; mHeight=height; }
         
-        
+        int GetInternalOrientation() const { return mInternalOrientation; }
+		
 	protected:
 		GraphicsOpenGLES *mGraphics;
 		int mFrameCount;
@@ -98,7 +99,10 @@ namespace poro {
 		
 		bool mIsLandscape;
 		int mDeviceOrientation;
-		std::bitset<4> mSupportedOrientations;
+        //The internal orientation is set upon initialization and reflects what the user thinks is the default orientation
+        //It is need to to determine how to handle the internal resolution.
+        int mInternalOrientation;
+        std::bitset<4> mSupportedOrientations;
 		
 	private:
 		types::Float32	mFrameTimePrevious;
