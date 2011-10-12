@@ -87,6 +87,8 @@
 		
 		_size = [eaglLayer bounds].size;
 		//Rotate axis for landscape
+    
+        
 		/*if(poro::iPhoneGlobals.iPhoneWindow->GetOrientationIsLandscape()){
 			glScalef(1, -1, 1); //Flip axis
 			glTranslatef(1.0, -1.0, 0);
@@ -154,24 +156,31 @@
 {
 	poro::types::vec2 result;
 
-	//Landscape flip
-	if(poro::iPhoneGlobals.iPhoneWindow->GetOrientationIsLandscape())
-		result = poro::types::vec2((poro::types::Float32)y,(poro::types::Float32)x);
-	else
-		result = poro::types::vec2((poro::types::Float32)x,(poro::types::Float32)y);
-
+    float aspect_x = poro::IPlatform::Instance()->GetInternalWidth() / (poro::types::Float32)poro::IPlatform::Instance()->GetWidth();
+    float aspect_y = poro::IPlatform::Instance()->GetInternalHeight() / (poro::types::Float32)poro::IPlatform::Instance()->GetHeight();
+	    
+    
 	// Even more flipping for rotated states, portrait does without since it's the "default" state
-	switch(poro::iPhoneGlobals.iPhoneWindow->GetDeviceOrientation()){
-		case poro::PlatformIPhone::DO_LANDSCAPE_LEFT :	
-			result.x = _size.height - result.x;
+	bool isLandscape=false;
+    switch(poro::iPhoneGlobals.iPhoneWindow->GetDeviceOrientation()){
+		case poro::PlatformIPhone::DO_PORTRAIT :
+            result.x = (poro::types::Float32)x * aspect_y;
+			result.y = (poro::types::Float32)y * aspect_x;
+            break;
+        case poro::PlatformIPhone::DO_LANDSCAPE_LEFT :	
+            result.x = (_size.height - (poro::types::Float32)y) * aspect_x;
+			result.y = (poro::types::Float32)x * aspect_y;
+            //isLandscape=true;
 			break;
-		case poro::PlatformIPhone::DO_LANDSCAPE_RIGHT :	
-			result.y = _size.width - result.y;
+		case poro::PlatformIPhone::DO_LANDSCAPE_RIGHT :
+			result.x = (poro::types::Float32)y * aspect_x;
+			result.y = (_size.width - (poro::types::Float32)x) * aspect_y;
+            //isLandscape=true;
 			break;
 		case poro::PlatformIPhone::DO_UPSIDEDOWN_PORTRAIT :	
-			result.x = _size.width - result.x;
-			result.y = _size.height - result.y;
-			break;
+			result.x = (_size.width - (poro::types::Float32)x) * aspect_y;
+			result.y = (_size.height - (poro::types::Float32)y) * aspect_x;
+            break;
 	}	
 	
 	//Internal size

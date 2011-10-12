@@ -45,6 +45,9 @@ Uint32 GetNextPowerOfTwo(Uint32 input)
 	input |= input >> 1;
 	return input + 1;
 }
+    
+    GLint mOriginalViewport[4];
+    
 } // end of anonymous namespace
 
 void GraphicsBufferOpenGLES::InitTexture(int width,int height){
@@ -134,16 +137,17 @@ void GraphicsBufferOpenGLES::DrawTexture( ITexture* texture, types::vec2* vertic
 	}
 	GraphicsOpenGLES::DrawTexture( texture, vertices, tex_coords, count, color );
 }
-
+    
 void GraphicsBufferOpenGLES::BeginRendering()
 {
-    //glPushMatrix();
-	glGetIntegerv(GL_FRAMEBUFFER_BINDING_OES, &mOldFBO);
-	glBindFramebufferOES(GL_FRAMEBUFFER_OES, mBufferId);
+    glPushMatrix();
 	//glPushAttrib(GL_VIEWPORT_BIT);
-	// glViewport(0,0,mTexture.GetWidth(),mTexture.GetHeight());
+	glGetIntegerv(GL_VIEWPORT, mOriginalViewport); // Retrieves The Viewport Values (X, Y, Width, Height)
 	
-	glViewport(0,0,mTexture.GetWidth(),mTexture.GetHeight());
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING_OES, &mOldFBO);
+	glBindFramebufferOES(GL_FRAMEBUFFER_OES, mBufferId);
+	
+    glViewport(0,0,mTexture.GetWidth(),mTexture.GetHeight());
 
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -151,17 +155,11 @@ void GraphicsBufferOpenGLES::BeginRendering()
 
 void GraphicsBufferOpenGLES::EndRendering()
 {
-	// glPopAttrib();
 	glBindFramebufferOES(GL_FRAMEBUFFER_OES, mOldFBO);
 
-	//glPopMatrix();
-    glViewport(0,0,poro::IPlatform::Instance()->GetWidth(),poro::IPlatform::Instance()->GetHeight());
-    /*float w = poro::IPlatform::Instance()->GetInternalWidth();
-    float h = poro::IPlatform::Instance()->GetInternalHeight();
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrthof(0, w, h, 0, -1.f, 1.f);
-    //glViewport(0,0,w,h);*/
+    glViewport(mOriginalViewport[0],mOriginalViewport[1],mOriginalViewport[2],mOriginalViewport[3]);
+    glPopMatrix();
+        
 }
 
 } // end of namespace poro
