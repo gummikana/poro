@@ -82,22 +82,8 @@
 		self.multipleTouchEnabled = true;
 		self.opaque = true;
 		
-		_size = [eaglLayer bounds].size;
-		//Rotate axis for landscape
-    
-        
-		/*if(poro::iPhoneGlobals.iPhoneWindow->GetOrientationIsLandscape()){
-			glScalef(1, -1, 1); //Flip axis
-			glTranslatef(1.0, -1.0, 0);
-			glScalef((2.0/_size.width), (2.0/_size.height), 1);
-			glRotatef(90.0f, 0.f, 0.f, 1.0f);
-		}else{
-			glScalef(1, -1, 1); //Flip axis
-			glTranslatef(-1.0, -1.0, 0);
-			glScalef((2.0/_size.width), (2.0/_size.height), 1);
-		}*/
-		
-	}
+		_size = [eaglLayer bounds].size;	
+    }
 	
 	return self;
 }

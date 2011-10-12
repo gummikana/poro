@@ -43,16 +43,13 @@ namespace poro {
 		
         if( w > h ){ //If the width is bigger than the hight we assume the user means a landscape internal orientation
             mInternalOrientation = DO_LANDSCAPE_RIGHT;
-        //    mDeviceOrientation = DO_LANDSCAPE_RIGHT;
-            //mDeviceOrientation = DO_PORTRAIT;
+            mDeviceOrientation = DO_LANDSCAPE_RIGHT;
             mIsLandscape = true;
         } else {
             mInternalOrientation = DO_PORTRAIT;
-        //    mDeviceOrientation = DO_PORTRAIT;
+            mDeviceOrientation = DO_PORTRAIT;
             mIsLandscape = false;
-            //mDeviceOrientation = DO_LANDSCAPE_RIGHT;
         }
-        mDeviceOrientation = DO_PORTRAIT;
         mSupportedOrientations[DO_PORTRAIT] 			= true;
 		mSupportedOrientations[DO_UPSIDEDOWN_PORTRAIT] 	= true;
 		mSupportedOrientations[DO_LANDSCAPE_LEFT] 		= true;
