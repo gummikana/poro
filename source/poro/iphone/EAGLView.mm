@@ -149,30 +149,35 @@
 {
 	poro::types::vec2 result;
 	
-	//Landscape flip
-	if(poro::iPhoneGlobals.iPhoneWindow->GetOrientationIsLandscape())
+    //Landscape flip
+	/*if(poro::iPhoneGlobals.iPhoneWindow->GetOrientationIsLandscape())
 		result = poro::types::vec2((poro::types::Float32)y,(poro::types::Float32)x);
 	else
 		result = poro::types::vec2((poro::types::Float32)x,(poro::types::Float32)y);
+	*/
+    float aspect_x = poro::IPlatform::Instance()->GetInternalWidth() / (poro::types::Float32)poro::IPlatform::Instance()->GetWidth();
+    float aspect_y = poro::IPlatform::Instance()->GetInternalHeight() / (poro::types::Float32)poro::IPlatform::Instance()->GetHeight();
 	
 	// Even more flipping for rotated states, portrait does without since it's the "default" state
-	switch(poro::iPhoneGlobals.iPhoneWindow->GetDeviceOrientation()){
+	bool isLandscape=false;
+    switch(poro::iPhoneGlobals.iPhoneWindow->GetDeviceOrientation()){
 		case poro::PlatformIPhone::DO_LANDSCAPE_LEFT :	
-			result.x = _size.height - result.x;
+            //result.x = (poro::types::Float32)y;
+			isLandscape=true;
 			break;
 		case poro::PlatformIPhone::DO_LANDSCAPE_RIGHT :	
-			result.y = _size.width - result.y;
+			result.x = (poro::types::Float32)y * aspect_y;
+			result.y = (_size.width - (poro::types::Float32)x) * aspect_x;
+            isLandscape=true;
 			break;
 		case poro::PlatformIPhone::DO_UPSIDEDOWN_PORTRAIT :	
-			result.x = _size.width - result.x;
-			result.y = _size.height - result.y;
+			//result.x = _size.width - result.x;
+			//result.y = _size.height - result.y;
 			break;
 	}	
 	
-	//Internal size
-	result.x *= poro::IPlatform::Instance()->GetInternalWidth() / (poro::types::Float32)poro::IPlatform::Instance()->GetWidth();
-	result.y *= poro::IPlatform::Instance()->GetInternalHeight() / (poro::types::Float32)poro::IPlatform::Instance()->GetHeight();
-	
+	//std::cout << result.x << "." << result.y << std::endl;
+    
 	return result;
 }
 

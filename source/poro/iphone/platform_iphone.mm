@@ -41,13 +41,10 @@ namespace poro {
 		mFixedTimeStep = true;
 		mOneFrameShouldLast = 1.f / 60.f; // default is 60 fps
 		
-        if(false){
-            mIsLandscape = true;
-            mDeviceOrientation = DO_LANDSCAPE_LEFT;
-        } else {
-            mIsLandscape = false;
-            mDeviceOrientation = DO_PORTRAIT;
-        }
+        //    mIsLandscape = true;
+        //    mDeviceOrientation = DO_LANDSCAPE_LEFT;
+        mIsLandscape = false;
+        mDeviceOrientation = DO_PORTRAIT;
         mSupportedOrientations[DO_PORTRAIT] 			= true;
 		mSupportedOrientations[DO_UPSIDEDOWN_PORTRAIT] 	= true;
 		mSupportedOrientations[DO_LANDSCAPE_LEFT] 		= true;
