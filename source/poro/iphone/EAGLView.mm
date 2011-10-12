@@ -37,6 +37,7 @@
 
 #import <QuartzCore/QuartzCore.h>
 #import <OpenGLES/EAGLDrawable.h>
+#include <CoreFoundation/CoreFoundation.h>
 
 #import "EAGLView.h"
 #include "globals_iphone.h"
@@ -81,6 +82,8 @@
 		
 		self.multipleTouchEnabled = true;
 		self.opaque = true;
+		
+		_touch_ids = CFDictionaryCreateMutable(NULL, 0, NULL, NULL);
 		
 		_size = [eaglLayer bounds].size;
 		//Rotate axis for landscape
@@ -139,6 +142,8 @@
     [_context release];
     _context = nil;
 	
+	if (_touch_ids != NULL) CFRelease(_touch_ids);
+	
 	[super dealloc];
 }
 
@@ -148,13 +153,13 @@
 -(poro::types::vec2) _convertMousePos:(int)x :(int)y
 {
 	poro::types::vec2 result;
-	
+
 	//Landscape flip
 	if(poro::iPhoneGlobals.iPhoneWindow->GetOrientationIsLandscape())
 		result = poro::types::vec2((poro::types::Float32)y,(poro::types::Float32)x);
 	else
 		result = poro::types::vec2((poro::types::Float32)x,(poro::types::Float32)y);
-	
+
 	// Even more flipping for rotated states, portrait does without since it's the "default" state
 	switch(poro::iPhoneGlobals.iPhoneWindow->GetDeviceOrientation()){
 		case poro::PlatformIPhone::DO_LANDSCAPE_LEFT :	
@@ -186,7 +191,10 @@
 		if(index == 0)
 			poro::IPlatform::Instance()->GetMouse()->FireMouseMoveEvent(pos);
 		
-		poro::IPlatform::Instance()->GetTouch()->FireTouchMoveEvent(pos, index);
+		int touchId;
+		CFNumberGetValue((CFNumberRef)CFDictionaryGetValue(_touch_ids, touch), kCFNumberIntType, &touchId);
+		
+		poro::IPlatform::Instance()->GetTouch()->FireTouchMoveEvent(pos, touchId);
 		//std::cout << "Touch:" << pos.x << "," << pos.y << " index:" << index << std::endl; 
 		
 		++index;
@@ -200,12 +208,16 @@
 		
 		poro::types::vec2 pos = [self _convertMousePos:touchPoint.x:touchPoint.y];
 		
+		CFNumberRef touchId = CFNumberCreate( NULL, kCFNumberIntType, &_last_touch_id );
+		CFDictionarySetValue(_touch_ids, touch, touchId);
+		
 		if(index == 0)
 			poro::IPlatform::Instance()->GetMouse()->FireMouseDownEvent(pos,poro::Mouse::MOUSE_BUTTON_LEFT);
 		
-		poro::IPlatform::Instance()->GetTouch()->FireTouchDownEvent(pos,index);
+		poro::IPlatform::Instance()->GetTouch()->FireTouchDownEvent(pos, _last_touch_id);
 		//std::cout << "Touch:" << pos.x << "," << pos.y << " index:" << index << std::endl; 
 		
+		_last_touch_id++;
 		++index;
 	}
 }
@@ -220,7 +232,11 @@
 		if(index == 0)
 			poro::IPlatform::Instance()->GetMouse()->FireMouseUpEvent(pos,poro::Mouse::MOUSE_BUTTON_LEFT);
 		
-		poro::IPlatform::Instance()->GetTouch()->FireTouchUpEvent(pos,index);
+		int touchId;
+		CFNumberGetValue((CFNumberRef)CFDictionaryGetValue(_touch_ids, touch), kCFNumberIntType, &touchId);
+		CFDictionaryRemoveValue(_touch_ids, touch);
+		
+		poro::IPlatform::Instance()->GetTouch()->FireTouchUpEvent(pos, touchId);
 		
 		//std::cout << "Touch:" << pos.x << "," << pos.y << " index:" << index << std::endl; 
 		++index;

@@ -14,7 +14,7 @@ public:
 
 
 	bool Update( float dt );
-	// void Draw(poro::IGraphics* graphics, as::Transform t);
+	void Draw(poro::IGraphics* graphics, as::Transform t);
 	
 	CSprite* mySprite;
 	bool myDead;

@@ -30,6 +30,12 @@ CParticle* CParticleFactory::NewParticle( CSprite* sprite, float life_time, cons
 	return result;
 }
 
+CParticle* CParticleFactory::AddParticle( CParticle* particle )
+{	
+	myParticles.push_back( particle );
+	return particle;
+}
+
 void CParticleFactory::Update( float dt )
 {
 	
@@ -46,6 +52,16 @@ void CParticleFactory::Update( float dt )
 		{
 			++i;
 		}
+	}
+	
+}
+
+void CParticleFactory::Draw(poro::IGraphics* graphics, as::Transform t)
+{
+	
+	for( unsigned int i = 0; i < myParticles.size(); ++i)
+	{
+		myParticles[ i ]->Draw(graphics, t);
 	}
 	
 }
