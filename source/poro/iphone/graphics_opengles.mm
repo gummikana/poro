@@ -536,6 +536,66 @@ void GraphicsOpenGLES::DrawTextureWithAlpha( ITexture* itexture, types::vec2* ve
 	
 //=============================================================================
 
+void GraphicsOpenGLES::ResetWindow()
+{
+    //For i devices this should always be portret
+    CGSize viewport_size = [poro::iPhoneGlobals.glView bounds].size;
+    float viewport_width = viewport_size.width;
+	float viewport_height = viewport_size.height;
+	
+    float internal_width = poro::IPlatform::Instance()->GetInternalWidth();
+    float internal_height = poro::IPlatform::Instance()->GetInternalHeight();
+    
+    //We need to check if the internal orientation is landscape,
+    //if it is we need to flipp the coordinates to get a proper aspect ratio
+    int internalOrientation = poro::iPhoneGlobals.iPhoneWindow->GetInternalOrientation();
+    bool isInternalLandscape = (internalOrientation == poro::PlatformIPhone::DO_LANDSCAPE_LEFT) || (internalOrientation == poro::PlatformIPhone::DO_LANDSCAPE_RIGHT);
+	if(isInternalLandscape){
+        float tmp = internal_height;
+        internal_height = internal_width;
+        internal_width = tmp;
+    }
+    
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glViewport(0, 0, viewport_width, viewport_height);
+    glOrthof(0, viewport_width, viewport_height, 0, -1.f, 1.f);
+    
+    float aspect_width = viewport_width/internal_width;
+    float aspect_height = viewport_height/internal_height;
+    
+    switch ( poro::iPhoneGlobals.iPhoneWindow->GetDeviceOrientation() ) {
+		case poro::PlatformIPhone::DO_PORTRAIT:
+            std::cout << "Orientation set to PORTRAIT" << std::endl; 
+			glScalef(aspect_width,aspect_height,1.f);
+			break;
+		case poro::PlatformIPhone::DO_UPSIDEDOWN_PORTRAIT:
+			std::cout << "Orientation set to UPSIDEDOWN_PORTRAIT" << std::endl; 
+			glTranslatef(viewport_width,viewport_height,0);
+			glScalef(aspect_width,aspect_height,1.f);
+			glRotatef(180,0,0,1);
+			break;
+		case poro::PlatformIPhone::DO_LANDSCAPE_RIGHT:
+            std::cout << "Orientation set to LANDSCAPE_RIGHT" << std::endl; 
+			glTranslatef(viewport_width,0,0);
+			glScalef(aspect_width,aspect_height,1.f);
+			glRotatef(90,0,0,1);
+            break;
+		case poro::PlatformIPhone::DO_LANDSCAPE_LEFT:
+			std::cout << "Orientation set to LANDSCAPE_LEFT" << std::endl; 
+			glTranslatef(0,viewport_height,0);
+			glScalef(aspect_width,aspect_height,1.f);
+			glRotatef(-90,0,0,1);
+			break;
+	}
+}
+    
+void GraphicsOpenGLES::SetInternalSize( types::Float32 width, types::Float32 height ){
+    if(iPhoneGlobals.glView)
+        ResetWindow();
+}
+
+    
 void GraphicsOpenGLES::BeginRendering()
 {
 	[iPhoneGlobals.glView beginRendering];
@@ -629,15 +689,6 @@ void GraphicsOpenGLES::DrawFill( const std::vector< poro::types::vec2 >& vertice
 	
 }
 
-    void GraphicsOpenGLES::SetInternalSize( types::Float32 width, types::Float32 height ){
-        
-        
-        //glMatrixMode( GL_PROJECTION );
-        //glLoadIdentity();
-        //glOrthof(0,  width, height,  0,  -1.f,  1.f);
-    }
-
-    
 //=============================================================================
 
 IGraphicsBuffer* GraphicsOpenGLES::CreateGraphicsBuffer(int width, int height)

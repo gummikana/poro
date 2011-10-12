@@ -57,7 +57,9 @@ public:
 
 	virtual IGraphicsBuffer* CreateGraphicsBuffer(int width, int height);
 	virtual void DestroyGraphicsBuffer(IGraphicsBuffer* buffer);
-	 
+    
+    void ResetWindow();
+    
 };
 
 } // end o namespace poro

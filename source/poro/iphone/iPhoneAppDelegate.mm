@@ -83,6 +83,9 @@
 	// make the View Controller a child of the main window
 	[window addSubview:poro::iPhoneGlobals.viewController.view];
 	
+    poro::GraphicsOpenGLES* graphics = (poro::GraphicsOpenGLES*)poro::IPlatform::Instance()->GetGraphics();
+    graphics->ResetWindow();
+    
 	// make window active
 	[window makeKeyAndVisible];
 	
