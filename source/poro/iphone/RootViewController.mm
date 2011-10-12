@@ -34,7 +34,7 @@
 	
 	//glPushMatrix();
 	//mMatrixLoaded = true;
-	/*
+	
 	CGSize newSize = [poro::iPhoneGlobals.glView bounds].size;
 		
 	float w = newSize.width;
@@ -42,7 +42,22 @@
 	
 	bool isLandscape = (newOrientation == poro::PlatformIPhone::DO_LANDSCAPE_LEFT) || (newOrientation == poro::PlatformIPhone::DO_LANDSCAPE_RIGHT);
 	
-	glTranslatef(w/2,h/2,0);
+    
+    float hi = poro::IPlatform::Instance()->GetInternalHeight();
+    float wi = poro::IPlatform::Instance()->GetInternalWidth();
+    /*if(poro::iPhoneGlobals.iPhoneWindow->GetOrientationIsLandscape() != isLandscape){
+        //We need to change the platform aspects
+        float w = poro::IPlatform::Instance()->GetWidth();
+        float h = poro::IPlatform::Instance()->GetHeight();
+        poro::IPlatform::Instance()->SetWindowSize(h, w);
+        
+        float wi = poro::IPlatform::Instance()->GetInternalWidth();
+        float hi = poro::IPlatform::Instance()->GetInternalHeight();
+        poro::IPlatform::Instance()->SetInternalSize(hi, wi);
+        //poro::IPlatform::Instance()->SetInternalSize(hi, wi);
+    }*/
+        
+	/*glTranslatef(w/2,h/2,0);
 	
 	switch ( newOrientation ) {
 		case poro::PlatformIPhone::DO_PORTRAIT:
@@ -69,7 +84,8 @@
 		poro::iPhoneGlobals.iPhoneWindow->SetOrientationIsLandscape(false);
 	}
 	*/
-	poro::iPhoneGlobals.iPhoneWindow->SetDeviceOrientation( newOrientation );	
+	poro::iPhoneGlobals.iPhoneWindow->SetDeviceOrientation( newOrientation );
+    
 	[[UIApplication sharedApplication] setStatusBarOrientation: [self convertOrientationPoroToIOs: newOrientation] animated:NO];
 	
     /* glViewport(0, 0, w, h);
@@ -80,22 +96,24 @@
     //float h = 1024;
     //float w = 768;
     //glViewport(0, 0, w, h);
-    float hi = poro::IPlatform::Instance()->GetInternalHeight();
-    float wi = poro::IPlatform::Instance()->GetInternalWidth();
     glOrthof(0, wi, hi, 0, -1.f, 1.f);
     
     switch ( newOrientation ) {
 		case poro::PlatformIPhone::DO_PORTRAIT:
+            std::cout << "Orientation set to PORTRAIT" << std::endl; 
 			// nothing
 			break;
 		case poro::PlatformIPhone::DO_UPSIDEDOWN_PORTRAIT:
+			std::cout << "Orientation set to UPSIDEDOWN_PORTRAIT" << std::endl; 
 			glRotatef(180,0,0,1);
 			break;
 		case poro::PlatformIPhone::DO_LANDSCAPE_RIGHT:
-            glTranslatef(wi,0,0);
+            std::cout << "Orientation set to LANDSCAPE_RIGHT" << std::endl; 
+			glTranslatef(wi,0,0);
     		glRotatef(90,0,0,1);
 			break;
 		case poro::PlatformIPhone::DO_LANDSCAPE_LEFT:
+			std::cout << "Orientation set to LANDSCAPE_LEFT" << std::endl; 
 			glRotatef(-90,0,0,1);
 			break;
 	}

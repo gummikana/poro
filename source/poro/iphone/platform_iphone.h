@@ -82,6 +82,9 @@ namespace poro {
 		void SetDeviceOrientation( int orientation ) { mDeviceOrientation =orientation; }
 		int GetDeviceOrientation() const { return mDeviceOrientation; }
 		
+        virtual void SetWindowSize( int width, int height ) { mWidth=width; mHeight=height; }
+        
+        
 	protected:
 		GraphicsOpenGLES *mGraphics;
 		int mFrameCount;

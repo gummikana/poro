@@ -630,6 +630,8 @@ void GraphicsOpenGLES::DrawFill( const std::vector< poro::types::vec2 >& vertice
 }
 
     void GraphicsOpenGLES::SetInternalSize( types::Float32 width, types::Float32 height ){
+        
+        
         //glMatrixMode( GL_PROJECTION );
         //glLoadIdentity();
         //glOrthof(0,  width, height,  0,  -1.f,  1.f);
