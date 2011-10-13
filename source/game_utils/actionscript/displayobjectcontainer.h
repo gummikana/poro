@@ -25,7 +25,6 @@
 #include <list>
 #include <algorithm>
 
-// include cassert
 #include "../../utils/debug.h"
 
 #include "eventdispatcher.h"

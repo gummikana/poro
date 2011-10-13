@@ -24,7 +24,7 @@
 namespace as {
 //-----------------------------------------------------------------------------
 namespace impl  {
-
+namespace { 
 template< class T >
 struct VectorSerializer
 {
@@ -105,7 +105,21 @@ struct VectorBitSerializer
 
 	std::vector< T* >& array;
 };
+//-----------------------------------------------------------------------------
+} // end of anonymous namespace
+//=============================================================================
 
+void Marker::Serialize( ceng::CXmlFileSys* filesys )
+{
+	XML_BindAttributeAlias( filesys, name, "name" );
+	XML_BindAttributeAlias( filesys, frame, "frame" );
+}
+
+void Marker::BitSerialize( network_utils::ISerializer* serializer )
+{
+	serializer->IO( name );
+	serializer->IO( frame );
+}
 //=============================================================================
 
 void Part::Clear()
@@ -137,7 +151,6 @@ void Part::BitSerialize( network_utils::ISerializer* serializer )
 	if( serializer->IsLoading() )
 		SortByIndexes();
 }
-
 // -----------
 
 void Part::SortByIndexes()
@@ -169,6 +182,11 @@ void Part::SortByIndexes()
 
 void Animation::Clear()
 {
+	for( std::size_t i = 0; i < markers.size(); ++i )
+		delete markers[ i ];
+
+	markers.clear();
+
 	for( std::size_t i = 0; i < parts.size(); ++i )
 		delete parts[ i ];
 
@@ -182,8 +200,11 @@ void Animation::Serialize( ceng::CXmlFileSys* filesys )
 	XML_BindAttributeAlias( filesys, loopStartIndex, "loopAt" );
 	XML_BindAttributeAlias( filesys, mask, "mask" );
 
-	VectorSerializer< Part > serialize_helper( parts, "Part" );
-	serialize_helper.Serialize( filesys );
+	VectorSerializer< Marker > serialize_markers( markers, "Marker" );
+	serialize_markers.Serialize( filesys );
+
+	VectorSerializer< Part > serialize_parts( parts, "Part" );
+	serialize_parts.Serialize( filesys );
 }
 
 void Animation::BitSerialize( network_utils::ISerializer* serializer )
@@ -193,10 +214,25 @@ void Animation::BitSerialize( network_utils::ISerializer* serializer )
 	serializer->IO( loopStartIndex );
 	serializer->IO( mask );
 
-	VectorBitSerializer< Part > serialize_helper( parts, "Part" );
-	serialize_helper.BitSerialize( serializer );
-}
+	VectorBitSerializer< Marker > serialize_markers( markers, "Marker" );
+	serialize_markers.BitSerialize( serializer );
 
+	VectorBitSerializer< Part > serialize_parts( parts, "Part" );
+	serialize_parts.BitSerialize( serializer );
+} 
+
+Marker* Animation::FindMarkerForFrame( int frame )
+{
+	if( markers.empty() ) return NULL;
+
+	for( std::size_t i = 0; i < markers.size(); ++i ) 
+	{
+		cassert( markers[ i ] );
+		if( markers[ i ]->frame == frame ) return markers[ i ];
+	}
+
+	return NULL;
+}
 
 //=============================================================================
 } // end of namespace impl

@@ -32,6 +32,10 @@ namespace {
 }
 //-----------------------------------------------------------------------------
 
+ceng::CFunctionPtr<> AnimationUpdater::handle_markers_func;
+
+//-----------------------------------------------------------------------------
+
 void AnimationUpdater::SetFrame( int frame_i )
 {
 	cassert( animation );
@@ -80,8 +84,20 @@ void AnimationUpdater::SetFrame( int frame_i )
 				ApplyFrameTo( frame, sprite_part );
 			}
 		}
-
 	}
+
+	// Markers
+	impl::Marker* marker = animation->FindMarkerForFrame( frame_i );
+	if( marker ) 
+	{
+		// HACK HACK HACK for Jesus vs. Dinosaurs
+		// PlayEffect(""  );
+		// std::cout << "PlayEffect: " << marker->name << std::endl;
+		if( handle_markers_func.Empty() == false ) {
+			handle_markers_func( marker->name );
+		}
+	}
+
 }
 
 //-----------------------------------------------------------------------------
@@ -107,7 +123,8 @@ void AnimationUpdater::ApplyFrameTo( impl::Frame* frame, Sprite* sprite )
 SpriteAnimationUpdater::SpriteAnimationUpdater() : 
 	AnimationUpdater(),
 	mTimer( 0 ),
-	mFrameTimeDelta( AS_ANIMATION_DELTA_TIME )
+	mFrameTimeDelta( AS_ANIMATION_DELTA_TIME ),
+	mPrevFrame( -1 )
 {
 }
 
@@ -137,8 +154,24 @@ void SpriteAnimationUpdater::Update( float dt )
 		if( Math::round( frame ) >= animation->getTotalFrameCount() )
 			frame = (float)( animation->getTotalFrameCount() - 1 );
 	}
-	
-	SetFrame( Math::round( frame ) );
+
+	// SetFrame if different from the last frame
+	int i_frame = Math::round( frame );
+	if( mPrevFrame != i_frame )
+	{
+		SetFrame( i_frame );
+		mPrevFrame = i_frame;
+	}
+}
+
+bool SpriteAnimationUpdater::IsOver() const
+{
+	if( animation == NULL ) return true;
+
+	if( mPrevFrame >= animation->getTotalFrameCount() - 1 &&
+		animation->getLoops() == false ) return true;
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------
