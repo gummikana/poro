@@ -62,15 +62,26 @@ public:
 	
 	
 	
-	virtual int GetWidth() const	{ return mWidth * (1.f/mExternalScaleWidth); } 
-	virtual int GetHeight() const	{ return mHeight * (1.f/mExternalScaleHeight); }
+	virtual int GetWidth() const	{ 
+        //return mWidth * (1.f/mExternalScaleWidth); 
+        return (int)(((float)mWidth) / mExternalScaleWidth);
+    } 
+	virtual int GetHeight() const	{ 
+        //return mHeight * (1.f/mExternalScaleHeight); 
+        return (int)(((float)mHeight) / mExternalScaleHeight);
+    }
 
 	virtual void SetUVCoords( float x1, float y1, float x2, float y2 ) 
 	{
 		mUv[ 0 ] = x1 * ( (float)mWidth / (float)mRealSizeX );
-		mUv[ 1 ] = 1 - (y2 * ( (float)mHeight / (float)mRealSizeY ));
+		mUv[ 1 ] = y1 * ( (float)mHeight / (float)mRealSizeY );
 		mUv[ 2 ] = x2 * ( (float)mWidth / (float)mRealSizeX );
-		mUv[ 3 ] = 1 - (y1 * ( (float)mHeight / (float)mRealSizeY ));
+		mUv[ 3 ] = y2 * ( (float)mHeight / (float)mRealSizeY );
+		
+        /*mUv[ 0 ] = x1 * ( (float)mWidth / (float)mRealSizeX );
+        mUv[ 1 ] = 1 - (y2 * ( (float)mHeight / (float)mRealSizeY ));
+		mUv[ 2 ] = x2 * ( (float)mWidth / (float)mRealSizeX );
+		mUv[ 3 ] = 1 - (y1 * ( (float)mHeight / (float)mRealSizeY ));*/
 	}
 	
 	virtual void SetExternalSize(int width, int height){

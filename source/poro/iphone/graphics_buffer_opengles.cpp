@@ -104,38 +104,67 @@ void GraphicsBufferOpenGLES::Release()
 
 void GraphicsBufferOpenGLES::DrawTexture( ITexture* texture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color )
 {
-	//Internal size convertion.
+    //Internal size convertion.
 	float xPlatformScale = 1.f;
-	float yPlatformScale = 1.f;;
-	if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight()){	
-		xPlatformScale = poro::IPlatform::Instance()->GetWidth() / (float)poro::IPlatform::Instance()->GetInternalWidth();
-		yPlatformScale = poro::IPlatform::Instance()->GetHeight() / (float)poro::IPlatform::Instance()->GetInternalHeight();
-	}
-
-	bool flip_x = false;
+	float yPlatformScale = 1.f;
+    
+    //poro::PlatformIPhone* plat = (poro::PlatformIPhone*)poro::IPlatform()::Instance();
+    /*poro::PlatformIPhone* platformIPhone = dynamic_cast<poro::PlatformIPhone*>(poro::IPlatform::Instance());
+    int internalOrientation = platformIPhone->GetInternalOrientation();
+    bool isInternalLandscape = (internalOrientation == poro::PlatformIPhone::DO_LANDSCAPE_LEFT) || (internalOrientation == poro::PlatformIPhone::DO_LANDSCAPE_RIGHT);
+	
+    
+    if(isInternalLandscape){*/
+        float wh_aspect = (float)poro::IPlatform::Instance()->GetInternalWidth()/(float)poro::IPlatform::Instance()->GetInternalHeight();
+        float hw_aspect = (float)poro::IPlatform::Instance()->GetInternalHeight()/(float)poro::IPlatform::Instance()->GetInternalWidth();
+        xPlatformScale *= hw_aspect;
+        yPlatformScale *= wh_aspect;
+    /*} else {
+        float wh_aspect = (float)poro::IPlatform::Instance()->GetInternalWidth()/(float)poro::IPlatform::Instance()->GetInternalHeight();
+        float hw_aspect = (float)poro::IPlatform::Instance()->GetInternalHeight()/(float)poro::IPlatform::Instance()->GetInternalWidth();
+        yPlatformScale *= hw_aspect;
+        xPlatformScale *= wh_aspect;
+    }*/
+    
+    bool flip_x = false;
 	bool flip_y = false;
 	int orientation = ((poro::PlatformIPhone*)(poro::IPlatform::Instance()))->GetDeviceOrientation();
 	
-	if( orientation == poro::PlatformIPhone::DO_UPSIDEDOWN_PORTRAIT ) flip_y = true, flip_x = true;
-	else if( orientation == poro::PlatformIPhone::DO_LANDSCAPE_LEFT ) flip_x = true;
-	else if( orientation == poro::PlatformIPhone::DO_LANDSCAPE_RIGHT ) flip_y = true;
-	
+	if( orientation == poro::PlatformIPhone::DO_PORTRAIT ) {
+        flip_y = true;
+    } else if( orientation == poro::PlatformIPhone::DO_UPSIDEDOWN_PORTRAIT ) {
+        flip_x = true;
+    } else if( orientation == poro::PlatformIPhone::DO_LANDSCAPE_LEFT ) {
+    
+    } else if( orientation == poro::PlatformIPhone::DO_LANDSCAPE_RIGHT ) {
+        flip_y = true; flip_x = true;
+    }
+    
 	//Flip cords for buffer
 	for (int i=0; i<count; ++i) {
 		vertices[i].x *= mBufferScale.x * xPlatformScale;
 		vertices[i].y *= mBufferScale.y * yPlatformScale;
 		
 		if( flip_x )
-			vertices[i].x = poro::IPlatform::Instance()->GetWidth() - vertices[i].x;
+			vertices[i].x = poro::IPlatform::Instance()->GetInternalHeight() - vertices[i].x;
 
 		if( flip_y )
-			vertices[i].y = poro::IPlatform::Instance()->GetHeight() - vertices[i].y;
+			vertices[i].y = poro::IPlatform::Instance()->GetInternalWidth() - vertices[i].y;
 		
+        /*if( flip_x )
+			vertices[i].x = poro::IPlatform::Instance()->GetInternalWidth() - vertices[i].x;
+        
+		if( flip_y )
+			vertices[i].y = poro::IPlatform::Instance()->GetInternalHeight() - vertices[i].y;
+		*/
+        
 		if( poro::IPlatform::Instance()->GetOrientationIsLandscape() )
 			std::swap( vertices[i].x, vertices[i].y );
 		
-	}
+    }
+    
 	GraphicsOpenGLES::DrawTexture( texture, vertices, tex_coords, count, color );
+    
 }
     
 void GraphicsBufferOpenGLES::BeginRendering()
@@ -148,7 +177,7 @@ void GraphicsBufferOpenGLES::BeginRendering()
 	glBindFramebufferOES(GL_FRAMEBUFFER_OES, mBufferId);
 	
     glViewport(0,0,mTexture.GetWidth(),mTexture.GetHeight());
-
+    
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
