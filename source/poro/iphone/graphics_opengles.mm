@@ -200,6 +200,8 @@ namespace {
 			
 			data = new unsigned char[GetNextPowerOfTwo(width)*GetNextPowerOfTwo(height)*byteCount];
 			
+			FreeImage_FlipVertical(bmp);
+			
 			if(OPENGL_SETTINGS.textures_fix_alpha_channel)
 			{
 				FreeImage_PreMultiplyWithAlpha(bmp);
@@ -212,6 +214,9 @@ namespace {
 			width = height = bpp = 0;
 		}
 		
+        //CGContextTranslateCTM (context, 0, height);
+        //CGContextScaleCTM (context, 1.0, -1.0);        
+        
 		if (bmp != NULL){
 			FreeImage_Unload(bmp);
 		}
@@ -427,10 +432,13 @@ void GraphicsOpenGLES::DrawTexture( ITexture* itexture, types::vec2* vertices, t
 	
 	// Internal size convertion.
 	float xPlatformScale = 1.f, yPlatformScale = 1.f;
-	/*if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight()){	
+	/*
+    if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight())
+    {	
 		xPlatformScale = poro::IPlatform::Instance()->GetWidth() / (float)poro::IPlatform::Instance()->GetInternalWidth();
 		yPlatformScale = poro::IPlatform::Instance()->GetHeight() / (float)poro::IPlatform::Instance()->GetInternalHeight();
-	}*/
+	}
+    */
     
 	poro_assert( count > 2 );
 	poro_assert( count <= 8 );
@@ -450,7 +458,7 @@ void GraphicsOpenGLES::DrawTexture( ITexture* itexture, types::vec2* vertices, t
 		temp_tex_coord.y = tex_coords[ i ].y * texture->mExternalScaleHeight;
         
         //Flip texture cords for iphone
-		temp_tex_coord.y = texture->mHeight - temp_tex_coord.y;
+		//temp_tex_coord.y = texture->mHeight - temp_tex_coord.y;
 	
         //Internal size convertion.
 		temp_vertex.x = vertices[i].x * xPlatformScale;
@@ -463,8 +471,8 @@ void GraphicsOpenGLES::DrawTexture( ITexture* itexture, types::vec2* vertices, t
 		glTexCords[i*2+1] = texture->mUv[ 1 ] + ( temp_tex_coord.y * y_text_conv );
 	}
     
-	
 	drawsprite( texture, glTexCords, glVertices, color, count, GetGLVertexMode(mVertexMode) );
+    
 }
 
 	
@@ -514,8 +522,8 @@ void GraphicsOpenGLES::DrawTextureWithAlpha( ITexture* itexture, types::vec2* ve
 		temp_alpha_tex_coord.y = alpha_tex_coords[ i ].y * alpha_texture->mExternalScaleHeight; 
 
         //Flip texture cords for iphone
-		temp_tex_coord.y = texture->mHeight - temp_tex_coord.y;
-		temp_alpha_tex_coord.y = alpha_texture->mHeight - temp_alpha_tex_coord.y;
+		//temp_tex_coord.y = texture->mHeight - temp_tex_coord.y;
+		//temp_alpha_tex_coord.y = alpha_texture->mHeight - temp_alpha_tex_coord.y;
 	
         // scale for platform
         temp_vertex.x = vertices[i].x * xPlatformScale;
@@ -532,6 +540,7 @@ void GraphicsOpenGLES::DrawTextureWithAlpha( ITexture* itexture, types::vec2* ve
 	}
 	
 	drawsprite_withalpha( texture, glTexCords, glVertices, color, count, alpha_texture, glAlphaTexCords, glVertices, alpha_color, GetGLVertexMode(mVertexMode) );
+    
 }
 	
 //=============================================================================
@@ -607,7 +616,7 @@ void GraphicsOpenGLES::BeginRendering()
 				 mFillColor[ 3 ] );
 	
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-	
+    
 }
 
 void GraphicsOpenGLES::EndRendering()

@@ -39,7 +39,9 @@ public:
 	// IGraphicsBuffer
 	virtual ITexture*	GetTexture() { return &mTexture; }
 
-	virtual void		SetGraphicsBufferScale( float x, float y ) { mBufferScale.x = x; mBufferScale.y = y; }
+	virtual void		SetGraphicsBufferScale( float x, float y ) {
+        mBufferScale.x = x; mBufferScale.y = y;
+    }
 	
 	// IGraphics
 	virtual bool		Init( int width, int height, bool fullscreen = false, const types::string& caption = "" );

@@ -144,8 +144,7 @@
 
     float aspect_x = poro::IPlatform::Instance()->GetInternalWidth() / (poro::types::Float32)poro::IPlatform::Instance()->GetWidth();
     float aspect_y = poro::IPlatform::Instance()->GetInternalHeight() / (poro::types::Float32)poro::IPlatform::Instance()->GetHeight();
-	    
-    
+	
 	// Even more flipping for rotated states, portrait does without since it's the "default" state
 	bool isLandscape=false;
     switch(poro::iPhoneGlobals.iPhoneWindow->GetDeviceOrientation()){
