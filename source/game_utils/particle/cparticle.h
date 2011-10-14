@@ -1,10 +1,13 @@
 #ifndef INC_CPARTICLES_H
 #define INC_CPARTICLES_H
 
+#include <vector>
+
 #include "../../types.h"
 #include "../actionscript/sprite.h"
 
 typedef as::Sprite CSprite;
+class IParticleHack;
 
 class CParticle
 {
@@ -30,7 +33,22 @@ public:
 	float myVelocitySlowDown;
 	bool myPaused;
 	bool myUseVelocityAsRotation;
+	
 
+	std::vector< IParticleHack* > myParticleHacks;
 };
+
+//-----------------------------------------------------------------------------
+
+class IParticleHack
+{
+public:
+	virtual ~IParticleHack() { }
+
+	virtual bool FreeMe() const { return false; }
+	virtual void Update( CParticle* particle, float dt ) { }
+};
+
+//-----------------------------------------------------------------------------
 
 #endif

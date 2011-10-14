@@ -13,7 +13,8 @@ CParticle::CParticle( CSprite* sprite ) :
 	myVelocitySlowDown( 0 ),
 	myReleaseSprite( true ),
 	myPaused(false),
-	myUseVelocityAsRotation( false )
+	myUseVelocityAsRotation( false ),
+	myParticleHacks() 
 {
 	for( int i = 0; i < 4; ++i )
 		myColorChanges[ i ] = 0;
@@ -24,6 +25,13 @@ CParticle::~CParticle()
 {
 	if( myReleaseSprite )
 		delete mySprite;
+
+	for( std::size_t i = 0; i < myParticleHacks.size(); ++i )
+	{
+		cassert( myParticleHacks[ i ] );
+		if( myParticleHacks[ i ]->FreeMe() ) 
+			delete myParticleHacks[ i ];
+	}
 }
 
 
@@ -66,6 +74,12 @@ bool CParticle::Update( float dt )
 
 	myVelocity += myGravity * dt;
 	myVelocity -= myVelocity * myVelocitySlowDown * dt;
+
+	for( std::size_t i = 0; i < myParticleHacks.size(); ++i ) 
+	{
+		cassert( myParticleHacks[ i ] );
+		myParticleHacks[ i ]->Update( this, dt );
+	}
 
 	return true;
 }
