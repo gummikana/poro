@@ -238,8 +238,12 @@ namespace {
 		return texture;
 	}
 	
+    //static int mDrawCounter=0;
+    
 	void drawsprite( TextureOpenGLES* texture, GLfloat* glTexCoords, GLfloat* glVertices, const types::fcolor& color, int count, Uint32 vertex_mode )
 	{
+        //mDrawCounter++;
+        
         // std::cout << "CAlling normal draw sprite" << std::endl;
 		glBindTexture(GL_TEXTURE_2D, texture->mTextureId);
 		glEnable(GL_TEXTURE_2D);
@@ -266,6 +270,8 @@ namespace {
 	void drawsprite_withalpha( TextureOpenGLES* texture,  GLfloat* glTexCoords, GLfloat* glVertices, const types::fcolor& color, int count,
 							  TextureOpenGLES* alpha_texture, GLfloat* alpha_glTexCoords, GLfloat* alpha_glVertices, const types::fcolor& alpha_color, Uint32 vertex_mode )
 	{
+        //mDrawCounter++;
+        
         // std::cout << "CAlling drawsprite_withalpha" << std::endl;
 		// Specify texture cords
 		glClientActiveTexture(GL_TEXTURE0);
@@ -431,7 +437,7 @@ void GraphicsOpenGLES::DrawTexture( ITexture* itexture, types::vec2* vertices, t
 	TextureOpenGLES* texture = (TextureOpenGLES*)itexture;
 	
 	// Internal size convertion.
-	float xPlatformScale = 1.f, yPlatformScale = 1.f;
+	//float xPlatformScale = 1.f, yPlatformScale = 1.f;
 	/*
     if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight())
     {	
@@ -443,32 +449,32 @@ void GraphicsOpenGLES::DrawTexture( ITexture* itexture, types::vec2* vertices, t
 	poro_assert( count > 2 );
 	poro_assert( count <= 8 );
     
-	static types::vec2 temp_tex_coord;
-    static types::vec2 temp_vertex;
+	//static types::vec2 temp_tex_coord;
+    //static types::vec2 temp_vertex;
     
     static GLfloat glVertices[16];
 	static GLfloat glTexCords[16];
 	
-	const float x_text_conv = ( 1.f / texture->mWidth ) * ( texture->mUv[ 2 ] - texture->mUv[ 0 ] );
-	const float y_text_conv = ( 1.f / texture->mHeight ) * ( texture->mUv[ 3 ] - texture->mUv[ 1 ] );
+	const float x_text_conv = ( 1.f / texture->mWidth ) * ( texture->mUv[ 2 ] - texture->mUv[ 0 ] ) * texture->mExternalScaleWidth;
+	const float y_text_conv = ( 1.f / texture->mHeight ) * ( texture->mUv[ 3 ] - texture->mUv[ 1 ] ) * texture->mExternalScaleHeight;
     
 	for( int i = 0; i < count; ++i )
 	{
-		temp_tex_coord.x = tex_coords[ i ].x * texture->mExternalScaleWidth;
-		temp_tex_coord.y = tex_coords[ i ].y * texture->mExternalScaleHeight;
+		//temp_tex_coord.x = tex_coords[ i ].x * texture->mExternalScaleWidth;
+		//temp_tex_coord.y = tex_coords[ i ].y * texture->mExternalScaleHeight;
         
         //Flip texture cords for iphone
 		//temp_tex_coord.y = texture->mHeight - temp_tex_coord.y;
 	
         //Internal size convertion.
-		temp_vertex.x = vertices[i].x * xPlatformScale;
-		temp_vertex.y = vertices[i].y * yPlatformScale;
+		//temp_vertex.x = vertices[i].x * xPlatformScale;
+		//temp_vertex.y = vertices[i].y * yPlatformScale;
 
 		// set gl vertices
-        glVertices[i*2] = temp_vertex.x;
-		glVertices[i*2+1] = temp_vertex.y;
-		glTexCords[i*2] = texture->mUv[ 0 ] + ( temp_tex_coord.x * x_text_conv );
-		glTexCords[i*2+1] = texture->mUv[ 1 ] + ( temp_tex_coord.y * y_text_conv );
+        glVertices[i*2] = vertices[i].x;
+		glVertices[i*2+1] = vertices[i].y;
+		glTexCords[i*2] = texture->mUv[ 0 ] + ( tex_coords[ i ].x * x_text_conv );
+		glTexCords[i*2+1] = texture->mUv[ 1 ] + ( tex_coords[ i ].y * y_text_conv );
 	}
     
 	drawsprite( texture, glTexCords, glVertices, color, count, GetGLVertexMode(mVertexMode) );
@@ -607,7 +613,8 @@ void GraphicsOpenGLES::SetInternalSize( types::Float32 width, types::Float32 hei
     
 void GraphicsOpenGLES::BeginRendering()
 {
-	[iPhoneGlobals.glView beginRendering];
+	//mDrawCounter=0;
+    [iPhoneGlobals.glView beginRendering];
 	
 	//clear screen
 	glClearColor( mFillColor[ 0 ],
@@ -621,10 +628,16 @@ void GraphicsOpenGLES::BeginRendering()
 
 void GraphicsOpenGLES::EndRendering()
 {
-	[iPhoneGlobals.glView endRendering];
+	//static int interval = 0;
+    //interval++;
+    //if(interval>10){
+    //    interval=0;
+    //    std::cout << "DrawCalls:" << mDrawCounter << std::endl;
+    //}
+    
+    [iPhoneGlobals.glView endRendering];
 }
-	
-
+ 
 void GraphicsOpenGLES::DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color )
 {
 	
