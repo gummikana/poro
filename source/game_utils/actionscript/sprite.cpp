@@ -368,7 +368,7 @@ bool Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 			mColor[ 1 ] * tcolor[ 1 ], 
 			mColor[ 2 ] * tcolor[ 2 ], 
 			mColor[ 3 ] * tcolor[ 3 ] );
-	
+
 		if( graphics ) 
 		{
 
