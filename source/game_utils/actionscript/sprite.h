@@ -118,7 +118,7 @@ public:
 	virtual bool Draw( poro::IGraphics* graphics, types::camera* camera, Transform& transform );
 protected:
 	virtual bool DrawChildren( poro::IGraphics* graphics, types::camera* camera, Transform& transform );
-	virtual bool DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const types::xform& matrix );
+	virtual bool DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const Transform& transform );
 
 public:
 
@@ -216,36 +216,65 @@ protected:
 
 struct Transform
 {
+	struct TransformHelper
+	{
+		TransformHelper() : color( 4 ), xform() { color[ 0 ] = 1.f; color[ 1 ] = 1.f; color[ 2 ] = 1.f; color[ 3 ] = 1.f; xform.SetIdentity(); }
+
+		std::vector< float >		color;
+		types::xform				xform;
+	};
+
 	Transform() 
 	{ 
-		mXForm.SetIdentity();
 	}
 	
-	void PushXFormButDontMultiply( const types::xform& xform )
+	void PushXFormButDontMultiply( const types::xform& xform,  const std::vector< float >& color )
 	{
-		mXFormQueue.push_front( mXForm );
-		mXForm = xform;
+		mQueue.push_front( mTop );
+		mTop.xform = xform;
+		mTop.color = color;
 	}
 
-	void PushXForm( const types::xform& xform )
+	void PushXForm( const types::xform& xform, const std::vector< float >& color )
 	{
-		mXFormQueue.push_front( mXForm );
-		mXForm = ceng::math::Mul( mXForm, xform );
+		mQueue.push_front( mTop );
+		mTop.xform = ceng::math::Mul( mTop.xform, xform );
+		mTop.color = MulColor( mTop.color, color );
 	}
 
 	void PopXForm()
 	{
-		if( mXFormQueue.empty() == false )
+		if( mQueue.empty() == false )
 		{
-			mXForm = mXFormQueue.front();
-			mXFormQueue.pop_front();
+			mTop = mQueue.front();
+			mQueue.pop_front();
 		}
 	}
 
-	const types::xform& GetXForm() const { return mXForm; }
+	std::vector< float > MulColor( const std::vector< float >& c1, const std::vector< float >& c2 ) 
+	{
+		std::vector< float > result( 4 );
+		cassert( c1.size() == 4 );
+		cassert( c2.size() == 4 );
 
+		for( std::size_t i = 0; i < result.size(); ++i )
+			result[ i ] = c1[ i ] * c2[ i ];
+
+		return result;
+	}
+
+	types::xform&					GetXForm()	{ return mTop.xform; }
+	const types::xform&				GetXForm() const { return mTop.xform; }
+	const std::vector< float >&		GetColor() const { return mTop.color; }
+
+	/*
 	types::xform mXForm;
 	std::list< types::xform > mXFormQueue;
+	*/
+
+	TransformHelper mTop;
+	std::list< TransformHelper > mQueue;
+	
 };
 
 //-----------------------------------------------------------------------------

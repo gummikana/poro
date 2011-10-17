@@ -255,13 +255,15 @@ bool Sprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& 
 		{
 			// the alpha mask is the child of the mask of the other
 			types::xform orign;
-			transform.PushXFormButDontMultiply( orign );
+			std::vector< float > orig_color( 4 );
+			for( int i = 0; i < 4; ++i ) orig_color[ i ] = 1.f;
+			transform.PushXFormButDontMultiply( orign, orig_color );
 			types::xform x = ceng::math::Mul( GetXForm(), mAlphaMask->GetXForm() );
 			
 			types::xform o;
 			x = ceng::math::MulT( x, o );
 			x.position += mAlphaMask->GetCenterOffset(); 
-			transform.PushXForm( x );	
+			transform.PushXForm( x, orig_color );	
 
 
 			alpha_buffer->BeginRendering();
@@ -273,7 +275,7 @@ bool Sprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& 
 	types::rect draw_rect( 0, 0, mSize.x, mSize.y );
 	if( mRect ) draw_rect = *mRect;
 
-	DrawRect( draw_rect, graphics, camera, transform.GetXForm() ); 
+	DrawRect( draw_rect, graphics, camera, transform ); 
 	
 	// draw all children
 	DrawChildren( graphics, camera, transform );
@@ -290,7 +292,7 @@ bool Sprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& 
 	
 	if( mAlphaMask )
 	{
-		transform.PushXForm( mXForm );
+		transform.PushXForm( mXForm, mColor );
 		mAlphaMask->Draw( graphics, camera, transform );
 		transform.PopXForm();
 	}
@@ -305,7 +307,7 @@ bool Sprite::DrawChildren( poro::IGraphics* graphics, types::camera* camera, Tra
 	if( mChildren.empty() )
 		return true;
 
-	transform.PushXForm( mXForm );
+	transform.PushXForm( mXForm, mColor );
 
 	std::list< DisplayObjectContainer* >::iterator i;
 	Sprite* current = NULL;
@@ -346,7 +348,7 @@ bool Sprite::DrawChildren( poro::IGraphics* graphics, types::camera* camera, Tra
 
 //-----------------------------------------------------------------------------
 
-bool Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const types::xform& matrix )
+bool Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const Transform& transform )
 {
 	if( mTexture == NULL && mAlphaBuffer == NULL )
 		return false;
@@ -357,9 +359,15 @@ bool Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 
 	if( true  )
 	{
+		const types::xform& matrix = transform.GetXForm();
+		const std::vector< float >& tcolor = transform.GetColor();
 
 		types::rect dest_rect(rect.x, rect.y, rect.w, rect.h );
-		poro::types::fcolor color_me = poro::GetFColor( mColor[ 0 ], mColor[ 1 ], mColor[ 2 ], mColor[ 3 ] );
+		poro::types::fcolor color_me = poro::GetFColor( 
+			mColor[ 0 ] * tcolor[ 0 ], 
+			mColor[ 1 ] * tcolor[ 1 ], 
+			mColor[ 2 ] * tcolor[ 2 ], 
+			mColor[ 3 ] * tcolor[ 3 ] );
 	
 		if( graphics ) 
 		{
