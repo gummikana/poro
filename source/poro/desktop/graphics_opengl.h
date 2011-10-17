@@ -22,6 +22,7 @@
 #define INC_GRAPHICS_OPENGL_H
 
 #include "../poro_types.h"
+#include "../../types.h"
 #include "../igraphics.h"
 
 
@@ -84,6 +85,7 @@ public:
 	
 	virtual void		DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth, float width, bool loop );
 	virtual void		DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color );
+	virtual void		DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture );
 	
 	virtual IGraphicsBuffer* CreateGraphicsBuffer(int width, int height);
 	virtual void DestroyGraphicsBuffer(IGraphicsBuffer* buffer);

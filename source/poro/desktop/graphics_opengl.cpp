@@ -883,6 +883,50 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 	glDisable(GL_BLEND);
 }
 
+void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture )
+{
+	if( itexture == NULL )
+		return;
+
+	TextureOpenGL* texture = (TextureOpenGL*)itexture;
+
+	static types::vec2 vertices[ 4 ];
+	vertices[ 0 ].x = (float) position.x;
+	vertices[ 0 ].y = (float) position.y;
+	vertices[ 1 ].x = (float) position.x;
+	vertices[ 1 ].y = (float) (position.y + size.y);
+	vertices[ 2 ].x = (float) (position.x + size.x);
+	vertices[ 2 ].y = (float) position.y;
+	vertices[ 3 ].x = (float) (position.x + size.x);
+	vertices[ 3 ].y = (float) (position.y + size.y);
+
+	Uint32 tex = texture->mTexture;
+
+	glBindTexture(GL_TEXTURE_2D, tex);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBegin( GL_TRIANGLE_STRIP );
+
+	for( int i = 0; i < 4; i++)
+	{
+		glTexCoord2f(vertices[ i ].x / texture->GetWidth(), vertices[ i ].y / texture->GetHeight() );
+		glVertex2f(vertices[ i ].x, vertices[ i ].y );
+	}
+	
+	glEnd();
+	glDisable(GL_BLEND);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	glDisable(GL_TEXTURE_2D);
+}
+
 //=============================================================================
 
 types::vec2	GraphicsOpenGL::ConvertToInternalPos( int x, int y ) 
