@@ -59,6 +59,30 @@ GTween* GTweenValueTo( T& variable, const T& target, float time = 1.f, ceng::eas
 // will delete the sprite at the time
 GTween* KillSpriteSlowly( as::Sprite* sprite, float time );
 
+//=============================================================================
+
+template< typename T >
+class GTweenSlowValueSetter : public GTween
+{
+public:
+	GTweenSlowValueSetter( T& variable, const T& target, float duration ) : GTween( duration, true ), mVariableRef( variable ), mTargetValue( target ) { }
+
+	~GTweenSlowValueSetter()
+	{
+		mVariableRef = mTargetValue;
+	}
+
+	T&	mVariableRef;
+	T	mTargetValue;
+};
+
+// 
+template< typename T >
+GTween* GTweenSetValueAfterDelay(  T& variable, const T& target, float time = 1.f )
+{
+	return new GTweenSlowValueSetter< T >( variable, target, time );
+}
+
 //-----------------------------------------------------------------------------
 
 

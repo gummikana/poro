@@ -578,7 +578,7 @@ void Sprite::SetAnimationFrame(int frame)
 
 types::vector2 Sprite::GetScreenPosition() const
 {
-	return MultiplyByParentXForm( types::vector2( 0, 0 ) );
+	// return MultiplyByParentXForm( types::vector2( 0, 0 ) );
 
 	types::vector2 result( 0, 0 );
 	std::vector< const DisplayObjectContainer* > parents;
@@ -590,17 +590,13 @@ types::vector2 Sprite::GetScreenPosition() const
 		cassert( parents[ i ] );
 		const Sprite* parent = dynamic_cast< const Sprite* >( parents[ i ] );
 		if( parent )
-			xform = ceng::math::Mul( parent->GetXForm(), xform );
+			xform = ceng::math::Mul( xform, parent->GetXForm() );
 	}
-	// return MultiplyByParentXForm( types::vector2( 0, 0 ) );
 
-	// result = xform.position + this->GetPos();
-	// result = ceng::math::Mul( xform, result );
+	poro::types::vec2 temp( GetPos().x, GetPos().y );
+	temp = ceng::math::Mul( xform, temp );
 
-	// return xform.position;
-	return ceng::math::Mul( xform, GetPos() );
-
-	return result;
+	return types::vector2( temp.x, temp.y );
 }
 
 //--------------
