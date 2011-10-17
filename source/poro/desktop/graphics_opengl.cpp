@@ -909,6 +909,7 @@ void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const 
 
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);
+	glColor4f(1, 1, 1, 1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glBegin( GL_TRIANGLE_STRIP );
 
