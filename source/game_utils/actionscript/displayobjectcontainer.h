@@ -141,6 +141,11 @@ public:
 	*/
 	bool contains( DisplayObjectContainer* child );
 
+
+	// goes up the tree for as long it can, adding each parent to the end of the array
+	// so the highest parent is the last in the array
+	void getParentTree( std::vector< const DisplayObjectContainer* >& parents_tree ) const;
+
 protected:
 
 	virtual void RemoveAllChildren()

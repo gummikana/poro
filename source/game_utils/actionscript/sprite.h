@@ -175,7 +175,14 @@ public:
 	bool IsAnimationPlaying() const;
 	void SetAnimationFrame( int frame );
 
+	//-------------------------------------------------------------------------
+
+	types::vector2 GetScreenPosition() const;
+
 protected:
+
+	types::vector2 MultiplyByParentXForm( const types::vector2& p ) const;
+	
 
 	poro::IGraphicsBuffer*		GetAlphaBuffer( poro::IGraphics* graphics );
 

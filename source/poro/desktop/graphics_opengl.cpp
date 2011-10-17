@@ -852,6 +852,10 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 	float xPlatformScale, yPlatformScale;
 	xPlatformScale = (float)mViewportSize.x / (float)poro::IPlatform::Instance()->GetInternalWidth();
 	yPlatformScale = (float)mViewportSize.y / (float)poro::IPlatform::Instance()->GetInternalHeight();
+
+	xPlatformScale = 1.f;
+	yPlatformScale = 1.f;
+
 	
 	const int max_buffer_size = 256;
 	static GLfloat glVertices[ max_buffer_size ];
@@ -863,14 +867,20 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 		glVertices[++o] = vertices[i].x*xPlatformScale;
 		glVertices[++o] = vertices[i].y*yPlatformScale;
 	}
-	
+
+	glEnable(GL_BLEND);
 	glColor4f(color[0], color[1], color[2], color[3]);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	glPushMatrix();
 		glVertexPointer(2, GL_FLOAT , 0, glVertices);
 		glEnableClientState(GL_VERTEX_ARRAY);
-		glDrawArrays (GL_TRIANGLE_STRIP, 0, vertCount);
+		// glDrawArrays(GL_TRIANGLE_STRIP, 0, vertCount);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, vertCount);
 		glDisableClientState(GL_VERTEX_ARRAY);
 	glPopMatrix();
+
+	glDisable(GL_BLEND);
 }
 
 void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture )
