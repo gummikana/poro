@@ -574,5 +574,47 @@ void Sprite::SetAnimationFrame(int frame)
 	if(mAnimationUpdater.get()) mAnimationUpdater->SetFrame( frame );
 	if(mRectAnimation.get()) mRectAnimation->SetFrame( this, frame );
 }
+//-----------------------------------------------------------------------------
+
+types::vector2 Sprite::GetScreenPosition() const
+{
+	return MultiplyByParentXForm( types::vector2( 0, 0 ) );
+
+	types::vector2 result( 0, 0 );
+	std::vector< const DisplayObjectContainer* > parents;
+	getParentTree( parents );
+
+	types::xform xform;
+	for( int i = (int)parents.size() - 1; i > 0; --i )
+	{
+		cassert( parents[ i ] );
+		const Sprite* parent = dynamic_cast< const Sprite* >( parents[ i ] );
+		if( parent )
+			xform = ceng::math::Mul( parent->GetXForm(), xform );
+	}
+	// return MultiplyByParentXForm( types::vector2( 0, 0 ) );
+
+	// result = xform.position + this->GetPos();
+	// result = ceng::math::Mul( xform, result );
+
+	// return xform.position;
+	return ceng::math::Mul( xform, GetPos() );
+
+	return result;
+}
+
+//--------------
+
+types::vector2 Sprite::MultiplyByParentXForm( const types::vector2& p ) const
+{
+	types::vector2 result = ceng::math::Mul( GetXForm(), p );
+	
+	Sprite* parent = dynamic_cast< Sprite* >( getParent() );
+
+	if( parent == NULL ) 
+		return result;
+	else 
+		return parent->MultiplyByParentXForm( result );
+}
 
 } // end of namespace as
