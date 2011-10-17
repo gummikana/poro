@@ -42,6 +42,7 @@
 #import <OpenGLES/EAGL.h>
 #import <OpenGLES/ES1/gl.h>
 #import <OpenGLES/ES1/glext.h>
+#import <CoreFoundation/CoreFoundation.h>
 
 // This class wraps the CAEAGLLayer from CoreAnimation into a convenient UIView subclass.
 // The view content is basically an EAGL surface you render your OpenGL scene into.
@@ -53,8 +54,9 @@
 	GLuint					_framebuffer;
 	GLuint					_renderbuffer;
 	CGSize					_size;
-	
-    NSMutableDictionary		*activeTouches;
+		
+    CFMutableDictionaryRef	_touch_ids;
+	int						_last_touch_id;
 }
 
 -(void) beginRendering;
