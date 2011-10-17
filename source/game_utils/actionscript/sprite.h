@@ -122,7 +122,7 @@ protected:
 
 public:
 
-	void Update( float dt );
+	virtual void Update( float dt );
 	
 	void Clear();
 
