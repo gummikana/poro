@@ -58,7 +58,9 @@ bool CParticle::Update( float dt )
 	if( myTimeNow >= myLifeTime )
 		myDead = true;
 		
-
+	if( mySprite == NULL )
+		return false;
+		
 	std::vector< float > color = mySprite->GetColor();
 	for( int i = 0; i < 4; ++i )
 		color[ i ] = ceng::math::Clamp( color[ i ] + myColorChanges[ i ] * dt, 0.f, 1.f );
@@ -82,4 +84,11 @@ bool CParticle::Update( float dt )
 	}
 
 	return true;
+	
+	return true;
+}
+
+void CParticle::Draw(poro::IGraphics* graphics, as::Transform t)
+{
+	if(!myDead && myDelay <= 0) as::DrawSprite( mySprite, graphics, NULL, t );
 }
