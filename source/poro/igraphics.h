@@ -27,6 +27,7 @@
 #include "poro_types.h"
 #include "poro_macros.h"
 #include "itexture.h"
+#include "../types.h"
 
 namespace poro {
 
@@ -130,6 +131,7 @@ public:
 	virtual void		DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth, float width, bool loop = false ) { }
 	virtual void		DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) { DrawLines( vertices, color, false, 1.f, true ); }
 	virtual void		DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) { }
+	virtual void		DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture ) { }
 
 	//-------------------------------------------------------------------------
 
