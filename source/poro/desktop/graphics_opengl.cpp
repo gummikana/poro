@@ -313,8 +313,8 @@ namespace {
 		if( w < 2 || h < 2)
 			return;
 		
-		Sint32 x, y;
-		Sint32 co = 0;
+		types::Int32 x, y;
+		types::Int32 co = 0;
 
 		for (y = 0; y < h; ++y)
 		{
@@ -325,13 +325,13 @@ namespace {
 				if ((pixels[co + 3]) == 0)
 				{
 					// iterate through 3x3 window around pixel
-					Sint32 left = x - 1, right = x + 1, top = y - 1, bottom = y + 1;
+					types::Int32 left = x - 1, right = x + 1, top = y - 1, bottom = y + 1;
 					if( left < 0 ) left = 0;
 					if( right >= w ) right = w - 1;
 					if( top < 0 ) top = 0;
 					if( bottom >= h ) bottom = h - 1;
-					Sint32 x2, y2, colors = 0, co2 = top * w + left;
-					Sint32 red = 0, green = 0, blue = 0;
+					types::Int32 x2, y2, colors = 0, co2 = top * w + left;
+					types::Int32 red = 0, green = 0, blue = 0;
 					for(y2 = top; y2 <= bottom; ++y2)
 					{
 						for(x2 = left; x2 <= right; ++x2)

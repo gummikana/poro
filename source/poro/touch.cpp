@@ -19,9 +19,9 @@
  ***************************************************************************/
 
 #include "touch.h"
-#include "poro_macros.h"
 #include <iostream>
 #include <algorithm>
+#include "poro_macros.h"
 
 using namespace poro;
 
@@ -57,6 +57,8 @@ void Touch::FireTouchDownEvent(const types::vec2& pos, int touchId)
 	{
 		mTouchListeners[i]->TouchDown(pos, touchId);
 	}
+
+	SetTouchDown( touchId, true );
 }
 
 void Touch::FireTouchUpEvent(const types::vec2& pos, int touchId)
@@ -65,4 +67,18 @@ void Touch::FireTouchUpEvent(const types::vec2& pos, int touchId)
 	{
 		mTouchListeners[i]->TouchUp(pos, touchId);
 	}
+
+	SetTouchDown( touchId, false );
+}
+
+bool Touch::IsTouchIdDown( int touchId ) const
+{
+	std::map< int, bool >::const_iterator i = mTouchDowns.find( touchId );
+	if( i == mTouchDowns.end() ) return false;
+	return i->second;
+}
+
+void Touch::SetTouchDown( int touchId, bool down )
+{
+	mTouchDowns[ touchId ] = down;
 }

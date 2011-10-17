@@ -47,6 +47,8 @@ using namespace poro::types;
 namespace poro {
 	
 namespace {
+
+	GraphicsSettings OPENGL_SETTINGS;
 	
 	Uint32 GetGLVertexMode(int vertex_mode){
 		switch (vertex_mode) {
@@ -73,15 +75,14 @@ namespace {
 	
 	TextureOpenGLES * CreateTexture( unsigned char *data, int width, int height, GLint pixelFormat)
 	{
-		// disables POT scaling for the ipad to make it look better. 
-		// TODO throw this out before release
-		#ifdef GLORG_HD 
-			int widthPow2 = width;
-			int heightPow2 = height;
-		#else
-			int widthPow2 = GetNextPowerOfTwo(width);
-			int heightPow2 = GetNextPowerOfTwo(height);
-		#endif
+		int widthPow2 = width;
+		int heightPow2 = height;
+		
+		if(OPENGL_SETTINGS.textures_resize_to_power_of_two)
+		{			
+			widthPow2 = GetNextPowerOfTwo(width);
+			heightPow2 = GetNextPowerOfTwo(height);
+		}
 		
 		TextureOpenGLES *texture = new TextureOpenGLES();
 		texture->mWidth  = width;
@@ -130,8 +131,6 @@ namespace {
 	}
 	
 	TextureOpenGLES * LoadImageFile( const types::string& filename ){
-		
-		
 		
 		unsigned char *		data = NULL;
 		int					width, height, bpp;
@@ -201,9 +200,12 @@ namespace {
 			
 			data = new unsigned char[GetNextPowerOfTwo(width)*GetNextPowerOfTwo(height)*byteCount];
 			
-			FreeImage_PreMultiplyWithAlpha(bmp);
-			FreeImage_ConvertToRawBits(data, bmp, width*byteCount, bpp, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK, false);  // get bits
+			if(OPENGL_SETTINGS.textures_fix_alpha_channel)
+			{
+				FreeImage_PreMultiplyWithAlpha(bmp);
+			}
 			
+			FreeImage_ConvertToRawBits(data, bmp, width*byteCount, bpp, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK, false);  // get bits
 			
 		} else {
 			std::cout << "Unable to load image: " << filename.c_str() << std::endl;
@@ -319,6 +321,9 @@ namespace {
 		
 } // end o namespace anon
 
+void GraphicsOpenGLES::SetSettings( const GraphicsSettings& settings ) {
+	OPENGL_SETTINGS = settings;
+}
 
 
 bool GraphicsOpenGLES::Init( int width, int height, bool fullscreen, const types::string& caption )
