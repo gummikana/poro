@@ -172,6 +172,7 @@ public:
 
 	// if SetAnimationsSheet has not been called before this will do nothing
 	void PlayAnimation( const std::string& animation_name );
+	bool IsAnimationPlaying() const;
 	void SetAnimationFrame( int frame );
 
 protected:

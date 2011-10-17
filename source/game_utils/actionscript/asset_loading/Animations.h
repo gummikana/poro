@@ -81,6 +81,18 @@ struct Frame
 
 	int index;
 };
+//------------------------------------
+struct Marker
+{
+	Marker() : name( "" ), frame( -1 ) { }
+	Marker( const std::string& name, int frame ) : name( name ), frame( frame ) { }
+
+	void Serialize( ceng::CXmlFileSys* filesys );
+	void BitSerialize( network_utils::ISerializer* serializer );
+
+	std::string name;
+	int frame;
+};
 
 //------------------------------------
 
@@ -114,6 +126,7 @@ struct Part
 struct Animation
 {
 	Animation() :
+		markers(),
 		parts(),
 		name(),
 		mask(),
@@ -122,6 +135,7 @@ struct Animation
 	{ }
 
 	Animation( const std::string& name, int frameCount, int loopStartIndex ) : 
+		markers(),
 		parts(),
 		name( name ), 
 		mask(),
@@ -136,6 +150,8 @@ struct Animation
 	void Serialize( ceng::CXmlFileSys* filesys );
 	void BitSerialize( network_utils::ISerializer* serializer );
 
+	// There can be multiple markers on a frame, so fix that. In the future.
+	Marker* FindMarkerForFrame( int frame );
 
 	int getLoopStartIndex()		const { return loopStartIndex; }
 	int getEndFrame()			const { return frameCount; }
@@ -145,6 +161,7 @@ struct Animation
 	int getPreLoopFrameCount()	const { return loopStartIndex; }
 	bool getLoops()				const {	return loopStartIndex >= 0;	}
 
+	std::vector< Marker* > markers;
 	std::vector< Part* > parts;
 	std::string name;
 	std::string mask;

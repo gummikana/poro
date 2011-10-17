@@ -534,6 +534,14 @@ void Sprite::SetRectAnimation( RectAnimation* animation )
 }
 //-------------------------------------------------------------------------
 
+bool Sprite::IsAnimationPlaying() const
+{
+	if( mAnimationUpdater.get() == NULL ) return false;
+	if( mAnimationUpdater->IsOver() ) return false;
+
+	return true;
+}
+
 void Sprite::PlayAnimation( const std::string& animation_name )
 {
 	if( mAnimations == NULL )
