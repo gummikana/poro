@@ -52,6 +52,7 @@ public:
 
 	virtual void		DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color );
 	virtual void		DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color );
+	virtual void 		DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture );
 	
 	virtual void		SetSettings( const GraphicsSettings& settings );
 

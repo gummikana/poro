@@ -251,8 +251,7 @@ namespace {
 	{
         //mDrawCounter++;
         
-        // std::cout << "CAlling normal draw sprite" << std::endl;
-		glBindTexture(GL_TEXTURE_2D, texture->mTextureId);
+    	glBindTexture(GL_TEXTURE_2D, texture->mTextureId);
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_BLEND);
 		
@@ -715,6 +714,58 @@ void GraphicsOpenGLES::DrawFill( const std::vector< poro::types::vec2 >& vertice
 	glDrawArrays (GL_TRIANGLE_STRIP, 0, vertCount);
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glPopMatrix();
+	
+}
+
+void GraphicsOpenGLES::DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture )
+{
+	if( itexture == NULL )
+		return;
+
+	TextureOpenGLES* texture = (TextureOpenGLES*)itexture;
+
+	static types::vec2 vertices[ 4 ];
+	vertices[ 0 ].x = (float) position.x;
+	vertices[ 0 ].y = (float) position.y;
+	vertices[ 1 ].x = (float) position.x;
+	vertices[ 1 ].y = (float) (position.y + size.y);
+	vertices[ 2 ].x = (float) (position.x + size.x);
+	vertices[ 2 ].y = (float) position.y;
+	vertices[ 3 ].x = (float) (position.x + size.x);
+	vertices[ 3 ].y = (float) (position.y + size.y);
+	
+	static types::vec2 tex_coords[ 4 ];
+	tex_coords[ 0 ].x = vertices[ 0 ].x / texture->GetWidth();
+	tex_coords[ 0 ].y = vertices[ 0 ].y / texture->GetHeight();
+	tex_coords[ 1 ].x = vertices[ 1 ].x / texture->GetWidth();
+	tex_coords[ 1 ].y = vertices[ 1 ].y / texture->GetHeight();
+	tex_coords[ 2 ].x = vertices[ 2 ].x / texture->GetWidth();
+	tex_coords[ 2 ].y = vertices[ 2 ].y / texture->GetHeight();
+	tex_coords[ 3 ].x = vertices[ 3 ].x / texture->GetWidth();
+	tex_coords[ 3 ].y = vertices[ 3 ].y / texture->GetHeight();
+
+	glBindTexture(GL_TEXTURE_2D, texture->mTextureId);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_BLEND);
+	glColor4f(1, 1, 1, 1);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnableClientState( GL_TEXTURE_COORD_ARRAY );
+
+	glTexCoordPointer(2, GL_FLOAT, 0, tex_coords );
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glVertexPointer(2, GL_FLOAT, 0, vertices );
+	glDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
+	
+	glDisable(GL_BLEND);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	glDisable(GL_TEXTURE_2D);
 	
 }
 
