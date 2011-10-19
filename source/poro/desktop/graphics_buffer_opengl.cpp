@@ -25,7 +25,7 @@
 
 namespace poro {
 namespace {
-Uint32 GetNextPowerOfTwo(Uint32 input)
+GLsizei GetNextPowerOfTwo(int input)
 {
 	--input;
 	input |= input >> 16;
