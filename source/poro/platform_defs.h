@@ -24,10 +24,18 @@
 
 #ifdef __APPLE__
 	#include "TargetConditionals.h"
-	#ifdef __MACOSX__
-		#define PORO_PLAT_MAC
-	#elif TARGET_OS_IPHONE
-		#define PORO_PLAT_IPHONE
+	#ifdef TARGET_OS_IPHONE
+		#ifndef PORO_PLAT_MAC
+			#define PORO_PLAT_IPHONE
+		#endif
+	#elif TARGET_IPHONE_SIMULATOR
+		#ifndef PORO_PLAT_MAC
+			#define PORO_PLAT_IPHONE
+		#endif
+	#elif TARGET_OS_MAC
+		#ifndef PORO_PLAT_IPHONE
+			#define PORO_PLAT_MAC
+		#endif
 	#endif
 #elif __linux__
 	#ifndef PORO_PLAT_LINUX
