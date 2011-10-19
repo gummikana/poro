@@ -86,7 +86,7 @@
 		_touch_ids = CFDictionaryCreateMutable(NULL, 0, NULL, NULL);
 		
 		_size = [eaglLayer bounds].size;
-	}
+    }
 	
 	return self;
 }
@@ -141,6 +141,13 @@
 -(poro::types::vec2) _convertMousePos:(int)x :(int)y
 {
 	poro::types::vec2 result;
+	
+    //Landscape flip
+	/*if(poro::iPhoneGlobals.iPhoneWindow->GetOrientationIsLandscape())
+		result = poro::types::vec2((poro::types::Float32)y,(poro::types::Float32)x);
+	else
+		result = poro::types::vec2((poro::types::Float32)x,(poro::types::Float32)y);
+	*/
 
     float aspect_x = poro::IPlatform::Instance()->GetInternalWidth() / (poro::types::Float32)poro::IPlatform::Instance()->GetWidth();
     float aspect_y = poro::IPlatform::Instance()->GetInternalHeight() / (poro::types::Float32)poro::IPlatform::Instance()->GetHeight();
@@ -168,10 +175,8 @@
             break;
 	}	
 	
-	//Internal size
-	result.x *= poro::IPlatform::Instance()->GetInternalWidth() / (poro::types::Float32)poro::IPlatform::Instance()->GetWidth();
-	result.y *= poro::IPlatform::Instance()->GetInternalHeight() / (poro::types::Float32)poro::IPlatform::Instance()->GetHeight();
-	
+	//std::cout << result.x << "." << result.y << std::endl;
+    
 	return result;
 }
 
