@@ -48,9 +48,9 @@ int RunPoro( const ApplicationConfig& conf = ApplicationConfig()  )
 {
     poro::IPlatform::Instance()->SetWorkingDir();
 
-#ifdef PORO_TESTER_ENABLED
-    RunTests();
-#endif
+//#ifdef PORO_TESTER_ENABLED
+    //RunTests();
+//#endif
 
     {
         std::auto_ptr< AppType > app( new AppType );
