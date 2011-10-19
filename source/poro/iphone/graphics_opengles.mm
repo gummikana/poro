@@ -198,7 +198,14 @@ namespace {
 			
 			int byteCount = bpp / 8;
 			
-			data = new unsigned char[GetNextPowerOfTwo(width)*GetNextPowerOfTwo(height)*byteCount];
+			if(OPENGL_SETTINGS.textures_resize_to_power_of_two)
+			{
+				data = new unsigned char[GetNextPowerOfTwo(width)*GetNextPowerOfTwo(height)*byteCount];
+			} 
+			else 
+			{
+				data = new unsigned char[width*height*byteCount];
+			}
 			
 			FreeImage_FlipVertical(bmp);
 			
