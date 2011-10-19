@@ -1,6 +1,7 @@
 #include "filesystem.h"
 
 #include "../../poro/platform_defs.h"
+#include "../../utils/logger/logger.h"
 
 #ifdef PORO_PLAT_WINDOWS
 #	define CENG_PLATFORM_WINDOWS
