@@ -439,24 +439,11 @@ void GraphicsOpenGLES::DrawTexture( ITexture* itexture, types::vec2* vertices, t
 	
 	if( color[3] <= 0 )
 		return;
-	
-	TextureOpenGLES* texture = (TextureOpenGLES*)itexture;
-	
-	// Internal size convertion.
-	//float xPlatformScale = 1.f, yPlatformScale = 1.f;
-	/*
-    if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight())
-    {	
-		xPlatformScale = poro::IPlatform::Instance()->GetWidth() / (float)poro::IPlatform::Instance()->GetInternalWidth();
-		yPlatformScale = poro::IPlatform::Instance()->GetHeight() / (float)poro::IPlatform::Instance()->GetInternalHeight();
-	}
-    */
-    
+		
 	poro_assert( count > 2 );
 	poro_assert( count <= 8 );
-    
-	//static types::vec2 temp_tex_coord;
-    //static types::vec2 temp_vertex;
+	
+	TextureOpenGLES* texture = (TextureOpenGLES*)itexture;
     
     static GLfloat glVertices[16];
 	static GLfloat glTexCords[16];
@@ -466,16 +453,6 @@ void GraphicsOpenGLES::DrawTexture( ITexture* itexture, types::vec2* vertices, t
     
 	for( int i = 0; i < count; ++i )
 	{
-		//temp_tex_coord.x = tex_coords[ i ].x * texture->mExternalScaleWidth;
-		//temp_tex_coord.y = tex_coords[ i ].y * texture->mExternalScaleHeight;
-        
-        //Flip texture cords for iphone
-		//temp_tex_coord.y = texture->mHeight - temp_tex_coord.y;
-	
-        //Internal size convertion.
-		//temp_vertex.x = vertices[i].x * xPlatformScale;
-		//temp_vertex.y = vertices[i].y * yPlatformScale;
-
 		// set gl vertices
         glVertices[i*2] = vertices[i].x;
 		glVertices[i*2+1] = vertices[i].y;
@@ -501,18 +478,10 @@ void GraphicsOpenGLES::DrawTextureWithAlpha( ITexture* itexture, types::vec2* ve
 	TextureOpenGLES* texture = (TextureOpenGLES*)itexture;
 	TextureOpenGLES* alpha_texture = (TextureOpenGLES*)ialpha_texture;
 	
-	//Internal size convertion.
-	float xPlatformScale = 1.f, yPlatformScale = 1.f;
-	/*if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight()){	
-		xPlatformScale = poro::IPlatform::Instance()->GetWidth() / (float)poro::IPlatform::Instance()->GetInternalWidth();
-		yPlatformScale = poro::IPlatform::Instance()->GetHeight() / (float)poro::IPlatform::Instance()->GetInternalHeight();
-	} */
-
-    poro_assert( count > 2 );
+	poro_assert( count > 2 );
 	poro_assert( count <= 8 );
 	
 	//Internal size convertion.
-	static types::vec2 temp_vertex;
 	static types::vec2 temp_tex_coord;
     static types::vec2 temp_alpha_tex_coord;
 
@@ -533,17 +502,9 @@ void GraphicsOpenGLES::DrawTextureWithAlpha( ITexture* itexture, types::vec2* ve
 		temp_alpha_tex_coord.x = alpha_tex_coords[ i ].x * alpha_texture->mExternalScaleWidth; 
 		temp_alpha_tex_coord.y = alpha_tex_coords[ i ].y * alpha_texture->mExternalScaleHeight; 
 
-        //Flip texture cords for iphone
-		//temp_tex_coord.y = texture->mHeight - temp_tex_coord.y;
-		//temp_alpha_tex_coord.y = alpha_texture->mHeight - temp_alpha_tex_coord.y;
-	
-        // scale for platform
-        temp_vertex.x = vertices[i].x * xPlatformScale;
-		temp_vertex.y = vertices[i].y * yPlatformScale;
-	
         // setup gl vertices
-        glVertices[i*2] = temp_vertex.x;
-		glVertices[i*2+1] = temp_vertex.y;
+        glVertices[i*2] = vertices[i].x;
+		glVertices[i*2+1] = vertices[i].y;
 		glTexCords[i*2] = texture->mUv[ 0 ] + ( temp_tex_coord.x * x_text_conv );
 		glTexCords[i*2+1] = texture->mUv[ 1 ] + ( temp_tex_coord.y * y_text_conv );
 		
@@ -559,7 +520,7 @@ void GraphicsOpenGLES::DrawTextureWithAlpha( ITexture* itexture, types::vec2* ve
 
 void GraphicsOpenGLES::ResetWindow()
 {
-    //For i devices this should always be portret
+    //For iDevices this should always be portrait
     CGSize viewport_size = [poro::iPhoneGlobals.glView bounds].size;
     float viewport_width = viewport_size.width;
 	float viewport_height = viewport_size.height;
@@ -568,7 +529,7 @@ void GraphicsOpenGLES::ResetWindow()
     float internal_height = poro::IPlatform::Instance()->GetInternalHeight();
     
     //We need to check if the internal orientation is landscape,
-    //if it is we need to flipp the coordinates to get a proper aspect ratio
+    //if it is we need to flip the coordinates to get a proper aspect ratio
     int internalOrientation = poro::iPhoneGlobals.iPhoneWindow->GetInternalOrientation();
     bool isInternalLandscape = (internalOrientation == poro::PlatformIPhone::DO_LANDSCAPE_LEFT) || (internalOrientation == poro::PlatformIPhone::DO_LANDSCAPE_RIGHT);
 	if(isInternalLandscape){
@@ -652,14 +613,7 @@ void GraphicsOpenGLES::DrawLines( const std::vector< poro::types::vec2 >& vertic
 	
 	if(vertCount == 0)
 		return;
-	
-	//Internal rescale
-	float xPlatformScale = 1.f, yPlatformScale = 1.f;
-	/*if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight()){	
-		xPlatformScale = poro::IPlatform::Instance()->GetWidth() / (float)poro::IPlatform::Instance()->GetInternalWidth();
-		yPlatformScale = poro::IPlatform::Instance()->GetHeight() / (float)poro::IPlatform::Instance()->GetInternalHeight();
-	}*/
-	
+		
 	const int buffer_size = 64;
 	static GLfloat glVertices[buffer_size];
 	
@@ -674,9 +628,9 @@ void GraphicsOpenGLES::DrawLines( const std::vector< poro::types::vec2 >& vertic
 			assert(false);
 		}
 		
-        glVertices[b] = vertices[i].x*xPlatformScale;
+        glVertices[b] = vertices[i].x;
 		++b;
-		glVertices[b] = vertices[i].y*yPlatformScale;
+		glVertices[b] = vertices[i].y;
 		++b;
 	}
 	glVertexPointer(2, GL_FLOAT , 0, &glVertices[0]); 
@@ -691,27 +645,20 @@ void GraphicsOpenGLES::DrawFill( const std::vector< poro::types::vec2 >& vertice
 	
 	if(vertCount == 0)
 		return;
-	
-	//Internal rescale
-	float xPlatformScale = 1.f, yPlatformScale = 1.f;
-	/*if(poro::IPlatform::Instance()->GetInternalWidth() && poro::IPlatform::Instance()->GetInternalHeight()){	
-		xPlatformScale = poro::IPlatform::Instance()->GetWidth() / (float)poro::IPlatform::Instance()->GetInternalWidth();
-		yPlatformScale = poro::IPlatform::Instance()->GetHeight() / (float)poro::IPlatform::Instance()->GetInternalHeight();
-	}*/
-	
+		
 	//Consider static buffer size?
 	static GLfloat glVertices[256];
 	int o = -1;
 	for(int i=0; i < vertCount; ++i){
-		glVertices[++o] = vertices[i].x*xPlatformScale;
-		glVertices[++o] = vertices[i].y*yPlatformScale;
+		glVertices[++o] = vertices[i].x;
+		glVertices[++o] = vertices[i].y;
 	}
 	
 	glColor4f(color[0], color[1], color[2], color[3]);
 	glPushMatrix();
 	glVertexPointer(2, GL_FLOAT , 0, glVertices);
 	glEnableClientState(GL_VERTEX_ARRAY);
-	glDrawArrays (GL_TRIANGLE_STRIP, 0, vertCount);
+	glDrawArrays (GL_TRIANGLE_FAN, 0, vertCount);
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glPopMatrix();
 	
