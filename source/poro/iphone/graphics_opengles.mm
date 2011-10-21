@@ -39,8 +39,6 @@
 
 using namespace poro::types;
 
-//const int game_resolution_w = 320;
-//const int game_resolution_h = 480;
 #define PORO_ERROR "ERROR: "
 
 //=============================================================================
@@ -110,7 +108,6 @@ namespace {
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		
 		glDisable(GL_TEXTURE_2D);
-
 		
 		//Get subimage
 		GLint prevAlignment;
@@ -124,8 +121,6 @@ namespace {
 		glDisable(GL_TEXTURE_2D);
 		
 		glPixelStorei(GL_UNPACK_ALIGNMENT, prevAlignment);
-		
-		
 		
 		return texture;
 	}
@@ -207,40 +202,30 @@ namespace {
 				data = new unsigned char[width*height*byteCount];
 			}
 			
-			FreeImage_FlipVertical(bmp);
-			
 			if(OPENGL_SETTINGS.textures_fix_alpha_channel)
 			{
 				FreeImage_PreMultiplyWithAlpha(bmp);
 			}
 			
-			FreeImage_ConvertToRawBits(data, bmp, width*byteCount, bpp, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK, false);  // get bits
+			FreeImage_ConvertToRawBits(data, bmp, width*byteCount, bpp, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK, true);  // get bits, this also flips the image on the y axis (last argument in this call)
 			
 		} else {
 			std::cout << "Unable to load image: " << filename.c_str() << std::endl;
 			width = height = bpp = 0;
 		}
-		
-        //CGContextTranslateCTM (context, 0, height);
-        //CGContextScaleCTM (context, 1.0, -1.0);        
         
 		if (bmp != NULL){
 			FreeImage_Unload(bmp);
 		}
 		
-		
-		//Once the image data has been loaded succesfully, create the open gl es Texture; 
+		//Once the image data has been loaded succesfully, create the OpenGL ES texture; 
 		TextureOpenGLES * texture = NULL;
 		texture = CreateTexture(data, width, height, pixelFormat);
 		
 		//The data buffer is not needed anymore
 		delete [] data;
 		
-		
 		poro_logger << "File: " << filename << std::endl;
-		
-		
-		
 		
 		return texture;
 	}
