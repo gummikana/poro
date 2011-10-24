@@ -46,6 +46,9 @@ namespace poro {
 	
 namespace {
 
+	poro::types::Uint32 lastTexture = NULL;
+	poro::types::fcolor lastColor;
+
 	GraphicsSettings OPENGL_SETTINGS;
 	
 	Uint32 GetGLVertexMode(int vertex_mode){
@@ -95,8 +98,6 @@ namespace {
 		// allocate a texture name
 		glGenTextures( 1, &texture->mTextureId );
 		
-		glEnable(GL_TEXTURE_2D);
-		
 		glBindTexture(GL_TEXTURE_2D, texture->mTextureId);
 		
 		glTexImage2D(GL_TEXTURE_2D, 0, pixelFormat, widthPow2,heightPow2, 0, pixelFormat, GL_UNSIGNED_BYTE, data);
@@ -107,18 +108,12 @@ namespace {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		
-		glDisable(GL_TEXTURE_2D);
-		
 		//Get subimage
 		GLint prevAlignment;
 		glGetIntegerv(GL_UNPACK_ALIGNMENT, &prevAlignment);
 		
-		glEnable(GL_TEXTURE_2D);
-		
 		glBindTexture(GL_TEXTURE_2D, texture->mTextureId);
 		glTexSubImage2D(GL_TEXTURE_2D,0,0,0,width,height,pixelFormat,GL_UNSIGNED_BYTE,data);
-		
-		glDisable(GL_TEXTURE_2D);
 		
 		glPixelStorei(GL_UNPACK_ALIGNMENT, prevAlignment);
 		
@@ -230,32 +225,24 @@ namespace {
 		return texture;
 	}
 	
-    //static int mDrawCounter=0;
+    static int mDrawCounter=0;
     
 	void drawsprite( TextureOpenGLES* texture, GLfloat* glTexCoords, GLfloat* glVertices, const types::fcolor& color, int count, Uint32 vertex_mode )
 	{
-        //mDrawCounter++;
-        
-    	glBindTexture(GL_TEXTURE_2D, texture->mTextureId);
-		glEnable(GL_TEXTURE_2D);
-		glEnable(GL_BLEND);
+		if ( lastTexture != texture->mTextureId )
+		{
+			glBindTexture(GL_TEXTURE_2D, texture->mTextureId);
+			lastTexture = texture->mTextureId;
+			mDrawCounter++;
+		}
 		
-        
-		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         glColor4f(color[ 0 ] * color[3], color[ 1 ] * color[3], color[ 2 ] * color[3], color[ 3 ] );
 		
-		glEnableClientState( GL_TEXTURE_COORD_ARRAY );
 		glTexCoordPointer(2, GL_FLOAT, 0, glTexCoords );
-		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(2, GL_FLOAT, 0, glVertices );
 		
 		glDrawArrays( vertex_mode, 0, count );
-		
-		glDisableClientState( GL_TEXTURE_COORD_ARRAY );
-		
-		glDisable(GL_BLEND);
-		glDisable(GL_TEXTURE_2D);
-		
+				
 	}
 	
 	void drawsprite_withalpha( TextureOpenGLES* texture,  GLfloat* glTexCoords, GLfloat* glVertices, const types::fcolor& color, int count,
@@ -263,43 +250,26 @@ namespace {
 	{
         //mDrawCounter++;
         
-        // std::cout << "CAlling drawsprite_withalpha" << std::endl;
+		lastTexture = NULL;
+		
+        // std::cout << "Calling drawsprite_withalpha" << std::endl;
 		// Specify texture cords
 		glClientActiveTexture(GL_TEXTURE0);
-		glEnableClientState( GL_TEXTURE_COORD_ARRAY );
 		glTexCoordPointer(2, GL_FLOAT, 0, alpha_glTexCoords );
 		glClientActiveTexture(GL_TEXTURE1);
-        glEnableClientState( GL_TEXTURE_COORD_ARRAY );
 		glTexCoordPointer(2, GL_FLOAT, 0, glTexCoords );
 		
 		// Enable 2D texturing
 		glActiveTexture(GL_TEXTURE0);
-		glEnable(GL_TEXTURE_2D);
-        glColor4f(alpha_color[ 0 ] * alpha_color[3], alpha_color[ 1 ] * alpha_color[3], alpha_color[ 2 ] * alpha_color[3], alpha_color[ 3 ] );
+		glColor4f(alpha_color[ 0 ] * alpha_color[3], alpha_color[ 1 ] * alpha_color[3], alpha_color[ 2 ] * alpha_color[3], alpha_color[ 3 ] );
 		glBindTexture(GL_TEXTURE_2D, alpha_texture->mTextureId );
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-        
-
+		
 		glActiveTexture(GL_TEXTURE1);
-		glEnable(GL_TEXTURE_2D);
 		glColor4f(color[ 0 ] * color[ 3 ], color[ 1 ] * color[ 3 ], color[ 2 ] * color[ 3 ], color[ 3 ] );
 		glBindTexture(GL_TEXTURE_2D, texture->mTextureId );
-		
-		glDisable(GL_CULL_FACE);
-		
-		glEnableClientState(GL_VERTEX_ARRAY);
+			
 		glVertexPointer(2, GL_FLOAT, 0, glVertices );
 		glDrawArrays( vertex_mode, 0, count );
-		
-		glDisable(GL_BLEND);
-		
-		glActiveTexture(GL_TEXTURE0);
-		glDisable(GL_TEXTURE_2D);
-		glActiveTexture(GL_TEXTURE1);
-		glDisable(GL_TEXTURE_2D);
-		
-		
 	}
 	
 	types::vec2 Vec2Rotate( const types::vec2& point, const types::vec2& center, float angle )
@@ -565,27 +535,34 @@ void GraphicsOpenGLES::SetInternalSize( types::Float32 width, types::Float32 hei
     
 void GraphicsOpenGLES::BeginRendering()
 {
-	//mDrawCounter=0;
+	mDrawCounter=0;
     [iPhoneGlobals.glView beginRendering];
 	
+	glEnable(GL_BLEND);
+	glEnable(GL_TEXTURE_2D);	
+	glEnableClientState( GL_TEXTURE_COORD_ARRAY );        
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	glDisable(GL_CULL_FACE);
+	
 	//clear screen
-	glClearColor( mFillColor[ 0 ],
+	/*glClearColor( mFillColor[ 0 ],
 				 mFillColor[ 1 ],
 				 mFillColor[ 2 ],
 				 mFillColor[ 3 ] );
 	
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );*/
     
 }
 
 void GraphicsOpenGLES::EndRendering()
 {
-	//static int interval = 0;
-    //interval++;
-    //if(interval>10){
-    //    interval=0;
-    //    std::cout << "DrawCalls:" << mDrawCounter << std::endl;
-    //}
+	static int interval = 0;
+    interval++;
+    if(interval>10){
+        interval=0;
+        std::cout << "glBindTexture calls:" << mDrawCounter << std::endl;
+    }
     
     [iPhoneGlobals.glView endRendering];
 }
@@ -602,10 +579,9 @@ void GraphicsOpenGLES::DrawLines( const std::vector< poro::types::vec2 >& vertic
 	const int buffer_size = 64;
 	static GLfloat glVertices[buffer_size];
 	
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
 	glColor4f(color[0], color[1], color[2], color[3]);
-	glEnableClientState(GL_VERTEX_ARRAY);
+	
 	int b=0;
 	for(int i=0; i < vertCount && i < buffer_size; ++i){
 		if (b==buffer_size){
@@ -620,7 +596,6 @@ void GraphicsOpenGLES::DrawLines( const std::vector< poro::types::vec2 >& vertic
 	}
 	glVertexPointer(2, GL_FLOAT , 0, &glVertices[0]); 
 	glDrawArrays(GL_LINE_LOOP, 0, vertCount);
-	glDisable(GL_BLEND);
 	
 }
 	
@@ -642,9 +617,7 @@ void GraphicsOpenGLES::DrawFill( const std::vector< poro::types::vec2 >& vertice
 	glColor4f(color[0], color[1], color[2], color[3]);
 	glPushMatrix();
 	glVertexPointer(2, GL_FLOAT , 0, glVertices);
-	glEnableClientState(GL_VERTEX_ARRAY);
 	glDrawArrays (GL_TRIANGLE_FAN, 0, vertCount);
-	glDisableClientState(GL_VERTEX_ARRAY);
 	glPopMatrix();
 	
 }
@@ -675,29 +648,27 @@ void GraphicsOpenGLES::DrawTexturedRect( const poro::types::vec2& position, cons
 	tex_coords[ 2 ].y = vertices[ 2 ].y / texture->GetHeight();
 	tex_coords[ 3 ].x = vertices[ 3 ].x / texture->GetWidth();
 	tex_coords[ 3 ].y = vertices[ 3 ].y / texture->GetHeight();
+	
+	if(lastTexture != texture->mTextureId){
+		glBindTexture(GL_TEXTURE_2D, texture->mTextureId);
+		lastTexture = texture->mTextureId;
+		mDrawCounter++;
+	}
+
 
 	glBindTexture(GL_TEXTURE_2D, texture->mTextureId);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_BLEND);
+	
 	glColor4f(1, 1, 1, 1);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnableClientState( GL_TEXTURE_COORD_ARRAY );
 
 	glTexCoordPointer(2, GL_FLOAT, 0, tex_coords );
-	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(2, GL_FLOAT, 0, vertices );
 	glDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
 	
-	glDisable(GL_BLEND);
-
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	glDisable(GL_TEXTURE_2D);
 	
 }
 
