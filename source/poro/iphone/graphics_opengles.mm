@@ -625,11 +625,11 @@ void GraphicsOpenGLES::DrawFill( const std::vector< poro::types::vec2 >& vertice
 		glVertices[++o] = vertices[i].y;
 	}
 	
+	glDisable(GL_TEXTURE_2D);
 	SetGLColor( color );
-	glPushMatrix();
 	glVertexPointer(2, GL_FLOAT , 0, glVertices);
 	glDrawArrays (GL_TRIANGLE_FAN, 0, vertCount);
-	glPopMatrix();
+	glEnable(GL_TEXTURE_2D);
 	
 }
 
