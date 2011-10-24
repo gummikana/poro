@@ -72,7 +72,19 @@ namespace {
 		input |= input >> 2;
 		input |= input >> 1;
 		return input + 1;
-	}	
+	}
+	
+	inline void SetGLColor( const poro::types::fcolor& newColor )
+	{
+		if(newColor[0] != lastColor[0] || newColor[1] != lastColor[1] || newColor[2] != lastColor[2] || newColor[3] != lastColor[3] )
+		{
+			lastColor[0] = newColor[0];
+			lastColor[1] = newColor[1];
+			lastColor[2] = newColor[2];
+			lastColor[3] = newColor[3];
+			glColor4f(newColor[0] * newColor[3], newColor[1] * newColor[3], newColor[2] * newColor[3], newColor[3] );
+		}
+	}
 	
 	TextureOpenGLES * CreateTexture( unsigned char *data, int width, int height, GLint pixelFormat)
 	{
@@ -236,7 +248,7 @@ namespace {
 			mDrawCounter++;
 		}
 		
-        glColor4f(color[ 0 ] * color[3], color[ 1 ] * color[3], color[ 2 ] * color[3], color[ 3 ] );
+        SetGLColor( color );
 		
 		glTexCoordPointer(2, GL_FLOAT, 0, glTexCoords );
 		glVertexPointer(2, GL_FLOAT, 0, glVertices );
@@ -261,11 +273,11 @@ namespace {
 		
 		// Enable 2D texturing
 		glActiveTexture(GL_TEXTURE0);
-		glColor4f(alpha_color[ 0 ] * alpha_color[3], alpha_color[ 1 ] * alpha_color[3], alpha_color[ 2 ] * alpha_color[3], alpha_color[ 3 ] );
+		SetGLColor(alpha_color);
 		glBindTexture(GL_TEXTURE_2D, alpha_texture->mTextureId );
 		
 		glActiveTexture(GL_TEXTURE1);
-		glColor4f(color[ 0 ] * color[ 3 ], color[ 1 ] * color[ 3 ], color[ 2 ] * color[ 3 ], color[ 3 ] );
+		SetGLColor(color);
 		glBindTexture(GL_TEXTURE_2D, texture->mTextureId );
 			
 		glVertexPointer(2, GL_FLOAT, 0, glVertices );
@@ -579,8 +591,7 @@ void GraphicsOpenGLES::DrawLines( const std::vector< poro::types::vec2 >& vertic
 	const int buffer_size = 64;
 	static GLfloat glVertices[buffer_size];
 	
-	
-	glColor4f(color[0], color[1], color[2], color[3]);
+	SetGLColor( color );
 	
 	int b=0;
 	for(int i=0; i < vertCount && i < buffer_size; ++i){
@@ -614,7 +625,7 @@ void GraphicsOpenGLES::DrawFill( const std::vector< poro::types::vec2 >& vertice
 		glVertices[++o] = vertices[i].y;
 	}
 	
-	glColor4f(color[0], color[1], color[2], color[3]);
+	SetGLColor( color );
 	glPushMatrix();
 	glVertexPointer(2, GL_FLOAT , 0, glVertices);
 	glDrawArrays (GL_TRIANGLE_FAN, 0, vertCount);
@@ -661,7 +672,7 @@ void GraphicsOpenGLES::DrawTexturedRect( const poro::types::vec2& position, cons
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	
-	glColor4f(1, 1, 1, 1);
+	SetGLColor( poro::GetFColor( 1, 1, 1, 1 ) );
 
 	glTexCoordPointer(2, GL_FLOAT, 0, tex_coords );
 	glVertexPointer(2, GL_FLOAT, 0, vertices );
