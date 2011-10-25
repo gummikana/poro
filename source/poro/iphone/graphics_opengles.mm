@@ -237,7 +237,7 @@ namespace {
 		return texture;
 	}
 	
-    static int mDrawCounter=0;
+   // static int mDrawCounter=0;
     
 	void drawsprite( TextureOpenGLES* texture, GLfloat* glTexCoords, GLfloat* glVertices, const types::fcolor& color, int count, Uint32 vertex_mode )
 	{
@@ -245,7 +245,7 @@ namespace {
 		{
 			glBindTexture(GL_TEXTURE_2D, texture->mTextureId);
 			lastTexture = texture->mTextureId;
-			mDrawCounter++;
+			//mDrawCounter++;
 		}
 		
         SetGLColor( color );
@@ -547,7 +547,7 @@ void GraphicsOpenGLES::SetInternalSize( types::Float32 width, types::Float32 hei
     
 void GraphicsOpenGLES::BeginRendering()
 {
-	mDrawCounter=0;
+	//mDrawCounter=0;
     [iPhoneGlobals.glView beginRendering];
 	
 	glEnable(GL_BLEND);
@@ -558,23 +558,18 @@ void GraphicsOpenGLES::BeginRendering()
 	glDisable(GL_CULL_FACE);
 	
 	//clear screen
-	/*glClearColor( mFillColor[ 0 ],
-				 mFillColor[ 1 ],
-				 mFillColor[ 2 ],
-				 mFillColor[ 3 ] );
-	
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );*/
+	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     
 }
 
 void GraphicsOpenGLES::EndRendering()
 {
-	static int interval = 0;
+	/*static int interval = 0;
     interval++;
     if(interval>10){
         interval=0;
         std::cout << "glBindTexture calls:" << mDrawCounter << std::endl;
-    }
+    }*/
     
     [iPhoneGlobals.glView endRendering];
 }
@@ -663,7 +658,7 @@ void GraphicsOpenGLES::DrawTexturedRect( const poro::types::vec2& position, cons
 	if(lastTexture != texture->mTextureId){
 		glBindTexture(GL_TEXTURE_2D, texture->mTextureId);
 		lastTexture = texture->mTextureId;
-		mDrawCounter++;
+		//mDrawCounter++;
 	}
 
 
@@ -696,6 +691,14 @@ IGraphicsBuffer* GraphicsOpenGLES::CreateGraphicsBuffer(int width, int height)
 void GraphicsOpenGLES::DestroyGraphicsBuffer(IGraphicsBuffer* buffer)
 {
 	delete buffer;
+}
+
+inline void	GraphicsOpenGLES::SetFillColor( const poro::types::fcolor& c ) { 
+	mFillColor = c;
+	glClearColor( mFillColor[ 0 ],
+				  mFillColor[ 1 ],
+				  mFillColor[ 2 ],
+				  mFillColor[ 3 ] );
 }
 
 	
