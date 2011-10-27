@@ -557,6 +557,7 @@ void GraphicsOpenGL::ResetWindow()
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 
     if (SDL_SetVideoMode((int)window_width, (int)window_height, bpp, flags) == 0)
     {
@@ -870,8 +871,23 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 
 	glEnable(GL_BLEND);
 	glColor4f(color[0], color[1], color[2], color[3]);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	// glColor4f(1, 1, 1, 1);
+	// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	glEnable(GL_POLYGON_SMOOTH);
+	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	// glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ZERO);
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glBegin(GL_POLYGON);
+    for( int i = 0; i < vertices.size(); ++i )
+	{                            
+		glVertex2f(vertices[ i ].x, vertices[ i ].y );
+	}
+	glEnd();
+
+	/*
 	glPushMatrix();
 		glVertexPointer(2, GL_FLOAT , 0, glVertices);
 		glEnableClientState(GL_VERTEX_ARRAY);
@@ -879,7 +895,8 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 		glDrawArrays(GL_TRIANGLE_FAN, 0, vertCount);
 		glDisableClientState(GL_VERTEX_ARRAY);
 	glPopMatrix();
-
+	*/
+	glDisable( GL_POLYGON_SMOOTH );
 	glDisable(GL_BLEND);
 }
 
