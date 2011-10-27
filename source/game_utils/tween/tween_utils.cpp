@@ -75,10 +75,21 @@ GTween* GTweenSpriteRotationTo( as::Sprite* sprite, float rotation, float time, 
 	GTween* new_tween = new GTween( time, autokill );
 
 	new_tween->SetFunction( math_func );
-	new_tween->AddGetterSetter(
+	/*new_tween->AddGetterSetter(
 		ceng::CFunctionPtr<>( sprite, &as::Sprite::GetRotation ), 
 		ceng::CFunctionPtr<>( sprite, &as::Sprite::SetRotation ), 
-		rotation, "rotation" );
+		rotation, "rotation" );*/
+
+	ceng::IInterpolator* in = ceng::CreateInterpolatorForAngles( 
+			ceng::CFunctionPtr<>( sprite, &as::Sprite::GetRotation ), 
+			ceng::CFunctionPtr<>( sprite, &as::Sprite::SetRotation ), 
+			rotation, NULL );
+
+	cassert( in );
+	if( in ) 
+		in->SetName( "rotation" );
+
+	new_tween->AddInterpolator( in );
 
 	return new_tween;
 }

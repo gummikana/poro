@@ -26,6 +26,7 @@
 
 #include "../../utils/functionptr/cfunctionptr.h"
 #include "../../utils/easing/easing.h"
+#include "../../utils/math/cangle.h"
 
 namespace ceng {
 
@@ -159,6 +160,76 @@ public:
 //-----------------------------------------------------------------------------
 
 template< typename T >
+class CInterpolatorGetterSetterWithAngle : public IInterpolator
+{
+public:
+	CInterpolatorGetterSetterWithAngle( const ceng::CFunctionPtr<>& getter, const ceng::CFunctionPtr<>& setter, T start_value, T end_value, ceng::easing::IEasingFunc* math_func = NULL ) :
+		myDead( false ),
+		myGetter( getter ),
+		mySetter( setter ),
+		myStartValue( start_value ),
+		myEndValue( end_value ),
+		myMathFunc( math_func )
+	{
+		SetAngleValues( myStartValue, myEndValue );
+	}
+
+	void Update( float t )
+	{
+		if( myDead ) 
+			return;
+
+		if( myMathFunc )
+			t = myMathFunc->f( t );
+		
+		ceng::math::CAngle< T > value( myStartValue + (T)( t * ( myEndValue - myStartValue ) ) );
+		mySetter( value.GetValue() );
+	}
+
+	void Kill() { myDead = true;  }
+	bool IsDead() const { return myDead; }
+
+	
+	virtual void Reset() 
+	{
+		myStartValue = ( ceng::AnyCast< T >( myGetter() ) );
+		SetAngleValues( myStartValue, myEndValue );
+	}
+
+	void SetAngleValues( float start_value, float end_value ) 
+	{
+		myStartValue = ceng::math::CAngle< T >( start_value ).GetValue();
+		myEndValue = ceng::math::CAngle< T >( end_value ).GetValue();
+		if( ceng::math::Absolute( myEndValue - myStartValue ) > ceng::math::pi )
+		{
+			if( myEndValue > myStartValue )
+				myEndValue -= 2.f * ceng::math::pi;
+			else
+				myStartValue -= 2.f * ceng::math::pi;
+		}
+	}
+
+	virtual bool UsesPointer( void* pointer ) 
+	{ 
+		if( myGetter == pointer ) return true;
+		if( mySetter == pointer ) return true;
+
+		return false;
+	}
+
+
+	bool myDead;
+	ceng::CFunctionPtr<> myGetter;
+	ceng::CFunctionPtr<> mySetter;
+	T myStartValue;
+	T myEndValue;
+	ceng::easing::IEasingFunc* myMathFunc;
+
+};
+
+//-----------------------------------------------------------------------------
+
+template< typename T >
 IInterpolator* CreateInterpolator( 
 								  T& who, 
 								  const T& to_what, 
@@ -181,6 +252,21 @@ IInterpolator* CreateInterpolator(
 {	
 	ceng::CFunctionPtr<> value_getter = getter;
 	IInterpolator* result = new CInterpolatorGetterSetter< T >( getter, setter, AnyCast< T >( value_getter()  ), to_what, math_func );
+
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+
+template< typename T >
+IInterpolator* CreateInterpolatorForAngles( 
+								  const ceng::CFunctionPtr<>& getter,
+								  const ceng::CFunctionPtr<>& setter,
+								  const T& to_what, 
+								  ceng::easing::IEasingFunc* math_func = NULL )
+{	
+	ceng::CFunctionPtr<> value_getter = getter;
+	IInterpolator* result = new CInterpolatorGetterSetterWithAngle< T >( getter, setter, AnyCast< T >( value_getter()  ), to_what, math_func );
 
 	return result;
 }

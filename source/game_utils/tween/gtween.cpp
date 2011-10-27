@@ -93,8 +93,23 @@ GTween::~GTween()
 
 //-----------------------------------------------------------------------------
 
+void GTween::AddInterpolator( ceng::IInterpolator* in )
+{
+	if( in ) 
+	{
+		mDirty = true;
+	
+		RemoveDuplicateInterpolators( in->GetName() );
+		
+		mInterpolators.push_back( in );
+	}
+}
+
+//-----------------------------------------------------------------------------
+
 // iterates over the list of interpolators and drops any interpolator that has the same name
-void GTween::RemoveDuplicateInterpolators(std::string name){
+void GTween::RemoveDuplicateInterpolators( const std::string& name)
+{
 	// sets the iterator to the first item in the vector
 	std::vector< ceng::IInterpolator* >::iterator it = mInterpolators.begin();
 	while(it != mInterpolators.end()){
