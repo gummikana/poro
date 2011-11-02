@@ -138,9 +138,9 @@ void TextSprite::SetText( const std::string& text )
 }
 
 
-bool TextSprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const types::xform& matrix )
+bool TextSprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const Transform& transform )
 {
-	return Sprite::DrawRect( rect, graphics, camera, matrix );
+	return Sprite::DrawRect( rect, graphics, camera, transform );
 }
 
 //-----------------------------------------------------------------------------
@@ -206,7 +206,7 @@ bool TextSprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transfo
 				mXForm.position.x = r.x;
 				mXForm.position.y = r.y;
 				
-				DrawRect( mInRects[ i ], graphics, camera, transform.GetXForm() );
+				DrawRect( mInRects[ i ], graphics, camera, transform );
 			}
 		}
 	}

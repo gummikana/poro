@@ -22,4 +22,13 @@
 #include "default_application.h"
 #include "run_poro.h"
 
+//=============================================================================
+
+poro::IPlatform* Poro();
+
+//=============================================================================
+
+inline poro::IPlatform* Poro() { return poro::IPlatform::Instance(); }
+
+
 #endif

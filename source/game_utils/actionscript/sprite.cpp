@@ -255,13 +255,15 @@ bool Sprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& 
 		{
 			// the alpha mask is the child of the mask of the other
 			types::xform orign;
-			transform.PushXFormButDontMultiply( orign );
+			std::vector< float > orig_color( 4 );
+			for( int i = 0; i < 4; ++i ) orig_color[ i ] = 1.f;
+			transform.PushXFormButDontMultiply( orign, orig_color );
 			types::xform x = ceng::math::Mul( GetXForm(), mAlphaMask->GetXForm() );
 			
 			types::xform o;
 			x = ceng::math::MulT( x, o );
 			x.position += mAlphaMask->GetCenterOffset(); 
-			transform.PushXForm( x );	
+			transform.PushXForm( x, orig_color );	
 
 
 			alpha_buffer->BeginRendering();
@@ -273,7 +275,7 @@ bool Sprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& 
 	types::rect draw_rect( 0, 0, mSize.x, mSize.y );
 	if( mRect ) draw_rect = *mRect;
 
-	DrawRect( draw_rect, graphics, camera, transform.GetXForm() ); 
+	DrawRect( draw_rect, graphics, camera, transform ); 
 	
 	// draw all children
 	DrawChildren( graphics, camera, transform );
@@ -290,7 +292,7 @@ bool Sprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& 
 	
 	if( mAlphaMask )
 	{
-		transform.PushXForm( mXForm );
+		transform.PushXForm( mXForm, mColor );
 		mAlphaMask->Draw( graphics, camera, transform );
 		transform.PopXForm();
 	}
@@ -305,7 +307,7 @@ bool Sprite::DrawChildren( poro::IGraphics* graphics, types::camera* camera, Tra
 	if( mChildren.empty() )
 		return true;
 
-	transform.PushXForm( mXForm );
+	transform.PushXForm( mXForm, mColor );
 
 	std::list< DisplayObjectContainer* >::iterator i;
 	Sprite* current = NULL;
@@ -346,7 +348,7 @@ bool Sprite::DrawChildren( poro::IGraphics* graphics, types::camera* camera, Tra
 
 //-----------------------------------------------------------------------------
 
-bool Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const types::xform& matrix )
+bool Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const Transform& transform )
 {
 	if( mTexture == NULL && mAlphaBuffer == NULL )
 		return false;
@@ -357,10 +359,16 @@ bool Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 
 	if( true  )
 	{
+		const types::xform& matrix = transform.GetXForm();
+		const std::vector< float >& tcolor = transform.GetColor();
 
 		types::rect dest_rect(rect.x, rect.y, rect.w, rect.h );
-		poro::types::fcolor color_me = poro::GetFColor( mColor[ 0 ], mColor[ 1 ], mColor[ 2 ], mColor[ 3 ] );
-	
+		poro::types::fcolor color_me = poro::GetFColor( 
+			mColor[ 0 ] * tcolor[ 0 ], 
+			mColor[ 1 ] * tcolor[ 1 ], 
+			mColor[ 2 ] * tcolor[ 2 ], 
+			mColor[ 3 ] * tcolor[ 3 ] );
+
 		if( graphics ) 
 		{
 
@@ -506,15 +514,22 @@ void Sprite::RectAnimation::Update( Sprite* sprite, float dt )
 	if( mWaitTime > 0 ) {
 		while( mCurrentTime >= mWaitTime ) {
 			mCurrentTime -= mWaitTime;
-			mCurrentFrame++;
-			if( mCurrentFrame >= mFrameCount )
-				mCurrentFrame = 0;
+			frame++;
+			if( frame >= mFrameCount )
+				frame = 0;
 		}
 	}
 
-	if( frame == 0 || frame != mCurrentFrame ) 
+	SetFrame(sprite, frame);
+}
+	
+void Sprite::RectAnimation::SetFrame( Sprite* sprite, int frame )
+{
+	if( frame == 0 || 
+	   frame != mCurrentFrame ) 
 	{
 		cassert( sprite );
+		mCurrentFrame = frame;
 		sprite->SetRect( FigureOutRectPos( mCurrentFrame, mWidth, mHeight, mFramesPerRow ) );
 	}
 }
@@ -526,6 +541,14 @@ void Sprite::SetRectAnimation( RectAnimation* animation )
 	mRectAnimation.reset( animation );
 }
 //-------------------------------------------------------------------------
+
+bool Sprite::IsAnimationPlaying() const
+{
+	if( mAnimationUpdater.get() == NULL ) return false;
+	if( mAnimationUpdater->IsOver() ) return false;
+
+	return true;
+}
 
 void Sprite::PlayAnimation( const std::string& animation_name )
 {
@@ -556,9 +579,46 @@ void Sprite::PlayAnimation( const std::string& animation_name )
 
 void Sprite::SetAnimationFrame(int frame) 
 {
-	cassert( mAnimationUpdater.get() );
-	mAnimationUpdater->SetFrame( frame );
+	if(mAnimationUpdater.get()) mAnimationUpdater->SetFrame( frame );
+	if(mRectAnimation.get()) mRectAnimation->SetFrame( this, frame );
+}
+//-----------------------------------------------------------------------------
 
+types::vector2 Sprite::GetScreenPosition() const
+{
+	// return MultiplyByParentXForm( types::vector2( 0, 0 ) );
+
+	types::vector2 result( 0, 0 );
+	std::vector< const DisplayObjectContainer* > parents;
+	getParentTree( parents );
+
+	types::xform xform;
+	for( int i = (int)parents.size() - 1; i > 0; --i )
+	{
+		cassert( parents[ i ] );
+		const Sprite* parent = dynamic_cast< const Sprite* >( parents[ i ] );
+		if( parent )
+			xform = ceng::math::Mul( xform, parent->GetXForm() );
+	}
+
+	poro::types::vec2 temp( GetPos().x, GetPos().y );
+	temp = ceng::math::Mul( xform, temp );
+
+	return types::vector2( temp.x, temp.y );
+}
+
+//--------------
+
+types::vector2 Sprite::MultiplyByParentXForm( const types::vector2& p ) const
+{
+	types::vector2 result = ceng::math::Mul( GetXForm(), p );
+	
+	Sprite* parent = dynamic_cast< Sprite* >( getParent() );
+
+	if( parent == NULL ) 
+		return result;
+	else 
+		return parent->MultiplyByParentXForm( result );
 }
 
 } // end of namespace as

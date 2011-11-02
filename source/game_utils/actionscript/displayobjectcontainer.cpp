@@ -62,7 +62,20 @@ void DisplayObjectContainer::addChildAt( DisplayObjectContainer* child, int inde
 
 		pos++;
 	}
-	mChildren.push_back( child );	
+	mChildren.push_back( child );
 }
+
+std::list< DisplayObjectContainer* >& DisplayObjectContainer::GetRawChildren(){
+	return mChildren;
+}
+
+//----
+void DisplayObjectContainer::getParentTree( std::vector< const DisplayObjectContainer* >& parents_tree ) const
+{
+	parents_tree.push_back( this );
+	if( getParent() )
+		getParent()->getParentTree( parents_tree );
+}
+
 
 } // end of namespace as

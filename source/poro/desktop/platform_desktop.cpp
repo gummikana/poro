@@ -27,7 +27,6 @@
 #include "soundplayer_sdl.h"
 #include "joystick_impl.h"
 
-
 namespace poro {
 
 const int PORO_WINDOWS_JOYSTICK_COUNT = 4;
@@ -44,10 +43,12 @@ PlatformDesktop::PlatformDesktop() :
 	mHeight( 0 ),
 	mMouse( NULL ),
 	mKeyboard( NULL ),
+	mTouch( NULL ),
 	mJoysticks(),
 	mSoundPlayer( NULL ),
 	mRunning( 0 ),
-	mMousePos()
+	mMousePos(),
+	mSleepingMode( PORO_MAXIMIZE_SLEEP )
 {
 
 }
@@ -56,8 +57,10 @@ PlatformDesktop::~PlatformDesktop()
 {
 }
 //-----------------------------------------------------------------------------
-void PlatformDesktop::Init( IApplication* application, int w, int h, bool fullscreen, std::string title ) {
 
+void PlatformDesktop::Init( IApplication* application, int w, int h, bool fullscreen, std::string title ) 
+{
+	IPlatform::Init( application, w, h, fullscreen, title );
 	mRunning = true;
 	mFrameCount = 1;
 	mFrameRate = -1;
@@ -73,19 +76,43 @@ void PlatformDesktop::Init( IApplication* application, int w, int h, bool fullsc
 
 	mMouse = new Mouse;
 	mKeyboard = new Keyboard;
+	mTouch = new Touch;
+
+	mJoysticks.resize( PORO_WINDOWS_JOYSTICK_COUNT );
+	for( int i = 0; i < PORO_WINDOWS_JOYSTICK_COUNT; ++i ) {
+		mJoysticks[ i ] = new JoystickImpl( i );
+	}
 
 	SDL_EnableUNICODE(1);
-
 }
+//-----------------------------------------------------------------------------
 
-void PlatformDesktop::SetApplication( IApplication* application )
+void PlatformDesktop::Destroy() 
 {
-	mApplication = application;
+	delete mGraphics;
+	mGraphics = NULL;
+
+	delete mSoundPlayer;
+	mSoundPlayer = NULL;
+
+	delete mMouse;
+	mMouse = NULL;
+
+	delete mKeyboard;
+	mKeyboard = NULL;
+
+	delete mTouch;
+	mTouch = NULL;
+
+	for( std::size_t i = 0; i < mJoysticks.size(); ++i )
+		delete mJoysticks[ i ];
+
+	mJoysticks.clear();
 }
+//-----------------------------------------------------------------------------
 
-void PlatformDesktop::StartMainLoop() {
-
-	// added by Petri on 01.11.2010
+void PlatformDesktop::StartMainLoop() 
+{
 	mRunning = true;
 
 	if( mApplication )
@@ -100,7 +127,6 @@ void PlatformDesktop::StartMainLoop() {
 
 		SingleLoop();
 
-		// added by Petri on 01.11.2010
 		if( mApplication && mApplication->IsDead() == true )
 			mRunning = false;
 
@@ -109,6 +135,8 @@ void PlatformDesktop::StartMainLoop() {
         const types::Float32 elapsed_time = ( time_after - time_before );
         if( elapsed_time < mOneFrameShouldLast )
             Sleep( mOneFrameShouldLast - elapsed_time );
+
+		while( ( GetUpTime() - time_before ) < mOneFrameShouldLast ) { Sleep( 0 ); }
 
         // frame-rate check
         mFrameCount++;
@@ -127,47 +155,10 @@ void PlatformDesktop::StartMainLoop() {
 	if( mApplication )
 		mApplication->Exit();
 }
+//-----------------------------------------------------------------------------
 
-void PlatformDesktop::Destroy() {
-
-	delete mGraphics;
-	mGraphics = NULL;
-
-	delete mSoundPlayer;
-	mSoundPlayer = NULL;
-
-	delete mMouse;
-	mMouse = NULL;
-
-	delete mKeyboard;
-	mKeyboard = NULL;
-
-	for( std::size_t i = 0; i < mJoysticks.size(); ++i )
-		delete mJoysticks[ i ];
-
-	mJoysticks.clear();
-}
-
-void PlatformDesktop::SetFrameRate( int targetRate, bool fixed_time_step ) {
-	mFrameRate = targetRate;
-	mOneFrameShouldLast = 1.f / (types::Float32)targetRate;
-	mFixedTimeStep = fixed_time_step;
-}
-
-int	PlatformDesktop::GetFrameNum() {
-	return mFrameCount;
-}
-
-types::Float32	PlatformDesktop::GetUpTime() {
-	return (types::Float32)( SDL_GetTicks() ) * 0.001f;
-}
-
-void PlatformDesktop::Sleep( types::Float32 seconds ){
-	SDL_Delay( (Uint32)( seconds * 1000.f ) );
-}
-
-void PlatformDesktop::SingleLoop() {
-
+void PlatformDesktop::SingleLoop() 
+{
 	HandleEvents();
 
 	poro_assert( GetApplication() );
@@ -189,14 +180,28 @@ void PlatformDesktop::SingleLoop() {
 }
 //-----------------------------------------------------------------------------
 
-void PlatformDesktop::HandleEvents() {
+void PlatformDesktop::Sleep( types::Float32 seconds )
+{
+	if( mSleepingMode == PORO_NEVER_SLEEP ) {
+		return;
+	}
+	else if( mSleepingMode == PORO_USE_SLEEP_0 ) {
+		SDL_Delay( 0 );
+	}
+	else if( mSleepingMode == PORO_MAXIMIZE_SLEEP ) {
+		SDL_Delay( (Uint32)( seconds * 1000.f ) );
+	}
+}
+//-----------------------------------------------------------------------------
 
-	//----------------------------------------------------------------------------
+void PlatformDesktop::HandleEvents() 
+{
+	//---------
 	for( std::size_t i = 0; i < mJoysticks.size(); ++i ) {
 		HandleJoystickImpl( mJoysticks[ i ] );
 	}
 
-	//----------------------------------------------------------------------------
+	//---------
 
 	SDL_Event event;
 	while( SDL_PollEvent( &event ) )
@@ -205,14 +210,6 @@ void PlatformDesktop::HandleEvents() {
 		{
 			case SDL_KEYDOWN:
 			{
-				/*switch( event.key.keysym.sym )
-				{
-				case SDLK_ESCAPE:
-					mRunning = false;
-					break;
-				default:
-					break;
-				}*/
 				if( mKeyboard )
 					mKeyboard->FireKeyDownEvent(
 						static_cast< int >( event.key.keysym.sym ),
@@ -238,6 +235,8 @@ void PlatformDesktop::HandleEvents() {
 				if( event.button.button == SDL_BUTTON_LEFT )
 				{
 					mMouse->FireMouseDownEvent( mMousePos, Mouse::MOUSE_BUTTON_LEFT );
+					if( mTouch ) 
+						mTouch->FireTouchDownEvent( mMousePos, 0 );
 				}
 				else if( event.button.button == SDL_BUTTON_RIGHT )
 				{
@@ -262,6 +261,8 @@ void PlatformDesktop::HandleEvents() {
 				if( event.button.button == SDL_BUTTON_LEFT )
 				{
 					mMouse->FireMouseUpEvent( mMousePos, Mouse::MOUSE_BUTTON_LEFT );
+					if( mTouch ) 
+						mTouch->FireTouchUpEvent( mMousePos, 0 );
 				}
 				else if( event.button.button == SDL_BUTTON_RIGHT )
 				{
@@ -278,25 +279,26 @@ void PlatformDesktop::HandleEvents() {
 				{
 				    mMousePos = mGraphics->ConvertToInternalPos( event.motion.x, event.motion.y );
 					mMouse->FireMouseMoveEvent( mMousePos );
+					if( mTouch && mTouch->IsTouchIdDown( 0 ) ) 
+						mTouch->FireTouchMoveEvent( mMousePos, 0 );
 				}
 				break;
 		}
 	}
 }
+//-----------------------------------------------------------------------------
 
-void PlatformDesktop::SetWindowSize( int width, int height ) {
+types::Float32 PlatformDesktop::GetUpTime() 
+{
+	return (types::Float32)( SDL_GetTicks() ) * 0.001f;
+}
+
+void PlatformDesktop::SetWindowSize( int width, int height ) 
+{
 	mWidth = width;
 	mHeight = height;
 	mGraphics->SetWindowSize( width, height );
 }
-
-//-----------------------------------------------------------------------------
-
-void PlatformDesktop::SetWorkingDir( poro::types::string dir ){
-	//TODO implement
-	//chdir(dir);
-}
-
 
 Joystick* PlatformDesktop::GetJoystick( int n ) {
 	poro_assert( n >= 0 && n < (int)mJoysticks.size() );
@@ -305,4 +307,5 @@ Joystick* PlatformDesktop::GetJoystick( int n ) {
 	return mJoysticks[ n ];
 }
 
+//-----------------------------------------------------------------------------
 } // end o namespace poro

@@ -28,27 +28,76 @@
 namespace as {
 //-----------------------------------------------------------------------------
 namespace {
-	const float AS_ANIMATION_DELTA_TIME = 1.f / 30.f;
+	const float AS_ANIMATION_DELTA_TIME = 1.f / 60.f;
 }
+//-----------------------------------------------------------------------------
+
+ceng::CFunctionPtr<> AnimationUpdater::handle_markers_func;
+
 //-----------------------------------------------------------------------------
 
 void AnimationUpdater::SetFrame( int frame_i )
 {
 	cassert( animation );
-	std::vector< impl::Part >& parts = animation->parts;
-	for( std::size_t i = 0; i < parts.size(); ++i )
+	cassert( sprite_container );
+
+	if( animation->mask.empty() == false && sprite_container->GetAlphaMask() == NULL )
 	{
-		const std::string& name = parts[ i ].name;
-		impl::Frame* frame = parts[ i ].GetFrame( frame_i );
-
-
-		Sprite* sprite_part = sprite_container->GetChildByName( name );
-		if( sprite_part )
+		// apply alpha_mask
+		as::Sprite* alpha_mask = sprite_container->GetChildByName( animation->mask );
+		if( alpha_mask == NULL ) 
 		{
-			ApplyFrameTo( frame, sprite_part );
+			std::cout << "Error! Couldn't find alpha mask: " << animation->mask << std::endl;
 		}
+		else 
+		{
+			sprite_container->removeChild( alpha_mask );
+			alpha_mask->SetVisibility( true );
+			sprite_container->SetAlphaMask( alpha_mask );
+		}
+	}
+	else if( animation->mask.empty() && sprite_container->GetAlphaMask() )
+	{
+		// remove alpha_mask
+		as::Sprite* alpha_mask = sprite_container->GetAlphaMask();
+		cassert( alpha_mask );
+		alpha_mask->SetVisibility( false );
+		sprite_container->addChild( alpha_mask );
+		sprite_container->SetAlphaMask( NULL );
 
 	}
+
+
+
+	std::vector< impl::Part* >& parts = animation->parts;
+	for( std::size_t i = 0; i < parts.size(); ++i )
+	{
+		if( parts[ i ] )
+		{
+			const std::string& name = parts[ i ]->name;
+			impl::Frame* frame = parts[ i ]->GetFrame( frame_i );
+
+
+			Sprite* sprite_part = sprite_container->GetChildByName( name );
+			if( sprite_part )
+			{
+				ApplyFrameTo( frame, sprite_part );
+			}
+		}
+	}
+
+	// Markers
+	impl::Marker* marker = animation->FindMarkerForFrame( frame_i );
+	if( marker ) 
+	{
+		// HACK HACK HACK for Jesus vs. Dinosaurs
+		// PlayEffect(""  );
+		// std::cout << "PlayEffect: " << marker->name << std::endl;
+		if( handle_markers_func.Empty() == false ) {
+			handle_markers_func( marker->name );
+		}
+	}
+
 }
 
 //-----------------------------------------------------------------------------
@@ -57,7 +106,7 @@ void AnimationUpdater::ApplyFrameTo( impl::Frame* frame, Sprite* sprite )
 {
 	if( frame == NULL )
 	{
-		
+		sprite->SetVisibility( false );
 	}
 	else
 	{
@@ -74,7 +123,8 @@ void AnimationUpdater::ApplyFrameTo( impl::Frame* frame, Sprite* sprite )
 SpriteAnimationUpdater::SpriteAnimationUpdater() : 
 	AnimationUpdater(),
 	mTimer( 0 ),
-	mFrameTimeDelta( AS_ANIMATION_DELTA_TIME )
+	mFrameTimeDelta( AS_ANIMATION_DELTA_TIME ),
+	mPrevFrame( -1 )
 {
 }
 
@@ -93,7 +143,7 @@ void SpriteAnimationUpdater::Update( float dt )
 	} else if (animation->getLoops()) {
 		frame = mTimer / mFrameTimeDelta;
 		
-		if (frame > animation->getPreLoopFrameCount()) {
+		if( Math::round( frame ) > animation->getPreLoopFrameCount()) {
 			frame = (float)( animation->getPreLoopFrameCount() + ((int)(frame - animation->getPreLoopFrameCount()) % (int)animation->getLoopFrameCount()) );
 		}
 		
@@ -101,11 +151,27 @@ void SpriteAnimationUpdater::Update( float dt )
 	} else {
 		frame = animation->getStartFrame() + mTimer / mFrameTimeDelta;
 
-		if( frame >= animation->getTotalFrameCount() )
+		if( Math::round( frame ) >= animation->getTotalFrameCount() )
 			frame = (float)( animation->getTotalFrameCount() - 1 );
 	}
-	
-	SetFrame( Math::round( frame ) );
+
+	// SetFrame if different from the last frame
+	int i_frame = Math::round( frame );
+	if( mPrevFrame != i_frame )
+	{
+		SetFrame( i_frame );
+		mPrevFrame = i_frame;
+	}
+}
+
+bool SpriteAnimationUpdater::IsOver() const
+{
+	if( animation == NULL ) return true;
+
+	if( mPrevFrame >= animation->getTotalFrameCount() - 1 &&
+		animation->getLoops() == false ) return true;
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------

@@ -49,17 +49,26 @@
 	platform->timerLoop();
 }
 
+-(void)lockGL {
+	[glLock lock];
+}
+
+-(void)unlockGL {
+	[glLock unlock];
+}
+
 -(void) applicationDidFinishLaunching:(UIApplication *)application {    
-	
 	//static ofEventArgs voidEventArgs;
 	NSLog(@"applicationDidFinishLaunching() start");
+		
+	// create an NSLock for GL Context locking
+	glLock = [[NSLock alloc] init];
 	
 	// get screen bounds
 	CGRect screenBounds = [[UIScreen mainScreen] bounds];
 	
 	// create fullscreen window
 	UIWindow *window = [[UIWindow alloc] initWithFrame:screenBounds];
-	
 	// Init the View Controller
 	poro::iPhoneGlobals.viewController = [[RootViewController alloc] initWithNibName:nil bundle:nil];
 	poro::iPhoneGlobals.viewController.wantsFullScreenLayout = YES;
@@ -90,9 +99,6 @@
 	if ([currSysVer compare:reqSysVer options:NSNumericSearch] != NSOrderedAscending) displayLinkSupported = TRUE;
 	
 	poro::IPlatform::Instance()->GetApplication()->Init();
-	
-	// todo replace with non deprecated equivalent
-	//[[UIApplication sharedApplication] setStatusBarHidden:YES animated:YES];
 	
 	// clear background
 	glClearColor(0, 0, 0, 1);
@@ -126,12 +132,12 @@
             displayLink = [NSClassFromString(@"CADisplayLink") displayLinkWithTarget:self selector:@selector(timerLoop)];
             [displayLink setFrameInterval:animationFrameInterval];
             [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-			NSLog(@"CADisplayLink supported, running with interval: %i", animationFrameInterval);
+			NSLog(@"CADisplayLink supported, running with interval: %f", animationFrameInterval);
         }
-        else
-			NSLog(@"CADisplayLink not supported, running with interval: %i", animationFrameInterval);
-		
-		animationTimer = [NSTimer scheduledTimerWithTimeInterval:(NSTimeInterval)((1.0 / 60.0) * animationFrameInterval) target:self selector:@selector(timerLoop) userInfo:nil repeats:TRUE];
+        else {
+			NSLog(@"CADisplayLink not supported, running with interval: %f", animationFrameInterval);
+            animationTimer = [NSTimer scheduledTimerWithTimeInterval:(NSTimeInterval)((1.0 / 60.0) * animationFrameInterval) target:self selector:@selector(timerLoop) userInfo:nil repeats:TRUE];
+		}
 		
         animating = TRUE;
     }
@@ -157,7 +163,7 @@
 }
 
 
-- (void)setAnimationFrameInterval:(NSInteger)frameInterval
+- (void)setAnimationFrameInterval:(float)frameInterval
 {
     // Frame interval defines how many display frames must pass between each time the
     // display link fires. The display link will only fire 30 times a second when the
@@ -177,16 +183,17 @@
     }
 }
 
--(void) setFrameRate:(int)rate {
-	NSLog(@"setFrameRate %d using NSTimer", rate);
+-(void) setFrameRate:(float)rate {
+	NSLog(@"setFrameRate %f using NSTimer", rate);
 	
-	if(rate>0) [self setAnimationFrameInterval:60.0/(float)rate];
+	if(rate>0) [self setAnimationFrameInterval:60.0/rate];
 	else [self stopAnimation];
 }
 
 -(void) dealloc {
-	[[[UIApplication sharedApplication] keyWindow] release];
-	[super dealloc];
+   [[[UIApplication sharedApplication] keyWindow] release];
+	[glLock release];
+    [super dealloc];
 }
 
 -(void) applicationWillResignActive:(UIApplication *)application {
@@ -209,6 +216,7 @@
     [[UIDevice currentDevice] endGeneratingDeviceOrientationNotifications];
     
 	[poro::iPhoneGlobals.glView release];
+	
 }
 
 -(void) applicationDidReceiveMemoryWarning:(UIApplication *)application {
@@ -217,4 +225,3 @@
 
 
 @end
-

@@ -51,7 +51,7 @@ namespace network_utils
 
 
 
-	class SimpleMutex
+	/*class SimpleMutex
 	{
 	public:
 		SimpleMutex() :
@@ -105,7 +105,7 @@ namespace network_utils
 
 		bool		mLocked;
 		SDL_mutex*	mLock;
-	};
+	};*/
 
 } // end o namespace network_utils
 

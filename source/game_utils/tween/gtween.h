@@ -81,14 +81,9 @@ public:
 		cassert( in );
 
 		if( in )
-		{
-			mDirty = true;
 			in->SetName( name );
-			
-			RemoveDuplicateInterpolators( name );
-			
-			mInterpolators.push_back( in );
-		}
+		
+		AddInterpolator( in );	
 	}
 
 	template< class T >
@@ -99,17 +94,14 @@ public:
 	{
 		ceng::IInterpolator* in = ceng::CreateInterpolator( getter, setter, target_value, NULL );
 		cassert( in );
-
-		if( in )
-		{
-			mDirty = true;
+		if( in ) 
 			in->SetName( name );
-			
-			RemoveDuplicateInterpolators( name );
-			
-			mInterpolators.push_back( in );
-		}
+
+		AddInterpolator( in );
 	}
+
+	void AddInterpolator( ceng::IInterpolator* in );
+
 
 	void SetFunction( ceng::easing::IEasingFunc& math_func );
 	void SetDuration( float time );
@@ -118,8 +110,8 @@ public:
 	// if you put delay the start values could have changes which causes a glitch instead of a smooth transformation
 	void SetDelay( float delay );
 
-	bool GetIsComplete();
-	bool GetIsRunning();
+	bool GetIsCompleted() const;
+	bool GetIsRunning() const;
 	
 	void Update( float dt );
 
@@ -132,7 +124,7 @@ public:
 	bool ClearPointer( void* pointer );
 
 private:
-	void RemoveDuplicateInterpolators( std::string name );
+	void RemoveDuplicateInterpolators( const std::string& name );
 	
 	// callbacks
 	void OnStart();

@@ -25,7 +25,6 @@
 #include <list>
 #include <algorithm>
 
-// include cassert
 #include "../../utils/debug.h"
 
 #include "eventdispatcher.h"
@@ -56,6 +55,8 @@ public:
 	virtual int GetSpriteType() const = 0;
 	
 	int GetChildCount() const { return (int)mChildren.size(); }
+	
+	ChildList& GetRawChildren();
 
 	// warning this is a super slow method of iterationg though 
 	// children and should not be used in time critical places
@@ -83,6 +84,8 @@ public:
 
 	virtual void removeChild( DisplayObjectContainer* child )
 	{
+		if( child == NULL ) return;
+
 		cassert( child != this );
 
 		ChildList::iterator i = std::find( mChildren.begin(), mChildren.end(), child );
@@ -137,6 +140,11 @@ public:
 	 or the container itself; otherwise false.
 	*/
 	bool contains( DisplayObjectContainer* child );
+
+
+	// goes up the tree for as long it can, adding each parent to the end of the array
+	// so the highest parent is the last in the array
+	void getParentTree( std::vector< const DisplayObjectContainer* >& parents_tree ) const;
 
 protected:
 

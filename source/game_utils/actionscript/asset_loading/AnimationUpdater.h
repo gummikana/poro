@@ -22,7 +22,9 @@
 #ifndef INC_ANIMATIONUPDATER_H
 #define INC_ANIMATIONUPDATER_H
 
-#include <stdio.h> // needed for NULL
+#include <string> // needed for NULL
+
+#include "../../../utils/functionptr/cfunctionptr.h"
 
 namespace as {
 class Sprite;
@@ -55,6 +57,8 @@ public:
 
 	impl::Animation*	animation;
 	Sprite*				sprite_container;
+
+	static ceng::CFunctionPtr<> handle_markers_func;
 };
 
 //-----------------------------------------------------------------------------
@@ -68,9 +72,11 @@ public:
 
 	void Reset() { mTimer = 0; }
 
+	bool IsOver() const;
+
 	float mTimer;
 	float mFrameTimeDelta;
-	
+	int mPrevFrame;
 };
 
 //-----------------------------------------------------------------------------
