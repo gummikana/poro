@@ -126,7 +126,7 @@ public:
 
 	Type Length() const
 	{
-		return (Type)sqrtf( LengthSquared() );
+		return (Type)sqrtf( (float)LengthSquared() );
 	}
 
 	CVector2< Type > Normalize() const
