@@ -47,6 +47,8 @@ using namespace poro::types;
 namespace poro {
 	
 namespace {
+
+	GraphicsSettings OPENGL_SETTINGS;
 	
 	Uint32 GetGLVertexMode(int vertex_mode){
 		switch (vertex_mode) {
@@ -73,15 +75,14 @@ namespace {
 	
 	TextureOpenGLES * CreateTexture( unsigned char *data, int width, int height, GLint pixelFormat)
 	{
-		// disables POT scaling for the ipad to make it look better. 
-		// TODO throw this out before release
-		#ifdef GLORG_HD 
-			int widthPow2 = width;
-			int heightPow2 = height;
-		#else
-			int widthPow2 = GetNextPowerOfTwo(width);
-			int heightPow2 = GetNextPowerOfTwo(height);
-		#endif
+		int widthPow2 = width;
+		int heightPow2 = height;
+		
+		if(OPENGL_SETTINGS.textures_resize_to_power_of_two)
+		{			
+			widthPow2 = GetNextPowerOfTwo(width);
+			heightPow2 = GetNextPowerOfTwo(height);
+		}
 		
 		TextureOpenGLES *texture = new TextureOpenGLES();
 		texture->mWidth  = width;
@@ -130,8 +131,6 @@ namespace {
 	}
 	
 	TextureOpenGLES * LoadImageFile( const types::string& filename ){
-		
-		
 		
 		unsigned char *		data = NULL;
 		int					width, height, bpp;
@@ -201,9 +200,12 @@ namespace {
 			
 			data = new unsigned char[GetNextPowerOfTwo(width)*GetNextPowerOfTwo(height)*byteCount];
 			
-			FreeImage_PreMultiplyWithAlpha(bmp);
-			FreeImage_ConvertToRawBits(data, bmp, width*byteCount, bpp, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK, false);  // get bits
+			if(OPENGL_SETTINGS.textures_fix_alpha_channel)
+			{
+				FreeImage_PreMultiplyWithAlpha(bmp);
+			}
 			
+			FreeImage_ConvertToRawBits(data, bmp, width*byteCount, bpp, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK, false);  // get bits
 			
 		} else {
 			std::cout << "Unable to load image: " << filename.c_str() << std::endl;
@@ -237,9 +239,10 @@ namespace {
 		glBindTexture(GL_TEXTURE_2D, texture->mTextureId);
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_BLEND);
-		glColor4f(color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
+		
         
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        glColor4f(color[ 0 ] * color[3], color[ 1 ] * color[3], color[ 2 ] * color[3], color[ 3 ] );
 		
 		glEnableClientState( GL_TEXTURE_COORD_ARRAY );
 		glTexCoordPointer(2, GL_FLOAT, 0, glTexCoords );
@@ -270,14 +273,15 @@ namespace {
 		// Enable 2D texturing
 		glActiveTexture(GL_TEXTURE0);
 		glEnable(GL_TEXTURE_2D);
-		glColor4f(alpha_color[ 0 ], alpha_color[ 1 ], alpha_color[ 2 ], alpha_color[ 3 ] );
+        glColor4f(alpha_color[ 0 ] * alpha_color[3], alpha_color[ 1 ] * alpha_color[3], alpha_color[ 2 ] * alpha_color[3], alpha_color[ 3 ] );
 		glBindTexture(GL_TEXTURE_2D, alpha_texture->mTextureId );
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		
+		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        
+
 		glActiveTexture(GL_TEXTURE1);
 		glEnable(GL_TEXTURE_2D);
-		glColor4f(color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
+		glColor4f(color[ 0 ] * color[ 3 ], color[ 1 ] * color[ 3 ], color[ 2 ] * color[ 3 ], color[ 3 ] );
 		glBindTexture(GL_TEXTURE_2D, texture->mTextureId );
 		
 		glDisable(GL_CULL_FACE);
@@ -317,6 +321,9 @@ namespace {
 		
 } // end o namespace anon
 
+void GraphicsOpenGLES::SetSettings( const GraphicsSettings& settings ) {
+	OPENGL_SETTINGS = settings;
+}
 
 
 bool GraphicsOpenGLES::Init( int width, int height, bool fullscreen, const types::string& caption )
@@ -536,9 +543,6 @@ void GraphicsOpenGLES::BeginRendering()
 				 mFillColor[ 2 ],
 				 mFillColor[ 3 ] );
 	
-	/*std::cout << "fillColor: " << mFillColor[ 0 ] << ", " << mFillColor[ 1 ] << ", " 
-	<< mFillColor[ 2 ] << ", " << mFillColor[ 3 ] << std::endl;
-	*/
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	
 }

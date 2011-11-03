@@ -23,11 +23,12 @@
 
 namespace ceng {
 
+CLog logger_impl;
 CLog assert_logger;
 
 void ClearLogs()
 {
-	logger.SetFile( "logs/log.txt" );
+	logger_impl.SetFile( "logs/log.txt" );
 	assert_logger.SetFile( "logs/assert_fails.txt" );
 }
 

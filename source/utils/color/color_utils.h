@@ -37,6 +37,7 @@ namespace types
 // ----------------------------------------------------------------------------
 
 types::color GetRandomColor( const std::vector< types::uint32 >& colors );
+types::color GetRandomColor( types::uint32* colors, int count );
 
 // ----------------------------------------------------------------------------
 

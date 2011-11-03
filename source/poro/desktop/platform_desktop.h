@@ -26,6 +26,7 @@
 #include "../iplatform.h"
 #include "../mouse.h"
 #include "../keyboard.h"
+#include "../touch.h"
 #include "graphics_opengl.h"
 #include "soundplayer_sdl.h"
 
@@ -50,10 +51,10 @@ public:
 
 	//window / screen
 	virtual void    SetWindowSize( int width, int height );
-	virtual int		GetWidth() { return mWidth; }
-	virtual int		GetHeight() { return mHeight; }
+	virtual int		GetWidth();
+	virtual int		GetHeight();
 
-	virtual bool GetOrientationIsLandscape() { return false; }
+	virtual bool GetOrientationIsLandscape();
 
 	//global pointers
 	virtual void			SetApplication( IApplication* application );
@@ -63,6 +64,7 @@ public:
 	//controllers
 	virtual Mouse*			GetMouse();
 	virtual Keyboard*		GetKeyboard();
+	virtual Touch*			GetTouch();
 	virtual int				GetJoystickCount() const;
 	virtual Joystick*		GetJoystick( int n );
 
@@ -72,6 +74,7 @@ public:
 	virtual int		        GetFrameNum();
 	virtual types::Float32  GetUpTime();
 	virtual void	        Sleep( types::Float32 seconds );
+	virtual void			SetSleepingMode( int sleep_mode );
 
 	//filesystem
 	virtual void	SetWorkingDir( poro::types::string dir = poro::types::string(".") );
@@ -93,10 +96,12 @@ protected:
 	int							    mHeight;
 	Mouse*						    mMouse;
 	Keyboard*					    mKeyboard;
+	Touch*							mTouch;
 	std::vector< JoystickImpl* >	mJoysticks;
 	SoundPlayerSDL*		            mSoundPlayer;
 	bool						    mRunning;
 	types::vec2					    mMousePos;
+	int								mSleepingMode;
 
 private:
 };
@@ -107,12 +112,20 @@ inline void PlatformDesktop::Exit() {
     mRunning = false;
 }
 
-inline Mouse* PlatformDesktop::GetMouse() {
-	return mMouse;
+inline int PlatformDesktop::GetWidth() { 
+	return mWidth; 
 }
 
-inline Keyboard* PlatformDesktop::GetKeyboard() {
-	return mKeyboard;
+inline int PlatformDesktop::GetHeight() { 
+	return mHeight; 
+}
+
+inline bool PlatformDesktop::GetOrientationIsLandscape() { 
+	return false; 
+}
+// ---
+inline void PlatformDesktop::SetApplication( IApplication* application ) {
+	mApplication = application;
 }
 
 inline IGraphics* PlatformDesktop::GetGraphics() {
@@ -123,14 +136,48 @@ inline ISoundPlayer* PlatformDesktop::GetSoundPlayer() {
 	return mSoundPlayer;
 }
 
-inline int PlatformDesktop::GetFrameRate() {
-	return mFrameRate;
+// ---
+inline Mouse* PlatformDesktop::GetMouse() {
+	return mMouse;
+}
+
+inline Keyboard* PlatformDesktop::GetKeyboard() {
+	return mKeyboard;
+}
+
+inline Touch* PlatformDesktop::GetTouch() {
+	return mTouch;
 }
 
 inline int	PlatformDesktop::GetJoystickCount() const  {
 	return (int)mJoysticks.size();
 }
 
+// ---
+inline void PlatformDesktop::SetFrameRate( int targetRate, bool fixed_time_step ) {
+	mFrameRate = targetRate;
+	mOneFrameShouldLast = 1.f / (types::Float32)targetRate;
+	mFixedTimeStep = fixed_time_step;
+}
+
+inline int PlatformDesktop::GetFrameRate() {
+	return mFrameRate;
+}
+
+inline int	PlatformDesktop::GetFrameNum() {
+	return mFrameCount;
+}
+
+inline void PlatformDesktop::SetSleepingMode( int sleep_mode ) {
+	mSleepingMode = sleep_mode;
+}
+
+inline void PlatformDesktop::SetWorkingDir( poro::types::string dir )  {
+	//TODO implement
+	//chdir(dir);
+}
+
+//-----------------------------------------------------------------------------
 } // end o namespace poro
 
 

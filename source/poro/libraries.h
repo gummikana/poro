@@ -28,7 +28,7 @@
 #ifdef PORO_PLAT_IPHONE
 
 #include <CoreFoundation/CoreFoundation.h>
-#include "../freeimage/include/FreeImage.h"
+#include "FreeImage.h"
 
 #endif
 

@@ -22,6 +22,7 @@
 #define INC_GRAPHICS_OPENGL_H
 
 #include "../poro_types.h"
+#include "../../types.h"
 #include "../igraphics.h"
 
 
@@ -29,6 +30,11 @@ namespace poro {
 
 class ITexture;
 class IGraphicsBuffer;
+
+//---------------
+
+//---------------
+
 
 class GraphicsOpenGL : public IGraphics
 {
@@ -39,6 +45,8 @@ public:
     virtual void        SetWindowSize(int width, int height);
     virtual void        SetFullscreen(bool fullscreen);
     virtual bool        GetFullscreen() { return mFullscreen; }
+
+	virtual void		SetSettings( const GraphicsSettings& settings );
 
 	virtual ITexture*	CreateTexture( int width, int height );
 	virtual ITexture*	CloneTexture( ITexture* other );
@@ -77,17 +85,15 @@ public:
 	
 	virtual void		DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth, float width, bool loop );
 	virtual void		DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color );
+	virtual void		DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture );
 	
 	virtual IGraphicsBuffer* CreateGraphicsBuffer(int width, int height);
 	virtual void DestroyGraphicsBuffer(IGraphicsBuffer* buffer);
 	
 	types::vec2     ConvertToInternalPos( int x, int y );
 
-	//types::vec2 GetViewportOffset() const { return mViewportOffset; }
-	//types::vec2 GetViewportSize() const { return mViewportSize; }
-	
-private:
     void    ResetWindow();
+private:
     
     bool    mFullscreen;
     int     mWindowWidth;
@@ -95,6 +101,11 @@ private:
     types::vec2 mViewportOffset;
     types::vec2 mViewportSize;
    
+	float mDesktopWidth;
+	float mDesktopHeight;
+	
+    bool mGlContextInitialized;
+
 };
 
 } // end o namespace poro

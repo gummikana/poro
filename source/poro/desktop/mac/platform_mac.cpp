@@ -22,6 +22,8 @@
 
 #include "../../libraries.h"
 
+namespace poro {
+    
 void PlatformMac::SetWorkingDir(poro::types::string dir){
     static std::string path_str = "";
     const int maxpath = 1024;

@@ -130,6 +130,9 @@ std::string StringReplace( const std::string& what, const std::string& with, con
 //! for removing white space
 std::string RemoveWhiteSpace( std::string line );
 
+//! removes whitespace and line endings
+std::string RemoveWhiteSpaceAndEndings( std::string line );
+
 //! removes "" from the line
 std::string RemoveQuotes( std::string line );
 

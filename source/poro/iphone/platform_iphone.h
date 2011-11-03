@@ -28,12 +28,13 @@
 #include <iostream>
 #include <CoreFoundation/CoreFoundation.h>
 #include <vector>
+#include <bitset>
 
 namespace poro {
 
 	class GraphicsOpenGLES;
 	
-	class PlatformIPhone : public IPlatform{
+	class PlatformIPhone : public IPlatform {
 	public:
 		
 		enum DEVICE_ORIENTATION {
@@ -63,6 +64,9 @@ namespace poro {
 		virtual void SetOrientationIsLandscape(bool isLandscape);
 		virtual bool GetOrientationIsLandscape();
 		
+		virtual void SetOrientationSupported(DEVICE_ORIENTATION orientation, bool supported);
+		virtual bool GetOrientationSupported(DEVICE_ORIENTATION orientation);
+		
 		virtual IGraphics * GetGraphics();
 		virtual ISoundPlayer * GetSoundPlayer();
 
@@ -91,6 +95,7 @@ namespace poro {
 		
 		bool mIsLandscape;
 		int mDeviceOrientation;
+		std::bitset<4> mSupportedOrientations;
 		
 	private:
 		types::Float32	mFrameTimePrevious;

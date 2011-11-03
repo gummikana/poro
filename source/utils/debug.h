@@ -32,7 +32,19 @@
 
 //#define assert_logger std::cout
 //#define logger std::cout
-#include "logger/logger.h"
+
+// #ifdef PORO_PLAT_WINDOWS
+#if 0
+
+#	define PORO_USE_LOGGER
+#	include "logger/logger.h"
+
+#else
+
+#	define logger std::cout
+#	define assert_logger std::cout
+
+#endif
 
 //----------------------------------------------------
 // define cassert
@@ -44,7 +56,7 @@
 		{ \
 			if (!(cond)) \
 			{ \
-				ceng::assert_logger << "Assert failed: (" << #cond << ") in " << __FILE__ << " at line " << __LINE__ << std::endl; \
+				assert_logger << "Assert failed: (" << #cond << ") in " << __FILE__ << " at line " << __LINE__ << std::endl; \
 			} \
 		} while(0)
 #else

@@ -16,6 +16,8 @@
 #include "utils/network/network_serializer.h"
 #include "utils/camera/icamera.h"
 #include "utils/bitmask/cbitmask_math.h"
+#include "utils/staticarray/cstaticarray.h"
+#include "utils/color/ccolor.h"
 
 
 namespace types {
@@ -46,6 +48,9 @@ typedef ceng::math::CAngle< float >		angle;
 
 typedef network_utils::ISerializer		bit_serialize;
 typedef ceng::ICamera< vector2 >		camera;
+
+typedef ceng::CStaticArray< unsigned char, 4 >	ccolor;
+typedef ceng::CColorFloat						fcolor;
 
 //-----------------------------------------------------------------------------
 

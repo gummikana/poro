@@ -27,10 +27,25 @@
 #include "poro_types.h"
 #include "poro_macros.h"
 #include "itexture.h"
+#include "../types.h"
 
 namespace poro {
 
 class IGraphicsBuffer;
+//-----------------------------
+
+struct GraphicsSettings
+{
+	GraphicsSettings() : 
+		textures_resize_to_power_of_two( true ), 
+		textures_fix_alpha_channel( true ) 
+	{
+	}
+
+	bool textures_resize_to_power_of_two;
+	bool textures_fix_alpha_channel;
+};
+//-----------------------------
 
 class IGraphics
 {
@@ -57,6 +72,8 @@ public:
     virtual bool        GetFullscreen() { poro_assert( false ); return false;/* You have to implement this */ }
 
 	//-------------------------------------------------------------------------
+
+	virtual void		SetSettings( const GraphicsSettings& settings ) { }
 
 	virtual void				SetFillColor( const poro::types::fcolor& c );
 	virtual poro::types::fcolor	GetFillColor() const;
@@ -109,16 +126,12 @@ public:
 	virtual void		DrawTextureWithAlpha( ITexture* texture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color,
 		ITexture* alpha_texture, types::vec2* alpha_vertices, types::vec2* alpha_tex_coords, const types::fcolor& alpha_color ) { poro_assert( false && "Needs to be implemented" ); }
 
-	// haxored this for tesselation - Petri
-	// virtual void		DrawTriangle( ITexture* texture, types::vec2 vertices[ 3 ], types::vec2 tex_coords[ 3 ], const types::fcolor& color ) { }
-	// removed this as it should actually be replaced by DrawTexture() that takes an arbitary number of vertices
-
-
 	//-------------------------------------------------------------------------
 
 	virtual void		DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth, float width, bool loop = false ) { }
 	virtual void		DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) { DrawLines( vertices, color, false, 1.f, true ); }
 	virtual void		DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) { }
+	virtual void		DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture ) { }
 
 	//-------------------------------------------------------------------------
 

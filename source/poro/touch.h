@@ -18,12 +18,13 @@
  *
  ***************************************************************************/
 
-#ifndef TOUCH_H
-#define TOUCH_H
+#ifndef INC_TOUCH_H
+#define INC_TOUCH_H
 
-#include "itouch_listener.h"
 #include <vector>
+#include <map>
 #include "poro_types.h"
+#include "itouch_listener.h"
 
 namespace poro {
 	
@@ -41,8 +42,14 @@ namespace poro {
 		void FireTouchDownEvent(const types::vec2& pos, int touchId);
 		void FireTouchUpEvent(const types::vec2& pos, int touchId);
 		
+		bool IsTouchIdDown( int touchId ) const;
+
 	private:
+
+		void SetTouchDown( int touchId, bool down );
+
 		std::vector<ITouchListener*> mTouchListeners;
+		std::map< int, bool > mTouchDowns;
 		
 	};
 	

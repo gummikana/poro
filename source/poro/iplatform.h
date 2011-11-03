@@ -47,7 +47,7 @@ public:
 	// haven't been set already!
 	// mInternalWidth is 0 if nobody has set it by hand same goes for mInternalHeight
 	virtual void Init(IApplication* application, int w, int h, bool fullscreen, std::string = "Poro Application");
-	virtual void Exit(){};
+	virtual void Exit() { }
 
 	virtual void StartMainLoop() = 0;
 
@@ -93,6 +93,7 @@ public:
 	virtual int		        GetFrameNum()					{ poro_assert( false ); return 0; }
 	virtual types::Float32  GetUpTime()						{ poro_assert( false ); return 0; }
 	virtual void	        Sleep( types::Float32 seconds ) { poro_assert( false ); }
+	virtual void			SetSleepingMode( int sleep_mode ) { poro_assert( false ); }
 
 	//filesystem
 	virtual void				SetWorkingDir(poro::types::string dir = poro::types::string("."));
@@ -114,6 +115,15 @@ protected:
 	types::Float32 mInternalWidth;
 	types::Float32 mInternalHeight;
 
+};
+
+//-------------------------- inlined stuff ------------------------------------
+
+enum PORO_SLEEPING_MODES
+{
+	PORO_NEVER_SLEEP = 0,
+	PORO_USE_SLEEP_0 = 1,
+	PORO_MAXIMIZE_SLEEP = 2	// default
 };
 
 //-------------------------- inlined stuff ------------------------------------

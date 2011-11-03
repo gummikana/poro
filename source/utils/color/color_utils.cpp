@@ -58,6 +58,33 @@ types::color GetRandomColor( const std::vector< types::uint32 >& colors )
 
 	return types::color( r, g, b );
 }
+// ----------------------------------------------------------------------------
+
+types::color GetRandomColor( types::uint32* colors, int count )
+{
+	types::uint32 color = colors[ ceng::Random( 0, (int)count - 1 ) ];
+	types::uint32 r32, g32, b32;
+	
+	types::uint32 RMask( 0x00FF0000 );
+	types::uint32 GMask( 0x0000FF00);
+	types::uint32 BMask( 0x000000FF );
+	types::uint32 RShift( 16 );
+	types::uint32 GShift( 8 );
+	types::uint32 BShift( 0 );
+	r32 = color & RMask;
+	g32 = color & GMask;
+	b32 = color & BMask;
+
+	int r = r32 >> RShift;
+	int g = g32 >> GShift;
+	int b = b32 >> BShift;
+
+	r = ceng::math::Clamp( ((int)r) , 0, 255 );
+	g = ceng::math::Clamp( ((int)g) , 0, 255 );
+	b = ceng::math::Clamp( ((int)b) , 0, 255 );
+
+	return types::color( r, g, b );
+}
 
 // ----------------------------------------------------------------------------
 

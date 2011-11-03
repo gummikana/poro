@@ -41,7 +41,7 @@ void Keyboard::RemoveKeyboardListener( IKeyboardListener* listener )
 	std::vector< IKeyboardListener* >::iterator i = 
 		std::find( mListeners.begin(), mListeners.end(), listener );
 
-	// poro_assert( i != mListeners.end() );
+	poro_assert( i != mListeners.end() );
 
 	if( i != mListeners.end() )
 		mListeners.erase( i );
@@ -49,21 +49,49 @@ void Keyboard::RemoveKeyboardListener( IKeyboardListener* listener )
 
 void Keyboard::FireKeyDownEvent( int button, types::charset unicode )
 {
-	for( std::size_t i = 0; i < mListeners.size(); ++i )
+	// this is here so we don't fire up the same down event if a listener is added on a down event
+	// example of this is menus, that get created when a button is pressed and are added to the end of the array
+	// this causes that the newly added menu also gets the 
+	std::size_t listeners_size = mListeners.size();
+	for( std::size_t i = 0; i < mListeners.size() && i < listeners_size; ++i )
 	{
 		poro_assert( mListeners[ i ] );
 		mListeners[ i ]->OnKeyDown( button, unicode );
 	}
+
+	SetKeyDown( button, true );
 }
 
 void Keyboard::FireKeyUpEvent( int button, types::charset unicode )
 {
-	for( std::size_t i = 0; i < mListeners.size(); ++i )
+	std::size_t listeners_size = mListeners.size();
+	for( std::size_t i = 0; i < mListeners.size() && i < listeners_size; ++i )
 	{
 		poro_assert( mListeners[ i ] );
 		mListeners[ i ]->OnKeyUp( button, unicode );
 	}
+
+	SetKeyDown( button, false );
 }
 
+bool Keyboard::IsKeyDown( int button ) const
+{
+	if( button >= 0 &&
+		button < (int)mKeysDown.size() ) 
+		return mKeysDown[ button ];
+
+	return false;
+}
+
+void Keyboard::SetKeyDown( int key, bool down )
+{
+	if( key < 0 ) return;
+	if( key > 10000 ) return;
+
+	if( key >= (int)mKeysDown.size() ) 
+		mKeysDown.resize( key + 1 );
+
+	mKeysDown[ key ] = down;
+}
 
 } // end of namespace poro

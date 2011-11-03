@@ -80,7 +80,7 @@ public:
 
 	virtual bool Draw( poro::IGraphics* graphics, types::camera* camera, Transform& transform );
 protected:
-	virtual bool DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const types::xform& matrix );
+	virtual bool DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const Transform& transform );
 
 protected:
 
@@ -101,6 +101,13 @@ protected:
 };
 
 // ----------------------------------------------------------------------------
+
+inline CFont* TextSprite::GetFont() {
+	return mFont;
+}
+
+// ----------------------------------------------------------------------------
+
 } // end of namespace as
 
 #endif 

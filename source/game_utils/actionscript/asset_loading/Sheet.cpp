@@ -25,36 +25,38 @@
 #include "../../../poro/iplatform.h"
 #include "../../../poro/igraphics.h"
 
-#define ANIMATION_FRAMES_PER_SECOND 60
 
 namespace as {
 namespace impl {
 
 namespace {
-/*
-		poro::ITexture* t = LoadImage( "data/1.png" );
-		t->SetUVCoords( 0.16357421875, 0.15625, 0.18505859375, 0.177490234375  );
-		t->SetExternalSize( 88, 87 );
-
-		mAtlasTest = new as::Sprite;
-		mAtlasTest->SetTexture( t );
-		mAtlasTest->SetSize( (int)t->GetWidth(), (int)t->GetHeight() );
-*/
-
+	// this seems quite a lot but it seems to give the best result
+	const float ANIMATION_FRAMES_PER_SECOND = 30.f;
 
 
 Sprite* LoadSpriteFromAtlas( const Texture& t )
 {
-	poro::ITexture* from_memory = GetTexture( "data/1.png" );
-	cassert( from_memory );
+	std::string atlas_name = "data/" + t.atlas;
+	poro::ITexture* from_memory = GetTexture( atlas_name );
+	if( from_memory == NULL ) 
+	{
+		std::cout << "ERROR! Couldn't load atlas: " << atlas_name << std::endl;
+		return NULL;
+	}
+
 	poro::ITexture* clone = poro::IPlatform::Instance()->GetGraphics()->CloneTexture( from_memory );
+	
+	int w = t.width;
+	int h = t.height;
 
 	clone->SetUVCoords( t.left, t.top, t.right, t.bottom );
-	clone->SetExternalSize( t.width, t.height );
+	clone->SetExternalSize( w, h );
 
 	Sprite* result = new Sprite;
 	result->SetTexture( clone );
 	result->SetSize( (int)clone->GetWidth(), (int)clone->GetHeight() );
+	result->SetX(t.x);
+	result->SetY(t.y);
 
 	return result;
 }
@@ -77,14 +79,14 @@ types::rect FigureOutRectPos( int frame, int width, int height )
 		(float)height );
 }
 
-void DoAnimationTo( Sprite* sprite, int frameCount, int width, int height ) 
+void DoAnimationTo( Sprite* sprite, int frameCount, int width, int height, float frames_per_second = ANIMATION_FRAMES_PER_SECOND, int frames_per_row = 4 ) 
 {
 	Sprite::RectAnimation* animation = new Sprite::RectAnimation;
 	animation->mFrameCount = frameCount;
 	animation->mWidth = width;
 	animation->mHeight = height;
-	animation->mWaitTime = 1.f / ANIMATION_FRAMES_PER_SECOND;
-	animation->mFramesPerRow = 4;
+	animation->mWaitTime = 1.f / frames_per_second;
+	animation->mFramesPerRow = frames_per_row;
 	
 	sprite->SetRectAnimation( animation );
 	sprite->Update( 0 );
@@ -116,8 +118,11 @@ Sprite* TextureSheet::AsSprite( const std::string& path, bool use_atlas )
 
 			// do animation
 			if( mTextures[i].frameCount > 0 ) {
-				DoAnimationTo( child, mTextures[i].frameCount, mTextures[i].width, mTextures[i].height );
+				DoAnimationTo( child, mTextures[i].frameCount, mTextures[i].frameWidth, mTextures[i].frameHeight, ANIMATION_FRAMES_PER_SECOND, mTextures[i].columns );
 			}
+
+			if( mTextures[i].mask ) 
+				child->SetVisibility( false );
 
 			result->addChild( child );
 		}
@@ -149,6 +154,11 @@ Sprite* TextureSheet::LoadSpriteFromSheet( const std::string& path, const std::s
 			{
 				child->SetCenterOffset( mTextures[i].registrationPoint );
 				child->SetName( mTextures[i].name );
+
+				// do animation
+				if( mTextures[i].frameCount > 0 ) {
+					DoAnimationTo( child, mTextures[i].frameCount, mTextures[i].frameWidth, mTextures[i].frameHeight, ANIMATION_FRAMES_PER_SECOND, mTextures[i].columns );
+				}
 			}
 
 			return child;

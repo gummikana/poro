@@ -53,12 +53,13 @@ void UpdateGTweens( float dt )
 ///////////////////////////////////////////////////////////////////////////////
 
 GTween::GTween() :
+	ceng::CAutoList< GTween >(),
 	mDirty( false ),
 	mDelay( 0 ),
 	mDuration( 1.f ),
 	mTimer( 0 ),
 	mDead( false ),
-	mCompleted ( true ),
+	mCompleted( false ),
 	mLooping( false ),
 	mOnLoop( false ),
 	mKillMeAutomatically( false ),
@@ -69,12 +70,13 @@ GTween::GTween() :
 //-----------------------------------------------------------------------------
 
 GTween::GTween( float duration, bool auto_kill ) :
+	ceng::CAutoList< GTween >(),
 	mDirty( false ),
 	mDelay( 0 ),
 	mDuration( duration ),
 	mTimer( 0 ),
 	mDead( false ),
-	mCompleted ( true ),
+	mCompleted( false ),
 	mLooping( false ),
 	mOnLoop( false ),
 	mKillMeAutomatically( auto_kill ),
@@ -95,8 +97,23 @@ GTween::~GTween()
 
 //-----------------------------------------------------------------------------
 
+void GTween::AddInterpolator( ceng::IInterpolator* in )
+{
+	if( in ) 
+	{
+		mDirty = true;
+	
+		RemoveDuplicateInterpolators( in->GetName() );
+		
+		mInterpolators.push_back( in );
+	}
+}
+
+//-----------------------------------------------------------------------------
+
 // iterates over the list of interpolators and drops any interpolator that has the same name
-void GTween::RemoveDuplicateInterpolators(std::string name){
+void GTween::RemoveDuplicateInterpolators( const std::string& name)
+{
 	// sets the iterator to the first item in the vector
 	std::vector< ceng::IInterpolator* >::iterator it = mInterpolators.begin();
 	while(it != mInterpolators.end()){
@@ -145,11 +162,13 @@ void GTween::SetDelay( float delay )
 	}
 }
 
-bool GTween::GetIsComplete(){
+bool GTween::GetIsCompleted() const
+{
 	return mCompleted;
 }
 
-bool GTween::GetIsRunning(){
+bool GTween::GetIsRunning() const
+{
 	return mDelay > 0 && mTimer <= mDuration;
 }
 

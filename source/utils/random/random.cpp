@@ -85,6 +85,20 @@ float Randomf( float low, float high )
 	return low+((high-low)*(float)l() );
 }
 
+float RandomizeValue( float seed, float low, float high )
+{
+	// m = 2147483647 = 2^31 - 1; a = 16807;
+	// 127773 = m div a; 2836 = m mod a
+	long iseed = (long)(seed * 1024.f);
+	long hi = iseed / 127773L;                 // integer division
+	long lo = iseed - hi * 127773L;            // modulo
+	iseed = 16807 * lo - 2836 * hi;
+	if (iseed <= 0) iseed += 2147483647L;
+	seed = (float)((double)iseed); 
+	double result = seed*4.656612875e-10;
+
+	return low+((high-low)*(float)result );
+}
 ///////////////////////////////////////////////////////////////////////////////
 
 int CreateWeightedRandom( int low, int high, const std::vector< int >& data, float constant )
