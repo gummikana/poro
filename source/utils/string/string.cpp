@@ -318,6 +318,19 @@ std::string RemoveWhiteSpace( std::string line )
 	return line;
 }
 
+std::string RemoveWhiteSpaceAndEndings( std::string line )
+{
+	size_t position = line.find_first_not_of(" \t\r\n");
+    if( position != 0 ) 
+		line.erase( 0,  position );
+
+    position = line.find_last_not_of(" \t\r\n");
+    if( position != line.size() - 1 )
+		line.erase( position+1 );
+
+	return line;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 std::string RemoveQuotes( std::string line )
