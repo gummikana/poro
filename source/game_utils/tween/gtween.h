@@ -73,6 +73,7 @@ public:
 	void Kill();
 	void SetAutoKill( bool kill_me_when_done );
 
+	void SetLooping( bool looping ) { mLooping = looping; }
 
 	template< class T >
 	void AddVariable( T& reference, const T& target_value, const std::string& name )
@@ -152,6 +153,10 @@ private:
 	bool mDead;
 	bool mKillMeAutomatically;
 	bool mCompleted;
+
+	bool mLooping;
+	bool mOnLoop;
+
 	ceng::easing::IEasingFunc* mMathFunc;
 
 };
