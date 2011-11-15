@@ -62,6 +62,8 @@ float GetLineWidth() {
 
 void DrawLine( poro::IGraphics* graphics, const types::vector2& i_p1, const types::vector2& i_p2, const poro::types::fcolor& color, types::camera* camera )
 {
+	if( color[ 3 ] <= 0.01f ) return;
+
 	static std::vector< poro::types::vec2 > line( 2 );
 
 	types::vector2 p1 = i_p1;
