@@ -115,6 +115,11 @@ void PlatformDesktop::StartMainLoop()
 {
 	mRunning = true;
 
+	if( true ) {
+		mGraphics->BeginRendering();
+		mGraphics->EndRendering();
+	}
+	
 	if( mApplication )
 		mApplication->Init();
 
