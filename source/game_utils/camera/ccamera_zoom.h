@@ -190,13 +190,23 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-
+// 
+// In order to use the camera zoom with clamping you need to set two parameters
+//		SetCameraSize( config::screen_w, config::screen_h );
+// 		SetCameraClampRect( types::rect( 0, 0, config::screen_w, config::screen_h ), true );
+// 
+// that should do it, in case I spend a half a day figuring out how to use the 
+// camera again
+//.............................................................................
 class CCameraZoom : public CCameraTransformer
 {
 public:
 
 	CCameraZoom();
 	~CCameraZoom();
+
+	// this should be called SetScreenSize
+	// 	- SetCameraSize( config::screen_w, config::screen_h );
 
     void SetCameraSize( float width, float height);
 	// void Important( const types::vector2& center_point, float radius );
@@ -216,6 +226,13 @@ public:
 
 	void DoCameraShake( float time, float shakeness );
 
+	//------
+
+	void	SetCameraSmoothness( float smoothness );
+	float	GetCameraSmoothness() const;
+
+	//------
+
 	float				mMinZoom;
 	float				mMaxZoom;
 	float				mTargetScale;
@@ -229,14 +246,25 @@ public:
 	bool				mCanWeChangeScale;
 	bool				mCanWeMoveOffset;
 
-	int					mState;
-
 	// camera shake
 	float				mCameraShakeTime;
 	float				mCameraShakeMaxTime;
 	float				mCameraShakeAmount;
 
 	float				mCameraRealRotation;
+
+	float				mSmoothness;
 };
+//---------------------
+
+inline void	CCameraZoom::SetCameraSmoothness( float smoothness ) {
+	mSmoothness = smoothness;
+}
+
+inline float CCameraZoom::GetCameraSmoothness() const {
+	return mSmoothness;
+}
+
+//---------------------
 
 #endif
