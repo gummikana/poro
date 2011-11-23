@@ -85,7 +85,11 @@ void DoAnimationTo( Sprite* sprite, int frameCount, int width, int height, float
 	animation->mFrameCount = frameCount;
 	animation->mWidth = width;
 	animation->mHeight = height;
-	animation->mWaitTime = 1.f / frames_per_second;
+	if( frames_per_second > 0 )
+		animation->mWaitTime = 1.f / frames_per_second;
+	else 
+		animation->mWaitTime = 0;
+
 	animation->mFramesPerRow = frames_per_row;
 	
 	sprite->SetRectAnimation( animation );
@@ -118,7 +122,7 @@ Sprite* TextureSheet::AsSprite( const std::string& path, bool use_atlas )
 
 			// do animation
 			if( mTextures[i].frameCount > 0 ) {
-				DoAnimationTo( child, mTextures[i].frameCount, mTextures[i].frameWidth, mTextures[i].frameHeight, ANIMATION_FRAMES_PER_SECOND, mTextures[i].columns );
+				DoAnimationTo( child, mTextures[i].frameCount, mTextures[i].frameWidth, mTextures[i].frameHeight, mTextures[i].frameRate, mTextures[i].columns );
 			}
 
 			if( mTextures[i].mask ) 
@@ -157,7 +161,7 @@ Sprite* TextureSheet::LoadSpriteFromSheet( const std::string& path, const std::s
 
 				// do animation
 				if( mTextures[i].frameCount > 0 ) {
-					DoAnimationTo( child, mTextures[i].frameCount, mTextures[i].frameWidth, mTextures[i].frameHeight, ANIMATION_FRAMES_PER_SECOND, mTextures[i].columns );
+					DoAnimationTo( child, mTextures[i].frameCount, mTextures[i].frameWidth, mTextures[i].frameHeight, mTextures[i].frameRate, mTextures[i].columns );
 				}
 			}
 

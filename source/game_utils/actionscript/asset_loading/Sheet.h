@@ -40,6 +40,7 @@ namespace impl {
 			columns( 0 ),
 			frameHeight( 0 ),
 			frameWidth( 0 ),
+			frameRate( 30 ), // default frame rate
 			atlas(),
 			mask( false ),
 			width( 0 ),
@@ -63,6 +64,7 @@ namespace impl {
 			XML_BindAttributeAlias( filesys, columns, "columns" );
 			XML_BindAttributeAlias( filesys, frameHeight, "frameHeight" );
 			XML_BindAttributeAlias( filesys, frameWidth, "frameWidth" );
+			XML_BindAttributeAlias( filesys, frameRate, "frameRate" );
 
 			XML_BindAttributeAlias( filesys, filename, "path" );
 
@@ -92,6 +94,7 @@ namespace impl {
 				serializer->IO( columns );
 				serializer->IO( frameHeight );
 				serializer->IO( frameWidth );
+				serializer->IO( frameRate );
 			}
 
 			serializer->IO( mask );
@@ -115,6 +118,7 @@ namespace impl {
 		int					columns;
 		int					frameHeight;
 		int					frameWidth;
+		float				frameRate;
 
 		std::string			atlas;
 		bool				mask;
