@@ -51,7 +51,6 @@ public:
     {
         myScale.x = 1.0f;		
         myScale.y = 1.0f;
-        // SetAngle( 1.5f );
     }
 	
 	
@@ -59,43 +58,8 @@ public:
 
 	bool IsNull() const { return false; }
 
-	//float GetFakePerpectiveScale( float y_position );
-
 	virtual Vector2 Transform( const Vector2& point );
 
-	/*
-	ceng::CCameraResult Transform( const ceng::CRect< float >& rect, float rotation )
-	{
-		ceng::CCameraResult result;
-
-		if( true )
-		{
-			vector2 half( 0.5f * rect.w,  0.5f * rect.h );
-			vector2 p = vector2( rect.x, rect.y ) - myCenterPoint;
-			p += half;
-			p.x = myScale.x * p.x;
-			p.y = myScale.y * p.y;
-
-			result.rect.w = myScale.x * rect.w;
-			result.rect.h = myScale.y * rect.h;
-
-			p += myCameraOffset;
-			p -= myCenterPoint;
-			p = myRotationMatrix * p;
-			p += myCenterPoint;
-
-			p -= vector2( 0.5f * result.rect.w, 0.5f * result.rect.h );
-
-			result.rect.x = p.x;
-			result.rect.y = p.y;
-
-			result.rotation = rotation + myRotation;
-
-		}
-
-		return result;
-	}
-	*/
 
 	void SetAngle( float angle )
 	{
@@ -209,7 +173,7 @@ public:
 	types::vector2 GetFocusToTargetPos( const types::vector2& focus_pos, float scale );
 	void SetCameraTarget( const types::vector2& zoom_here, float angle, float scale );
 
-	void Update( float dt );
+	virtual void Update( float dt );
 
 	types::vector2 GetTargetOffset() const { return mTargetOffset; }
 	float GetTargetScale() const { return mTargetScale; }

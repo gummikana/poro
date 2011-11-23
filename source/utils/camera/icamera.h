@@ -79,8 +79,6 @@ public:
 		return CPoint< int >( (int)result.x, (int)result.y );
 	}
 
-	virtual void Update( unsigned int step ) { }
-
 	static ICamera* CreateNull();
 
 	template< class A, class B > 
