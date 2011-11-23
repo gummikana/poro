@@ -37,7 +37,8 @@ CCameraZoom::CCameraZoom() :
 	mCameraShakeMaxTime( 0 ),
 	mCameraShakeAmount( 0 ),
 	mCameraRealRotation( 0 ),
-	mTargetOffset()
+	mTargetOffset(),
+	mSmoothness( 0.4f )
 { 
     mCameraSize.Set(1.f,1.f);
 
@@ -156,22 +157,6 @@ types::vector2 CCameraZoom::ClampOffsetToRect( const types::vector2& offset, con
 
 //-----------------------------------------------------------------------------
 
-/*
-types::rect GetRect( const types::vector2& p1, const types::vector2& p2 )
-{
-	types::vector2 low_point( ceng::math::Min( p1.x, p2.x ), ceng::math::Min( p1.y, p2.y ) );
-	types::vector2 high_point( ceng::math::Max( p1.x, p2.x ), ceng::math::Max( p1.y, p2.y ) );
-
-	types::rect result;
-	result.x = low_point.x;
-	result.y = low_point.y;
-	result.w = high_point.x - low_point.x;
-	result.h = high_point.y - low_point.y;
-
-	return result;
-}
-*/
-
 void CCameraZoom::SetCameraClampRect( const types::rect& camera_rect, bool enabled )
 {
 	mUseCameraClampRect = enabled;
@@ -182,7 +167,7 @@ void CCameraZoom::SetCameraClampRect( const types::rect& camera_rect, bool enabl
 
 void CCameraZoom::Update( float dt )
 {
-	float smooth_ness = 0.40f; //Could be made a parameter to change 
+	float smooth_ness = mSmoothness; 
 	
 	float new_scale = GetScale() + ( ( mTargetScale - GetScale() )* 0.85f * smooth_ness );
 	//The 0.85f modifier is to compensate for the difference in the way scale and target aproaches the target values.
@@ -207,29 +192,9 @@ void CCameraZoom::Update( float dt )
 			SetAngle( mCameraRealRotation );
 		}
 	}
-
-	/*
-	 This is causes hysterical random jittering angle. Abit to hysterical to my taste...
-	if( mState == STATE_FLY_CAMERA )
-	{
-		float angle_target = ceng::Randomf( -0.1f, 0.1f );
-		
-		SetAngle( GetAngle() + ceng::Randomf( -0.1f, 0.1f ) );
-	}*/
 }
 
 //-----------------------------------------------------------------------------
-/*
-void CCameraZoom::SetState( int state )
-{
-
-	mCanWeChangeScale = true; 
-	mCanWeZoomCloser = true;
-	mCanWeMoveOffset = true;
-}
-*/
-//-----------------------------------------------------------------------------
-
 
 /**
  * If you want to keep the focus point on a different position than center when zooming you can use this
@@ -268,21 +233,7 @@ void CCameraZoom::DoCameraShake( float time, float shakeness )
 	mCameraShakeTime = time;
 	mCameraShakeAmount = shakeness;
 }
-
 //-----------------------------------------------------------------------------
-
-/*float CCameraTransformer::GetFakePerpectiveScale( float y_position )
-{
-	float scale = (-y_position) / 1024.f;
-	scale = 1.f - scale;
-	//if( scale < 0.5f )
-	//	scale = scale = 0.5f;
-	//if( scale > 2.f )
-	//	scale = 2.f;
-	
-	return scale;
-}*/
-
 
 CCameraTransformer::Vector2 CCameraTransformer::Transform( const CCameraTransformer::Vector2& point )
 {
@@ -295,17 +246,7 @@ CCameraTransformer::Vector2 CCameraTransformer::Transform( const CCameraTransfor
 	p = myRotationMatrix * p;
 	p += myCenterPoint;
 
-	/*if( false )
-	{
-		float y_value = ( 0.5f * p.y ) + ( p.y * 0.5f * ( ( p.y / 768.f ) * ( p.y / 768.f ) ) );  
-		p.y = y_value;
-		p -= myCenterPoint;
-		
-		float scale_x = GetFakePerpectiveScale( p.y );
-		p.x *= scale_x;
-		p += myCenterPoint;
-	}*/
-
 	return p;
 }
+//-----------------------------------------------------------------------------
 

@@ -115,6 +115,12 @@ void PlatformDesktop::StartMainLoop()
 {
 	mRunning = true;
 
+	// just render the screen black before initializing the application
+	if( mGraphics && true ) {
+		mGraphics->BeginRendering();
+		mGraphics->EndRendering();
+	}
+	
 	if( mApplication )
 		mApplication->Init();
 

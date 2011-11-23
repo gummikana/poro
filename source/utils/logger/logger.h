@@ -46,8 +46,6 @@ extern CLog logger_impl;
 
 #endif
 
-extern CLog assert_logger;
-
 
 } // end of namespace ceng
 
