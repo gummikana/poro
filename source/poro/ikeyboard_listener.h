@@ -32,8 +32,8 @@ public:
 	IKeyboardListener() { }
 	virtual ~IKeyboardListener() { }
 	
-	virtual void OnKeyDown( int key, types::charset unicode ) = 0;
-	virtual void OnKeyUp( int key, types::charset unicode ) = 0;
+	virtual void OnKeyDown( int key, poro::types::charset unicode ) = 0;
+	virtual void OnKeyUp( int key, poro::types::charset unicode ) = 0;
 	
 };
 
