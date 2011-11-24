@@ -28,31 +28,36 @@
 
 namespace poro {
 
-	class Mouse
-	{
-	public:
-		enum {
-			MOUSE_BUTTON_LEFT = 1,
-			MOUSE_BUTTON_RIGHT = 2,
-			MOUSE_BUTTON_MIDDLE = 3,
-			MOUSE_BUTTON_WHEEL_UP = 4,
-			MOUSE_BUTTON_WHEEL_DOWN = 5
-		};
-
-		Mouse(){}
-		~Mouse(){}
-		
-		void AddMouseListener(IMouseListener *listener);
-		void RemoveMouseListener(IMouseListener *listener);
-
-		void FireMouseMoveEvent(const types::vec2& pos);
-		void FireMouseDownEvent(const types::vec2& pos, int button);
-		void FireMouseUpEvent(const types::vec2& pos, int button);
-
-	private:
-		std::vector<IMouseListener*> mMouseListeners;
-		
+class Mouse
+{
+public:
+	enum {
+		MOUSE_BUTTON_LEFT = 1,
+		MOUSE_BUTTON_RIGHT = 2,
+		MOUSE_BUTTON_MIDDLE = 3,
+		MOUSE_BUTTON_WHEEL_UP = 4,
+		MOUSE_BUTTON_WHEEL_DOWN = 5
 	};
+
+	Mouse() : mCursorVisible(true) {}
+	virtual ~Mouse() {}
+	
+	void AddMouseListener(IMouseListener *listener);
+	void RemoveMouseListener(IMouseListener *listener);
+
+	void FireMouseMoveEvent(const types::vec2& pos);
+	void FireMouseDownEvent(const types::vec2& pos, int button);
+	void FireMouseUpEvent(const types::vec2& pos, int button);
+
+	virtual bool IsCursorVisible();
+	virtual void HideCursor();
+	virtual void ShowCursor();
+	virtual void SetCursorVisiblity( bool show_cursor );
+
+private:
+	std::vector<IMouseListener*> mMouseListeners;
+	bool mCursorVisible;
+};
 
 }
 

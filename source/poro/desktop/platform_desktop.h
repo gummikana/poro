@@ -33,6 +33,7 @@
 namespace poro {
 
 class JoystickImpl;
+class MouseImpl;
 
 class PlatformDesktop : public IPlatform {
 
@@ -87,14 +88,14 @@ protected:
 
 	types::vec2		ConvertMouseToInternalSize( int x, int y );
 
-	GraphicsOpenGL*				    mGraphics;
+	GraphicsOpenGL*					mGraphics;
 	bool							mFixedTimeStep;
-	int							    mFrameCount;
-	int				                mFrameRate;
-	types::Float32                  mOneFrameShouldLast;
-	int							    mWidth;
-	int							    mHeight;
-	Mouse*						    mMouse;
+	int								mFrameCount;
+	int								mFrameRate;
+	types::Float32					mOneFrameShouldLast;
+	int								mWidth;
+	int								mHeight;
+	MouseImpl*						mMouse;
 	Keyboard*					    mKeyboard;
 	Touch*							mTouch;
 	std::vector< JoystickImpl* >	mJoysticks;
@@ -137,10 +138,6 @@ inline ISoundPlayer* PlatformDesktop::GetSoundPlayer() {
 }
 
 // ---
-inline Mouse* PlatformDesktop::GetMouse() {
-	return mMouse;
-}
-
 inline Keyboard* PlatformDesktop::GetKeyboard() {
 	return mKeyboard;
 }

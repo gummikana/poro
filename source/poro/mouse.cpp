@@ -23,7 +23,8 @@
 #include <iostream>
 #include <algorithm>
 
-using namespace poro;
+namespace poro {
+//-----------------------------------------------------------------------------
 
 void Mouse::AddMouseListener(IMouseListener *listener)
 {
@@ -42,6 +43,7 @@ void Mouse::RemoveMouseListener(IMouseListener *listener)
 	if( i != mMouseListeners.end() )
 		mMouseListeners.erase( i );
 }
+//-----------------------------------------------------------------------------
 
 void Mouse::FireMouseMoveEvent(const types::vec2& pos)
 {
@@ -66,3 +68,28 @@ void Mouse::FireMouseUpEvent(const types::vec2& pos, int button)
 		mMouseListeners[i]->MouseButtonUp(pos, button);
 	}
 }
+//-----------------------------------------------------------------------------
+
+bool Mouse::IsCursorVisible()
+{
+	return mCursorVisible;
+}
+
+void Mouse::HideCursor()
+{
+	SetCursorVisiblity( false );
+}
+
+void Mouse::ShowCursor()
+{
+	SetCursorVisiblity( true );
+}
+
+void Mouse::SetCursorVisiblity( bool show_cursor )
+{
+	mCursorVisible = show_cursor;	
+}
+
+//-----------------------------------------------------------------------------
+
+} // end of namespace poro

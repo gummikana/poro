@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- * Copyright (c) 2010 Petri Purho, Dennis Belfrage
+ * Copyright (c) 2011 Petri Purho, Dennis Belfrage
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,29 +18,22 @@
  *
  ***************************************************************************/
 
-#ifndef IMOUSELISTENER_H
-#define IMOUSELISTENER_H
+#ifndef INC_PORO_MOUSE_IMPL_H
+#define INC_PORO_MOUSE_IMPL_H
 
-#include "poro_types.h"
+#include "../mouse.h"
 
-namespace poro
-{
+namespace poro {
 
-class IMouseListener
+class MouseImpl : public Mouse
 {
 public:
+	MouseImpl() : Mouse() {}
+	virtual ~MouseImpl() {}
 	
-	IMouseListener() {}
-	virtual ~IMouseListener() {}
-	
-	virtual void MouseMove(const poro::types::vec2& pos) = 0;
-	virtual void MouseButtonDown(const poro::types::vec2& pos, int button) = 0;
-	virtual void MouseButtonUp(const poro::types::vec2& pos, int button) = 0;
-	
+	virtual void SetCursorVisiblity( bool show_cursor );
 };
 
 } // end of namespace poro
 
-
 #endif
-

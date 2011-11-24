@@ -26,6 +26,7 @@
 #include "graphics_opengl.h"
 #include "soundplayer_sdl.h"
 #include "joystick_impl.h"
+#include "mouse_impl.h"
 
 namespace poro {
 
@@ -74,7 +75,7 @@ void PlatformDesktop::Init( IApplication* application, int w, int h, bool fullsc
 	mSoundPlayer = new SoundPlayerSDL;
 	mSoundPlayer->Init();
 
-	mMouse = new Mouse;
+	mMouse = new MouseImpl;
 	mKeyboard = new Keyboard;
 	mTouch = new Touch;
 
@@ -304,6 +305,11 @@ void PlatformDesktop::SetWindowSize( int width, int height )
 	mWidth = width;
 	mHeight = height;
 	mGraphics->SetWindowSize( width, height );
+}
+//-----------------------------------------------------------------------------
+
+Mouse* PlatformDesktop::GetMouse() {
+	return mMouse;
 }
 
 Joystick* PlatformDesktop::GetJoystick( int n ) {
