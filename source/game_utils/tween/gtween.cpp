@@ -169,7 +169,7 @@ bool GTween::GetIsCompleted() const
 
 bool GTween::GetIsRunning() const
 {
-	return mDelay > 0 && mTimer <= mDuration;
+	return mDelay <= 0 && mTimer <= mDuration;
 }
 
 //-----------------------------------------------------------------------------
