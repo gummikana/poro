@@ -64,7 +64,7 @@ namespace impl {
 			XML_BindAttributeAlias( filesys, columns, "columns" );
 			XML_BindAttributeAlias( filesys, frameHeight, "frameHeight" );
 			XML_BindAttributeAlias( filesys, frameWidth, "frameWidth" );
-			XML_BindAttributeAlias( filesys, frameRate, "frameRate" );
+			XML_BindAttributeAlias( filesys, frameRate, "framerate" );
 
 			XML_BindAttributeAlias( filesys, filename, "path" );
 
