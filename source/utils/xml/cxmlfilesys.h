@@ -168,8 +168,16 @@ public:
 	// Writing
 	template< class T >
 	void ConvertFrom( T& from, const std::string& name )
-	{ myCurrentNode->AddChild( XmlConvertFrom( from, name ) ); }
-
+	{
+        //FIX: This does not compile on mac, we get "Use of undeckeared identifier 'XmlConvertFrom' ".
+#ifdef __APPLE__
+        
+#else
+        
+        myCurrentNode->AddChild( XmlConvertFrom( from, name ) );
+#endif
+    }
+    
 	//! Basicly to be used while writing, adds a new child to the current element
 	/*!
 		Note: Remember to call the EndElement( name ) after this.

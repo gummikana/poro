@@ -96,6 +96,16 @@ public:
     virtual void		SetClearBackground(bool clear) { mClearBackground=clear; }
 
 	//-------------------------------------------------------------------------
+    
+	enum MIPMAP_MODES {
+		MIPMAP_MODE_LINEAR = 0,
+		MIPMAP_MODE_NEAREST = 1
+	};
+    
+	virtual void SetMipmapMode( int mipmap_mode ){ mMipmapMode=mipmap_mode;}
+	virtual int GetMipmapMode(){ return mMipmapMode; }
+	
+    //-------------------------------------------------------------------------
 
 	enum BLEND_MODES {
 		BLEND_MODE_NORMAL = 0,
@@ -150,6 +160,8 @@ protected:
 	int mVertexMode;
 	std::stack<int> mVertexModes;
 
+    int mMipmapMode;
+    
 };
 
 ///////////////////////////////////////////////////////////////////////////////
