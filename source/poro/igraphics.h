@@ -209,10 +209,6 @@ inline void IGraphics::DestroyGraphicsBuffer(IGraphicsBuffer* buffer){
 
 inline void	IGraphics::SetFillColor( const poro::types::fcolor& c ) { 
 	mFillColor = c; 
-	
-	// this is here only because if I don't put it here the mFillColor won't get placed on iPhone... 
-	// Fucking iPhoneSDK, this is bullshit
-	std::cout << "SetFillColor: " << mFillColor[ 0 ] << ", " << mFillColor[ 1 ] << ", " << mFillColor[ 2 ] << ", " << mFillColor[ 3 ] << std::endl;
 }
 
 inline poro::types::fcolor IGraphics::GetFillColor() const { 
