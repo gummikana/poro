@@ -67,6 +67,8 @@ public:
 
 	void SetAlign( int align_type );
 	void SetTextBox( const types::rect& text_box );
+	
+	types::rect GetBounds();
 
 	void	SetFont( CFont* font );
 	CFont*	GetFont();

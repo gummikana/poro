@@ -79,6 +79,35 @@ types::vector2 TextSprite::GetTextureSize() const
 	return types::vector2( mRealSize.x , mRealSize.y ); 
 }
 
+	
+// this functions returns a rectangle representing the actual bounds of the text inside the text field
+// very useful if you want to align something below or to the side of the text
+
+types::rect TextSprite::GetBounds()
+{
+	types::rect bounds = types::rect( 0, 0, 0, 0 );
+	
+	for( std::size_t i = 0; i < mOutRects.size(); ++i )
+	{
+		if( mOutRects[ i ].w >= 0 &&
+		   mOutRects[ i ].h >= 0 )
+		{
+			bounds.x = ceng::math::Min( bounds.x, mOutRects[ i ].x );
+			bounds.y = ceng::math::Min( bounds.y, mOutRects[ i ].y );
+			bounds.w = ceng::math::Max( bounds.w, mOutRects[ i ].x + mOutRects[ i ].w );
+			bounds.h = ceng::math::Max( bounds.h, mOutRects[ i ].y + mOutRects[ i ].h );
+		}
+	}
+	
+	bounds.x *= mXForm.scale.x;
+	bounds.y *= mXForm.scale.y;
+	
+	bounds.w *= mXForm.scale.x;
+	bounds.h *= mXForm.scale.y;
+	
+	return bounds;
+}
+
 //-----------------------------------------------------------------------------
 void TextSprite::RecalcuateRects()
 {
