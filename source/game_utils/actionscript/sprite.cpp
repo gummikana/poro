@@ -315,7 +315,7 @@ bool Sprite::DrawChildren( poro::IGraphics* graphics, types::camera* camera, Tra
 	for( i = mChildren.begin(); i != mChildren.end(); )
 	{
 		cassert( *i );
-		cassert( (*i)->GetFather() == this );
+		// cassert( (*i)->GetFather() == this );
 
 		if( (*i)->GetSpriteType() == this->GetSpriteType() )
 		{			
@@ -606,8 +606,7 @@ types::vector2 Sprite::GetScreenPosition() const
 
 	return types::vector2( temp.x, temp.y );
 }
-
-//--------------
+//-----------------------------------------------------------------------------
 
 types::vector2 Sprite::MultiplyByParentXForm( const types::vector2& p ) const
 {
@@ -620,5 +619,31 @@ types::vector2 Sprite::MultiplyByParentXForm( const types::vector2& p ) const
 	else 
 		return parent->MultiplyByParentXForm( result );
 }
+//-----------------------------------------------------------------------------
 
+void Sprite::SetAlphaMask( Sprite* alpha_mask )	{ 
+	mAlphaMask = alpha_mask; 
+	return;
+	/*
+	Sprite* ex_alpha_mask = this->GetChildByName( "gay_alpha_mask" );
+	if( ex_alpha_mask ) {
+		removeChildForReuse( ex_alpha_mask );
+		// delete ex_alpha_mask;
+	}
+
+	if( alpha_mask ) {
+		addChild( alpha_mask );
+		alpha_mask->SetName( "gay_alpha_mask" );
+		alpha_mask->SetAlpha( 0.5f );
+	}*/
+}
+
+Sprite*	Sprite::GetAlphaMask() { 
+	return mAlphaMask; 
+
+	/*Sprite* ex_alpha_mask = this->GetChildByName( "gay_alpha_mask" );
+	return ex_alpha_mask;*/
+}
+
+//-----------------------------------------------------------------------------
 } // end of namespace as
