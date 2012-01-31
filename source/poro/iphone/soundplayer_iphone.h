@@ -22,7 +22,7 @@
 #define INC_SOUNDPLAYERIPHONE_H
 
 #include "../poro_types.h"
-#include "isoundplayer.h"
+#include "../isoundplayer.h"
 #include <CoreAudio/CoreAudioTypes.h>
 
 
