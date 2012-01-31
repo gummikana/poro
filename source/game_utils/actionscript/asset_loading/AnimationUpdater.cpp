@@ -77,6 +77,13 @@ void AnimationUpdater::SetFrame( int frame_i )
 			const std::string& name = parts[ i ]->name;
 			impl::Frame* frame = parts[ i ]->GetFrame( frame_i );
 
+			// we were calling SetFrame one too far, because of using round instead floor... 
+			/*
+			if( frame == NULL && frame_i == parts[ i ]->frames.size() ) 
+			{
+				// std::cout << "Frame's (" << name << ") go too far:" << frame_i << std::endl;
+				// frame = parts[ i ]->GetFrame( frame_i - 1 );
+			}*/
 
 			Sprite* sprite_part = sprite_container->GetChildByName( name );
 			if( sprite_part )
