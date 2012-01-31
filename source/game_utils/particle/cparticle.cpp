@@ -88,7 +88,7 @@ bool CParticle::Update( float dt )
 	return true;
 }
 
-void CParticle::Draw(poro::IGraphics* graphics, as::Transform t)
+void CParticle::Draw( poro::IGraphics* graphics, as::Transform& t )
 {
 	if(!myDead && myDelay <= 0) as::DrawSprite( mySprite, graphics, NULL, t );
 }
