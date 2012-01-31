@@ -36,7 +36,8 @@ public:
 	static Number sqrt( Number x ) { return ::sqrt( x ); }
 	static Number random() { return (Number)ceng::Randomf( 0.f, 0.9999999f ); }
 
-	static int round( Number x ) { return (int)floor( x + 0.5 ); }
+	static int floor( Number x ) { return (int)::floor( x ); }
+	static int round( Number x ) { return (int)::floor( x + 0.5 ); }
 
 	static Number sin( Number x ) { return ::sin(x); }
 	static Number cos( Number x ) { return ::cos(x); }
