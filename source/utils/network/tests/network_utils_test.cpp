@@ -22,6 +22,8 @@
 #include "../network_utils.h"
 #include "../network_libs.h"
 
+#ifdef PORO_TESTER_ENABLED
+
 namespace network_utils
 {
 namespace test
@@ -118,3 +120,5 @@ TEST_REGISTER( FloatHexTest );
 
 }// end o namespace test
 }
+
+#endif // PORO_TESTER_ENABLED

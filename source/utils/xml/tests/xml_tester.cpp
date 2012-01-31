@@ -26,6 +26,8 @@
 #include <list>
 #include <string>
 
+#ifdef PORO_TESTER_ENABLED
+
 namespace ceng {
 namespace test {
 
@@ -87,3 +89,5 @@ TEST_REGISTER( CXmlTest );
 
 } // end of namespace test
 } // end of namespace ceng
+
+#endif // PORO_TESTER

@@ -25,6 +25,8 @@
 #include <fstream>
 #include <algorithm>
 
+#ifdef PORO_TESTER_ENABLED
+
 namespace network_utils
 {
 namespace test
@@ -208,3 +210,5 @@ TEST_REGISTER( NetworkSerializerTest );
 
 } // end o namespace test
 } // end o namespace network_utils
+
+#endif // PORO_TESTER_ENABLED

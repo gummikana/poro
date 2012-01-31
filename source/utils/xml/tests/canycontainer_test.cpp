@@ -24,6 +24,8 @@
 #include <vector>
 #include <list>
 
+#ifdef PORO_TESTER_ENABLED
+
 namespace ceng {
 namespace test {
 
@@ -234,4 +236,4 @@ TEST_REGISTER( CAnyContainerTest );
 } // end of namespace test
 } // end of namespace ceng
 
-
+#endif // PORO_TESTER
