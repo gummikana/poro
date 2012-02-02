@@ -315,7 +315,7 @@ bool Sprite::DrawChildren( poro::IGraphics* graphics, types::camera* camera, Tra
 	for( i = mChildren.begin(); i != mChildren.end(); )
 	{
 		cassert( *i );
-		// cassert( (*i)->GetFather() == this );
+		cassert( (*i)->GetFather() == this );
 
 		if( (*i)->GetSpriteType() == this->GetSpriteType() )
 		{			
@@ -469,8 +469,11 @@ void Sprite::Update( float dt )
 	for( i = mChildren.begin(); i != mChildren.end(); ++i )
 	{
 		Sprite* sprite = dynamic_cast< Sprite* >(*i);
-		if( sprite )
+		if( sprite ) 
+		{
+			cassert( sprite->GetFather() == this );
 			sprite->Update( dt );
+		}
 	}
 
 	if( mAlphaMask ) mAlphaMask->Update( dt );

@@ -23,9 +23,19 @@
 
 namespace as {
 
+// #define DEBUG_DONT_DELETE_EVENT_LISTENERS
+
 // Registers an event listener object with an EventDispatcher object so that the listener receives notification of an event.
 void EventDispatcher::addEventListener( const std::string& name, FunctionPointer* func_pointer, bool use_capture, int priority )
 {
+
+	if( name == "inventoryevent_item_added" ) 
+	{
+		// break;
+		int break_me = 1;
+		std::cout << "Added eventListener: " << name << std::endl;
+	}
+
 	mData.Insert( name, func_pointer );
 }
  	 	
@@ -75,16 +85,24 @@ void EventDispatcher::removeEventListener( const std::string& name, const ceng::
 
 	std::list< FunctionPointer* >& list = mData.Get( name );
 	std::list< FunctionPointer* >::iterator i;
-	for( i = list.begin(); i != list.end(); ++i )
+	for( i = list.begin(); i != list.end();  )
 	{
 		if( (*i)->Cmpr( func_pointer.Get() ) )
 		{
-			delete (*i);
-			list.erase( i );
+			std::list< FunctionPointer* >::iterator remove_me = i;
+			++i;
+#ifndef DEBUG_DONT_DELETE_EVENT_LISTENERS
+			delete (*remove_me);
+#endif
+			list.erase( remove_me );
 
 			if( list.empty() )
 				mData.Remove( name );
 			return;
+		}
+		else
+		{
+			++i;
 		}
 	}
 }
@@ -104,7 +122,9 @@ void EventDispatcher::Clear()
 		std::list< FunctionPointer* >& list = i->second;
 		for( std::list< FunctionPointer* >::iterator j = list.begin(); j != list.end(); ++j )
 		{
+#ifndef DEBUG_DONT_DELETE_EVENT_LISTENERS
 			delete (*j);
+#endif
 		}
 		list.clear();
 	}

@@ -3,7 +3,7 @@
 
 #include <memory>
 
-// #ifdef CENG_TESTER_ENABLED
+#ifdef CENG_TESTER_ENABLED
 
 
 namespace ceng {
@@ -149,4 +149,4 @@ TEST_REGISTER( CXmlPtrSerializerTest );
 } // end of namespace test
 } // end of namespace ceng
 
-// #endif
+#endif

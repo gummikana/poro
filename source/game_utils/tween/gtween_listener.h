@@ -22,16 +22,24 @@
 #ifndef INC_GTWEEN_LISTENER_H
 #define INC_GTWEEN_LISTENER_H
 
+#include <vector>
+
 class GTween;
 
 class GTweenListener
 {
 public:
-	virtual ~GTweenListener() { }
+	virtual ~GTweenListener();
 
 	virtual void GTween_OnStep( GTween* tweener ) { }
 	virtual void GTween_OnComplete( GTween* tweener ) { }
 	virtual void GTween_OnStart( GTween* tweener ) { }
+
+private:
+	std::vector< GTween* > m_tweens_that_i_listen_to;
+	void RemoveGTweenFromListeners( GTween* t );
+
+	friend class GTween;
 };
 
 
