@@ -50,12 +50,22 @@ namespace {
 
 	GraphicsSettings OPENGL_SETTINGS;
 	
+    struct Vertex
+	{
+		float x;
+		float y;
+		float tx;
+		float ty;
+	};
+    
 	Uint32 GetGLVertexMode(int vertex_mode){
 		switch (vertex_mode) {
 			case IGraphics::VERTEX_MODE_TRIANGLE_FAN:
 				return GL_TRIANGLE_FAN;
 			case IGraphics::VERTEX_MODE_TRIANGLE_STRIP:
 				return GL_TRIANGLE_STRIP;
+			case IGraphics::VERTEX_MODE_TRIANGLES:
+				return GL_TRIANGLES;
 			default:
 				assert(false);
 				break;
@@ -105,10 +115,15 @@ namespace {
 		
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        if(IPlatform::Instance()->GetGraphics()->GetMipmapMode()==IGraphics::MIPMAP_MODE_NEAREST){
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        } else {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        }
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-		
+        
 		glDisable(GL_TEXTURE_2D);
 
 		
@@ -226,22 +241,112 @@ namespace {
 		
 		
 		poro_logger << "File: " << filename << std::endl;
-		
-		
-		
-		
+				
 		return texture;
 	}
-	
-	void drawsprite( TextureOpenGLES* texture, GLfloat* glTexCoords, GLfloat* glVertices, const types::fcolor& color, int count, Uint32 vertex_mode )
+	/*
+    static GLfloat glVerticesBuffer[16*1024];
+	static GLfloat glTexCoordsBuffer[16*1024];
+    static bool vertex_buffer_is_empty=true;
+    static TextureOpenGLES* prev_texture = NULL;
+    static types::fcolor prev_color = GetFColor(0,0,0,0);
+    static int buffer_vertex_count = 0;
+    static int prev_vertex_mode = 0;
+    
+    bool CanBufferDrawsprite( TextureOpenGLES* texture, const types::fcolor& color, int count, Uint32 vertex_mode ) {
+        if( vertex_mode != GL_TRIANGLES )
+            return false;
+        
+        if( vertex_buffer_is_empty )
+            return true;
+        
+        if( prev_texture!=texture )
+            return false;
+        
+        if( prev_color[0]!=color[0] || prev_color[1]!=color[1] || prev_color[2]!=color[2] || prev_color[3]!=color[3])
+            return false;
+        
+        return true;
+    }
+    
+    
+    
+    
+    
+    void BufferDrawsprite( TextureOpenGLES* texture, GLfloat* glTexCoords, GLfloat* glVertices, const types::fcolor& color, int count, Uint32 vertex_mode ){
+        
+        prev_color = color;
+        prev_texture = texture;
+        prev_vertex_mode = vertex_mode;
+        
+        //convert GL_TRIANGLE_FAN and GL_TRIANGLE_STRIP to GL_TRIANGLES
+        
+        //static GLfloat* verts[24];
+        //static GLfloat* texts[24];
+        
+        static Vertex vert[8];
+        
+        int o=0;
+        int i_prev = 0; 
+        int i_prev2 = 0; 
+        for( int i=0; i<count*2; i+=2 ){
+            
+            //when 3
+            ++o;
+            
+            
+            
+            
+            glVerticesBuffer[o] = glVertices[0];
+            glVerticesBuffer[o+1] = glVertices[1];
+            
+            glVerticesBuffer[o+2] = glVertices[i-2];
+            glVerticesBuffer[o+3] = glVertices[i-1];
+            
+            glVerticesBuffer[o+4] = glVertices[i];
+            glVerticesBuffer[o+5] = glVertices[i+1];
+            
+            
+            
+            glVertices[i];
+            
+            
+            
+        }
+            
+        
+        
+        memcpy( glVerticesBuffer+buffer_vertex_count*2, glVertices, count*2 );
+        memcpy( glTexCoordsBuffer+buffer_vertex_count*2, glTexCoords, count*2 );
+        buffer_vertex_count += count;
+        
+    }
+    
+          */         
+	void drawsprite( TextureOpenGLES* texture, Vertex* vertices, const types::fcolor& color, int count, Uint32 vertex_mode )
 	{
+        
+        assert(count<=8);
+        
+        //Convert to glarrays
+        static GLfloat glVertices[16];
+        static GLfloat glTexCoords[16];
+        int o=0;
+        for(int i=0;i<count;++i){
+            glVertices[o] = vertices[i].x;
+            glTexCoords[o] = vertices[i].tx;
+            ++o;
+            glVertices[o] = vertices[i].y;
+            glTexCoords[o] = vertices[i].ty;
+            ++o;
+        }
+        
         // std::cout << "CAlling normal draw sprite" << std::endl;
 		glBindTexture(GL_TEXTURE_2D, texture->mTextureId);
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_BLEND);
 		
-        
-		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         glColor4f(color[ 0 ] * color[3], color[ 1 ] * color[3], color[ 2 ] * color[3], color[ 3 ] );
 		
 		glEnableClientState( GL_TEXTURE_COORD_ARRAY );
@@ -256,7 +361,29 @@ namespace {
 		glDisable(GL_BLEND);
 		glDisable(GL_TEXTURE_2D);
 		
+        
+        
 	}
+    /*
+    void FlushDrawsprite()
+    {
+        if(buffer_vertex_count)
+            drawsprite( prev_texture, glTexCoordsBuffer, glVerticesBuffer, prev_color, buffer_vertex_count, GL_TRIANGLES );
+        buffer_vertex_count = 0;
+    }
+    
+    void buffered_drawsprite( TextureOpenGLES* texture, GLfloat* glTexCoords, GLfloat* glVertices, const types::fcolor& color, int count, Uint32 vertex_mode )
+    {
+        if( CanBufferDrawsprite( texture, color, count, vertex_mode) ){
+            BufferDrawsprite( texture, glTexCoords, glVertices, color, count, vertex_mode );
+            return;
+        } else {
+            FlushDrawsprite();
+            BufferDrawsprite( texture, glTexCoords, glVertices, color, count, vertex_mode );
+        }
+        
+    }
+    */
 	
 	void drawsprite_withalpha( TextureOpenGLES* texture,  GLfloat* glTexCoords, GLfloat* glVertices, const types::fcolor& color, int count,
 							  TextureOpenGLES* alpha_texture, GLfloat* alpha_glTexCoords, GLfloat* alpha_glVertices, const types::fcolor& alpha_color, Uint32 vertex_mode )
@@ -435,13 +562,15 @@ void GraphicsOpenGLES::DrawTexture( ITexture* itexture, types::vec2* vertices, t
 	static types::vec2 temp_tex_coord;
     static types::vec2 temp_vertex;
     
-    static GLfloat glVertices[16];
-	static GLfloat glTexCords[16];
-	
+    //static GLfloat glVertices[24];
+	//static GLfloat glTexCords[24];
+	static Vertex vert[8];
+    
 	const float x_text_conv = ( 1.f / texture->mWidth ) * ( texture->mUv[ 2 ] - texture->mUv[ 0 ] );
 	const float y_text_conv = ( 1.f / texture->mHeight ) * ( texture->mUv[ 3 ] - texture->mUv[ 1 ] );
     
-	for( int i = 0; i < count; ++i )
+    
+    for( int i = 0; i < count; ++i )
 	{
 		temp_tex_coord.x = tex_coords[ i ].x * texture->mExternalScaleWidth;
 		temp_tex_coord.y = tex_coords[ i ].y * texture->mExternalScaleHeight;
@@ -454,14 +583,24 @@ void GraphicsOpenGLES::DrawTexture( ITexture* itexture, types::vec2* vertices, t
 		temp_vertex.y = vertices[i].y * yPlatformScale;
 
 		// set gl vertices
-        glVertices[i*2] = temp_vertex.x;
-		glVertices[i*2+1] = temp_vertex.y;
-		glTexCords[i*2] = texture->mUv[ 0 ] + ( temp_tex_coord.x * x_text_conv );
-		glTexCords[i*2+1] = texture->mUv[ 1 ] + ( temp_tex_coord.y * y_text_conv );
+        //glVertices[i*2] = temp_vertex.x;
+		//glVertices[i*2+1] = temp_vertex.y;
+		//glTexCords[i*2] = texture->mUv[ 0 ] + ( temp_tex_coord.x * x_text_conv );
+		//glTexCords[i*2+1] = texture->mUv[ 1 ] + ( temp_tex_coord.y * y_text_conv );
+        
+        vert[i].x = temp_vertex.x;
+		vert[i].y = temp_vertex.y;
+		vert[i].tx = texture->mUv[ 0 ] + ( temp_tex_coord.x * x_text_conv );
+		vert[i].ty = texture->mUv[ 1 ] + ( temp_tex_coord.y * y_text_conv );
+        
 	}
     
-	
-	drawsprite( texture, glTexCords, glVertices, color, count, GetGLVertexMode(mVertexMode) );
+       
+    
+	drawsprite( texture, vert, color, count, GetGLVertexMode(mVertexMode) );
+
+	//buffered_drawsprite( texture, verts, color, count, GL_TRIANGLES );
+
 }
 
 	
@@ -549,6 +688,8 @@ void GraphicsOpenGLES::BeginRendering()
 
 void GraphicsOpenGLES::EndRendering()
 {
+    FlushDrawsprite();
+    
 	[iPhoneGlobals.glView endRendering];
 }
 	

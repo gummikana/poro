@@ -195,7 +195,8 @@
 		CFNumberGetValue((CFNumberRef)CFDictionaryGetValue(_touch_ids, touch), kCFNumberIntType, &touchId);
 		
 		poro::IPlatform::Instance()->GetTouch()->FireTouchMoveEvent(pos, touchId);
-		//std::cout << "Touch:" << pos.x << "," << pos.y << " index:" << index << std::endl; 
+		
+        //std::cout << "Touch Move:" << pos.x << "," << pos.y << " index:" << index << std::endl; 
 		
 		++index;
 	}
@@ -215,7 +216,8 @@
 			poro::IPlatform::Instance()->GetMouse()->FireMouseDownEvent(pos,poro::Mouse::MOUSE_BUTTON_LEFT);
 		
 		poro::IPlatform::Instance()->GetTouch()->FireTouchDownEvent(pos, _last_touch_id);
-		//std::cout << "Touch:" << pos.x << "," << pos.y << " index:" << index << std::endl; 
+		
+        //std::cout << "Touch Began:" << pos.x << "," << pos.y << " index:" << index << std::endl; 
 		
 		_last_touch_id++;
 		++index;
@@ -238,7 +240,7 @@
 		
 		poro::IPlatform::Instance()->GetTouch()->FireTouchUpEvent(pos, touchId);
 		
-		//std::cout << "Touch:" << pos.x << "," << pos.y << " index:" << index << std::endl; 
+		//std::cout << "Touch Ended:" << pos.x << "," << pos.y << " index:" << index << std::endl; 
 		++index;
 	}
 }

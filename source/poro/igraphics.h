@@ -120,7 +120,8 @@ public:
 
 	enum {
 		VERTEX_MODE_TRIANGLE_FAN = 0,
-		VERTEX_MODE_TRIANGLE_STRIP = 1
+		VERTEX_MODE_TRIANGLE_STRIP = 1,
+		VERTEX_MODE_TRIANGLES = 2
 	};
 	virtual void		PushVertexMode(int vertex_mode);
 	virtual void		PopVertexMode();
