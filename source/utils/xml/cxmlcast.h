@@ -57,7 +57,6 @@
 #include <vector>
 #include <assert.h>
 #include "cxmlnode.h"
-#include "cxmlfilesys.h"
 
 #include "xml_libraries.h"
 // #include "../logger.h"
@@ -68,7 +67,7 @@ namespace ceng {
 
 // Some reason this forward declaration didn't worked with gcc,
 // so I added #include and commented followin line - Jani Hast/9.6.2009
-//class CXmlFileSys;
+class CXmlFileSys;
 
 //! Used to convert cxmlfilesys to a stl container
 //! ( using the insert( to.end(), element ) conversion )
