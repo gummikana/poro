@@ -20,4 +20,39 @@
 
 
 #include "gtween_listener.h"
+#include "gtween.h"
 
+GTweenListener::~GTweenListener()
+{
+	/*
+	for( std::size_t i = 0; i < m_tweens_that_i_listen_to.size(); ++i ) 
+	{
+		m_tweens_that_i_listen_to[ i ]->RemoveListener( this );
+	}*/
+
+	while( m_tweens_that_i_listen_to.empty() == false )
+	{
+		GTween* t = m_tweens_that_i_listen_to.front();
+		if( t ) t->RemoveListener( this );
+
+		//---------
+		
+		RemoveGTweenFromListeners( t );
+	}
+}
+
+void GTweenListener::RemoveGTweenFromListeners( GTween* t )
+{
+	for( std::size_t i = 0; i < m_tweens_that_i_listen_to.size(); )
+	{
+		if( m_tweens_that_i_listen_to[ i ] == t ) 
+		{
+			m_tweens_that_i_listen_to[ i ] = m_tweens_that_i_listen_to[ m_tweens_that_i_listen_to.size() - 1 ];
+			m_tweens_that_i_listen_to.pop_back();
+		}
+		else 
+		{
+			++i;
+		}
+	}
+}

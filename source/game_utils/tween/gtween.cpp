@@ -31,14 +31,14 @@ void UpdateGTweens( float dt )
 
 
 	for( std::list< GTween* >::iterator i = update_list.begin();
-		i != update_list.end(); ++i )
+		i != update_list.end();  )
 	{
 		GTween* tween = *i;
+		++i;
 		cassert( tween );
 		tween->Update( dt );
 		if( tween->IsDead() )
 			release_us.push_back( tween );
-		
 	}
 
 	// release the dead tweens
@@ -93,6 +93,15 @@ GTween::~GTween()
 	}
 
 	mInterpolators.clear();
+
+	for( std::size_t i = 0; i < mListeners.size(); ++i )
+	{
+		if( mListeners[ i ] ) {
+			mListeners[ i ]->RemoveGTweenFromListeners( this );
+		}
+	}
+
+	mListeners.clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -266,8 +275,10 @@ void GTween::Update( float dt )
 void GTween::AddListener( GTweenListener* l )
 {
 	cassert( l );
-	if( l )
+	if( l ) {
 		mListeners.push_back( l );
+		l->m_tweens_that_i_listen_to.push_back( this );
+	}
 }
 
 void GTween::RemoveListener( GTweenListener* l )
@@ -281,6 +292,10 @@ void GTween::RemoveListener( GTweenListener* l )
 		else {
 			++i;
 		}
+	}
+
+	if( l ) {
+		l->RemoveGTweenFromListeners( this );
 	}
 }
 

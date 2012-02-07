@@ -130,8 +130,8 @@ public:
 	void		SetName( const std::string& name )	{ mName = name; }
 	std::string	GetName() const						{ return mName; }
 
-	void	SetAlphaMask( Sprite* alpha_mask )	{ mAlphaMask = alpha_mask; }
-	Sprite*	GetAlphaMask()						{ return mAlphaMask; }
+	void	SetAlphaMask( Sprite* alpha_mask );
+	Sprite*	GetAlphaMask();
 
 	
 	//-------------------------------------------------------------------------

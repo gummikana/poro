@@ -13,11 +13,10 @@ class CParticle
 {
 public:
 	CParticle( CSprite* sprite );
-	~CParticle();
-
-
-	bool Update( float dt );
-	void Draw(poro::IGraphics* graphics, as::Transform t);
+	virtual ~CParticle();
+	
+	virtual bool Update( float dt );
+	void Draw( poro::IGraphics* graphics, as::Transform& t );
 	
 	CSprite* mySprite;
 	bool myDead;

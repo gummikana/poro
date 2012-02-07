@@ -47,7 +47,10 @@
 #include "tester_macros.h"
 
 
-#define PORO_TESTER_ENABLED
+// just go around the warning that this might be defined in the project files
+#ifndef PORO_TESTER_ENABLED
+#  define PORO_TESTER_ENABLED
+#endif
 
 
 namespace poro {

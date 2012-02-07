@@ -26,6 +26,7 @@
 #include <sstream>
 #include <vector>
 
+#ifdef PORO_TESTER_ENABLED
 
 #include "../xml_macros.h"
 #include "../xml_libraries.h"
@@ -506,3 +507,5 @@ TEST_REGISTER( StringTest );
 
 } // end of namespace test
 } // end of namespace ceng
+
+#endif // PORO_TESTER_ENABLED

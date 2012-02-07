@@ -848,6 +848,7 @@ void GraphicsOpenGL::DrawLines( const std::vector< poro::types::vec2 >& vertices
 
 void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color )
 {
+#if 0 
 	int vertCount = vertices.size();
 	
 	if(vertCount == 0)
@@ -902,6 +903,51 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 	*/
 	glDisable( GL_POLYGON_SMOOTH );
 	glDisable(GL_BLEND);
+
+#else
+
+	int vertCount = vertices.size();
+
+	if(vertCount == 0)
+		return;
+
+	//Internal rescale
+	float xPlatformScale, yPlatformScale;
+	xPlatformScale = (float)mViewportSize.x / (float)poro::IPlatform::Instance()->GetInternalWidth();
+	yPlatformScale = (float)mViewportSize.y / (float)poro::IPlatform::Instance()->GetInternalHeight();
+
+	const int max_buffer_size = 256;
+	static GLfloat glVertices[ max_buffer_size ];
+
+	poro_assert( vertCount * 2 <= max_buffer_size );
+
+	int o = -1;
+	for(int i=0; i < vertCount; ++i){
+		glVertices[++o] = vertices[i].x*xPlatformScale;
+		glVertices[++o] = vertices[i].y*yPlatformScale;
+	}
+
+	/*glColor4f(color[0], color[1], color[2], color[3]);
+	glVertexPointer(2, GL_FLOAT , 0, glVertices);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glDrawArrays (GL_TRIANGLE_STRIP, 0, vertCount);
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glPopMatrix();*/
+
+	glColor4f(color[0], color[1], color[2], color[3]);
+	glPushMatrix();
+		//glEnable(GL_POLYGON_SMOOTH);
+		//glEnable(GL_BLEND);
+		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glVertexPointer(2, GL_FLOAT , 0, glVertices);
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glDrawArrays (GL_TRIANGLE_STRIP, 0, vertCount);
+		glDisableClientState(GL_VERTEX_ARRAY);
+		//glDisable(GL_BLEND);
+		//glDisable(GL_POLYGON_SMOOTH);
+	glPopMatrix();
+
+#endif
 }
 
 void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture )
