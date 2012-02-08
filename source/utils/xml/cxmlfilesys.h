@@ -66,9 +66,7 @@
 #ifndef INC_CXMLFILESYS_H
 #define INC_CXMLFILESYS_H
 
-// #include "cxmlnode.h"
-// #include "cxmlcast.h"
-// #include "../logger.h"
+#include "cxmlcast.h"
 #include "xml_macros.h"
 #include "xml_libraries.h"
 
@@ -169,13 +167,7 @@ public:
 	template< class T >
 	void ConvertFrom( T& from, const std::string& name )
 	{
-        //FIX: This does not compile on mac, we get "Use of undeckeared identifier 'XmlConvertFrom' ".
-#ifdef __APPLE__
-        
-#else
-        
         myCurrentNode->AddChild( XmlConvertFrom( from, name ) );
-#endif
     }
     
 	//! Basicly to be used while writing, adds a new child to the current element
