@@ -93,8 +93,11 @@ namespace {
 
 	//-------------------------------------------------------------------------
 
+    //static int drawcalls=0;
 	void drawsprite( TextureOpenGL* texture, Vertex* vertices, const types::fcolor& color, int count, Uint32 vertex_mode, int blend_mode )
 	{
+        //++drawcalls;
+        
 		Uint32 tex = texture->mTexture;
 		glBindTexture(GL_TEXTURE_2D, tex);
 		glEnable(GL_TEXTURE_2D);
@@ -130,12 +133,92 @@ namespace {
 		glDisable(GL_TEXTURE_2D);
 	}
 
-	//-------------------------------------------------------------------------
+    //=========== DrawTextureBuffer =============
+    
+    static Vertex vertex_buffer[PORO_DRAW_TEXTURE_BUFFER_SIZE];
+	static int vertex_buffer_count = 0;
+    static TextureOpenGL* prev_texture = NULL;
+    static types::fcolor prev_color = GetFColor(0,0,0,0);
+    static int prev_vertex_mode = 0;
+    static int prev_blend_mode = 0;
+    bool draw_array_buffering=false;
+    
+    bool CanDrawSpriteToBuffer( TextureOpenGL* texture, const types::fcolor& color, int count, Uint32 vertex_mode, int blend_mode ) {
+        
+        if( vertex_buffer_count==0 )
+            return true;
+        
+        if( prev_texture!=texture )
+            return false;
+        
+        if( vertex_buffer_count+(count-2)*3 >=PORO_DRAW_TEXTURE_BUFFER_SIZE )
+            return false;
+        
+        if( prev_color[0]!=color[0] || prev_color[1]!=color[1] || prev_color[2]!=color[2] || prev_color[3]!=color[3])
+            return false;
+        
+        if( prev_blend_mode!=blend_mode )
+            return false;
+        
+        return true;
+    }
+    
+    void DrawSpriteToBuffer( TextureOpenGL* texture, Vertex* vertices, const types::fcolor& color, int count, Uint32 vertex_mode, int blend_mode ){
+        
+        prev_color = color;
+        prev_texture = texture;
+        prev_vertex_mode = vertex_mode;
+        prev_blend_mode= blend_mode;
+        
+        //convert GL_TRIANGLE_FAN and GL_TRIANGLE_STRIP to GL_TRIANGLES
+        if(vertex_mode==GL_TRIANGLE_FAN){
+            for( int i=2; i<count; ++i ){
+                vertex_buffer[vertex_buffer_count] = vertices[0];
+                ++vertex_buffer_count;
+                vertex_buffer[vertex_buffer_count] = vertices[i-1];
+                ++vertex_buffer_count;
+                vertex_buffer[vertex_buffer_count] = vertices[i];
+                ++vertex_buffer_count;
+            }
+        } else if(vertex_mode==GL_TRIANGLE_STRIP){
+            for( int i=2; i<count; ++i ){
+                vertex_buffer[vertex_buffer_count] = vertices[i-2];
+                ++vertex_buffer_count;
+                vertex_buffer[vertex_buffer_count] = vertices[i-1];
+                ++vertex_buffer_count;
+                vertex_buffer[vertex_buffer_count] = vertices[i];
+                ++vertex_buffer_count;
+            }
+        } else if(vertex_mode==GL_TRIANGLES) {
+            for( int i=0; i<count; ++i ){
+                vertex_buffer[vertex_buffer_count] = vertices[i];
+                ++vertex_buffer_count;
+            }
+        }
+    }
+    
+    void FlushDrawSpriteBuffer()
+    {
+        if(vertex_buffer_count)
+            drawsprite( prev_texture, vertex_buffer, prev_color, vertex_buffer_count, GL_TRIANGLES, prev_blend_mode );
+        vertex_buffer_count = 0;
+    }
+    
+    void BufferedDrawSprite( TextureOpenGL* texture, Vertex* vertices, const types::fcolor& color, int count, Uint32 vertex_mode, int blend_mode )
+    {
+        if( !CanDrawSpriteToBuffer( texture, color, count, vertex_mode, blend_mode ) ){
+            FlushDrawSpriteBuffer();
+        }
+        DrawSpriteToBuffer( texture, vertices, color, count, vertex_mode, blend_mode );
+    }
+    
+    //================================================================
 
 	void drawsprite_withalpha( TextureOpenGL* texture, Vertex* vertices, const types::fcolor& color, int count,
 		TextureOpenGL* alpha_texture, Vertex* alpha_vertices, const types::fcolor& alpha_color,
 		Uint32 vertex_mode )
 	{
+        
 #ifdef PORO_DONT_USE_GLEW
 		poro_logger << "Error: Glew isn't enable alpha masking, this means we can't do alpha masking. " << std::endl;
 		return;
@@ -147,7 +230,7 @@ namespace {
 			return;
 		}
 
-		Uint32 image_id = texture->mTexture;
+        Uint32 image_id = texture->mTexture;
 		Uint32 alpha_mask_id = alpha_texture->mTexture;
 
 		// alpha texture
@@ -647,6 +730,12 @@ void GraphicsOpenGL::ReleaseTexture( ITexture* itexture )
 }
 //=============================================================================
 
+    
+void GraphicsOpenGL::SetDrawTextureBuffering(bool buffering){
+    FlushDrawSpriteBuffer();
+    draw_array_buffering=buffering;
+}
+
 void GraphicsOpenGL::DrawTexture( ITexture* itexture, float x, float y, float w, float h, const types::fcolor& color, float rotation )
 {
 	if( itexture == NULL )
@@ -736,7 +825,12 @@ void GraphicsOpenGL::DrawTexture( ITexture* itexture, types::vec2* vertices, typ
 		vert[i].ty = texture->mUv[ 1 ] + ( tex_coords[i].y * y_text_conv );
 	}
 
-	drawsprite( texture, vert, color, count, GetGLVertexMode(mVertexMode), mBlendMode );
+    
+    if(draw_array_buffering)
+        BufferedDrawSprite( texture, vert, color, count, GetGLVertexMode(mVertexMode), mBlendMode );
+    else
+        drawsprite( texture, vert, color, count, GetGLVertexMode(mVertexMode), mBlendMode );
+
 }
 
 //-----------------------------------------------------------------------------
@@ -750,7 +844,8 @@ void GraphicsOpenGL::DrawTextureWithAlpha(
 
 	if( color[3] <= 0 || alpha_color[3] <= 0 )
 		return;
-
+    FlushDrawSpriteBuffer();
+    
 	TextureOpenGL* texture = (TextureOpenGL*)itexture;
 	TextureOpenGL* alpha_texture = (TextureOpenGL*)ialpha_texture;
 
@@ -809,7 +904,10 @@ void GraphicsOpenGL::BeginRendering()
 
 void GraphicsOpenGL::EndRendering()
 {
-	SDL_GL_SwapBuffers();
+	FlushDrawSpriteBuffer();
+    //std::cout << "DrawCalls:" << drawcalls << std::endl;
+    //drawcalls=0;
+    SDL_GL_SwapBuffers();
 }
 
 //=============================================================================
@@ -819,7 +917,8 @@ void GraphicsOpenGL::DrawLines( const std::vector< poro::types::vec2 >& vertices
 	//float xPlatformScale, yPlatformScale;
 	//xPlatformScale = (float)mViewportSize.x / (float)poro::IPlatform::Instance()->GetInternalWidth();
 	//yPlatformScale = (float)mViewportSize.y / (float)poro::IPlatform::Instance()->GetInternalHeight();
-	
+	FlushDrawSpriteBuffer();
+    
 	glEnable(GL_BLEND);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -848,6 +947,8 @@ void GraphicsOpenGL::DrawLines( const std::vector< poro::types::vec2 >& vertices
 
 void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color )
 {
+    FlushDrawSpriteBuffer();
+    
 #if 0 
 	int vertCount = vertices.size();
 	
@@ -954,7 +1055,8 @@ void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const 
 {
 	if( itexture == NULL )
 		return;
-
+    FlushDrawSpriteBuffer();
+    
 	TextureOpenGL* texture = (TextureOpenGL*)itexture;
 
 	static types::vec2 vertices[ 4 ];

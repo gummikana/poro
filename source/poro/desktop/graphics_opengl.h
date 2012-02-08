@@ -54,6 +54,7 @@ public:
 	virtual ITexture*	LoadTexture( const types::string& filename );
 	virtual void		ReleaseTexture( ITexture* texture );
 
+	virtual void        SetDrawTextureBuffering( bool buffering );
 	virtual void		DrawTexture( ITexture* texture, 
 									types::Float32 x, 
 									types::Float32 y, 
