@@ -44,12 +44,14 @@ struct GraphicsSettings
 {
 	GraphicsSettings() : 
 		textures_resize_to_power_of_two( true ), 
-		textures_fix_alpha_channel( true )
+		textures_fix_alpha_channel( true ),
+		buffered_textures( false )
     {
 	}
 
 	bool textures_resize_to_power_of_two;
 	bool textures_fix_alpha_channel;
+	bool buffered_textures;
 };
 //-----------------------------
 
@@ -126,8 +128,10 @@ public:
 
 	enum {
 		VERTEX_MODE_TRIANGLE_FAN = 0,
-		VERTEX_MODE_TRIANGLE_STRIP = 1
+		VERTEX_MODE_TRIANGLE_STRIP = 1,
+		VERTEX_MODE_TRIANGLES = 2
 	};
+
 	virtual void		PushVertexMode(int vertex_mode);
 	virtual void		PopVertexMode();
 
@@ -145,6 +149,7 @@ public:
     // - Turinging of the buffering.
     
     virtual void        SetDrawTextureBuffering( bool buffering ) {}
+	virtual bool		GetDrawTextureBuffering() const { return false; }
 	
     //-------------------------------------------------------------------------
 

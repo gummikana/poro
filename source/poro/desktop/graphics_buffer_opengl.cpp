@@ -90,7 +90,13 @@ void GraphicsBufferOpenGL::DrawTexture( ITexture* texture, types::vec2* vertices
 		vertices[i].y *= mBufferScale.y;
 		vertices[i].y = poro::IPlatform::Instance()->GetInternalHeight() - vertices[i].y;
 	}
+
+	// bool buffered_calls = GraphicsOpenGL::GetDrawTextureBuffering();
+	// GraphicsOpenGL::SetDrawTextureBuffering( false );
+
 	GraphicsOpenGL::DrawTexture( texture, vertices, tex_coords, count, color );
+
+	// GraphicsOpenGL::SetDrawTextureBuffering( buffered_calls );
 }
 
 void GraphicsBufferOpenGL::BeginRendering()

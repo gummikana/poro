@@ -27,18 +27,17 @@
 
 
 namespace poro {
+//-----------------------------------------------------------------------------
 
 class ITexture;
 class IGraphicsBuffer;
 
-//---------------
-
-//---------------
-
+//-----------------------------------------------------------------------------
 
 class GraphicsOpenGL : public IGraphics
 {
 public:
+	GraphicsOpenGL();
 
 	virtual bool		Init( int width, int height, bool fullscreen, const types::string& caption );
 	virtual void		SetInternalSize( types::Float32 width, types::Float32 height );
@@ -47,6 +46,9 @@ public:
     virtual bool        GetFullscreen() { return mFullscreen; }
 
 	virtual void		SetSettings( const GraphicsSettings& settings );
+	virtual void        SetDrawTextureBuffering( bool buffering );
+	virtual bool		GetDrawTextureBuffering() const;
+
 
 	virtual ITexture*	CreateTexture( int width, int height );
 	virtual ITexture*	CloneTexture( ITexture* other );
@@ -54,7 +56,8 @@ public:
 	virtual ITexture*	LoadTexture( const types::string& filename );
 	virtual void		ReleaseTexture( ITexture* texture );
 
-	virtual void        SetDrawTextureBuffering( bool buffering );
+
+
 	virtual void		DrawTexture( ITexture* texture, 
 									types::Float32 x, 
 									types::Float32 y, 
@@ -106,6 +109,12 @@ private:
 	float mDesktopHeight;
 	
     bool mGlContextInitialized;
+
+	void FlushDrawTextureBuffer();
+
+	class					DrawTextureBuffered;
+	DrawTextureBuffered*	mDrawTextureBuffered;
+	bool					mUseDrawTextureBuffering;
 
 };
 
