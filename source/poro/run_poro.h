@@ -8,27 +8,29 @@
 //
 
 #include <memory>
+#include "poro_libraries.h"
 #include "platform_defs.h"
 #include "iplatform.h"
-#include "poro_libraries.h"
+#include "igraphics.h"
 
 namespace poro {
 //=============================================================================<
 
-struct ApplicationConfig
+struct AppConfig
 {
-    ApplicationConfig() :
+    AppConfig() :
         window_w( 1024 ),
         window_h( 768 ),
         fullscreen( false ),
         title( "Application" ),
         internal_size_w( 1024 ),
         internal_size_h( 768 ),
-        framerate( 60 )
+        framerate( 60 ),
+		graphics_settings()
     {
     }
 
-    virtual ~ApplicationConfig() { }
+    virtual ~AppConfig() { }
 
 
     int window_w;
@@ -39,12 +41,14 @@ struct ApplicationConfig
     int internal_size_w;
     int internal_size_h;
     int framerate;
+
+	GraphicsSettings graphics_settings;
 };
 
 //=============================================================================<
 
 template< typename AppType >
-int RunPoro( const ApplicationConfig& conf = ApplicationConfig()  )
+int RunPoro( const AppConfig& conf = AppConfig()  )
 {
     poro::IPlatform::Instance()->SetWorkingDir();
 
@@ -56,21 +60,23 @@ int RunPoro( const ApplicationConfig& conf = ApplicationConfig()  )
         std::auto_ptr< AppType > app( new AppType );
 
         // initialize the platform:
-        poro::IPlatform::Instance()->Init( app.get(), conf.window_w, conf.window_h, conf.fullscreen, conf.title );
+        Poro()->Init( app.get(), conf.window_w, conf.window_h, conf.fullscreen, conf.title );
 
-        poro::IPlatform::Instance()->SetInternalSize( (float)conf.internal_size_w, (float)conf.internal_size_h );
-        poro::IPlatform::Instance()->SetFrameRate( conf.framerate );
+        Poro()->SetInternalSize( (float)conf.internal_size_w, (float)conf.internal_size_h );
+        Poro()->SetFrameRate( conf.framerate );
+		if( Poro()->GetGraphics() )
+			Poro()->GetGraphics()->SetSettings( conf.graphics_settings );
 
 
         // now start the actual app
-        poro::IPlatform::Instance()->SetApplication( app.get() );
+        Poro()->SetApplication( app.get() );
 
         // start the main loop for title screen
-        poro::IPlatform::Instance()->StartMainLoop();
+        Poro()->StartMainLoop();
     }
 
     // destroy the environment:
-    poro::IPlatform::Instance()->Destroy();
+    Poro()->Destroy();
 
     return 0;
 }
