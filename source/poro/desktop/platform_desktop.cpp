@@ -127,6 +127,7 @@ void PlatformDesktop::StartMainLoop()
 
     types::Float32  mFrameCountLastTime = 0;
     int             mFrameRateUpdateCounter = 0;
+	types::Float32	mProcessorRate = 0;
 
 	while( mRunning )
 	{
@@ -146,6 +147,7 @@ void PlatformDesktop::StartMainLoop()
 		while( ( GetUpTime() - time_before ) < mOneFrameShouldLast ) { Sleep( 0 ); }
 
         // frame-rate check
+		mProcessorRate += ( elapsed_time / mOneFrameShouldLast );
         mFrameCount++;
         mFrameRateUpdateCounter++;
         if( ( GetUpTime() - mFrameCountLastTime ) >= 1.f )
@@ -154,9 +156,10 @@ void PlatformDesktop::StartMainLoop()
             mFrameRate = mFrameRateUpdateCounter;
             mFrameRateUpdateCounter = 0;
 
-            // std::cout << "Fps: " << mFrameRate << std::endl;
+			// std::cout << "Fps: " << mFrameRate << " (CPU): " << ( mProcessorRate / (types::Float32)mFrameRate ) * 100.f << "%" << std::endl;
+			
+			mProcessorRate = 0;
         }
-
 	}
 
 	if( mApplication )
