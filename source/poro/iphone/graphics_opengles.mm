@@ -35,8 +35,6 @@
 #include "texture_opengles.h"
 #include "graphics_buffer_opengles.h"
 
-
-
 using namespace poro::types;
 
 //const int game_resolution_w = 320;
@@ -50,6 +48,14 @@ namespace {
 
 	GraphicsSettings OPENGL_SETTINGS;
 	
+    struct Vertex
+	{
+		float x;
+		float y;
+		float tx;
+		float ty;
+	};
+    
 	Uint32 GetGLVertexMode(int vertex_mode){
 		switch (vertex_mode) {
 			case IGraphics::VERTEX_MODE_TRIANGLE_FAN:
@@ -105,10 +111,15 @@ namespace {
 		
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        if(IPlatform::Instance()->GetGraphics()->GetMipmapMode()==IGraphics::MIPMAP_MODE_NEAREST){
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        } else {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        }
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-		
+        
 		glDisable(GL_TEXTURE_2D);
 
 		
@@ -226,22 +237,36 @@ namespace {
 		
 		
 		poro_logger << "File: " << filename << std::endl;
-		
-		
-		
-		
+				
 		return texture;
 	}
 	
-	void drawsprite( TextureOpenGLES* texture, GLfloat* glTexCoords, GLfloat* glVertices, const types::fcolor& color, int count, Uint32 vertex_mode )
+    //static int drawcalls=0;
+    void DrawSprite( TextureOpenGLES* texture, Vertex* vertices, const types::fcolor& color, int count, Uint32 vertex_mode )
 	{
+        //drawcalls++;
+        
+        poro_assert(count<=PORO_DRAW_TEXTURE_BUFFER_SIZE);
+        
+        //Convert to glarrays
+        static GLfloat glVertices[PORO_DRAW_TEXTURE_BUFFER_SIZE*2];
+        static GLfloat glTexCoords[PORO_DRAW_TEXTURE_BUFFER_SIZE*2];
+        int o=0;
+        for(int i=0;i<count;++i){
+            glVertices[o] = vertices[i].x;
+            glTexCoords[o] = vertices[i].tx;
+            ++o;
+            glVertices[o] = vertices[i].y;
+            glTexCoords[o] = vertices[i].ty;
+            ++o;
+        }
+        
         // std::cout << "CAlling normal draw sprite" << std::endl;
 		glBindTexture(GL_TEXTURE_2D, texture->mTextureId);
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_BLEND);
 		
-        
-		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         glColor4f(color[ 0 ] * color[3], color[ 1 ] * color[3], color[ 2 ] * color[3], color[ 3 ] );
 		
 		glEnableClientState( GL_TEXTURE_COORD_ARRAY );
@@ -255,12 +280,90 @@ namespace {
 		
 		glDisable(GL_BLEND);
 		glDisable(GL_TEXTURE_2D);
-		
+	    
 	}
+    
+    //=========== DrawTextureBuffer =============
+  
+    static Vertex vertex_buffer[PORO_DRAW_TEXTURE_BUFFER_SIZE];
+	static int vertex_buffer_count = 0;
+    static TextureOpenGLES* prev_texture = NULL;
+    static types::fcolor prev_color = GetFColor(0,0,0,0);
+    static int prev_vertex_mode = 0;
+    bool draw_array_buffering=false;
+
+    bool CanDrawSpriteToBuffer( TextureOpenGLES* texture, const types::fcolor& color, int count, Uint32 vertex_mode ) {
+        
+        if( vertex_buffer_count==0 )
+            return true;
+        
+        if( prev_texture!=texture )
+            return false;
+        
+        if( vertex_buffer_count+(count-2)*3 >=PORO_DRAW_TEXTURE_BUFFER_SIZE )
+            return false;
+        
+        if( prev_color[0]!=color[0] || prev_color[1]!=color[1] || prev_color[2]!=color[2] || prev_color[3]!=color[3])
+            return false;
+        
+        return true;
+    }
+    
+    void DrawSpriteToBuffer( TextureOpenGLES* texture, Vertex* vertices, const types::fcolor& color, int count, Uint32 vertex_mode ){
+        
+        prev_color = color;
+        prev_texture = texture;
+        prev_vertex_mode = vertex_mode;
+        
+        //convert GL_TRIANGLE_FAN and GL_TRIANGLE_STRIP to GL_TRIANGLES
+        if(vertex_mode==GL_TRIANGLE_FAN){
+            for( int i=2; i<count; ++i ){
+                vertex_buffer[vertex_buffer_count] = vertices[0];
+                ++vertex_buffer_count;
+                vertex_buffer[vertex_buffer_count] = vertices[i-1];
+                ++vertex_buffer_count;
+                vertex_buffer[vertex_buffer_count] = vertices[i];
+                ++vertex_buffer_count;
+            }
+        } else if(vertex_mode==GL_TRIANGLE_STRIP){
+            for( int i=2; i<count; ++i ){
+                vertex_buffer[vertex_buffer_count] = vertices[i-2];
+                ++vertex_buffer_count;
+                vertex_buffer[vertex_buffer_count] = vertices[i-1];
+                ++vertex_buffer_count;
+                vertex_buffer[vertex_buffer_count] = vertices[i];
+                ++vertex_buffer_count;
+            }
+        } else if(vertex_mode==GL_TRIANGLES) {
+            for( int i=0; i<count; ++i ){
+                vertex_buffer[vertex_buffer_count] = vertices[i];
+                ++vertex_buffer_count;
+            }
+        }
+    }
+    
+    void FlushDrawSpriteBuffer()
+    {
+        if(vertex_buffer_count)
+            DrawSprite( prev_texture, vertex_buffer, prev_color, vertex_buffer_count, GL_TRIANGLES );
+        vertex_buffer_count = 0;
+    }
+    
+    void BufferedDrawSprite( TextureOpenGLES* texture, Vertex* vertices, const types::fcolor& color, int count, Uint32 vertex_mode )
+    {
+        if( !CanDrawSpriteToBuffer( texture, color, count, vertex_mode ) ){
+            FlushDrawSpriteBuffer();
+        }
+        DrawSpriteToBuffer( texture, vertices, color, count, vertex_mode );
+    }
+    	
+    //================================================================
 	
-	void drawsprite_withalpha( TextureOpenGLES* texture,  GLfloat* glTexCoords, GLfloat* glVertices, const types::fcolor& color, int count,
+    void DrawSpriteWithAlpha( TextureOpenGLES* texture,  GLfloat* glTexCoords, GLfloat* glVertices, const types::fcolor& color, int count,
 							  TextureOpenGLES* alpha_texture, GLfloat* alpha_glTexCoords, GLfloat* alpha_glVertices, const types::fcolor& alpha_color, Uint32 vertex_mode )
 	{
+        FlushDrawSpriteBuffer();
+        
         // std::cout << "CAlling drawsprite_withalpha" << std::endl;
 		// Specify texture cords
 		glClientActiveTexture(GL_TEXTURE0);
@@ -318,9 +421,15 @@ namespace {
 		return D;
 	}
 
-		
 } // end o namespace anon
 
+    
+void GraphicsOpenGLES::SetDrawTextureBuffering(bool buffering){
+    FlushDrawSpriteBuffer();
+    draw_array_buffering=buffering;
+}
+    
+    
 void GraphicsOpenGLES::SetSettings( const GraphicsSettings& settings ) {
 	OPENGL_SETTINGS = settings;
 }
@@ -435,13 +544,13 @@ void GraphicsOpenGLES::DrawTexture( ITexture* itexture, types::vec2* vertices, t
 	static types::vec2 temp_tex_coord;
     static types::vec2 temp_vertex;
     
-    static GLfloat glVertices[16];
-	static GLfloat glTexCords[16];
-	
+    static Vertex vert[8];
+    
 	const float x_text_conv = ( 1.f / texture->mWidth ) * ( texture->mUv[ 2 ] - texture->mUv[ 0 ] );
 	const float y_text_conv = ( 1.f / texture->mHeight ) * ( texture->mUv[ 3 ] - texture->mUv[ 1 ] );
     
-	for( int i = 0; i < count; ++i )
+    
+    for( int i = 0; i < count; ++i )
 	{
 		temp_tex_coord.x = tex_coords[ i ].x * texture->mExternalScaleWidth;
 		temp_tex_coord.y = tex_coords[ i ].y * texture->mExternalScaleHeight;
@@ -453,15 +562,17 @@ void GraphicsOpenGLES::DrawTexture( ITexture* itexture, types::vec2* vertices, t
 		temp_vertex.x = vertices[i].x * xPlatformScale;
 		temp_vertex.y = vertices[i].y * yPlatformScale;
 
-		// set gl vertices
-        glVertices[i*2] = temp_vertex.x;
-		glVertices[i*2+1] = temp_vertex.y;
-		glTexCords[i*2] = texture->mUv[ 0 ] + ( temp_tex_coord.x * x_text_conv );
-		glTexCords[i*2+1] = texture->mUv[ 1 ] + ( temp_tex_coord.y * y_text_conv );
-	}
+		vert[i].x = temp_vertex.x;
+		vert[i].y = temp_vertex.y;
+		vert[i].tx = texture->mUv[ 0 ] + ( temp_tex_coord.x * x_text_conv );
+		vert[i].ty = texture->mUv[ 1 ] + ( temp_tex_coord.y * y_text_conv );
+    }
     
-	
-	drawsprite( texture, glTexCords, glVertices, color, count, GetGLVertexMode(mVertexMode) );
+	if(draw_array_buffering)
+        BufferedDrawSprite( texture, vert, color, count, GetGLVertexMode(mVertexMode) );
+    else
+        DrawSprite( texture, vert, color, count, GetGLVertexMode(mVertexMode) );
+    
 }
 
 	
@@ -528,7 +639,7 @@ void GraphicsOpenGLES::DrawTextureWithAlpha( ITexture* itexture, types::vec2* ve
 		glAlphaTexCords[i*2+1] = alpha_texture->mUv[ 1 ] + ( temp_alpha_tex_coord.y * y_alpha_text_conv );
 	}
 	
-	drawsprite_withalpha( texture, glTexCords, glVertices, color, count, alpha_texture, glAlphaTexCords, glVertices, alpha_color, GetGLVertexMode(mVertexMode) );
+	DrawSpriteWithAlpha( texture, glTexCords, glVertices, color, count, alpha_texture, glAlphaTexCords, glVertices, alpha_color, GetGLVertexMode(mVertexMode) );
 }
 	
 //=============================================================================
@@ -549,13 +660,19 @@ void GraphicsOpenGLES::BeginRendering()
 
 void GraphicsOpenGLES::EndRendering()
 {
+    FlushDrawSpriteBuffer();
+    
+    //std::cout << "DrawCalls:" << drawcalls << std::endl;
+    //drawcalls=0;
+    
 	[iPhoneGlobals.glView endRendering];
 }
 	
 
 void GraphicsOpenGLES::DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color )
 {
-	
+	FlushDrawSpriteBuffer();
+    
 	//poro_logger << "DrawLines" << std::endl;
 	int vertCount = vertices.size();
 	
@@ -599,7 +716,9 @@ void GraphicsOpenGLES::DrawLines( const std::vector< poro::types::vec2 >& vertic
 	
 void GraphicsOpenGLES::DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color )
 {
-	int vertCount = vertices.size();
+	FlushDrawSpriteBuffer();
+    
+    int vertCount = vertices.size();
 	
 	if(vertCount == 0)
 		return;

@@ -42,6 +42,7 @@ public:
 	virtual ITexture*	LoadTexture( const types::string& filename );
 	virtual void		ReleaseTexture( ITexture* texture );
 
+	virtual void        SetDrawTextureBuffering( bool buffering );
 	virtual void		DrawTexture( ITexture* texture, float x, float y, float w, float h, const types::fcolor& color, float rotation = 0.0f );
 	virtual void		DrawTexture( ITexture* texture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color );
 	virtual void		DrawTextureWithAlpha( ITexture* texture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color,
@@ -58,7 +59,8 @@ public:
 	virtual IGraphicsBuffer* CreateGraphicsBuffer(int width, int height);
 	virtual void DestroyGraphicsBuffer(IGraphicsBuffer* buffer);
 	
-	
+
+    
 };
 
 } // end o namespace poro

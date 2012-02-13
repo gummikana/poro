@@ -809,13 +809,13 @@ void CSpriteSheet::PlayAnimation( const std::string& name )
 		
 		if( myAnimation )
 		{
-			Uint32 frame_id = myAnimation->myFrames[ myCurrentFrame ];
+			unsigned int frame_id = myAnimation->myFrames[ myCurrentFrame ];
 			SetSprite(frame_id);
 		}
 	}
 }
 
-void CSpriteSheet::Update( Uint32 delta_time )
+void CSpriteSheet::Update( unsigned int delta_time )
 {
 	if( myAnimationPaused )
 		return;
@@ -833,12 +833,12 @@ void CSpriteSheet::Update( Uint32 delta_time )
 				if( myAnimation->myLoop )
 					myCurrentFrame = 0;
 				else 
-					myCurrentFrame = (Uint32)( myAnimation->myFrames.size() - 1 );
+					myCurrentFrame = (unsigned int)( myAnimation->myFrames.size() - 1 );
 			}
 			
 			if( myCurrentFrame < myAnimation->myFrames.size() )
 			{
-				Uint32 frame_id = myAnimation->myFrames[ myCurrentFrame ];
+				unsigned int frame_id = myAnimation->myFrames[ myCurrentFrame ];
 				if( frame_id < mRects.size() )
 					SetSprite(frame_id);
 			}
