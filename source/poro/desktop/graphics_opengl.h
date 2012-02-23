@@ -89,7 +89,7 @@ public:
 	
 	virtual void		DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth, float width, bool loop );
 	virtual void		DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color );
-	virtual void		DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture );
+	virtual void		DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture,  const types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ), types::vec2* tex_coords = NULL, int count = 0 );
 	
 	virtual IGraphicsBuffer* CreateGraphicsBuffer(int width, int height);
 	virtual void DestroyGraphicsBuffer(IGraphicsBuffer* buffer);

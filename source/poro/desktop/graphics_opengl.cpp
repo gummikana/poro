@@ -1121,7 +1121,8 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 #endif
 }
 
-void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture )
+
+void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture, const poro::types::fcolor& color, types::vec2* tex_coords, int count )
 {
 	if( itexture == NULL )
 		return;
@@ -1148,13 +1149,17 @@ void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const 
 
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);
-	glColor4f(1, 1, 1, 1);
+	glColor4f( color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glBegin( GL_TRIANGLE_STRIP );
 
 	for( int i = 0; i < 4; i++)
 	{
-		glTexCoord2f(vertices[ i ].x / texture->GetWidth(), vertices[ i ].y / texture->GetHeight() );
+		if( tex_coords == NULL || i >= count )
+			glTexCoord2f( vertices[ i ].x / texture->GetWidth(), vertices[ i ].y / texture->GetHeight() );
+		else
+			glTexCoord2f( tex_coords[ i ].x / texture->GetWidth(), tex_coords[ i ].y / texture->GetHeight() );
+
 		glVertex2f(vertices[ i ].x, vertices[ i ].y );
 	}
 	
