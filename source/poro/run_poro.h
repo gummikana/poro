@@ -26,6 +26,7 @@ struct AppConfig
         internal_size_w( 1024 ),
         internal_size_h( 768 ),
         framerate( 60 ),
+		sounds( true ),
 		graphics_settings()
     {
     }
@@ -41,6 +42,8 @@ struct AppConfig
     int internal_size_w;
     int internal_size_h;
     int framerate;
+
+	bool sounds;
 
 	GraphicsSettings graphics_settings;
 };
