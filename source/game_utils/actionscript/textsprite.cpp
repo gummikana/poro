@@ -33,6 +33,29 @@
 
 
 namespace as {
+
+// ---- just a simple font cache ----------------------------------------
+std::map< std::string, CFont* > m_font_cache;
+
+
+as::TextSprite* LoadTextSprite( const std::string& font_file )
+{
+	as::TextSprite* mTextSprite = new as::TextSprite;
+
+	CFont* font = m_font_cache[ font_file ];
+	if( font == NULL ) {
+		font = new CFont;
+		ceng::XmlLoadFromFile( *font, font_file, "FontData" );
+		m_font_cache[ font_file ] = font;
+	}
+
+	mTextSprite->SetFont( font );
+	mTextSprite->SetColor( 0, 0, 0 );
+
+	return mTextSprite;
+}
+
+	
 ///////////////////////////////////////////////////////////////////////////////
 
 TextSprite::TextSprite() :	

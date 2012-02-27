@@ -61,6 +61,7 @@ public:
 
 poro::ITexture* GetTexture( const std::string& filename );
 as::Sprite*		LoadSprite( const std::string& filename );
+as::TextSprite* LoadTextSprite( const std::string& font_file );
 
 } // end of namespace as
 
