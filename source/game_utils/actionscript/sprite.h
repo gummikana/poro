@@ -177,9 +177,14 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	types::vector2 GetScreenPosition() const;
+	std::vector< Sprite* >	FindSpritesAtPoint( const types::vector2& p );
+	types::vector2			GetScreenPosition() const;
+	
+	//-------------------------------------------------------------------------
 
 protected:
+
+	void FindSpritesAtPointImpl( const types::vector2& pos, Transform& transform, std::vector< Sprite* >& results );
 
 	types::vector2 MultiplyByParentXForm( const types::vector2& p ) const;
 	
