@@ -446,6 +446,12 @@ bool Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 }
 ///////////////////////////////////////////////////////////////////////////////
 
+void DrawSprite( Sprite* sprite, poro::IGraphics* graphics, types::camera* camera )
+{
+    Transform t;
+    DrawSprite( sprite, graphics, camera, t );
+}
+
 void DrawSprite( Sprite* sprite, poro::IGraphics* graphics, types::camera* camera, Transform& transform )
 {
 	cassert( sprite );
@@ -656,7 +662,8 @@ std::vector< Sprite* > Sprite::FindSpritesAtPoint( const types::vector2& p )
 {
 	std::vector< Sprite* > result;
 
-	FindSpritesAtPointImpl( p, Transform(), result );
+    Transform t;
+	FindSpritesAtPointImpl( p, t, result );
 
 	return result;
 }
