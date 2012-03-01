@@ -75,13 +75,13 @@ public:
 		if( lastfile != myFilename )
 		{
 			myLog.open( myFilename.c_str(), std::ios::out );
-			assert( myLog );
+			// assert( myLog );
 			lastfile = myFilename;
 		}
 		else
 		{
 			myLog.open( myFilename.c_str(), std::ios::app );
-			assert( myLog );
+			// assert( myLog );
 			write_header = false;
 		}
 
