@@ -15,7 +15,7 @@
 #include "utils/math/cangle.h"
 #include "utils/network/network_serializer.h"
 #include "utils/camera/icamera.h"
-#include "utils/bitmask/cbitmask_math.h"
+// #include "utils/bitmask/cbitmask_math.h"
 #include "utils/staticarray/cstaticarray.h"
 #include "utils/color/ccolor.h"
 
@@ -40,9 +40,9 @@ typedef ceng::math::CMat22< float >		mat22;
 typedef ceng::math::CXForm< float >		xform;
 
 typedef ceng::math::CVector2< int >		point;
-typedef ceng::bitmask::Point			ship_point;
+/*typedef ceng::bitmask::Point			ship_point;
 typedef ceng::bitmask::PointXForm		ship_xform;
-typedef ceng::bitmask::PointMatrix		ship_matrix;
+typedef ceng::bitmask::PointMatrix		ship_matrix;*/
 typedef uint32							ticks;
 typedef ceng::math::CAngle< float >		angle;
 
