@@ -65,7 +65,7 @@ public:
 		mBlendMode( BLEND_MODE_NORMAL ),
 		mBlendModes(),
 		mVertexMode( VERTEX_MODE_TRIANGLE_FAN ),
-        mVertexModes(),
+        mVertexModes(),		
 		mMipmapMode( MIPMAP_MODE_LINEAR ),
 		mDrawFillMode( DRAWFILL_MODE_FRONT_AND_BACK )
     {
