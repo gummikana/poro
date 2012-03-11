@@ -97,14 +97,16 @@ public:
 		return world->Rand( p.x, p.y );
 	}
 
-	inline T& At( const Point2D& p ) { return At( (int32)p.x, (int32)p.y ); }
+	inline T& At( const Point2D& p ) { return At( (int)p.x, (int)p.y ); }
 
 	//-------------------------------------------------------------------------
 
 	inline const T& At( int x, int y ) const {
 		GPoint g = CreateGPoint( x, y );
-		Array2D* world = GetWorld( g );
-		if( world == NULL ) return T();
+		const Array2D* world = GetWorld( g );
+
+		static T temp_null = T();
+		if( world == NULL ) return temp_null;
 
 		Point2D p = CreateArrayPoint( x, y );
 		
@@ -113,10 +115,10 @@ public:
 		cassert( p.y >= 0 );
 		cassert( p.y < world->GetHeight() );
 
-		return world->Rand( p.x, p.y7 );
+		return world->Rand( p.x, p.y );
 	}
 
-	inline const T& At( const Point2D& p ) const { return At( (int32)p.x, (int32)p.y ); }
+	inline const T& At( const Point2D& p ) const { return At( (int)p.x, (int)p.y ); }
 
 	//-------------------------------------------------------------------------
 
