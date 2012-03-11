@@ -78,7 +78,7 @@ public:
 			str_pos = str_next_pos;
 
 			if ( text[ str_pos ] == ' ' )
-				gfx_w += font->GetCharPosition( ' ' ).w;
+				gfx_w += font->GetCharPosition( static_cast< CFont::CharType >( ' ' ) ).w;
 			
 			str_pos++;
 
@@ -94,7 +94,7 @@ public:
 		// BUGBUG for bughunting
 		// myBugLine = text.substr( start_pos, ( str_pos - start_pos ) );
 
-		gfx_line_width = gfx_w - font->GetCharPosition( ' ' ).w;
+		gfx_line_width = gfx_w - font->GetCharPosition( static_cast< CFont::CharType >(' ') ).w;
 		return ( str_pos );
 	}
 
@@ -122,7 +122,7 @@ public:
 
 			for( int i = text_i; i < line_break && i < (int)texture_rects.size(); ++i )
 			{
-				float w = texture_rects[ i ].w /*+ font->GetCharSpace()*/;
+				float w = texture_rects[ i ].w + font->GetCharSpace();
 				if( IsLineBreak( text[ i ] ) )
 				{
 					result.push_back( types::rect( 0, 0, -1, -1 ) );

@@ -28,13 +28,13 @@ namespace poro {
 
 void Mouse::AddMouseListener(IMouseListener *listener)
 {
-	poro_logger << "Added mouse listener" << std::endl;
+	// poro_logger << "Added mouse listener" << std::endl;
 	mMouseListeners.push_back(listener);
 }
 
 void Mouse::RemoveMouseListener(IMouseListener *listener)
 {
-	poro_logger << "Remove mouse listener";
+	// poro_logger << "Remove mouse listener";
 	
 	std::vector< IMouseListener* >::iterator i = std::find(mMouseListeners.begin(),mMouseListeners.end(),listener);
 

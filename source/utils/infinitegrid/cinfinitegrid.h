@@ -104,6 +104,9 @@ public:
 	inline const T& At( int x, int y ) const {
 		GPoint g = CreateGPoint( x, y );
 		const Array2D* world = GetWorld( g );
+		
+		static T null_object = T();
+		if( world == NULL ) return null_object;
 
 		static T temp_null = T();
 		if( world == NULL ) return temp_null;

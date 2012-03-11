@@ -23,8 +23,8 @@
 #define INC_UTILS_DEBUG_H
 
 #ifdef PORO_TESTER_ENABLED
-#include "../tester/ctester.h"
-#include "../tester/tester_utils.h"
+//#include "../tester/ctester.h"
+//#include "../tester/tester_utils.h"
 #endif
 
 #include <iostream>

@@ -64,8 +64,10 @@ public:
         mFillColor(),
 		mBlendMode( BLEND_MODE_NORMAL ),
 		mBlendModes(),
-		mVertexMode(VERTEX_MODE_TRIANGLE_FAN),
-        mVertexModes()
+		mVertexMode( VERTEX_MODE_TRIANGLE_FAN ),
+        mVertexModes(),		
+		mMipmapMode( MIPMAP_MODE_LINEAR ),
+		mDrawFillMode( DRAWFILL_MODE_FRONT_AND_BACK )
     {
 		mFillColor[0] = 0.f;mFillColor[1] = 0.f; mFillColor[2] = 0.f; mFillColor[3] = 1.f;
 	}
@@ -126,7 +128,7 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	enum {
+	enum VERTEX_MODES {
 		VERTEX_MODE_TRIANGLE_FAN = 0,
 		VERTEX_MODE_TRIANGLE_STRIP = 1,
 		VERTEX_MODE_TRIANGLES = 2
@@ -191,6 +193,15 @@ public:
 
 	virtual void		DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth, float width, bool loop = false ) { }
 	virtual void		DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) { DrawLines( vertices, color, false, 1.f, true ); }
+	//-------------------------------------------------------------------------
+	enum DRAWFILL_MODES {
+		DRAWFILL_MODE_FRONT_AND_BACK = 0,
+		DRAWFILL_MODE_TRIANGLE_STRIP = 1
+	};
+	
+	virtual void SetDrawFillMode( int drawfill_mode )	{ mDrawFillMode = drawfill_mode; }
+	virtual int GetDrawFillMode() const					{ return mDrawFillMode; }
+
 	virtual void		DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) { }
 
 	//-------------------------------------------------------------------------
@@ -211,6 +222,8 @@ protected:
 	std::stack<int> mVertexModes;
 
     int mMipmapMode;
+
+	int mDrawFillMode;
     
 };
 

@@ -25,7 +25,7 @@
 #include "platform_iphone.h"
 
 #include <cmath>
-#include "../../freeimage/include/FreeImage.h"
+#include "FreeImage.h"
 
 #include <OpenGLES/ES1/gl.h>
 #include <OpenGLES/ES1/glext.h>

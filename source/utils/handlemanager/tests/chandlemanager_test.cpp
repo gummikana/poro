@@ -20,7 +20,9 @@
 
 
 #include "../chandlemanager.h"
-#include "../../../tester/ctester.h"
+#include "../../debug.h"
+
+#ifdef CENG_TESTER_ENABLED
 
 namespace ceng {
 namespace test {
@@ -126,3 +128,5 @@ TEST_REGISTER( CHandleManagerTest );
 
 } // end of namespace test
 } // end of namespace ceng
+
+#endif

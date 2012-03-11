@@ -23,6 +23,9 @@
 
 #include "../cstaticarray.h"
 
+
+#ifdef CENG_TESTER_ENABLED
+
 namespace ceng {
 namespace test {
 
@@ -130,3 +133,5 @@ TEST_REGISTER( CStaticArrayTester );
 
 } // end of namespace test
 } // end of namespace ceng
+
+#endif
