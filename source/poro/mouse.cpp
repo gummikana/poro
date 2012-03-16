@@ -47,6 +47,7 @@ void Mouse::RemoveMouseListener(IMouseListener *listener)
 
 void Mouse::FireMouseMoveEvent(const types::vec2& pos)
 {
+	mMousePos = pos;
 	for( std::size_t i = 0; i < mMouseListeners.size() ; i++)
 	{
 		mMouseListeners[i]->MouseMove(pos);
@@ -91,5 +92,10 @@ void Mouse::SetCursorVisiblity( bool show_cursor )
 }
 
 //-----------------------------------------------------------------------------
+
+types::vec2 Mouse::GetMousePos() const 
+{
+	return mMousePos;
+}
 
 } // end of namespace poro

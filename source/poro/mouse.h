@@ -39,11 +39,11 @@ public:
 		MOUSE_BUTTON_WHEEL_DOWN = 5
 	};
 
-	Mouse() : mCursorVisible(true) {}
-	virtual ~Mouse() {}
+	Mouse() : mCursorVisible( true ), mMousePos( 0, 0 ) { }
+	virtual ~Mouse() { }
 	
-	void AddMouseListener(IMouseListener *listener);
-	void RemoveMouseListener(IMouseListener *listener);
+	void AddMouseListener(IMouseListener* listener);
+	void RemoveMouseListener(IMouseListener* listener);
 
 	void FireMouseMoveEvent(const types::vec2& pos);
 	void FireMouseDownEvent(const types::vec2& pos, int button);
@@ -54,9 +54,12 @@ public:
 	virtual void ShowCursor();
 	virtual void SetCursorVisiblity( bool show_cursor );
 
+	virtual types::vec2 GetMousePos() const;
+
 private:
 	std::vector<IMouseListener*> mMouseListeners;
 	bool mCursorVisible;
+	types::vec2 mMousePos;
 };
 
 }
