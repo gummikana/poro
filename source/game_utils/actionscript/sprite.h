@@ -284,7 +284,8 @@ struct Transform
 
 //-----------------------------------------------------------------------------
 
-void DrawSprite( Sprite* sprite, poro::IGraphics* graphics, types::camera* camera = NULL, Transform& transform = Transform() );
+void DrawSprite( Sprite* sprite, poro::IGraphics* graphics, types::camera* camera = NULL );
+void DrawSprite( Sprite* sprite, poro::IGraphics* graphics, types::camera* camera, Transform& transform );
 
 ///////////////////////////////////////////////////////////////////////////////
 

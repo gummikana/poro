@@ -108,6 +108,9 @@ public:
 		static T null_object = T();
 		if( world == NULL ) return null_object;
 
+		static T temp_null = T();
+		if( world == NULL ) return temp_null;
+
 		Point2D p = CreateArrayPoint( x, y );
 		
 		cassert( p.x >= 0 );

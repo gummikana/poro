@@ -127,7 +127,7 @@ public:
 
 		// Just to check for some multiple inheritance shit 
 		// that can sometimes cause nasty things to happen
-		assert( abs( (int)myPointer - (int)pointer ) > 8 );
+		// assert( abs( (int)myPointer - (int)pointer ) > 8 );
 
 		return false;
 	}

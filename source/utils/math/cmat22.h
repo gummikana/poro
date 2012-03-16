@@ -89,7 +89,7 @@ struct CMat22
 	/// a rotation matrix).
 	float GetAngle() const
 	{
-		return atan2(col1.y, col1.x);
+		return static_cast< float >( atan2(col1.y, col1.x) );
 	}
 
 	CMat22< Type > Invert() const
