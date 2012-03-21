@@ -44,6 +44,8 @@
 #include <vector>
 #include <memory>
 
+#include "../safearray/csafearray.h"
+
 namespace ceng {
 
 // #include "../../../config/cengdef.h"
@@ -51,6 +53,9 @@ namespace ceng {
 
 //! templated 2 dimensional array. Works way better than
 //! std::vector< std::vector< T > >
+
+// #define CENG_CARRAY2D_SAFE
+
 template < class _Ty, class _A = std::allocator<_Ty> >
 class CArray2D
 {
@@ -80,7 +85,8 @@ public:
 	  myWidth( 0 ),
 	  myHeight( 0 ),
 	  mySize( 0 ),
-	  myArraysLittleHelper( *this )
+	  myArraysLittleHelper( *this ),
+	  myNullReference( _Ty() )
 	{
 
 	}
@@ -88,7 +94,9 @@ public:
 	CArray2D( int _width, int _height ) :
 	  myWidth( _width ),
 	  myHeight( _height ),
-	  myArraysLittleHelper( *this )
+	  mySize( 0 ),
+	  myArraysLittleHelper( *this ),
+	  myNullReference( _Ty() )
 	{
 
 		Allocate();
@@ -99,7 +107,8 @@ public:
 		myHeight( other.myHeight ),
 		mySize( other.mySize ),
 		myArraysLittleHelper( *this ),
-		myDataArray( other.myDataArray )
+		myDataArray( other.myDataArray ),
+	  myNullReference( _Ty() )
 	{
 
 	}
@@ -117,12 +126,12 @@ public:
 		return *this;
 	}
 
-	int GetWidth() const
+	inline int GetWidth() const
 	{
 		return myWidth;
 	}
 
-	int GetHeight() const
+	inline int GetHeight() const
 	{
 		return myHeight;
 	}
@@ -143,37 +152,51 @@ public:
 	}
 
 
-	reference At( int _x, int _y )
+	inline reference At( int _x, int _y )
 	{
+#ifdef CENG_CARRAY2D_SAFE
+		if ( _x < 0 || _y < 0 || _x >= myWidth || _y >= myHeight ) return myNullReference;
+#else
 		if ( _x < 0 ) _x = 0;
 		if ( _y < 0 ) _y = 0;
-		if ( _x > myWidth ) _x = myWidth;
-		if ( _y > myHeight ) _y = myHeight;
+		if ( _x >= myWidth ) _x = myWidth - 1;
+		if ( _y >= myHeight ) _y = myHeight - 1;
+#endif
 
 		return myDataArray[ ( _y * myWidth ) + _x ];
 	}
 
 
-	const_reference At( int _x, int _y ) const
+	inline const_reference At( int _x, int _y ) const
 	{
+#ifdef CENG_CARRAY2D_SAFE
+		if ( _x < 0 || _y < 0 || _x >= myWidth || _y >= myHeight ) return myNullReference;
+#else
+
 		if ( _x < 0 ) _x = 0;
 		if ( _y < 0 ) _y = 0;
-		if ( _x > myWidth ) _x = myWidth;
-		if ( _y > myHeight ) _y = myHeight;
+		if ( _x >= myWidth ) _x = myWidth - 1;
+		if ( _y >= myHeight ) _y = myHeight - 1;
+#endif
 
 		return myDataArray[ ( _y * myWidth ) + _x ];
-
 	}
 
 
 
-	reference Rand( int _x, int _y )
+	inline reference Rand( int _x, int _y )
 	{
+#ifdef CENG_CARRAY2D_SAFE
+		if ( _x < 0 || _y < 0 || _x >= myWidth || _y >= myHeight ) return myNullReference;
+#endif
 		return myDataArray[ ( _y * myWidth ) + _x ];
 	}
 
-	const_reference Rand( int _x, int _y ) const
+	inline const_reference Rand( int _x, int _y ) const
 	{
+#ifdef CENG_CARRAY2D_SAFE
+		if ( _x < 0 || _y < 0 || _x >= myWidth || _y >= myHeight ) return myNullReference;
+#endif
 		return myDataArray[ ( _y * myWidth ) + _x ];
 	}
 
@@ -237,6 +260,7 @@ public:
 
 	void Crop( int _x, int _y, int _w, int _h )
 	{
+	    /*
 		std::vector< _Ty > tmpDataArray;
 
 		tmpDataArray.resize( ( _w + 1 ) * ( _h + 1 ) );
@@ -252,7 +276,7 @@ public:
 
 		myDataArray = tmpDataArray;
 		myWidth = _w;
-		myHeight = _h;
+		myHeight = _h;*/
 	}
 
 	void Clear()
@@ -263,13 +287,18 @@ public:
 		myDataArray.clear();
 	}
 
+	bool Empty() const { return myDataArray.empty(); }
+
 private:
 
 	void Allocate()
 	{
-		mySize = (myWidth + 1) * ( myHeight + 1 );
-
-		myDataArray.resize( mySize + 1 );
+		int n_size = (myWidth + 1) * ( myHeight + 1 );
+		if( n_size != mySize )
+		{
+			mySize = n_size;
+			myDataArray.resize( mySize + 1 );
+		}
 	}
 
 	int myWidth;
@@ -279,7 +308,10 @@ private:
 
 	CArray2DHelper	   myArraysLittleHelper;
 
-	std::vector< _Ty > myDataArray;
+	_Ty					myNullReference;
+
+	CSafeArray< _Ty > myDataArray;
+	// std::vector< _Ty > myDataArray;
 
 
 };

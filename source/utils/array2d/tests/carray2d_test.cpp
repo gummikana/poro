@@ -22,8 +22,6 @@
 #include "../../debug.h"
 #include "../carray2d.h"
 
-#ifdef CENG_TESTER_ENABLED
-
 namespace ceng {
 namespace test {
 
@@ -51,5 +49,3 @@ TEST_REGISTER( CArray2DTest );
 
 } // end of namespace test
 } // end of namespace ceng
-
-#endif
