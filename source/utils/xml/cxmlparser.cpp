@@ -75,10 +75,13 @@ void CXmlParser::ParseStringData( const std::string& stringdata )
 {
 	myHandler->StartDocument();
 
-	std::vector< std::string > lines = ceng::Split( ">", stringdata );
+	std::vector< std::string > lines = ceng::Split( ">", stringdata + " " );
 	for( unsigned int i = 0; i < lines.size(); ++i )
 	{
-		ParseLine( lines[ i ] + ">" );    
+		if( i < lines.size() - 1 ) 
+			ParseLine( lines[ i ] + ">" );    
+		else
+			ParseLine( lines[ i ] );    
 	}
 	myHandler->EndDocument();
 }
