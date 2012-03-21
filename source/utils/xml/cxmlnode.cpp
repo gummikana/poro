@@ -215,7 +215,10 @@ CXmlNode* CXmlNode::GetFather() const
 
 void CXmlNode::SetName( const std::string& name )
 {
-	myName = name;
+	// RemoveWhiteSpace fixed the bug with Attribute only 
+	// nodes having an extra " " in their name if the attributes 
+	// are on the next line
+	myName = ceng::RemoveWhiteSpaceAndEndings( name );
 }
 
 void CXmlNode::SetContent( const std::string& content )
