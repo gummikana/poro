@@ -18,7 +18,7 @@
 #endif
 
 namespace poro {
-//=============================================================================<
+//=============================================================================
 
 struct AppConfig
 {
@@ -30,9 +30,13 @@ struct AppConfig
         internal_size_w( 1024 ),
         internal_size_h( 768 ),
         framerate( 60 ),
-		sounds( true ),
-		graphics_settings(),
-        iphone_is_landscape( true )
+        iphone_is_landscape( true ),
+	sounds( true ),
+	record_events( true ),
+	do_a_playback( false ),
+	playback_file( "" ),
+	graphics_settings(),
+	SetRandomSeed( NULL )
     {
     }
 
@@ -48,14 +52,20 @@ struct AppConfig
     int internal_size_h;
     int framerate;
 
-	bool sounds;
-    
     bool iphone_is_landscape;
+    bool sounds;
 
-	GraphicsSettings graphics_settings;
+    bool		record_events;
+    bool		do_a_playback;
+    std::string		playback_file;
+
+    GraphicsSettings graphics_settings;
+
+    // Function Pointer that gets called to setup the seed for random functions
+    void (*SetRandomSeed)(int);    
 };
 
-//=============================================================================<
+//=============================================================================
 
 template< typename AppType >
 int RunPoro( const AppConfig& conf = AppConfig()  )
@@ -68,31 +78,50 @@ int RunPoro( const AppConfig& conf = AppConfig()  )
 
     {
         std::auto_ptr< AppType > app( new AppType );
-
+        poro::IPlatform* poro = poro::IPlatform::Instance();
+	    
+	poro_assert( poro );
+	    
         // initialize the platform:
-        poro::IPlatform::Instance()->Init( app.get(), conf.window_w, conf.window_h, conf.fullscreen, conf.title );
+        poro->Init( app.get(), conf.window_w, conf.window_h, conf.fullscreen, conf.title );
 
-        poro::IPlatform::Instance()->SetInternalSize( (float)conf.internal_size_w, (float)conf.internal_size_h );
-        poro::IPlatform::Instance()->SetFrameRate( conf.framerate );
-		if( poro::IPlatform::Instance()->GetGraphics() )
-			poro::IPlatform::Instance()->GetGraphics()->SetSettings( conf.graphics_settings );
+        // recording things
+        poro->SetEventRecording( conf.record_events );
+	
+        if( conf.do_a_playback ) 
+            poro->DoEventPlayback( conf.playback_file );
+
+	// set random seed
+	if( conf.SetRandomSeed ) 
+            conf.SetRandomSeed( poro->GetRandomSeed() );
 
 #ifdef PORO_PLATFORM_IPHONE
         poro::PlatformIPhone* platform = dynamic_cast< poro::PlatformIPhone* >( poro::IPlatform::Instance() );
         
+	poro_assert( platform );
+	    
         platform->SetOrientationSupported( poro::PlatformIPhone::DO_PORTRAIT, false );
-        platform->SetOrientationSupported( poro::PlatformIPhone::DO_UPSIDEDOWN_PORTRAIT, false );
+	platform->SetOrientationSupported( poro::PlatformIPhone::DO_UPSIDEDOWN_PORTRAIT, false );
 #endif
         
 
-        // now start the actual app
-        poro::IPlatform::Instance()->SetApplication( app.get() );
+	poro->SetFrameRate( conf.framerate );
+
+	// internal size stuff
+        poro->SetInternalSize( (float)conf.internal_size_w, (float)conf.internal_size_h );
+	
+	if( poro->GetGraphics() )
+	    poro->GetGraphics()->SetSettings( conf.graphics_settings );
+
+	
+	// now start the actual app
+        poro->SetApplication( app.get() );
 
         // start the main loop for title screen
-        poro::IPlatform::Instance()->StartMainLoop();
+        poro->StartMainLoop();
     }
 
-    // destroy the environment:
+    // destroy the environment
     poro::IPlatform::Instance()->Destroy();
 
     return 0;

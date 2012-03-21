@@ -88,7 +88,7 @@ void Mouse::ShowCursor()
 
 void Mouse::SetCursorVisiblity( bool show_cursor )
 {
-	mCursorVisible = show_cursor;	
+	mCursorVisible = show_cursor;
 }
 
 //-----------------------------------------------------------------------------
