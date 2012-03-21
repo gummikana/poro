@@ -58,7 +58,29 @@ types::color GetRandomColor( const std::vector< types::uint32 >& colors )
 
 	return types::color( r, g, b );
 }
+
 // ----------------------------------------------------------------------------
+
+types::color GetColorFromHex( types::uint32 color )
+{
+	types::uint32 r32, g32, b32;
+	
+	types::uint32 RMask( 0x00FF0000 );
+	types::uint32 GMask( 0x0000FF00);
+	types::uint32 BMask( 0x000000FF );
+	types::uint32 RShift( 16 );
+	types::uint32 GShift( 8 );
+	types::uint32 BShift( 0 );
+	r32 = color & RMask;
+	g32 = color & GMask;
+	b32 = color & BMask;
+
+	int r = r32 >> RShift;
+	int g = g32 >> GShift;
+	int b = b32 >> BShift;
+
+	return types::color( r, g, b );
+}
 
 types::color GetRandomColor( types::uint32* colors, int count )
 {
@@ -86,9 +108,7 @@ types::color GetRandomColor( types::uint32* colors, int count )
 	return types::color( r, g, b );
 }
 
-// ----------------------------------------------------------------------------
-
-types::color GetColorFromHex( types::uint32 color )
+types::fcolor	GetFColorFromHex( types::uint32 color )
 {
 	types::uint32 r32, g32, b32;
 	
@@ -106,7 +126,7 @@ types::color GetColorFromHex( types::uint32 color )
 	int g = g32 >> GShift;
 	int b = b32 >> BShift;
 
-	return types::color( r, g, b );
+	return types::fcolor( (float)r / 255.f, (float)g / 255.f, (float)b / 255.f );
 }
 
 types::uint32 ConvertToHex( const types::color& c )

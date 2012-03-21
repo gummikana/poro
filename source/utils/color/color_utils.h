@@ -55,6 +55,7 @@ types::color	DoDarker( const types::color& o, float dark );
 // ----------------------------------------------------------------------------
 
 types::color	GetColorFromHex( types::uint32 what );
+types::fcolor	GetFColorFromHex( types::uint32 what );
 
 // ----------------------------------------------------------------------------
 
