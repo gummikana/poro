@@ -350,26 +350,31 @@ public:
 
 	void InitMasks()
 	{
-		
-#	if SDL_BYTEORDER == SDL_BIG_ENDIAN
-		RMask = ( 0xFF000000 );
-		GMask = ( 0x00FF0000 );
-		BMask = ( 0x0000FF00 ),
-		AMask = ( 0x000000FF );
-		RShift = ( 24 );
-		GShift = ( 16 );
-		BShift = ( 8 );
-		AShift = ( 0 );
-#	else
-		RMask = ( 0x000000FF );
-		GMask = ( 0x0000FF00 );
-		BMask = ( 0x00FF0000 );
-		AMask = ( 0xFF000000 );
-		RShift = ( 0 );
-		GShift = ( 8 );
-		BShift = ( 16 );
-		AShift = ( 24 );
-#	endif
+
+		if( masks_initialized == false ) {
+
+#		if SDL_BYTEORDER == SDL_BIG_ENDIAN
+			RMask = ( 0xFF000000 );
+			GMask = ( 0x00FF0000 );
+			BMask = ( 0x0000FF00 ),
+			AMask = ( 0x000000FF );
+			RShift = ( 24 );
+			GShift = ( 16 );
+			BShift = ( 8 );
+			AShift = ( 0 );
+#		else
+			RMask = ( 0x000000FF );
+			GMask = ( 0x0000FF00 );
+			BMask = ( 0x00FF0000 );
+			AMask = ( 0xFF000000 );
+			RShift = ( 0 );
+			GShift = ( 8 );
+			BShift = ( 16 );
+			AShift = ( 24 );
+#		endif
+
+			masks_initialized = true;
+		}
 		multiplied_with_alpha = false;
 	}
 
@@ -607,17 +612,19 @@ public:
 	bool multiplied_with_alpha;
 private:
 
-	uint32	RMask;
-	uint32	GMask;
-	uint32	BMask;
-	uint32	AMask;
+	static bool masks_initialized;
+	static uint32	RMask;
+	static uint32	GMask;
+	static uint32	BMask;
+	static uint32	AMask;
 	
-	uint8  RShift;
-	uint8  GShift;
-	uint8  BShift;
-	uint8  AShift;
+	static uint8  RShift;
+	static uint8  GShift;
+	static uint8  BShift;
+	static uint8  AShift;
 	
 };
+
 
 template< typename T >
 CColorFloat operator * ( T s, const CColorFloat& c)
