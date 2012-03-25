@@ -85,13 +85,13 @@ double Global_LGMRandom::Next()
 
 //-----------------------------------------------------------------------------
 
-void LGMRandom::SetSeed( double s )
+void CLGMRandom::SetSeed( double s )
 {
 	seed = s;
 	iseed = 0;
 }
 
-double LGMRandom::Next()
+double CLGMRandom::Next()
 {
 	assert( seed );
 	// m = 2147483647 = 2^31 - 1; a = 16807;

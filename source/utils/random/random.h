@@ -136,13 +136,13 @@ public:
 
 //-----------------------------------------------------------------------------
 
-class LGMRandom
+class CLGMRandom
 {
 public:
 	void SetSeed( double seed );
 
-	LGMRandom() : seed( 0 ), iseed( 0 ) { }
-	~LGMRandom() { }
+	CLGMRandom() : seed( 0 ), iseed( 0 ) { }
+	~CLGMRandom() { }
 
 
 	double operator()() 
