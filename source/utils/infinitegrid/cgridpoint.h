@@ -67,12 +67,12 @@ class CGridPoint
 {
 public:
 
-	CGridPoint() : x( 0 ), y( 0 ), hash( 0 ) { }
-	CGridPoint( PointType x, PointType y ) { Set( x, y ); }
-	CGridPoint( const CGridPoint& other ) : x( other.x ), y( other.y ), hash( other.hash ) { }
+	CGridPoint() : mX( 0 ), mY( 0 ), hash( 0 ), x( mX ), y( mY ) { }
+	CGridPoint( PointType ix, PointType iy ) : hash( 0 ), x( mX ), y( mY ) { Set( ix, iy ); }
+	CGridPoint( const CGridPoint& other ) : mX( other.mX ), mY( other.mY ), hash( other.hash ), x( mX ), y( mY ) { }
 
 	// assign operator
-	const CGridPoint& operator= ( const CGridPoint& other ) { x = other.x; y = other.y; hash = other.hash; return *this; }
+	const CGridPoint& operator= ( const CGridPoint& other ) { mX = other.mX; mY = other.mY; hash = other.hash; return *this; }
 
 	// cmpr
 	inline bool operator< ( const CGridPoint& other ) const { return static_cast< bool >( hash < other.hash ); }
@@ -86,40 +86,49 @@ public:
 
 	// addition operator
 	CGridPoint operator+ ( const CGridPoint& other ) const { CGridPoint result( *this ); result += other; return result; }
-	const CGridPoint& operator+= ( const CGridPoint& other ) { Set( x + other.x, y + other.y ); return *this; }
+	const CGridPoint& operator+= ( const CGridPoint& other ) { Set( mX + other.mX, mY + other.mY ); return *this; }
 
 	CGridPoint operator- ( const CGridPoint& other ) const { CGridPoint result( *this ); result -= other; return result; }
-	const CGridPoint& operator-= ( const CGridPoint& other ) { Set( x - other.x, y - other.y ); return *this; }
+	const CGridPoint& operator-= ( const CGridPoint& other ) { Set( mX - other.mX, mY - other.mY ); return *this; }
 
 
 
 	inline bool Equals( const CGridPoint& other ) const { return ( hash == other.hash ); }
 
-	inline PointType GetX() const { return x; }
-	inline PointType GetY() const { return y; }
+	inline PointType GetX() const { return mX; }
+	inline PointType GetY() const { return mY; }
 
-	void SetX( PointType _x ) { Set( _x, y ); }
-	void SetY( PointType _y ) { Set( x, _y ); }
+	void SetX( PointType _x ) { Set( _x, mY ); }
+	void SetY( PointType _y ) { Set( mX, _y ); }
 
 	void Set( PointType _x, PointType _y ) 
 	{
-		x = _x;
-		y = _y;
+		mX = _x;
+		mY = _y;
 
 		RecalculateHash();
 	}
 
+
 private:
-	PointType x;
-	PointType y;
+	PointType mX;
+	PointType mY;
 	HashType hash;
 
+public:
+
+	// read only access
+	const PointType& x;
+	const PointType& y;
+
+
+private:
 	inline HashType GetHash() const { return hash; }
 
 	inline void RecalculateHash()
 	{
 		HashFunction f;
-		hash = f( x, y );
+		hash = f( mX, mY );
 	}
 
 };
