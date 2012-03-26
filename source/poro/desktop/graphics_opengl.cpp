@@ -1109,15 +1109,19 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 
 		glColor4f(color[0], color[1], color[2], color[3]);
 		glPushMatrix();
-			//glEnable(GL_POLYGON_SMOOTH);
-			//glEnable(GL_BLEND);
-			//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			glVertexPointer(2, GL_FLOAT , 0, glVertices);
-			glEnableClientState(GL_VERTEX_ARRAY);
-			glDrawArrays (GL_TRIANGLE_STRIP, 0, vertCount);
-			glDisableClientState(GL_VERTEX_ARRAY);
-			//glDisable(GL_BLEND);
-			//glDisable(GL_POLYGON_SMOOTH);
+			/// glEnable(GL_POLYGON_SMOOTH);
+		if( color[3] < 1.f ) {
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		}
+				glVertexPointer(2, GL_FLOAT , 0, glVertices);
+				glEnableClientState(GL_VERTEX_ARRAY);
+				glDrawArrays (GL_TRIANGLE_STRIP, 0, vertCount);
+				glDisableClientState(GL_VERTEX_ARRAY);
+		
+		if( color[3] < 1.f ) 
+			glDisable(GL_BLEND);
+			// glDisable(GL_POLYGON_SMOOTH);
 		glPopMatrix();
 	}
 }
