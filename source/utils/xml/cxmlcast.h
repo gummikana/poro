@@ -56,9 +56,11 @@
 
 #include <vector>
 #include <assert.h>
-#include "cxmlnode.h"
 
 #include "xml_libraries.h"
+
+#include "cxmlfilesys.h"
+#include "cxmlnode.h"
 // #include "../logger.h"
 
 //.............................................................................
@@ -238,6 +240,12 @@ CXmlNode* XmlConvertFrom( T& from, const std::string& name )
 
 	return return_node;
 }
+    
+    template< class T >
+    CXmlNode* TEMP_XmlConvertFrom( T& from, const std::string& name ) 
+    {
+        return XmlConvertFrom( from, name );
+    }
 
 
 }

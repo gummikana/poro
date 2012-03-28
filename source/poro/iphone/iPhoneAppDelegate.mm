@@ -186,7 +186,7 @@
 -(void) setFrameRate:(float)rate {
 	NSLog(@"setFrameRate %f using NSTimer", rate);
 	
-	if(rate>0) [self setAnimationFrameInterval:60.0/rate];
+	if(rate>0) [self setAnimationFrameInterval:60.0f/rate];
 	else [self stopAnimation];
 }
 

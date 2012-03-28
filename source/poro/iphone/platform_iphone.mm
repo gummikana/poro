@@ -36,7 +36,7 @@ namespace poro {
 		mHeight = h;
 		mApplication = application;
 		mInitTime = CFAbsoluteTimeGetCurrent();
-		mFrameTimePrevious = mInitTime;
+		mFrameTimePrevious = (float)mInitTime;
 		mFixedTimeStep = true;
 		mOneFrameShouldLast = 1.f / 60.f; // default is 60 fps
 		

@@ -20,11 +20,12 @@
 
 
 #include "random.h"
-// #include "../debug.h"
 
 #include <time.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <assert.h>
+
+#include <iostream>
 
 namespace ceng {
 namespace {
@@ -32,10 +33,11 @@ namespace {
 class CRandomSeedSetter
 {
 public:
-	CRandomSeedSetter() 
+	CRandomSeedSetter()
 	{
 		srand ( (unsigned int)time(NULL) );
-		LGMRandom::SetSeed( (double)time(NULL) );
+		Global_LGMRandom::SetSeed( (double)time(NULL) );
+		set_fastrand_seed( (int)time( NULL ) );
 	}
 
 	~CRandomSeedSetter()
@@ -44,21 +46,52 @@ public:
 };
 
 CRandomSeedSetter seed_stter;
+} // end of anonymous namespace
+
+///////////////////////////////////////////////////////////////////////////////
+
+void SetRandomSeeds( int random_seed )
+{
+	std::cout << "Setting random seed: " << random_seed << std::endl;
+	srand ( (unsigned int)random_seed );
+	Global_LGMRandom::SetSeed( (double)random_seed );
+	set_fastrand_seed( (int)random_seed );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-double LGMRandom::seed = 0;
-double LGMRandom::iseed = 0;
+double Global_LGMRandom::seed = 0;
+double Global_LGMRandom::iseed = 0;
 
-void LGMRandom::SetSeed( double s )
+void Global_LGMRandom::SetSeed( double s )
 {
 	seed = s;
 	iseed = 0;
 }
 
 // Algorithm ripped from Newran02C http://www.robertnz.net/nr02doc.htm
-double LGMRandom::Next()
+double Global_LGMRandom::Next()
+{
+	assert( seed );
+	// m = 2147483647 = 2^31 - 1; a = 16807;
+	// 127773 = m div a; 2836 = m mod a
+	long iseed = (long)seed;
+	long hi = iseed / 127773L;                 // integer division
+	long lo = iseed - hi * 127773L;            // modulo
+	iseed = 16807 * lo - 2836 * hi;
+	if (iseed <= 0) iseed += 2147483647L;
+	seed = (double)iseed; return seed*4.656612875e-10;
+}
+
+//-----------------------------------------------------------------------------
+
+void CLGMRandom::SetSeed( double s )
+{
+	seed = s;
+	iseed = 0;
+}
+
+double CLGMRandom::Next()
 {
 	assert( seed );
 	// m = 2147483647 = 2^31 - 1; a = 16807;
@@ -73,32 +106,59 @@ double LGMRandom::Next()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+static int g_seed;
+
+inline void set_fastrand_seed( int seed ) {
+	g_seed = seed;
+}
+
+inline int fastrand() { 
+  g_seed = (214013*g_seed+2531011); 
+  return (g_seed>>16)&0x7FFF; 
+} 
+
+///////////////////////////////////////////////////////////////////////////////
+
+
+int Random( int low, int high ) {
+	return FastRandom( low, high );
+}
+
+float Randomf( float low, float high ) {
+	return FastRandomf( low, high );
+}
+
+
+// #define CENG_USE_C_RAND
+// #define CENG_USE_FAST_RAND
+
+/*
 int Random( int low, int high )
 {
+#if defined(CENG_USE_FAST_RAND)
+	return ( fastrand()%((high - low)+1) ) + low;
+#elif defined(CENG_USE_C_RAND)
+	int t = high - low;
+	return ( std::rand()%(t+1) ) + low;
+#else
 	int t = high - low;
 	return ( rand()%(t+1) ) + low;
+#endif
 }
 
 float Randomf( float low, float high )
 {
-	LGMRandom l;
+#if defined(CENG_USE_FAST_RAND)
+	return low+((high-low)*((float)fastrand() / (float)RAND_MAX) );
+#elif defined(CENG_USE_C_RAND)
+	return low+((high-low)*((float)std::rand() / (float)RAND_MAX) );
+#else
+	Global_LGMRandom l;
 	return low+((high-low)*(float)l() );
+#endif
 }
+*/
 
-float RandomizeValue( float seed, float low, float high )
-{
-	// m = 2147483647 = 2^31 - 1; a = 16807;
-	// 127773 = m div a; 2836 = m mod a
-	long iseed = (long)(seed * 1024.f);
-	long hi = iseed / 127773L;                 // integer division
-	long lo = iseed - hi * 127773L;            // modulo
-	iseed = 16807 * lo - 2836 * hi;
-	if (iseed <= 0) iseed += 2147483647L;
-	seed = (float)((double)iseed); 
-	double result = seed*4.656612875e-10;
-
-	return low+((high-low)*(float)result );
-}
 ///////////////////////////////////////////////////////////////////////////////
 
 int CreateWeightedRandom( int low, int high, const std::vector< int >& data, float constant )
@@ -112,7 +172,7 @@ int CreateWeightedRandom( int low, int high, const std::vector< int >& data, flo
 
 	std::vector< float > numbers( range );
 	std::fill( numbers.begin(), numbers.end(), base );
-	
+
 	// the basic, increase the changes of those that are not present in the bubbleline
 	{
 		for( unsigned int j = 0; j < data.size(); j++ )
@@ -137,7 +197,7 @@ int CreateWeightedRandom( int low, int high, const std::vector< int >& data, flo
 
 	}
 
-	ceng::LGMRandom random_maker;
+	ceng::Global_LGMRandom random_maker;
 	float random_f = (float)random_maker();
 
 	int result = 0;

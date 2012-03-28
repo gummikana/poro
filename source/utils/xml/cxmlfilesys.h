@@ -66,10 +66,9 @@
 #ifndef INC_CXMLFILESYS_H
 #define INC_CXMLFILESYS_H
 
-#include "cxmlcast.h"
 #include "xml_macros.h"
 #include "xml_libraries.h"
-
+#include "cxmlnode.h"
 
 // #define logger std::cout
 
@@ -85,6 +84,12 @@
 */
 namespace ceng {
 
+class CXmlNode;
+    
+template< class T >
+CXmlNode* TEMP_XmlConvertFrom( T& from, const std::string& name );
+
+                              
 class CXmlFileSys
 {
 public:
@@ -167,7 +172,7 @@ public:
 	template< class T >
 	void ConvertFrom( T& from, const std::string& name )
 	{
-        myCurrentNode->AddChild( XmlConvertFrom( from, name ) );
+        myCurrentNode->AddChild( TEMP_XmlConvertFrom( from, name ) );
     }
     
 	//! Basicly to be used while writing, adds a new child to the current element
@@ -310,5 +315,6 @@ T XML_CAnyContainerCast( const CAnyContainer& any, const T& t )
 #define XML_BindAttribute( x, y ) XML_BindAttributeAlias( x, y, #y );
 
 }
+
 
 #endif

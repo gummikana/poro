@@ -88,9 +88,11 @@ VectorT CircleRectResolveByPushingCircle( const VectorT& circle_p, float circle_
 
 	VectorT delta = circle_p - closest_point;
 	delta = ( delta.Normalize() * ( circle_r + extra_push ) );
-	if(ceng::math::IsPointInsideAABB(circle_p, rect_p[ 0 ], rect_p[ 2 ])){
+
+	// to fix it so that if the point is inside the box it's pushed outside
+	if( ceng::math::IsPointInsideAABB( circle_p, rect_p[ 0 ], rect_p[ 2 ] ) ) 
         delta = -delta;
-    }
+
 	return closest_point + delta;
 }
 

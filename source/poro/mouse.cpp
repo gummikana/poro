@@ -28,13 +28,13 @@ namespace poro {
 
 void Mouse::AddMouseListener(IMouseListener *listener)
 {
-	poro_logger << "Added mouse listener" << std::endl;
+	// poro_logger << "Added mouse listener" << std::endl;
 	mMouseListeners.push_back(listener);
 }
 
 void Mouse::RemoveMouseListener(IMouseListener *listener)
 {
-	poro_logger << "Remove mouse listener";
+	// poro_logger << "Remove mouse listener";
 	
 	std::vector< IMouseListener* >::iterator i = std::find(mMouseListeners.begin(),mMouseListeners.end(),listener);
 
@@ -47,6 +47,7 @@ void Mouse::RemoveMouseListener(IMouseListener *listener)
 
 void Mouse::FireMouseMoveEvent(const types::vec2& pos)
 {
+	mMousePos = pos;
 	for( std::size_t i = 0; i < mMouseListeners.size() ; i++)
 	{
 		mMouseListeners[i]->MouseMove(pos);
@@ -87,9 +88,14 @@ void Mouse::ShowCursor()
 
 void Mouse::SetCursorVisiblity( bool show_cursor )
 {
-	mCursorVisible = show_cursor;	
+	mCursorVisible = show_cursor;
 }
 
 //-----------------------------------------------------------------------------
+
+types::vec2 Mouse::GetMousePos() const 
+{
+	return mMousePos;
+}
 
 } // end of namespace poro

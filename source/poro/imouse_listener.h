@@ -33,9 +33,9 @@ public:
 	IMouseListener() {}
 	virtual ~IMouseListener() {}
 	
-	virtual void MouseMove(const poro::types::vec2& pos) = 0;
-	virtual void MouseButtonDown(const poro::types::vec2& pos, int button) = 0;
-	virtual void MouseButtonUp(const poro::types::vec2& pos, int button) = 0;
+	virtual void MouseMove(const poro::types::vec2& pos) { }
+	virtual void MouseButtonDown(const poro::types::vec2& pos, int button) { }
+	virtual void MouseButtonUp(const poro::types::vec2& pos, int button) { }
 	
 };
 

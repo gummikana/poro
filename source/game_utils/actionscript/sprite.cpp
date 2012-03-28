@@ -22,6 +22,7 @@
 #include "sprite.h"
 #include "../../utils/singleton/csingletonptr.h"
 #include "../../utils/math/cvector2_serializer.h"
+#include "../../utils/math/point_inside.h"
 
 #include "../tween/tween_utils.h"
 
@@ -445,6 +446,12 @@ bool Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 }
 ///////////////////////////////////////////////////////////////////////////////
 
+void DrawSprite( Sprite* sprite, poro::IGraphics* graphics, types::camera* camera )
+{
+    Transform t;
+    DrawSprite( sprite, graphics, camera, t );
+}
+
 void DrawSprite( Sprite* sprite, poro::IGraphics* graphics, types::camera* camera, Transform& transform )
 {
 	cassert( sprite );
@@ -628,6 +635,7 @@ void Sprite::SetAlphaMask( Sprite* alpha_mask )	{
 	mAlphaMask = alpha_mask; 
 	return;
 	/*
+	// debug things
 	Sprite* ex_alpha_mask = this->GetChildByName( "gay_alpha_mask" );
 	if( ex_alpha_mask ) {
 		removeChildForReuse( ex_alpha_mask );
@@ -643,9 +651,70 @@ void Sprite::SetAlphaMask( Sprite* alpha_mask )	{
 
 Sprite*	Sprite::GetAlphaMask() { 
 	return mAlphaMask; 
-
+	// debug things
 	/*Sprite* ex_alpha_mask = this->GetChildByName( "gay_alpha_mask" );
 	return ex_alpha_mask;*/
+}
+
+//-----------------------------------------------------------------------------
+
+std::vector< Sprite* > Sprite::FindSpritesAtPoint( const types::vector2& p )
+{
+	std::vector< Sprite* > result;
+
+    Transform t;
+	FindSpritesAtPointImpl( p, t, result );
+
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+
+void Sprite::FindSpritesAtPointImpl( const types::vector2& pos, Transform& transform, std::vector< Sprite* >& results )
+{
+	const types::xform& matrix = transform.GetXForm();
+	types::rect dest_rect( 0, 0, mSize.x, mSize.y );
+	if( mRect ) { dest_rect.w = mRect->w; dest_rect.h = mRect->h; }
+	
+
+
+	std::vector< types::vector2 > polygon( 4 );
+	polygon[ 0 ].Set( -mCenterOffset.x,					-mCenterOffset.y );
+	polygon[ 1 ].Set( -mCenterOffset.x,					dest_rect.h - mCenterOffset.y );
+	polygon[ 2 ].Set( dest_rect.w - mCenterOffset.x,	dest_rect.h - mCenterOffset.y );
+	polygon[ 3 ].Set( dest_rect.w - mCenterOffset.x,	-mCenterOffset.y );
+	for( int i = 0; i < (int)polygon.size(); ++i )
+	{
+		polygon[ i ] = ceng::math::Mul( mXForm, polygon[ i ] );
+		polygon[ i ] = ceng::math::Mul( matrix, polygon[ i ] );
+	}
+
+	if( ceng::math::IsPointInsidePolygon( pos, polygon ) )
+	{
+		results.push_back( this );
+	}
+
+	if( mChildren.empty() ) return;
+
+	transform.PushXForm( mXForm, mColor );
+
+	std::list< DisplayObjectContainer* >::iterator i;
+	Sprite* current = NULL;
+
+	for( i = mChildren.begin(); i != mChildren.end(); ++i )
+	{
+		if( (*i)->GetSpriteType() == this->GetSpriteType() )
+		{			
+			current = dynamic_cast< Sprite* >(*i);
+			cassert( current );
+			if( current->IsSpriteDead() )
+				continue;
+		
+			current->FindSpritesAtPointImpl( pos, transform, results );
+		}
+	}
+
+	transform.PopXForm();
 }
 
 //-----------------------------------------------------------------------------

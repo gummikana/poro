@@ -63,7 +63,7 @@
 class CFont
 {
 public:
-	typedef char CharType;
+	typedef int CharType;
 
 	CFont();
 	virtual ~CFont();
@@ -118,5 +118,15 @@ protected:
 	std::string myTextureFilename;
 	std::string myFilename;
 };
+
+inline types::rect	CFont::GetCharPosition( CFont::CharType c ) const
+{ 
+	MapType::const_iterator i = myCharPositions.find( c );
+	if( i != myCharPositions.end() )
+		return i->second;
+	else
+		return types::rect();
+}
+
 
 #endif

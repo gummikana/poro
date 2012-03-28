@@ -22,55 +22,70 @@
 #ifndef INC_UTILS_DEBUG_H
 #define INC_UTILS_DEBUG_H
 
-#ifdef PORO_TESTER_ENABLED
-#include "../tester/ctester.h"
-#include "../tester/tester_utils.h"
-#endif
-
 #include <iostream>
 #include <assert.h>
 
-//----------------------------------------------------
-// define logger
 
-//#define assert_logger std::cout
-//#define logger std::cout
+//----------------- TESTING ---------------------------------------------------
+// if for some reason you don't want the tests enabled
+// define PORO_TESTER_DISABLED in your project settings
+// Also if something is failing, you should probably fix that
+// instead of disabling testing... 
+#ifndef PORO_TESTER_DISABLED
 
-// #ifdef PORO_PLAT_WINDOWS
-#if 0
-
-#	define PORO_USE_LOGGER
-#	include "logger/logger.h"
-
-#else
-
-#	define logger std::cout
-#	define assert_logger std::cout
+#	include "../tester/ctester.h"
+#	include "../tester/tester_utils.h"
 
 #endif
 
-//----------------------------------------------------
+// testing define for utils' tests
+#ifdef PORO_TESTER_ENABLED
+#	define CENG_TESTER_ENABLED
+#endif
+
+
+//----------------- LOGGER ----------------------------------------------------
+// define logger
+// we should probably use logger on every platform....
+// PORO_USE_LOGGER is used in logger/logger.h to figure out if we use
+// logger that logs into a file, or we just use std::cout to output into
+// the terminal window
+
+#ifdef PORO_PLAT_WINDOWS
+#   define PORO_USE_LOGGER
+#endif
+
+#include "logger/logger.h"
+#define assert_logger std::cout
+
+
+//----------------- ASSERT ----------------------------------------------------
 // define cassert
 #include "pow2assert/pow2assert.h"
 
 #ifdef NDEBUG
-#	define cassert(cond) \
-		do \
-		{ \
-			if (!(cond)) \
+
+// assert that could be used during run time. Just outputs the error, instead of crashing things
+#	ifdef PORO_USE_RELEASE_ASSERTS
+
+#		define cassert(cond) \
+			do \
 			{ \
-				assert_logger << "Assert failed: (" << #cond << ") in " << __FILE__ << " at line " << __LINE__ << std::endl; \
-			} \
-		} while(0)
+				if (!(cond)) \
+				{ \
+					assert_logger << "Assert failed: (" << #cond << ") in " << __FILE__ << " at line " << __LINE__ << std::endl; \
+				} \
+			} while(0)
+#	else
+		// optimized assert that doesn't do anything
+#		define cassert(cond) do { } while(0)
+#	endif
+
 #else
 #	define cassert 	POW2_ASSERT
 #endif
 
 
-// testing shit is on
-#ifdef PORO_TESTER_ENABLED
-	#define CENG_TESTER_ENABLED
-#endif
 
 
 #endif

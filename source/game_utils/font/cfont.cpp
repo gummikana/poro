@@ -88,14 +88,6 @@ float CFont::GetLineHeight() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-types::rect	CFont::GetCharPosition( CharType c ) const
-{ 
-	MapType::const_iterator i = myCharPositions.find( c );
-	if( i != myCharPositions.end() )
-		return i->second;
-	else
-		return types::rect();
-}
 //-----------------------------------------------------------------------------
 
 namespace

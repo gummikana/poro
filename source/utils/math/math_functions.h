@@ -145,7 +145,7 @@ inline Type ConvertAngleToRad( const Type& angle )
 template< typename Type >
 inline float Distance( const Type& vector1, const Type& vector2 )
 {
-	static Type d;
+	Type d;
 	d.x = vector1.x - vector2.x;
 	d.y = vector1.y - vector2.y;
 
@@ -161,7 +161,7 @@ inline float Distance( const Type& vector1 )
 template< typename Type >
 inline float DistanceSquared( const Type& vector1, const Type& vector2 )
 {
-	static Type d;
+	Type d;
 	d.x = vector1.x - vector2.x;
 	d.y = vector1.y  - vector2.y;
 

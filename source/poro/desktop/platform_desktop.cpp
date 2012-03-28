@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- * Copyright (c) 2010 Petri Purho, Dennis Belfrage
+ * Copyright (c) 2010 - 2012 Petri Purho, Dennis Belfrage
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -20,13 +20,23 @@
 
 #include "platform_desktop.h"
 
+#include <ctime>
+
 #include "../poro.h"
 #include "../libraries.h"
 
+#include "../mouse.h"
+#include "../keyboard.h"
+#include "../touch.h"
+#include "../event_recorder.h"
+
+#include "event_recorder_impl.h"
+#include "event_playback_impl.h"
 #include "graphics_opengl.h"
 #include "soundplayer_sdl.h"
 #include "joystick_impl.h"
 #include "mouse_impl.h"
+
 
 namespace poro {
 
@@ -42,6 +52,7 @@ PlatformDesktop::PlatformDesktop() :
 	mFixedTimeStep( true ),
 	mWidth( 0 ),
 	mHeight( 0 ),
+	mEventRecorder( NULL ),
 	mMouse( NULL ),
 	mKeyboard( NULL ),
 	mTouch( NULL ),
@@ -49,7 +60,8 @@ PlatformDesktop::PlatformDesktop() :
 	mSoundPlayer( NULL ),
 	mRunning( 0 ),
 	mMousePos(),
-	mSleepingMode( PORO_MAXIMIZE_SLEEP )
+	mSleepingMode( PORO_MAXIMIZE_SLEEP ),
+	mPrintFramerate( false )
 {
 
 }
@@ -84,6 +96,10 @@ void PlatformDesktop::Init( IApplication* application, int w, int h, bool fullsc
 		mJoysticks[ i ] = new JoystickImpl( i );
 	}
 
+	mEventRecorder = new EventRecorder( mKeyboard, mMouse, mTouch );
+	// mEventRecorder = new EventRecorderImpl( mKeyboard, mMouse, mTouch );
+	// mEventRecorder->SetFilename( );
+
 	SDL_EnableUNICODE(1);
 }
 //-----------------------------------------------------------------------------
@@ -107,6 +123,9 @@ void PlatformDesktop::Destroy()
 
 	for( std::size_t i = 0; i < mJoysticks.size(); ++i )
 		delete mJoysticks[ i ];
+
+	delete mEventRecorder;
+	mEventRecorder = NULL;
 
 	mJoysticks.clear();
 }
@@ -156,7 +175,8 @@ void PlatformDesktop::StartMainLoop()
             mFrameRate = mFrameRateUpdateCounter;
             mFrameRateUpdateCounter = 0;
 
-			// std::cout << "Fps: " << mFrameRate << " (CPU): " << ( mProcessorRate / (types::Float32)mFrameRate ) * 100.f << "%" << std::endl;
+			if( mPrintFramerate )
+				std::cout << "Fps: " << mFrameRate << " (CPU): " << ( mProcessorRate / (types::Float32)mFrameRate ) * 100.f << "%" << std::endl;
 			
 			mProcessorRate = 0;
         }
@@ -172,6 +192,7 @@ void PlatformDesktop::SingleLoop()
 	HandleEvents();
 
 	poro_assert( GetApplication() );
+	poro_assert( mGraphics );
 
 	float dt = mOneFrameShouldLast;
 	if( mFixedTimeStep == false )
@@ -187,6 +208,8 @@ void PlatformDesktop::SingleLoop()
 	GetApplication ()->Draw(mGraphics);
 	mGraphics->EndRendering();
 
+	if( mEventRecorder )
+		mEventRecorder->EndOfFrame();
 }
 //-----------------------------------------------------------------------------
 
@@ -206,12 +229,17 @@ void PlatformDesktop::Sleep( types::Float32 seconds )
 
 void PlatformDesktop::HandleEvents() 
 {
-	//---------
+	if( mEventRecorder ) 
+		mEventRecorder->DoPlaybacksForFrame();
+
+	//----------
 	for( std::size_t i = 0; i < mJoysticks.size(); ++i ) {
 		HandleJoystickImpl( mJoysticks[ i ] );
 	}
 
 	//---------
+
+	poro_assert( mEventRecorder );
 
 	SDL_Event event;
 	while( SDL_PollEvent( &event ) )
@@ -220,19 +248,17 @@ void PlatformDesktop::HandleEvents()
 		{
 			case SDL_KEYDOWN:
 			{
-				if( mKeyboard )
-					mKeyboard->FireKeyDownEvent(
-						static_cast< int >( event.key.keysym.sym ),
-						static_cast< types::charset >( event.key.keysym.unicode ) );
+				mEventRecorder->FireKeyDownEvent(
+					static_cast< int >( event.key.keysym.sym ),
+					static_cast< types::charset >( event.key.keysym.unicode ) );
 			}
 			break;
 
 			case SDL_KEYUP:
 			{
-				if( mKeyboard )
-					mKeyboard->FireKeyUpEvent(
-						static_cast< int >( event.key.keysym.sym ),
-						static_cast< types::charset >( event.key.keysym.unicode )  );
+				mEventRecorder->FireKeyUpEvent(
+					static_cast< int >( event.key.keysym.sym ),
+					static_cast< types::charset >( event.key.keysym.unicode )  );
 			}
 			break;
 
@@ -241,56 +267,51 @@ void PlatformDesktop::HandleEvents()
 			break;
 
 			case SDL_MOUSEBUTTONDOWN:
-				poro_assert( mMouse );
 				if( event.button.button == SDL_BUTTON_LEFT )
 				{
-					mMouse->FireMouseDownEvent( mMousePos, Mouse::MOUSE_BUTTON_LEFT );
-					if( mTouch ) 
-						mTouch->FireTouchDownEvent( mMousePos, 0 );
+					mEventRecorder->FireMouseDownEvent( mMousePos, Mouse::MOUSE_BUTTON_LEFT );
+					mEventRecorder->FireTouchDownEvent( mMousePos, 0 );
 				}
 				else if( event.button.button == SDL_BUTTON_RIGHT )
 				{
-					mMouse->FireMouseDownEvent( mMousePos, Mouse::MOUSE_BUTTON_RIGHT );
+					mEventRecorder->FireMouseDownEvent( mMousePos, Mouse::MOUSE_BUTTON_RIGHT );
 				}
 				else if( event.button.button == SDL_BUTTON_MIDDLE )
 				{
-					mMouse->FireMouseDownEvent( mMousePos, Mouse::MOUSE_BUTTON_MIDDLE );
+					mEventRecorder->FireMouseDownEvent( mMousePos, Mouse::MOUSE_BUTTON_MIDDLE );
 				}
 				else if( event.button.button == SDL_BUTTON_WHEELUP )
 				{
-					mMouse->FireMouseDownEvent( mMousePos, Mouse::MOUSE_BUTTON_WHEEL_UP );
+					mEventRecorder->FireMouseDownEvent( mMousePos, Mouse::MOUSE_BUTTON_WHEEL_UP );
 				}
 				else if( event.button.button == SDL_BUTTON_WHEELDOWN )
 				{
-					mMouse->FireMouseDownEvent( mMousePos, Mouse::MOUSE_BUTTON_WHEEL_DOWN );
+					mEventRecorder->FireMouseDownEvent( mMousePos, Mouse::MOUSE_BUTTON_WHEEL_DOWN );
 				}
 				break;
 
 			case SDL_MOUSEBUTTONUP:
-				poro_assert( mMouse );
 				if( event.button.button == SDL_BUTTON_LEFT )
 				{
-					mMouse->FireMouseUpEvent( mMousePos, Mouse::MOUSE_BUTTON_LEFT );
-					if( mTouch ) 
-						mTouch->FireTouchUpEvent( mMousePos, 0 );
+					mEventRecorder->FireMouseUpEvent( mMousePos, Mouse::MOUSE_BUTTON_LEFT );
+					mEventRecorder->FireTouchUpEvent( mMousePos, 0 );
 				}
 				else if( event.button.button == SDL_BUTTON_RIGHT )
 				{
-					mMouse->FireMouseUpEvent( mMousePos, Mouse::MOUSE_BUTTON_RIGHT );
+					mEventRecorder->FireMouseUpEvent( mMousePos, Mouse::MOUSE_BUTTON_RIGHT );
 				}
 				else if( event.button.button == SDL_BUTTON_MIDDLE )
 				{
-					mMouse->FireMouseUpEvent( mMousePos, Mouse::MOUSE_BUTTON_MIDDLE );
+					mEventRecorder->FireMouseUpEvent( mMousePos, Mouse::MOUSE_BUTTON_MIDDLE );
 				}
 				break;
 
 			case SDL_MOUSEMOTION:
-				poro_assert( mMouse );
 				{
 				    mMousePos = mGraphics->ConvertToInternalPos( event.motion.x, event.motion.y );
-					mMouse->FireMouseMoveEvent( mMousePos );
+					mEventRecorder->FireMouseMoveEvent( mMousePos );
 					if( mTouch && mTouch->IsTouchIdDown( 0 ) ) 
-						mTouch->FireTouchMoveEvent( mMousePos, 0 );
+						mEventRecorder->FireTouchMoveEvent( mMousePos, 0 );
 				}
 				break;
 		}
@@ -321,6 +342,63 @@ Joystick* PlatformDesktop::GetJoystick( int n ) {
 
 	return mJoysticks[ n ];
 }
+//-----------------------------------------------------------------------------
+
+IGraphics* PlatformDesktop::GetGraphics() {
+	return mGraphics;
+}
+
+ISoundPlayer* PlatformDesktop::GetSoundPlayer() {
+	return mSoundPlayer;
+}
 
 //-----------------------------------------------------------------------------
+
+void PlatformDesktop::SetEventRecording( bool record_events ) 
+{
+	if( record_events ) 
+	{
+		if( mEventRecorder == NULL || mEventRecorder->IsRecording() == false ) 
+		{
+			delete mEventRecorder;
+			mEventRecorder = new EventRecorderImpl( mKeyboard, mMouse, mTouch );
+		}
+	}
+	else
+	{
+		if( mEventRecorder && mEventRecorder->IsRecording() )
+		{
+			delete mEventRecorder;
+			mEventRecorder = NULL;
+			mEventRecorder = new EventRecorder( mKeyboard, mMouse, mTouch );
+		}
+	}
+}
+
+bool PlatformDesktop::GetEventRecording() const 
+{
+	if( mEventRecorder == NULL ) return false;
+	return mEventRecorder->IsRecording();
+}
+
+void PlatformDesktop::DoEventPlayback( const std::string& filename ) 
+{
+	delete mEventRecorder;
+	EventPlaybackImpl* temp = new EventPlaybackImpl( mKeyboard, mMouse, mTouch );
+	temp->LoadFromFile( filename );
+	mEventRecorder = temp;
+}
+
+//-----------------------------------------------------------------------------
+
+int PlatformDesktop::GetRandomSeed()
+{
+	if( mEventRecorder ) 
+		return mEventRecorder->GetRandomSeed();
+
+	return (int)time(NULL);
+}
+
+//-----------------------------------------------------------------------------
+
 } // end o namespace poro

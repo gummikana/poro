@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- * Copyright (c) 2010 Petri Purho, Dennis Belfrage
+ * Copyright (c) 2010 - 2012 Petri Purho, Dennis Belfrage
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -24,16 +24,19 @@
 #include <vector>
 
 #include "../iplatform.h"
-#include "../mouse.h"
-#include "../keyboard.h"
-#include "../touch.h"
-#include "graphics_opengl.h"
-#include "soundplayer_sdl.h"
 
 namespace poro {
 
 class JoystickImpl;
 class MouseImpl;
+class EventRecorder;
+class EventRecorderImpl;
+class GraphicsOpenGL;
+class Keyboard;
+class Touch;
+class SoundPlayerSDL;
+
+//-----------------------------------------------------------------------------
 
 class PlatformDesktop : public IPlatform {
 
@@ -41,48 +44,58 @@ public:
 	PlatformDesktop();
 	virtual ~PlatformDesktop();
 
-	//platform setup
+	// platform setup
 	virtual void Init( IApplication* application, int w, int h, bool fullscreen, std::string = "Poro Application" );
 	virtual void Exit();
 
 	virtual void StartMainLoop();
 
-	//destroy
+	// destroy
 	virtual void Destroy();
 
-	//window / screen
+	// window / screen
 	virtual void    SetWindowSize( int width, int height );
 	virtual int		GetWidth();
 	virtual int		GetHeight();
 
-	virtual bool GetOrientationIsLandscape();
+	virtual bool	GetOrientationIsLandscape();
 
-	//global pointers
+	// global pointers
 	virtual void			SetApplication( IApplication* application );
 	virtual IGraphics*		GetGraphics();
 	virtual ISoundPlayer*	GetSoundPlayer();
 
-	//controllers
+	// controllers
 	virtual Mouse*			GetMouse();
 	virtual Keyboard*		GetKeyboard();
 	virtual Touch*			GetTouch();
 	virtual int				GetJoystickCount() const;
 	virtual Joystick*		GetJoystick( int n );
 
-	//timers
+	// timers
 	virtual void	        SetFrameRate( int targetRate, bool fixed_timestep = true );
 	virtual int	            GetFrameRate();
 	virtual int		        GetFrameNum();
-	virtual types::Float32  GetUpTime();
 	virtual void	        Sleep( types::Float32 seconds );
 	virtual void			SetSleepingMode( int sleep_mode );
+	virtual types::Float32  GetUpTime();
+	virtual void			SetPrintFramerate( bool fps );
 
-	//filesystem
-	virtual void	SetWorkingDir( poro::types::string dir = poro::types::string(".") );
+	// event recordings
+	virtual void SetEventRecording( bool record_events );
+	virtual bool GetEventRecording() const;
+	
+	virtual void DoEventPlayback( const std::string& filename );
 
-	void			SingleLoop();
+	// filesystem
+	virtual void SetWorkingDir( poro::types::string dir = poro::types::string(".") );
 
-	void			HandleEvents();
+	// random seed
+	virtual int GetRandomSeed();
+
+	// looping and handling events
+	void SingleLoop();
+	void HandleEvents();
 
 protected:
 
@@ -95,6 +108,7 @@ protected:
 	types::Float32					mOneFrameShouldLast;
 	int								mWidth;
 	int								mHeight;
+	EventRecorder*					mEventRecorder;
 	MouseImpl*						mMouse;
 	Keyboard*					    mKeyboard;
 	Touch*							mTouch;
@@ -103,6 +117,7 @@ protected:
 	bool						    mRunning;
 	types::vec2					    mMousePos;
 	int								mSleepingMode;
+	bool							mPrintFramerate;
 
 private:
 };
@@ -127,14 +142,6 @@ inline bool PlatformDesktop::GetOrientationIsLandscape() {
 // ---
 inline void PlatformDesktop::SetApplication( IApplication* application ) {
 	mApplication = application;
-}
-
-inline IGraphics* PlatformDesktop::GetGraphics() {
-	return mGraphics;
-}
-
-inline ISoundPlayer* PlatformDesktop::GetSoundPlayer() {
-	return mSoundPlayer;
 }
 
 // ---
@@ -172,6 +179,10 @@ inline void PlatformDesktop::SetSleepingMode( int sleep_mode ) {
 inline void PlatformDesktop::SetWorkingDir( poro::types::string dir )  {
 	//TODO implement
 	//chdir(dir);
+}
+
+inline void PlatformDesktop::SetPrintFramerate( bool framerate ) {
+	mPrintFramerate = framerate;
 }
 
 //-----------------------------------------------------------------------------

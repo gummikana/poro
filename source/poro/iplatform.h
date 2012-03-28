@@ -41,7 +41,7 @@ public:
 
 	virtual ~IPlatform();
 
-	//platform setup
+	// platform setup
 	// If you implement your own Init for your platform as you should! Make sure
 	// you set the mInternalWidth and mInternalHeight to proper sizes if they
 	// haven't been set already!
@@ -51,16 +51,16 @@ public:
 
 	virtual void StartMainLoop() = 0;
 
-	//destroy
+	// destroy
 	virtual void Destroy();
 
-	//global pointers
+	// global pointers
 	virtual void			SetApplication( IApplication* application );
 	virtual IApplication*	GetApplication();
 	virtual IGraphics*		GetGraphics() = 0;
 	virtual ISoundPlayer*	GetSoundPlayer() = 0;
 
-	//controllers
+	// controllers
 	virtual Mouse*			GetMouse() = 0;
 	virtual Touch*			GetTouch();
 	virtual Keyboard*		GetKeyboard();
@@ -69,7 +69,7 @@ public:
 	virtual Joystick*		GetJoystick( int n );
 
 
-	//window / screen
+	// window / screen
 	virtual void SetWindowSize( int width, int height ) { poro_assert( false ); }
 	virtual int GetWidth()								{ poro_assert( false ); return 0; }
 	virtual int GetHeight()								{ poro_assert( false ); return 0; }
@@ -77,7 +77,7 @@ public:
 	virtual bool GetOrientationIsLandscape()			{ poro_assert( false ); return 0; }
 
 
-	//InternalScale
+	// InternalScale
 	//  This sets the internal resolution of the application!
 	//  The internal resolution can be different from the windows resolution.
 	//  You should call this function before calling IPlatform::Instance()->Init()
@@ -87,17 +87,35 @@ public:
 	types::Float32 GetInternalWidth() const;
 	types::Float32 GetInternalHeight() const;
 
-	//timers
+	// timers / framerate
 	virtual void	        SetFrameRate( int targetRate, bool fixed_timestep = true );
-	virtual int             GetFrameRate()					{ poro_assert( false ); return 0; }
-	virtual int		        GetFrameNum()					{ poro_assert( false ); return 0; }
-	virtual types::Float32  GetUpTime()						{ poro_assert( false ); return 0; }
-	virtual void	        Sleep( types::Float32 seconds ) { poro_assert( false ); }
-	virtual void			SetSleepingMode( int sleep_mode ) { poro_assert( false ); }
+	virtual int             GetFrameRate()						{ poro_assert( false ); return 0; }
+	virtual int		        GetFrameNum()						{ poro_assert( false ); return 0; }
+	virtual void	        Sleep( types::Float32 seconds )		{ poro_assert( false ); }
+	virtual void			SetSleepingMode( int sleep_mode )	{ poro_assert( false ); }
+	virtual types::Float32  GetUpTime()							{ poro_assert( false ); return 0; }
+	virtual types::Float32	GetTime()							{ return GetUpTime(); }
+	virtual void			SetPrintFramerate( bool fps )		{ }
 
-	//filesystem
+	// event recording
+	virtual void SetEventRecording( bool record_events )		{ }
+	virtual bool GetEventRecording() const						{ return false; }
+	
+	virtual void DoEventPlayback( const std::string& filename ) { }
+
+	// filesystem
 	virtual void				SetWorkingDir(poro::types::string dir = poro::types::string("."));
 	virtual poro::types::string GetDocumentDir();
+
+	// RANDOM SEED
+	// 	basically returns (int)time(NULL)
+	// 	reason to use this is that it's saved into the playback file
+	// 	and if you call this after loading the playback file, you'll 
+	// 	get the same one for your application. Pretty useful when making
+	// 	a deterministic playback functionality
+	// 	if you want to use a seed that is saved in the playback file
+	virtual int GetRandomSeed();
+
 
 private:
 
@@ -188,6 +206,12 @@ inline void IPlatform::SetWorkingDir(poro::types::string dir )  {
 inline poro::types::string IPlatform::GetDocumentDir() {
 	poro_assert( false );
 	return poro::types::string();
+}
+
+inline int IPlatform::GetRandomSeed() {
+	poro_assert( false );
+	return 4;	// chosen by a fair dice roll.
+				// guaranteed to be random. 
 }
 
 

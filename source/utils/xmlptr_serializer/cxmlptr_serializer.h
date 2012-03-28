@@ -27,7 +27,7 @@ public:
 		if( ptr == NULL ) return -1;
 
 		// check if we've already stored the pointer and return it's id
-		for( std::map< int, T* >::iterator i = mPointers.begin(); i != mPointers.end(); ++i )
+		for( typename std::map< int, T* >::iterator i = mPointers.begin(); i != mPointers.end(); ++i )
 			if( i->second == ptr ) return i->first;
 
 		// we didn't find it, create a new entry for it
@@ -84,7 +84,7 @@ public:
 		if( filesys->IsWriting() )
 		{
 			std::string item_name = GetItemName();
-			for( std::map< int, T* >::iterator i = mPointers.begin(); i != mPointers.end(); ++i )
+			for( typename std::map< int, T* >::iterator i = mPointers.begin(); i != mPointers.end(); ++i )
 			{
 				PtrHelper< T > ptr( i->first, i->second );
 				XML_BindAlias( filesys, ptr, item_name );
