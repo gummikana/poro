@@ -176,8 +176,8 @@ Sprite* Sprite::GetChildByName( const std::string& name )
 
 void Sprite::Clear()
 {
-	std::list< DisplayObjectContainer* > erase_me = mChildren;
-	for( std::list< DisplayObjectContainer* >::iterator i = erase_me.begin(); i != erase_me.end(); ++i )
+	DisplayObjectContainer::ChildList erase_me = mChildren;
+	for( DisplayObjectContainer::ChildList::iterator i = erase_me.begin(); i != erase_me.end(); ++i )
 		delete *i;
 	
 
@@ -309,7 +309,7 @@ bool Sprite::DrawChildren( poro::IGraphics* graphics, types::camera* camera, Tra
 
 	transform.PushXForm( mXForm, mColor );
 
-	std::list< DisplayObjectContainer* >::iterator i;
+	DisplayObjectContainer::ChildList::iterator i;
 	Sprite* current = NULL;
 
 	for( i = mChildren.begin(); i != mChildren.end(); )
@@ -328,7 +328,7 @@ bool Sprite::DrawChildren( poro::IGraphics* graphics, types::camera* camera, Tra
 			}
 			else 
 			{
-				std::list< DisplayObjectContainer* >::iterator remove = i;
+				DisplayObjectContainer::ChildList::iterator remove = i;
 				++i;
 				mChildren.erase( remove );
 				// current->SetFather( NULL );

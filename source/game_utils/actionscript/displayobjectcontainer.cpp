@@ -65,7 +65,7 @@ void DisplayObjectContainer::addChildAt( DisplayObjectContainer* child, int inde
 	mChildren.push_back( child );
 }
 
-std::list< DisplayObjectContainer* >& DisplayObjectContainer::GetRawChildren(){
+DisplayObjectContainer::ChildList& DisplayObjectContainer::GetRawChildren(){
 	return mChildren;
 }
 

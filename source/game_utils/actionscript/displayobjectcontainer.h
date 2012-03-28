@@ -23,6 +23,7 @@
 #define INC_DISPLAYOBJECTCONTAINER_H
 
 #include <list>
+#include <vector>
 #include <algorithm>
 
 #include "../../utils/debug.h"
