@@ -31,12 +31,13 @@ struct AppConfig
         internal_size_h( 768 ),
         framerate( 60 ),
         iphone_is_landscape( true ),
-	sounds( true ),
-	record_events( true ),
-	do_a_playback( false ),
-	playback_file( "" ),
-	graphics_settings(),
-	SetRandomSeed( NULL )
+		sounds( true ),
+		record_events( true ),
+		do_a_playback( false ),
+		playback_file( "" ),
+		graphics_settings(),
+		report_fps( false ),
+		SetRandomSeed( NULL )
     {
     }
 
@@ -55,11 +56,14 @@ struct AppConfig
     bool iphone_is_landscape;
     bool sounds;
 
-    bool		record_events;
-    bool		do_a_playback;
+    bool			record_events;
+    bool			do_a_playback;
     std::string		playback_file;
 
+	bool			report_fps;
+
     GraphicsSettings graphics_settings;
+
 
     // Function Pointer that gets called to setup the seed for random functions
     void (*SetRandomSeed)(int);    
@@ -80,7 +84,7 @@ int RunPoro( const AppConfig& conf = AppConfig()  )
         std::auto_ptr< AppType > app( new AppType );
         poro::IPlatform* poro = poro::IPlatform::Instance();
 	    
-	poro_assert( poro );
+		poro_assert( poro );
 	    
         // initialize the platform:
         poro->Init( app.get(), conf.window_w, conf.window_h, conf.fullscreen, conf.title );
@@ -91,30 +95,32 @@ int RunPoro( const AppConfig& conf = AppConfig()  )
         if( conf.do_a_playback ) 
             poro->DoEventPlayback( conf.playback_file );
 
-	// set random seed
-	if( conf.SetRandomSeed ) 
+		// set random seed
+		if( conf.SetRandomSeed ) 
             conf.SetRandomSeed( poro->GetRandomSeed() );
+
+		poro->SetPrintFramerate( conf.report_fps );
 
 #ifdef PORO_PLATFORM_IPHONE
         poro::PlatformIPhone* platform = dynamic_cast< poro::PlatformIPhone* >( poro::IPlatform::Instance() );
         
-	poro_assert( platform );
+		poro_assert( platform );
 	    
         platform->SetOrientationSupported( poro::PlatformIPhone::DO_PORTRAIT, false );
-	platform->SetOrientationSupported( poro::PlatformIPhone::DO_UPSIDEDOWN_PORTRAIT, false );
+		platform->SetOrientationSupported( poro::PlatformIPhone::DO_UPSIDEDOWN_PORTRAIT, false );
 #endif
         
 
-	poro->SetFrameRate( conf.framerate );
+		poro->SetFrameRate( conf.framerate );
 
-	// internal size stuff
-        poro->SetInternalSize( (float)conf.internal_size_w, (float)conf.internal_size_h );
-	
-	if( poro->GetGraphics() )
-	    poro->GetGraphics()->SetSettings( conf.graphics_settings );
+		// internal size stuff
+			poro->SetInternalSize( (float)conf.internal_size_w, (float)conf.internal_size_h );
+		
+		if( poro->GetGraphics() )
+			poro->GetGraphics()->SetSettings( conf.graphics_settings );
 
 	
-	// now start the actual app
+		// now start the actual app
         poro->SetApplication( app.get() );
 
         // start the main loop for title screen
