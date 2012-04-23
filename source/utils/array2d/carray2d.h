@@ -136,6 +136,15 @@ public:
 		return myHeight;
 	}
 
+	inline bool IsValid( int x, int y ) const 
+	{
+		if( x < 0 ) return false;
+		if( y < 0 ) return false;
+		if( x >= myWidth ) return false;
+		if( y >= myHeight ) return false;
+		return true;
+	}
+
 	void Resize( int _width ) { SetWidth( _width ); }
 	void Resize( int _width, int _height ) { SetWidthAndHeight( _width, _height ); }
 
