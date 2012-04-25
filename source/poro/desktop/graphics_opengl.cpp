@@ -483,8 +483,8 @@ public:
 
 	bool CanDrawSpriteToBuffer( TextureOpenGL* texture, const types::fcolor& color, int count, Uint32 vertex_mode, int blend_mode ) 
 	{
-		cassert( texture );
-		cassert( count > 0 );
+		poro_assert( texture );
+		poro_assert( count > 0 );
 
 		if( vertex_buffer_count == 0 )
 			return true;
@@ -506,7 +506,7 @@ public:
     
 	void DrawSpriteToBuffer( TextureOpenGL* texture, Vertex* vertices, const types::fcolor& color, int count, Uint32 vertex_mode, int blend_mode )
 	{
-		cassert( texture );
+		poro_assert( texture );
         
 		prev_color = color;
 		prev_texture_id = texture->mTexture;
