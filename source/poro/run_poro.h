@@ -77,7 +77,7 @@ int RunPoro( const AppConfig& conf = AppConfig()  )
     poro::IPlatform::Instance()->SetWorkingDir();
 
 #ifdef PORO_TESTER_ENABLED
-    RunTests();
+    // RunTests();
 #endif
 
     {
