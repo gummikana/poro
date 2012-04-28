@@ -47,7 +47,7 @@ void AnimationUpdater::SetFrame( int frame_i )
 		as::Sprite* alpha_mask = sprite_container->GetChildByName( animation->mask );
 		if( alpha_mask == NULL ) 
 		{
-			std::cout << "Error! Couldn't find alpha mask: " << animation->mask << std::endl;
+			// std::cout << "Error! Couldn't find alpha mask: " << animation->mask << std::endl;
 		}
 		else 
 		{
