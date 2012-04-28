@@ -24,10 +24,12 @@
 
 #include <string>
 #include <typeinfo>
+#include <memory>
 
 #include "../../utils/debug.h"
 #include "../../utils/maphelper/cmaphelper.h"
 
+#include "actionscript_object.h"
 #include "actionscript_types.h"
 #include "event.h"
 
@@ -35,12 +37,6 @@
 namespace as { 
 
 class FunctionPointer;
-
-class Object
-{
-public:
-	virtual ~Object() { }
-};
 
 //-----------------------------------------------------------------------------
 
@@ -192,14 +188,11 @@ public:
 	FunctionPointer( Class* object, Return (Class::*func)(Arg1) ) : 
 		myEvent( NULL )
 	{
-		
-		myEvent = new impl::CGenericEvent1< Class, Return, Arg1 >( object, func );
+		myEvent.reset( new impl::CGenericEvent1< Class, Return, Arg1 >( object, func ) );
 	}
 
 	~FunctionPointer()
 	{
-		delete myEvent;
-		myEvent = NULL;
 	}
 	
 	void Call( Event* event )
@@ -212,15 +205,17 @@ public:
 		if( this == other )
 			return true;
 
-		cassert( this->myEvent != other->myEvent );
+		cassert( this->myEvent.get() != other->myEvent.get() );
 
-		cassert( this->myEvent );
-		return ( myEvent->CheckEvent( other->myEvent ) );
+		cassert( this->myEvent.get() );
+		return ( myEvent->CheckEvent( other->myEvent.get() ) );
 	}
+	
+	FunctionPointer( const FunctionPointer& other ) : myEvent( NULL ) { cassert( false ); }
+	const FunctionPointer& operator= ( const FunctionPointer& other )  { myEvent.reset( NULL ); cassert( false ); return *this; }
 
 private:
-
-	impl::CGenericEventBase* myEvent;
+	std::auto_ptr< impl::CGenericEventBase > myEvent;
 };
 
 //-----------------------------------------------------------------------------

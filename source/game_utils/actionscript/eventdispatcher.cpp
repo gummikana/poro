@@ -23,6 +23,7 @@
 
 namespace as {
 
+
 // #define DEBUG_DONT_DELETE_EVENT_LISTENERS
 
 // Registers an event listener object with an EventDispatcher object so that the listener receives notification of an event.
@@ -84,27 +85,32 @@ void EventDispatcher::removeEventListener( const std::string& name, const ceng::
 		return;
 
 	std::list< FunctionPointer* >& list = mData.Get( name );
-	std::list< FunctionPointer* >::iterator i;
-	for( i = list.begin(); i != list.end();  )
 	{
-		if( (*i)->Cmpr( func_pointer.Get() ) )
+		std::list< FunctionPointer* >::iterator i;
+		for( i = list.begin(); i != list.end();  )
 		{
-			std::list< FunctionPointer* >::iterator remove_me = i;
-			++i;
-#ifndef DEBUG_DONT_DELETE_EVENT_LISTENERS
-			delete (*remove_me);
-#endif
-			list.erase( remove_me );
+			if( (*i)->Cmpr( func_pointer.Get() ) )
+			{
+				FunctionPointer* remove_me = (*i);
+				i = list.erase( i );
 
-			if( list.empty() )
-				mData.Remove( name );
-			return;
-		}
-		else
-		{
-			++i;
+				delete remove_me;
+				remove_me = NULL;
+			}
+			else
+			{
+				++i;
+			}
 		}
 	}
+
+	if( list.empty() ) {
+		mData.Remove( name );
+	}
+
+
+	return;
+
 }
 	
 // Checks whether an event listener is registered with this EventDispatcher object or any of its ancestors for the specified event type.
@@ -122,9 +128,7 @@ void EventDispatcher::Clear()
 		std::list< FunctionPointer* >& list = i->second;
 		for( std::list< FunctionPointer* >::iterator j = list.begin(); j != list.end(); ++j )
 		{
-#ifndef DEBUG_DONT_DELETE_EVENT_LISTENERS
 			delete (*j);
-#endif
 		}
 		list.clear();
 	}
