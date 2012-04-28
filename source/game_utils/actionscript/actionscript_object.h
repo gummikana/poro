@@ -38,7 +38,7 @@ public:
 	static void FreePointer( T* what_ever )
 	{
 		// return;
-		std::map< T*, int >::iterator i = freed_pointers.find( what_ever );
+		typename std::map< T*, int >::iterator i = freed_pointers.find( what_ever );
 		if( i != freed_pointers.end() ) 
 		{
 			if( ( freed_pointers[ what_ever ] + 1 ) != new_pointers[ what_ever ] )
@@ -60,7 +60,7 @@ public:
 	static void NewPointer( T* what_ever )
 	{	
 		// return;
-		std::map< T*, int >::iterator i = new_pointers.find( what_ever );
+		typename std::map< T*, int >::iterator i = new_pointers.find( what_ever );
 		if( i != new_pointers.end() ) 
 		{
 			if( freed_pointers[ what_ever ] != new_pointers[ what_ever ] )
