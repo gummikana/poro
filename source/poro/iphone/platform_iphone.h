@@ -21,87 +21,88 @@
 #ifndef INC_PLATFORM_IPHONE_H
 #define INC_PLATFORM_IPHONE_H
 
+#include <iostream>
+#include <vector>
+#include <bitset>
+#include <CoreFoundation/CoreFoundation.h>
+
 #include "../iplatform.h"
 #include "graphics_opengles.h"
 #include "soundplayer_iphone.h"
 
-#include <iostream>
-#include <CoreFoundation/CoreFoundation.h>
-#include <vector>
-#include <bitset>
 
 namespace poro {
 
-	class GraphicsOpenGLES;
+class GraphicsOpenGLES;
+
+class PlatformIPhone : public IPlatform {
+public:
 	
-	class PlatformIPhone : public IPlatform {
-	public:
-		
-		enum DEVICE_ORIENTATION {
-			DO_PORTRAIT,
-			DO_LANDSCAPE_RIGHT,
-			DO_LANDSCAPE_LEFT,
-			DO_UPSIDEDOWN_PORTRAIT
-		};
-		
-		PlatformIPhone(){};
-		virtual ~PlatformIPhone(){};
-		
-		virtual void Init(IApplication * application, int w, int h, bool fullscreen,std::string = "Poro Application");	
-		virtual void Exit();
-		virtual void StartMainLoop();
-		virtual void Destroy();
-		
-		virtual int				GetFrameNum();
-		virtual types::Float32	GetUpTime();
-		virtual	int				GetFrameRate();
-		virtual int				GetWidth() { return mWidth; };
-		virtual int				GetHeight() { return mHeight; };
-		virtual void			Sleep( types::Float32 seconds );
-
-		virtual void SetFrameRate(int targetRate, bool fixedTimeStep = true);
-
-		virtual void SetOrientationIsLandscape(bool isLandscape);
-		virtual bool GetOrientationIsLandscape();
-		
-		virtual void SetOrientationSupported(DEVICE_ORIENTATION orientation, bool supported);
-		virtual bool GetOrientationSupported(DEVICE_ORIENTATION orientation);
-		
-		virtual IGraphics * GetGraphics();
-		virtual ISoundPlayer * GetSoundPlayer();
-
-		virtual Mouse * GetMouse() { return mMouse; };
-		virtual Touch * GetTouch() { return mTouch; };
-		virtual int			GetJoystickCount() { return 0; };
-		virtual Joystick*	GetJoystick( int n ) { return NULL; };
-		
-		void timerLoop();
-		virtual void SetWorkingDir(poro::types::string dir = poro::types::string("/"));
-		virtual poro::types::string GetDocumentDir();
-		
-		void SetDeviceOrientation( int orientation ) { mDeviceOrientation =orientation; }
-		int GetDeviceOrientation() const { return mDeviceOrientation; }
-		
-	protected:
-		GraphicsOpenGLES *mGraphics;
-		int mFrameCount;
-		CFTimeInterval mInitTime;
-		types::Float32 mFrameRate;
-		int mWidth;
-		int mHeight;
-		Mouse *mMouse;
-		Touch *mTouch;
-		SoundPlayerIPhone *mSoundPlayer;
-		
-		bool mIsLandscape;
-		int mDeviceOrientation;
-		std::bitset<4> mSupportedOrientations;
-		
-	private:
-		types::Float32	mFrameTimePrevious;
-		types::Float32	mOneFrameShouldLast;
-		bool			mFixedTimeStep;
+	enum DEVICE_ORIENTATION {
+		DO_PORTRAIT,
+		DO_LANDSCAPE_RIGHT,
+		DO_LANDSCAPE_LEFT,
+		DO_UPSIDEDOWN_PORTRAIT
 	};
+	
+	PlatformIPhone(){};
+	virtual ~PlatformIPhone(){};
+	
+	virtual void Init(IApplication * application, int w, int h, bool fullscreen,std::string = "Poro Application");	
+	virtual void Exit();
+	virtual void StartMainLoop();
+	virtual void Destroy();
+	
+	virtual int				GetFrameNum();
+	virtual types::Float32	GetUpTime();
+	virtual	int				GetFrameRate();
+	virtual int				GetWidth() { return mWidth; };
+	virtual int				GetHeight() { return mHeight; };
+	virtual void			Sleep( types::Float32 seconds );
+
+	virtual void SetFrameRate(int targetRate, bool fixedTimeStep = true);
+
+	virtual void SetOrientationIsLandscape(bool isLandscape);
+	virtual bool GetOrientationIsLandscape();
+	
+	virtual void SetOrientationSupported(DEVICE_ORIENTATION orientation, bool supported);
+	virtual bool GetOrientationSupported(DEVICE_ORIENTATION orientation);
+	
+	virtual IGraphics * GetGraphics();
+	virtual ISoundPlayer * GetSoundPlayer();
+
+	virtual Mouse * GetMouse() { return mMouse; };
+	virtual Touch * GetTouch() { return mTouch; };
+	virtual int			GetJoystickCount() { return 0; };
+	virtual Joystick*	GetJoystick( int n ) { return NULL; };
+	
+	void timerLoop();
+	virtual void SetWorkingDir(poro::types::string dir = poro::types::string("/"));
+	virtual poro::types::string GetDocumentDir();
+	
+	void SetDeviceOrientation( int orientation ) { mDeviceOrientation =orientation; }
+	int GetDeviceOrientation() const { return mDeviceOrientation; }
+	
+protected:
+	GraphicsOpenGLES *mGraphics;
+	int mFrameCount;
+	CFTimeInterval mInitTime;
+	types::Float32 mFrameRate;
+	int mWidth;
+	int mHeight;
+	Mouse *mMouse;
+	Touch *mTouch;
+	SoundPlayerIPhone *mSoundPlayer;
+	
+	bool mIsLandscape;
+	int mDeviceOrientation;
+	std::bitset<4> mSupportedOrientations;
+	
+private:
+	types::Float32	mFrameTimePrevious;
+	types::Float32	mOneFrameShouldLast;
+	bool			mFixedTimeStep;
+};
 	
 } // end o namespace poro
 
