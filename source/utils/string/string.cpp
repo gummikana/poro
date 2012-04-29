@@ -335,7 +335,7 @@ std::string RemoveWhiteSpaceAndEndings( std::string line )
 
 std::string RemoveQuotes( std::string line )
 {
-	if( line.empty() == false && line[ 0 ] == '"' || line[ 0 ] == '\'' )
+	if( line.empty() == false && (line[ 0 ] == '"' || line[ 0 ] == '\''))
 		line = line.substr( 1, line.size() - 1 );
 	
 	int end = ((int)line.size()) - 1;
