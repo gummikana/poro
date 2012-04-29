@@ -114,8 +114,8 @@ void GraphicsBufferOpenGLES::DrawTexture( ITexture* texture, types::vec2* vertic
 	int orientation = ((poro::PlatformIPhone*)(poro::IPlatform::Instance()))->GetDeviceOrientation();
 	
 	if( orientation == poro::PlatformIPhone::DO_UPSIDEDOWN_PORTRAIT ) flip_y = true, flip_x = true;
-	else if( orientation == poro::PlatformIPhone::DO_LANDSCAPE_LEFT ) flip_x = true;
-	else if( orientation == poro::PlatformIPhone::DO_LANDSCAPE_RIGHT ) flip_y = true;
+	else if( orientation == poro::PlatformIPhone::DO_LANDSCAPE_RIGHT ) flip_x = true;
+	else if( orientation == poro::PlatformIPhone::DO_LANDSCAPE_LEFT ) flip_y = true;
 	
 	//Flip cords for buffer
 	for (int i=0; i<count; ++i) {
