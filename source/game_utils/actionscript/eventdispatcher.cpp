@@ -29,14 +29,6 @@ namespace as {
 // Registers an event listener object with an EventDispatcher object so that the listener receives notification of an event.
 void EventDispatcher::addEventListener( const std::string& name, FunctionPointer* func_pointer, bool use_capture, int priority )
 {
-
-	if( name == "inventoryevent_item_added" ) 
-	{
-		// break;
-		int break_me = 1;
-		std::cout << "Added eventListener: " << name << std::endl;
-	}
-
 	mData.Insert( name, func_pointer );
 }
  	 	
