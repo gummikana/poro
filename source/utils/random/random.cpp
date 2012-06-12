@@ -119,20 +119,9 @@ inline int fastrand() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-
-int Random( int low, int high ) {
-	return LGMRandom( low, high );
-}
-
-float Randomf( float low, float high ) {
-	return LGMRandomf( low, high );
-}
-
-
 // #define CENG_USE_C_RAND
 // #define CENG_USE_FAST_RAND
 
-/*
 int Random( int low, int high )
 {
 #if defined(CENG_USE_FAST_RAND)
@@ -141,8 +130,7 @@ int Random( int low, int high )
 	int t = high - low;
 	return ( std::rand()%(t+1) ) + low;
 #else
-	int t = high - low;
-	return ( rand()%(t+1) ) + low;
+	return ceng::Global_LGMRandom::LGMRandom( low, high );
 #endif
 }
 
@@ -153,11 +141,9 @@ float Randomf( float low, float high )
 #elif defined(CENG_USE_C_RAND)
 	return low+((high-low)*((float)std::rand() / (float)RAND_MAX) );
 #else
-	Global_LGMRandom l;
-	return low+((high-low)*(float)l() );
+	return ceng::Global_LGMRandom::LGMRandomf( low, high );
 #endif
 }
-*/
 
 ///////////////////////////////////////////////////////////////////////////////
 
