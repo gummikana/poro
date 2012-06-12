@@ -86,6 +86,16 @@ struct FunctionTesting
 	
 };
 
+
+struct ConstTesting
+{
+
+	std::string GetString() const { return func_string; }
+	void SetString( const std::string& string ) { func_string = string; }
+
+	std::string func_string;
+};
+
 template< class T >
 T CastAs( const CAnyContainer& value ) { return ceng::CAnyContainerCast< T >( value ); }
 
@@ -292,6 +302,21 @@ int CFunctionPtr_Test()
 		test_assert( t.func_float == 1 );
 		test_assert( t.func_void == 1 );
 		test_assert( t.func_string == 1 );
+	}
+
+	// testing with const
+	{
+		ConstTesting t;
+		t.func_string = "make_me";
+
+		CFunctionPtr<> get_string( &t, &ConstTesting::GetString );
+		CFunctionPtr<> set_string( &t, &ConstTesting::SetString );
+
+		test_assert( ceng::AnyCast< std::string > (get_string()) == "make_me" );
+		set_string( std::string( "hello" ) );
+		
+		test_assert( t.func_string == "hello" );
+		test_assert( ceng::AnyCast< std::string > (get_string()) == "hello" );
 	}
 
 	return 0;

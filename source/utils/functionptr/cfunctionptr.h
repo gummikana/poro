@@ -81,6 +81,12 @@ public:
 		myFunc = impl::CreateFunctionPointer( object, func );
 	}
 
+	template< class Class, class Return >
+	CFunctionPtr( Class* object, Return (Class::*func)() const )
+	{
+		myFunc = impl::CreateFunctionPointer( object, func );
+	}
+
 	template< class Class, class Return, class Arg1 >
 	CFunctionPtr( Class* object, Return (Class::*func)(Arg1) )
 	{

@@ -29,6 +29,10 @@
 namespace ceng {
 namespace impl {
 
+template<typename T> struct remove_const_ref			{ typedef T type; };
+template<typename T> struct remove_const_ref<const T>	{ typedef T type; };
+template<typename T> struct remove_const_ref<const T&>	{ typedef T type; };
+
 ///////////////////////////////////////////////////////////////////////////////
 //! The Base a kinda of private class
 class IGenericFunctionPtr
@@ -126,14 +130,37 @@ public:
 
 	CObjectFunc0( Class* object, Return (Class::*func)() ) :
 	    myPointer( object ),
-		myFunction( func ) 
+		myFunction( func ),
+		myConstFunction( NULL )
 	{ 
 		myNumberOfParameters = 0;
 	}
 
-	CAnyContainer Call() { (myPointer->*myFunction)(); return CAnyContainer(); }
+	CObjectFunc0( Class* object, Return (Class::*func)() const ) :
+	    myPointer( object ),
+		myFunction( NULL ),
+		myConstFunction( func )
+	{ 
+		myNumberOfParameters = 0;
+	}
 
-	IGenericFunctionPtr* Clone() const { return new CObjectFunc0< Class, Return >( myPointer, myFunction ); }
+	CObjectFunc0( Class* object, Return (Class::*func)(), Return (Class::*const_func)() const ) :
+	    myPointer( object ),
+		myFunction( func ),
+		myConstFunction( const_func )
+	{ 
+		myNumberOfParameters = 0;
+	}
+
+	CAnyContainer Call() 
+	{ 
+		if( myFunction ) (myPointer->*myFunction)(); 
+		if( myConstFunction ) (myPointer->*myConstFunction)(); 
+		
+		return CAnyContainer(); 
+	}
+
+	IGenericFunctionPtr* Clone() const { return new CObjectFunc0< Class, Return >( myPointer, myFunction, myConstFunction ); }
 
 	void* GetPointer() const { return myPointer; }
 	void SetPointer( void* p ) { myPointer = static_cast< Class* >( p ); }
@@ -147,12 +174,15 @@ public:
 
 		self_type* tevent = static_cast< self_type* >( event );
 
-		return ( tevent->myFunction == this->myFunction && myPointer == tevent->myPointer );
+		return ( tevent->myFunction == this->myFunction && 
+			tevent->myConstFunction == this->myConstFunction && 
+			myPointer == tevent->myPointer );
 	}
 
 protected:
 
 	Return	(Class::*myFunction)();
+	Return	(Class::*myConstFunction)() const;
 	Class*	myPointer;
 
 };
@@ -168,13 +198,32 @@ public:
 	{ 
 	}
 
-	CAnyContainer Call() { return CAnyContainer( (parent::myPointer->*parent::myFunction)() ); }
+	CObjectFuncReturn0( Class* object, Return (Class::*func)() const ) :
+	    CObjectFunc0< Class, Return >( object, func )
+	{ 
+	}
 
-	IGenericFunctionPtr* Clone() const { return new CObjectFuncReturn0< Class, Return >( parent::myPointer, parent::myFunction ); }
+	CObjectFuncReturn0( Class* object, Return (Class::*func)(), Return (Class::*const_func)() const ) :
+	    CObjectFunc0< Class, Return >( object, func, const_func )
+	{ 
+	}
+
+
+	CAnyContainer Call() 
+	{ 
+		if( myFunction )
+			return CAnyContainer( (parent::myPointer->*parent::myFunction)() ); 
+		if( myConstFunction )
+			return CAnyContainer( (parent::myPointer->*parent::myConstFunction)() ); 
+
+		return CAnyContainer();
+	}
+
+	IGenericFunctionPtr* Clone() const { return new CObjectFuncReturn0< Class, Return >( parent::myPointer, parent::myFunction, parent::myConstFunction ); }
 };
 
 //-----------------------------------------------------------------------------
-
+  
 //! Generic Event class with one argument
 template< class Class, class Return, class Arg1 > 
 class CObjectFunc1 : public IGenericFunctionPtr
@@ -192,7 +241,7 @@ public:
 
 	CAnyContainer Call( const CAnyContainer& arg1 ) 
 	{ 
-		(myPointer->*myFunction)( CAnyContainerCast< Arg1 >( arg1 ) ); 
+		(myPointer->*myFunction)( CAnyContainerCast< remove_const_ref< Arg1 >::type >( arg1 ) ); 
 		return CAnyContainer();
 	}
 
@@ -270,6 +319,9 @@ struct func_factory< Return, 1>
 	template< class Class > 
 	IGenericFunctionPtr* operator()( Class* object, Return (Class::*func)() ) { return new CObjectFunc0< Class, Return >( object, func ); }
 
+	template< class Class > 
+	IGenericFunctionPtr* operator()( Class* object, Return (Class::*func)() const ) { return new CObjectFunc0< Class, Return >( object, func ); }
+
 	template< class Class, class Arg1 > 
 	IGenericFunctionPtr* operator()( Class* object, Return (Class::*func)(Arg1) ) { return new CObjectFunc1< Class, Return, Arg1 >( object, func ); }
 
@@ -281,6 +333,9 @@ struct func_factory< Return, 0>
 {
 	template< class Class > 
 	IGenericFunctionPtr* operator()( Class* object, Return (Class::*func)() ) { return new CObjectFuncReturn0< Class, Return >( object, func ); }
+
+	template< class Class > 
+	IGenericFunctionPtr* operator()( Class* object, Return (Class::*func)() const ) { return new CObjectFuncReturn0< Class, Return >( object, func ); }
 
 	template< class Class, class Arg1 > 
 	IGenericFunctionPtr* operator()( Class* object, Return (Class::*func)(Arg1) ) { return new CObjectFuncReturn1< Class, Return, Arg1 >( object, func ); }
@@ -295,12 +350,21 @@ IGenericFunctionPtr* CreateFunctionPointer( Class* object, Return (Class::*func)
 	return factory( object, func );
 }
 
+template< class Class, class Return >
+IGenericFunctionPtr* CreateFunctionPointer( Class* object, Return (Class::*func)() const )
+{
+	func_factory< Return, is_void< Return >::v > factory;
+	return factory( object, func );
+}
+
+
 template< class Class, class Return, class Arg1 >
 IGenericFunctionPtr* CreateFunctionPointer( Class* object, Return (Class::*func)(Arg1) )
 {
 	func_factory< Return, is_void< Return >::v > factory;
 	return factory( object, func );
 }
+
 
 
 } // end of namespace impl
