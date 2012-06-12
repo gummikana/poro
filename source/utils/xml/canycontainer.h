@@ -268,6 +268,7 @@ public:
 
 	// Should not be used for nothing else than for the function CAnyContainerCast...
 	CContainerBase* _getContainerBase() { return myContainer; }
+	const CContainerBase* _getContainerBase() const { return myContainer; }
 
 private:
 
@@ -328,13 +329,13 @@ _Ty* CAnyContainerCast( CAnyContainer* container )
 */
 
 template< class _Ty >
-_Ty* CAnyContainerCasto( const CAnyContainer* container )
+const _Ty* CAnyContainerCasto( const CAnyContainer* container )
 {
 	// return CAnyContainerCast< _Ty >( const_cast< CAnyContainer* >( container ) );
 	CAnyContainer* t = const_cast< CAnyContainer* >( container );
 
-	if ( typeid( _Ty ) == t->GetTypeInfo() )
-		return &static_cast< CContainer< _Ty >* >( t->_getContainerBase() )->myVar;
+	if ( typeid( _Ty ) == container->GetTypeInfo() )
+		return &static_cast< const CContainer< _Ty >* >( container->_getContainerBase() )->myVar;
 	else return NULL;
 
 }
@@ -342,16 +343,16 @@ _Ty* CAnyContainerCasto( const CAnyContainer* container )
 template< class _Ty >
 _Ty CAnyContainerCast( const CAnyContainer& container )
 {
-        _Ty* tmp_var = CAnyContainerCasto< _Ty >( &container );
+	const _Ty* tmp_var = CAnyContainerCasto< _Ty >( &container );
 
-		if ( tmp_var == NULL )
-		{
-			_Ty temp_var;
-			container.GetValue( temp_var );
-			return temp_var;
-		}
+	if ( tmp_var == NULL )
+	{
+		_Ty temp_var;
+		container.GetValue( temp_var );
+		return temp_var;
+	}
 
-		return (*tmp_var);
+	return (*tmp_var);
 }
 
 ////////////////////////////////////////////////////////////////
