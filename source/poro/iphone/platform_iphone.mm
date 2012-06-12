@@ -19,184 +19,194 @@
  ***************************************************************************/
 
 #include "platform_iphone.h"
+
+#include <iostream>
+#include <ctime>
+
 #include "../poro.h"
 #include "globals_iphone.h"
 #include "graphics_opengles.h"
 
-#include <iostream>
+
 
 namespace poro {
-	
-	void PlatformIPhone::Init(IApplication * application, int w, int h, bool fullscreen, std::string title) {
-		SetWorkingDir();
-		
-		mFrameCount = 1;
-		mFrameRate = -1.0f;
-		mWidth = w;
-		mHeight = h;
-		mApplication = application;
-		mInitTime = CFAbsoluteTimeGetCurrent();
-		mFrameTimePrevious = (float)mInitTime;
-		mFixedTimeStep = true;
-		mOneFrameShouldLast = 1.f / 60.f; // default is 60 fps
-		
-		mIsLandscape = false;
-		mDeviceOrientation = DO_PORTRAIT;
-		mSupportedOrientations[DO_PORTRAIT] 			= true;
-		mSupportedOrientations[DO_UPSIDEDOWN_PORTRAIT] 	= true;
-		mSupportedOrientations[DO_LANDSCAPE_LEFT] 		= true;
-		mSupportedOrientations[DO_LANDSCAPE_RIGHT] 		= true;
-		
-		iPhoneGlobals.iPhoneWindow=this;
-		iPhoneGlobals.baseApp = application;
-		
-		mGraphics = new GraphicsOpenGLES();
-		mGraphics->Init(w, h, fullscreen, title);
-		
-		mSoundPlayer = new SoundPlayerIPhone();
-				
-		mMouse = new Mouse();
-		mTouch = new Touch();
-		
-	}
 
-	void PlatformIPhone::Exit() {
-		std::cerr << "Steve Jobs considers exitig you iPhone apps in other ways than pressing the home button a No-No! Apps doing so have been rejected!" << std::endl;
+void PlatformIPhone::Init(IApplication * application, int w, int h, bool fullscreen, std::string title) {
+	SetWorkingDir();
+	
+	mFrameCount = 1;
+	mFrameRate = -1.0f;
+	mWidth = w;
+	mHeight = h;
+	mApplication = application;
+	mInitTime = CFAbsoluteTimeGetCurrent();
+	mFrameTimePrevious = (float)mInitTime;
+	mFixedTimeStep = true;
+	mOneFrameShouldLast = 1.f / 60.f; // default is 60 fps
+	
+	mIsLandscape = false;
+	mDeviceOrientation = DO_PORTRAIT;
+	mSupportedOrientations[DO_PORTRAIT] 			= true;
+	mSupportedOrientations[DO_UPSIDEDOWN_PORTRAIT] 	= true;
+	mSupportedOrientations[DO_LANDSCAPE_LEFT] 		= true;
+	mSupportedOrientations[DO_LANDSCAPE_RIGHT] 		= true;
+	
+	iPhoneGlobals.iPhoneWindow=this;
+	iPhoneGlobals.baseApp = application;
+	
+	mGraphics = new GraphicsOpenGLES();
+	mGraphics->Init(w, h, fullscreen, title);
+	
+	mSoundPlayer = new SoundPlayerIPhone();
+			
+	mMouse = new Mouse();
+	mTouch = new Touch();
+	
+}
+
+void PlatformIPhone::Exit() {
+	std::cerr << "Steve Jobs considers exitig you iPhone apps in other ways than pressing the home button a No-No! Apps doing so have been rejected!" << std::endl;
+	assert(false);
+}
+
+
+void PlatformIPhone::StartMainLoop() {
+	NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+	UIApplicationMain(nil, nil, nil, @"iPhoneAppDelegate");		// this will run the infinite loop checking all events
+	[pool release];
+}
+
+void PlatformIPhone::Destroy() {
+	delete mGraphics;
+	delete mSoundPlayer;
+	delete mMouse;
+	delete mTouch;
+}
+
+
+void PlatformIPhone::SetFrameRate(int targetRate, bool fixedTimeStep ) {
+	[iPhoneGlobals.appDelegate setFrameRate:targetRate];
+	
+	mOneFrameShouldLast = 0;
+	if( targetRate > 0 ) 
+		mOneFrameShouldLast = 1.f / (types::Float32)targetRate;
+	
+	mFixedTimeStep = fixedTimeStep;
+}
+
+void PlatformIPhone::SetOrientationIsLandscape( bool isLandscape){
+	mIsLandscape = isLandscape;
+}
+
+bool PlatformIPhone::GetOrientationIsLandscape(){
+	return mIsLandscape;
+}
+
+void PlatformIPhone::SetOrientationSupported(poro::PlatformIPhone::DEVICE_ORIENTATION orientation, bool supported){
+	mSupportedOrientations[orientation] = supported;
+}
+
+bool PlatformIPhone::GetOrientationSupported(poro::PlatformIPhone::DEVICE_ORIENTATION orientation){
+	return mSupportedOrientations[orientation];
+}
+
+int	PlatformIPhone::GetFrameNum() {
+	return mFrameCount;
+}
+
+types::Float32 PlatformIPhone::GetUpTime() {
+	return (types::Float32)(CFAbsoluteTimeGetCurrent() - mInitTime);
+}
+
+void PlatformIPhone::Sleep( types::Float32 seconds ){
+	// std::cout << "Sleep called: " << seconds << std::endl;
+	[NSThread sleepForTimeInterval:(seconds)];
+}
+
+void PlatformIPhone::timerLoop() {
+	const types::Float32 upTime = GetUpTime();
+	types::Float32 deltaTime = upTime - mFrameTimePrevious;
+	mFrameTimePrevious = upTime;
+	mFrameCount++;
+	
+	static types::Float32 last_frame_rate = 0;
+	if( upTime - last_frame_rate > 1.f ) {
+		//std::cout << "FPS: " << mFrameCount << "\t" << GetUpTime() << std::endl;
+		mFrameRate = mFrameCount;
+		mFrameCount = 0;
+		last_frame_rate = upTime;
+	}
+    
+	if( mFixedTimeStep ) deltaTime = mOneFrameShouldLast;
+	
+    if( deltaTime < 0 ) deltaTime = 0;
+    
+	GetApplication()->Update( deltaTime );
+	
+	mGraphics->BeginRendering();
+	GetApplication()->Draw(mGraphics);
+	mGraphics->EndRendering();
+	
+			
+	// elapsed time and sleep
+	const types::Float32 elapsed_time = GetUpTime() - upTime;
+	if( elapsed_time < mOneFrameShouldLast )
+		Sleep( mOneFrameShouldLast - elapsed_time );
+}
+
+IGraphics* PlatformIPhone::GetGraphics() {
+	return mGraphics;
+}
+
+ISoundPlayer* PlatformIPhone::GetSoundPlayer() {
+	return mSoundPlayer;
+}
+
+void PlatformIPhone::SetWorkingDir(poro::types::string dir){
+	//TODO:: append dir parameter to path.
+	
+	//Set the working directory inside the app pacakge for MAC and iPHOHE.
+	int maxpath = 1024;
+	char path[maxpath];
+	
+	CFBundleRef mainBundle = CFBundleGetMainBundle();
+	CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
+	if (!CFURLGetFileSystemRepresentation(resourcesURL, TRUE, (UInt8 *)path, maxpath))
+	{
+		std::cerr << "Failed to change the working directory!" << std::endl;
 		assert(false);
 	}
+	CFRelease(resourcesURL);
 	
-	
-	void PlatformIPhone::StartMainLoop() {
-		NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-		UIApplicationMain(nil, nil, nil, @"iPhoneAppDelegate");		// this will run the infinite loop checking all events
-		[pool release];
-	}
-	
-	void PlatformIPhone::Destroy() {
-		delete mGraphics;
-		delete mSoundPlayer;
-		delete mMouse;
-		delete mTouch;
-	}
-	
-
-	void PlatformIPhone::SetFrameRate(int targetRate, bool fixedTimeStep ) {
-		[iPhoneGlobals.appDelegate setFrameRate:targetRate];
-		
-		mOneFrameShouldLast = 0;
-		if( targetRate > 0 ) 
-			mOneFrameShouldLast = 1.f / (types::Float32)targetRate;
-		
-		mFixedTimeStep = fixedTimeStep;
-	}
-	
-	void PlatformIPhone::SetOrientationIsLandscape( bool isLandscape){
-		mIsLandscape = isLandscape;
-	}
-	
-	bool PlatformIPhone::GetOrientationIsLandscape(){
-		return mIsLandscape;
-	}
-	
-	void PlatformIPhone::SetOrientationSupported(poro::PlatformIPhone::DEVICE_ORIENTATION orientation, bool supported){
-		mSupportedOrientations[orientation] = supported;
-	}
-	
-	bool PlatformIPhone::GetOrientationSupported(poro::PlatformIPhone::DEVICE_ORIENTATION orientation){
-		return mSupportedOrientations[orientation];
-	}
-	
-	int	PlatformIPhone::GetFrameNum() {
-		return mFrameCount;
-	}
-
-	types::Float32 PlatformIPhone::GetUpTime() {
-		return (types::Float32)(CFAbsoluteTimeGetCurrent() - mInitTime);
-	}
-	
-	void PlatformIPhone::Sleep( types::Float32 seconds ){
-		// std::cout << "Sleep called: " << seconds << std::endl;
-		[NSThread sleepForTimeInterval:(seconds)];
-	}
-	
-	void PlatformIPhone::timerLoop() {
-		const types::Float32 upTime = GetUpTime();
-		types::Float32 deltaTime = upTime - mFrameTimePrevious;
-		mFrameTimePrevious = upTime;
-		mFrameCount++;
-		
-		static types::Float32 last_frame_rate = 0;
-		if( upTime - last_frame_rate > 1.f ) {
-			//std::cout << "FPS: " << mFrameCount << "\t" << GetUpTime() << std::endl;
-			mFrameRate = mFrameCount;
-			mFrameCount = 0;
-			last_frame_rate = upTime;
-		}
-        
-		if( mFixedTimeStep ) deltaTime = mOneFrameShouldLast;
-		
-        if( deltaTime < 0 ) deltaTime = 0;
-        
-		GetApplication()->Update( deltaTime );
-		
-		mGraphics->BeginRendering();
-		GetApplication()->Draw(mGraphics);
-		mGraphics->EndRendering();
-		
-				
-		// elapsed time and sleep
-		const types::Float32 elapsed_time = GetUpTime() - upTime;
-		if( elapsed_time < mOneFrameShouldLast )
-			Sleep( mOneFrameShouldLast - elapsed_time );
-	}
-
-	IGraphics* PlatformIPhone::GetGraphics() {
-		return mGraphics;
-	}
-	
-	ISoundPlayer* PlatformIPhone::GetSoundPlayer() {
-		return mSoundPlayer;
-	}
-	
-	void PlatformIPhone::SetWorkingDir(poro::types::string dir){
-		//TODO:: append dir parameter to path.
-		
-		//Set the working directory inside the app pacakge for MAC and iPHOHE.
-		int maxpath = 1024;
-		char path[maxpath];
-		
-		CFBundleRef mainBundle = CFBundleGetMainBundle();
-		CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
-		if (!CFURLGetFileSystemRepresentation(resourcesURL, TRUE, (UInt8 *)path, maxpath))
-		{
-			std::cerr << "Failed to change the working directory!" << std::endl;
-			assert(false);
-		}
-		CFRelease(resourcesURL);
-		
-		chdir(path);
-		poro_logger << "Changing working dir to " << path << std::endl;
-	
-	}
-	
-	
-	poro::types::string PlatformIPhone::GetDocumentDir(){
-		NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];  
-		NSArray *arrayPaths = NSSearchPathForDirectoriesInDomains(
-										NSDocumentDirectory,
-										NSUserDomainMask,
-										YES);
-		NSString *docDir = [arrayPaths objectAtIndex:0];
-		static poro::types::string dir = docDir.UTF8String;
-		[pool release];
-		
-		return dir;
-	}
-	
-	
-	int PlatformIPhone::GetFrameRate()
-	{
-		return (int)mFrameRate;
-	}
+	chdir(path);
+	poro_logger << "Changing working dir to " << path << std::endl;
 
 }
+
+
+poro::types::string PlatformIPhone::GetDocumentDir(){
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];  
+	NSArray *arrayPaths = NSSearchPathForDirectoriesInDomains(
+									NSDocumentDirectory,
+									NSUserDomainMask,
+									YES);
+	NSString *docDir = [arrayPaths objectAtIndex:0];
+	static poro::types::string dir = docDir.UTF8String;
+	[pool release];
+	
+	return dir;
+}
+
+
+int PlatformIPhone::GetFrameRate()
+{
+	return (int)mFrameRate;
+}
+
+
+int PlatformIPhone::GetRandomSeed()
+{
+	return (int)time(NULL);
+}
+
+} // end of namespace poro

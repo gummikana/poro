@@ -47,7 +47,9 @@ public:
 	{
 		// ResourceManager
 		// add reference to ( ptr,this ) 
-		CSmartPtrManager< T, Deletor >::GetSingletonPtr()->AddReference( ptr, this );
+		if( ptr )
+			CSmartPtrManager< T, Deletor >::GetSingletonPtr()->AddReference( ptr, this );
+		
 		myPtr = ptr;
 	}
 
@@ -57,7 +59,9 @@ public:
 		// we don not delete the pointer, the resource manager will do it when
 		// it runs out of references
 		// delete myPtr;
-		CSmartPtrManager< T, Deletor >::GetSingletonPtr()->RemoveReference( myPtr, this );
+		if( myPtr )
+			CSmartPtrManager< T, Deletor >::GetSingletonPtr()->RemoveReference( myPtr, this );
+
 		myPtr = NULL;
 	}
 

@@ -121,11 +121,11 @@ inline int fastrand() {
 
 
 int Random( int low, int high ) {
-	return FastRandom( low, high );
+	return LGMRandom( low, high );
 }
 
 float Randomf( float low, float high ) {
-	return FastRandomf( low, high );
+	return LGMRandomf( low, high );
 }
 
 
