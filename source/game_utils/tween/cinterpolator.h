@@ -126,7 +126,7 @@ public:
 		if( myMathFunc )
 			t = myMathFunc->f( t );
 		
-		T value = myStartValue + (T)( t * ( myEndValue - myStartValue ) );
+		T value = myStartValue + (T)( ( myEndValue - myStartValue ) * t );
 		mySetter( value );
 	}
 
