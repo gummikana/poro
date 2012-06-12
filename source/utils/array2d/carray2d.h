@@ -319,8 +319,8 @@ private:
 
 	_Ty					myNullReference;
 
-	// CSafeArray< _Ty > myDataArray;
-	std::vector< _Ty > myDataArray;
+	CSafeArray< _Ty > myDataArray;
+	// std::vector< _Ty > myDataArray;
 
 
 };
