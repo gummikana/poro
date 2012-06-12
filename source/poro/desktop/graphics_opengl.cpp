@@ -1058,7 +1058,7 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glBegin(GL_POLYGON);
-		for( int i = 0; i < vertices.size(); ++i )
+		for( std::size_t i = 0; i < vertices.size(); ++i )
 		{                            
 			glVertex2f(vertices[ i ].x, vertices[ i ].y );
 		}
