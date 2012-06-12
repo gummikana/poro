@@ -98,13 +98,6 @@ public:
 	bool operator>=( const CRect< T >& other ) const;
 	*/
 
-
-	CRect& operator-=( const CRect< T >& other )
-	{
-		// TODO
-		return *this;
-	}
-
 	bool empty() const
 	{
 		return ( w == T() && h == T() );
@@ -116,6 +109,51 @@ public:
 		w = inw;
 		h = inh;
 	}
+
+	//-------------------------------------------------------------------------
+
+	CRect< T > operator -() const { return CRect< T >( -x, -y, -w, -h ); }
+	
+	CRect< T >& operator += ( CRect< T >& v )
+	{
+		x += v.x; y += v.y; w += v.w; h += v.h;
+
+		return *this;
+	}
+	
+	CRect< T >& operator -= ( const CRect< T >& v )
+	{
+		x -= v.x; y -= v.y; w -= v.w; h -= v.h;
+
+		return *this;
+	}
+
+	
+	CRect< T >& operator *= ( const T& a )
+	{
+		x *= a; y *= a; w *= a; h *= a;
+
+		return *this;
+	}
+
+	//-------------------------------------------------------------------------
+	
+	CRect< T > operator + ( const CRect< T >& other ) const
+	{
+		return CRect< T >( this->x + other.x, this->y + other.y, w + other.w, h + other.h );
+	}
+
+	CRect< T > operator - ( const CRect< T >& other ) const
+	{
+		return CRect< T >( this->x - other.x, this->y - other.y, w - other.w, h - other.h );
+	}
+
+	CRect< T > operator * ( float t ) const
+	{
+		return CRect< T >( this->x * t, this->y * t, w * t, h * t );
+	}
+	
+	//-------------------------------------------------------------------------
 	/*
 	template< class Ty >
 	bool operator ==( Ty& surface ) const
