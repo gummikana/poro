@@ -425,7 +425,7 @@ inline void Sprite::SetSize( int w, int h ) {
 }
 
 inline types::rect Sprite::GetRect() const { 
-	if( mRect )	return *mRect;
+	if( mRect )		return *mRect;
 	else			return types::rect( 0, 0, mSize.x, mSize.y ); 
 }
 
