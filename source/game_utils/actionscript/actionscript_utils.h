@@ -27,5 +27,6 @@
 #include "../../utils/math/cangle.h"
 #include "../../utils/math/math_utils.h"
 #include "../../utils/network/network_serializer.h"
+#include "../../utils/vector_utils/vector_utils.h"
 
 #endif

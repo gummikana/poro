@@ -25,44 +25,7 @@ namespace as {
 //-----------------------------------------------------------------------------
 namespace impl  {
 namespace { 
-template< class T >
-struct VectorSerializer
-{
-	VectorSerializer( std::vector< T* >& array, const std::string& name ) : array( array ), name( name ) { }
 
-	void Serialize( ceng::CXmlFileSys* filesys )
-	{
-		if( filesys->IsWriting() )
-		{
-			for( std::size_t i = 0; i < array.size(); ++i )
-			{
-				if( array[ i ] )
-					XML_BindAlias( filesys, *(array[i]), name );
-			}
-		}
-		else if ( filesys->IsReading() )
-		{
-			// clears the pointers
-			for( std::size_t i = 0; i < array.size(); ++i )
-				delete array[ i ];
-
-			array.clear();
-			int i = 0;
-			for( i = 0; i < filesys->GetNode()->GetChildCount(); i++ )
-			{
-				if( filesys->GetNode()->GetChild( i )->GetName() == name )
-				{
-					T* temp = new T;
-					ceng::XmlConvertTo( filesys->GetNode()->GetChild( i ), *temp );
-					array.push_back( temp );
-				}
-			}
-		}
-	}
-
-	std::vector< T* >& array;
-	std::string name;
-};
 //-----------------------------------------------------------------------------
 
 template< class T >
@@ -134,7 +97,7 @@ void Part::Serialize( ceng::CXmlFileSys* filesys )
 {
 	XML_BindAttributeAlias( filesys, name, "name" );
 
-	VectorSerializer< Frame > serialize_helper( frames, "Frame" );
+	ceng::VectorXmlSerializer< Frame > serialize_helper( frames, "Frame" );
 	serialize_helper.Serialize( filesys );
 
 	if( filesys->IsReading() )
@@ -200,10 +163,10 @@ void Animation::Serialize( ceng::CXmlFileSys* filesys )
 	XML_BindAttributeAlias( filesys, loopStartIndex, "loopAt" );
 	XML_BindAttributeAlias( filesys, mask, "mask" );
 
-	VectorSerializer< Marker > serialize_markers( markers, "Marker" );
+	ceng::VectorXmlSerializer< Marker > serialize_markers( markers, "Marker" );
 	serialize_markers.Serialize( filesys );
 
-	VectorSerializer< Part > serialize_parts( parts, "Part" );
+	ceng::VectorXmlSerializer< Part > serialize_parts( parts, "Part" );
 	serialize_parts.Serialize( filesys );
 }
 
@@ -244,7 +207,7 @@ void Animations::Clear()
 void Animations::Serialize( ceng::CXmlFileSys* filesys )
 {
 
-	impl::VectorSerializer< impl::Animation > serialize_helper( animations, "Animation" );
+	ceng::VectorXmlSerializer< impl::Animation > serialize_helper( animations, "Animation" );
 	serialize_helper.Serialize( filesys );
 }
 

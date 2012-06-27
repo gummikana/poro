@@ -40,6 +40,27 @@ namespace as {
 namespace {
 
 	std::map< std::string, poro::ITexture* > mTextureBuffer;
+	
+	
+	//----------------------------------------------------------------------------
+
+	struct SpriteLoadHelper
+	{
+		std::string filename;
+		types::vector2 offset;
+
+		std::vector< Sprite::RectAnimation* > rect_animations;
+
+		void Serialize( ceng::CXmlFileSys* filesys  )
+		{
+			XML_BindAttributeAlias( filesys, filename, "filename" );
+			XML_BindAttributeAlias( filesys, offset.x, "offset_x" );
+			XML_BindAttributeAlias( filesys, offset.y, "offset_y" );
+			
+			ceng::VectorXmlSerializer< Sprite::RectAnimation > rect_serializer( rect_animations, "RectAnimation" );
+			rect_serializer.Serialize( filesys );
+		}
+	};
 
 } // end of anonymous namespace
 //-----------------------------------------------------------------------------
@@ -98,19 +119,40 @@ poro::ITexture* GetTexture( const std::string& filename )
 
 Sprite* LoadSprite( const std::string& filename )
 {
-	Sprite* result = new Sprite;
+	if( filename.size() >= 3 && filename.substr( filename.size() - 3 ) == "xml" )
+	{
+		// if we're loading an xml file
+		SpriteLoadHelper sprite_data;
+		ceng::XmlLoadFromFile( sprite_data, filename, "Sprite" );
 
-	typedef poro::ITexture Image;
-	Image* image = NULL;
+		Sprite* result = new Sprite;
 
-	image = GetTexture( filename );
+		result->SetRectAnimations( sprite_data.rect_animations );
+		result->SetCenterOffset( sprite_data.offset );
 
-	if( image == NULL )
+		poro::ITexture* image = GetTexture( sprite_data.filename );
+		if( image == NULL ) return result;
+
+		result->SetTexture( image );
+		result->SetSize( (int)image->GetWidth(), (int)image->GetHeight() );
+
 		return result;
-	result->SetTexture( image );
-	result->SetSize( (int)image->GetWidth(), (int)image->GetHeight() );
+	}
+	else
+	{
+		// we're loading just a texture...
 
-	return result;
+		Sprite* result = new Sprite;
+
+		poro::ITexture* image = GetTexture( filename );
+
+		if( image == NULL ) return result;
+
+		result->SetTexture( image );
+		result->SetSize( (int)image->GetWidth(), (int)image->GetHeight() );
+
+		return result;
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -145,6 +187,11 @@ Sprite::~Sprite()
 {
 	// for debug reasons
 	if( mClearTweens ) GTweenClearSpriteOfTweens( this );
+
+	if( mRectAnimation && mRectAnimation->mKillMe ) 
+		delete mRectAnimation;
+	
+	mRectAnimation = NULL;
 
 	delete mAlphaMask;
 	mAlphaMask = NULL;
@@ -464,7 +511,7 @@ void DrawSprite( Sprite* sprite, poro::IGraphics* graphics, types::camera* camer
 void Sprite::Update( float dt )
 {
 	
-	if( mRectAnimation.get() ) 
+	if( mRectAnimation ) 
 		mRectAnimation->Update( this, dt );
 
 	if( mAnimationUpdater.get() ) 
@@ -501,7 +548,7 @@ void Sprite::MoveCenterTo( const types::vector2& p ) {
 //=============================================================================
 
 namespace {
-types::rect FigureOutRectPos( int frame, int width, int height, int how_many_per_row = 4 )
+types::rect FigureOutRectPos( int frame, int width, int height, int how_many_per_row = 4, int x_starting_pos = 0, int y_starting_pos = 0 )
 {
 	// int how_many_per_row = 4;
 
@@ -510,8 +557,8 @@ types::rect FigureOutRectPos( int frame, int width, int height, int how_many_per
 
 	return 
 		types::rect( 
-		(float)( x_pos * width ), 
-		(float)( y_pos * height ), 
+		(float)( x_starting_pos + x_pos * width ), 
+		(float)( y_starting_pos + y_pos * height ), 
 		(float)width, 
 		(float)height );
 }
@@ -540,18 +587,62 @@ void Sprite::RectAnimation::SetFrame( Sprite* sprite, int frame )
 	{
 		cassert( sprite );
 		mCurrentFrame = frame;
-		sprite->SetRect( FigureOutRectPos( mCurrentFrame, mWidth, mHeight, mFramesPerRow ) );
+		sprite->SetRect( FigureOutRectPos( mCurrentFrame, mWidth, mHeight, mFramesPerRow, mPositionX, mPositionY ) );
 	}
 }
+void Sprite::RectAnimation::Serialize( ceng::CXmlFileSys* filesys )
+{
+	XML_BindAttributeAlias( filesys, mName, "name" );
+
+	XML_BindAttributeAlias( filesys, mFrameCount, "frame_count" );
+	XML_BindAttributeAlias( filesys, mWidth, "frame_width" );
+	XML_BindAttributeAlias( filesys, mHeight, "frame_height" );
+	XML_BindAttributeAlias( filesys, mFramesPerRow, "frames_per_row" );
+
+	XML_BindAttributeAlias( filesys, mPositionX, "pos_x" );
+	XML_BindAttributeAlias( filesys, mPositionY, "pos_y" ); 
+
+	XML_BindAttributeAlias( filesys, mWaitTime, "frame_wait" );
+
+	XML_BindAttributeAlias( filesys, mLoop, "loop" );
+}
+
 
 //-------------------------------------------------------------------------
 
 void Sprite::SetRectAnimation( RectAnimation* animation )
 {
-	mRectAnimation.reset( animation );
+	if( mRectAnimation && mRectAnimation->mKillMe ) 
+		delete mRectAnimation;
+
+	mRectAnimation = animation;
 }
 //-------------------------------------------------------------------------
 
+void Sprite::SetRectAnimations( const std::vector< RectAnimation* >& animations ) 
+{
+	mRectAnimations = animations;
+}
+//-------------------------------------------------------------------------
+
+void Sprite::PlayRectAnimation( const std::string& name )
+{
+	if( mRectAnimation && mRectAnimation->mName == name ) return;
+
+	for( std::size_t i = 0; i < mRectAnimations.size(); ++i ) 
+	{
+		cassert( mRectAnimations[ i ] );
+		if( mRectAnimations[ i ]->mName == name ) 
+		{
+			mRectAnimations[ i ]->mKillMe = false;
+			SetRectAnimation( mRectAnimations[ i ] );
+			return;
+		}
+	}
+
+}
+
+//-------------------------------------------------------------------------
 bool Sprite::IsAnimationPlaying() const
 {
 	if( mAnimationUpdater.get() == NULL ) return false;
@@ -562,6 +653,8 @@ bool Sprite::IsAnimationPlaying() const
 
 void Sprite::PlayAnimation( const std::string& animation_name )
 {
+	PlayRectAnimation( animation_name );
+
 	if( mAnimations == NULL )
 	{
 		logger << "Error trying to play animation before AnimationsSheet has been added: " << animation_name << std::endl;
@@ -589,15 +682,13 @@ void Sprite::PlayAnimation( const std::string& animation_name )
 
 void Sprite::SetAnimationFrame(int frame) 
 {
-	if(mAnimationUpdater.get()) mAnimationUpdater->SetFrame( frame );
-	if(mRectAnimation.get()) mRectAnimation->SetFrame( this, frame );
+	if( mAnimationUpdater.get() ) mAnimationUpdater->SetFrame( frame );
+	if( mRectAnimation ) mRectAnimation->SetFrame( this, frame );
 }
 //-----------------------------------------------------------------------------
 
 types::vector2 Sprite::GetScreenPosition() const
 {
-	// return MultiplyByParentXForm( types::vector2( 0, 0 ) );
-
 	types::vector2 result( 0, 0 );
 	std::vector< const DisplayObjectContainer* > parents;
 	getParentTree( parents );
@@ -634,26 +725,10 @@ types::vector2 Sprite::MultiplyByParentXForm( const types::vector2& p ) const
 void Sprite::SetAlphaMask( Sprite* alpha_mask )	{ 
 	mAlphaMask = alpha_mask; 
 	return;
-	/*
-	// debug things
-	Sprite* ex_alpha_mask = this->GetChildByName( "gay_alpha_mask" );
-	if( ex_alpha_mask ) {
-		removeChildForReuse( ex_alpha_mask );
-		// delete ex_alpha_mask;
-	}
-
-	if( alpha_mask ) {
-		addChild( alpha_mask );
-		alpha_mask->SetName( "gay_alpha_mask" );
-		alpha_mask->SetAlpha( 0.5f );
-	}*/
 }
 
 Sprite*	Sprite::GetAlphaMask() { 
 	return mAlphaMask; 
-	// debug things
-	/*Sprite* ex_alpha_mask = this->GetChildByName( "gay_alpha_mask" );
-	return ex_alpha_mask;*/
 }
 
 //-----------------------------------------------------------------------------

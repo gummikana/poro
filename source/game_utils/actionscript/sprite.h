@@ -138,16 +138,23 @@ public:
 	struct RectAnimation
 	{
 		RectAnimation() :
+			mName( "unknown" ),
+			mKillMe( true ),
 			mFrameCount( 0 ),
 			mCurrentFrame( 0 ),
 			mWidth( 0 ),
 			mHeight( 0 ),
 			mFramesPerRow( 4 ),
+			mPositionX( 0 ),
+			mPositionY( 0 ),
 			mWaitTime( 0 ),
-			mCurrentTime( 0 )
+			mCurrentTime( 0 ),
+			mLoop( true )
 		{
 		}
 
+		std::string mName;
+		bool		mKillMe;
 
 		int mFrameCount;
 		int mCurrentFrame;
@@ -155,16 +162,27 @@ public:
 		int mHeight;
 		int mFramesPerRow;
 
+		int mPositionX;
+		int mPositionY;
+
 		float mWaitTime;
 		float mCurrentTime;
 
+		bool mLoop;
+
 		void Update( Sprite* sprite, float dt );
 		void SetFrame( Sprite* sprite, int frame );
+
+		void Serialize( ceng::CXmlFileSys* filesys );
 	};
 
 	//-------------------------------------------------------------------------
 
 	void SetRectAnimation( RectAnimation* animation );
+	void SetRectAnimations( const std::vector< RectAnimation* >& animations );
+	
+	// looks in mRectAnimations for a rect animation with the name
+	void PlayRectAnimation( const std::string& name );
 	
 	// this is a global animations sheet that the animation for PlayAnimation is loaded from
 	// no need to release this
@@ -211,10 +229,10 @@ protected:
 	types::rect*				mRect;
 
 	// animation stuff
-	std::auto_ptr< RectAnimation >			mRectAnimation;
+	RectAnimation*							mRectAnimation;
 	Animations*								mAnimations;
 	std::auto_ptr< SpriteAnimationUpdater >	mAnimationUpdater;
-
+	std::vector< RectAnimation* >			mRectAnimations;
 };
 
 // ----------------------------------------------------------------------------
