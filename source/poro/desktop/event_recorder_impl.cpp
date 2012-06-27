@@ -19,7 +19,7 @@ std::string GetEventRecorderFilename()
 	strftime(GTime,sizeof GTime,"%y%m%d-%H%M%S",localtime(&now));
 
 	std::stringstream ss;
-	ss << "playbacks/" << GTime << "-playback" << "-" << rand() % 10000 << ".txt";
+	ss << "playbacks/" << GTime << "-playback" << "-" << rand() % 10000 << ".poro_plbk";
 	
 	return ss.str();
 }
