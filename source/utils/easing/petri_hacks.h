@@ -19,7 +19,21 @@ class PetriHacks {
 			virtual float f( float x );
 		};
 
-		static SinGoTo2AndBack sinGoTo2AndBack;
+		// Randomf, just gives you a ceng::math::Randomf(0,1) as a result
+		struct Randomf : public IEasingFunc {
+			virtual float f( float x );
+		};
+ 
+		// BooleanRandom, returns 0 or 1 randomly
+		struct BooleanRandom : public IEasingFunc {
+			virtual float f( float x );
+		};
+
+		//----------------
+
+		static SinGoTo2AndBack	sinGoTo2AndBack;
+		static Randomf			randomf;
+		static BooleanRandom	booleanRandom;
 };
 
 } // end of namespace easing
