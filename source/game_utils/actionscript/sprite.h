@@ -126,9 +126,10 @@ public:
 	
 	void Clear();
 
-	Sprite*		GetChildByName( const std::string& name );
-	void		SetName( const std::string& name )	{ mName = name; }
-	std::string	GetName() const						{ return mName; }
+	Sprite*			GetChildByName( const std::string& name );
+	const Sprite*	GetChildByName( const std::string& name ) const;
+	void			SetName( const std::string& name )	{ mName = name; }
+	std::string		GetName() const						{ return mName; }
 
 	void	SetAlphaMask( Sprite* alpha_mask );
 	Sprite*	GetAlphaMask();
@@ -178,11 +179,15 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	void SetRectAnimation( RectAnimation* animation );
-	void SetRectAnimations( const std::vector< RectAnimation* >& animations );
+	void					SetRectAnimation( RectAnimation* animation );
+	RectAnimation*			GetRectAnimation();
+	const RectAnimation*	GetRectAnimation() const;
+	void					SetRectAnimations( const std::vector< RectAnimation* >& animations );
 	
 	// looks in mRectAnimations for a rect animation with the name
 	void PlayRectAnimation( const std::string& name );
+
+	std::string GetRectAnimationName() const;
 	
 	// this is a global animations sheet that the animation for PlayAnimation is loaded from
 	// no need to release this

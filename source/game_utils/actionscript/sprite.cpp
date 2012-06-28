@@ -206,6 +206,7 @@ Sprite::~Sprite()
 
 	Clear();
 }
+//-----------------------------------------------------------------------------
 
 Sprite* Sprite::GetChildByName( const std::string& name )
 {
@@ -220,6 +221,21 @@ Sprite* Sprite::GetChildByName( const std::string& name )
 
 	return NULL;
 }
+
+const Sprite* Sprite::GetChildByName( const std::string& name ) const
+{
+	ChildList::const_iterator i;
+	for( i = mChildren.begin(); i != mChildren.end(); ++i )
+	{
+		const Sprite* sprite = dynamic_cast< const Sprite* >(*i);
+		if( sprite &&
+			sprite->GetName() == name )
+			return sprite;
+	}
+
+	return NULL;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 void Sprite::Clear()
@@ -572,7 +588,7 @@ void Sprite::RectAnimation::Update( Sprite* sprite, float dt )
 		while( mCurrentTime >= mWaitTime ) {
 			mCurrentTime -= mWaitTime;
 			frame++;
-			if( frame >= mFrameCount )
+			if( frame >= mFrameCount && mLoop )
 				frame = 0;
 		}
 	}
@@ -582,9 +598,13 @@ void Sprite::RectAnimation::Update( Sprite* sprite, float dt )
 	
 void Sprite::RectAnimation::SetFrame( Sprite* sprite, int frame )
 {
+	if( frame >= mFrameCount && mLoop == false ) return;
+
 	if( frame == 0 || 
 	   frame != mCurrentFrame ) 
 	{
+		// if( frame > mFrameCount && mLoop ) frame = frame % mFrameCount;
+
 		cassert( sprite );
 		mCurrentFrame = frame;
 		sprite->SetRect( FigureOutRectPos( mCurrentFrame, mWidth, mHeight, mFramesPerRow, mPositionX, mPositionY ) );
@@ -615,7 +635,21 @@ void Sprite::SetRectAnimation( RectAnimation* animation )
 	if( mRectAnimation && mRectAnimation->mKillMe ) 
 		delete mRectAnimation;
 
+	if( mRectAnimation != animation && mRectAnimation )
+		mRectAnimation->mCurrentFrame = 0;
+
 	mRectAnimation = animation;
+}
+//-------------------------------------------------------------------------
+
+Sprite::RectAnimation* Sprite::GetRectAnimation() 
+{ 
+	return mRectAnimation;
+}
+
+const Sprite::RectAnimation* Sprite::GetRectAnimation() const
+{ 
+	return mRectAnimation;
 }
 //-------------------------------------------------------------------------
 
@@ -639,7 +673,13 @@ void Sprite::PlayRectAnimation( const std::string& name )
 			return;
 		}
 	}
+}
+//-------------------------------------------------------------------------
 
+std::string Sprite::GetRectAnimationName() const
+{
+	if( mRectAnimation ) return mRectAnimation->mName;
+	return "";
 }
 
 //-------------------------------------------------------------------------
