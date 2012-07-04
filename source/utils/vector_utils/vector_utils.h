@@ -11,7 +11,7 @@ namespace ceng {
 // returns true if the element was added
 // returns false if the element was in the container already
 template< class T >
-bool VectorAddUnique( const T& element, std::vector< T >& container )
+bool VectorAddUnique( std::vector< T >& container, const T& element )
 {
 	for( std::size_t i = 0; i < container.size(); ++i ) {
 		if( container[ i ] == element ) return false;
@@ -20,6 +20,14 @@ bool VectorAddUnique( const T& element, std::vector< T >& container )
 	container.push_back( element );
 	return true;
 }
+
+template< class T >
+bool VectorContains( const std::vector< T >& container, const T& element )
+{
+	// std::vector< T >::iterator i = std::find( container.begin(), container.end(), element );
+	return ( std::find( container.begin(), container.end(), element ) != container.end() );
+}
+
 
 //-----------------------------------------------------------------------------
 //
