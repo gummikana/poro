@@ -1237,4 +1237,9 @@ void GraphicsOpenGL::FlushDrawTextureBuffer()
 }
 //=============================================================================
 
+unsigned char* ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp )
+{
+	return stbi_load( filename, x, y, comp, req_comp );
+}
+
 } // end o namespace poro

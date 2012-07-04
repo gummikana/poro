@@ -118,5 +118,12 @@ private:
 
 };
 
+//-----------------------------------------------------------------------------
+
+// ImageLoad is just a wrapper for stbi_load
+unsigned char* ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp );
+
+//-----------------------------------------------------------------------------
+
 } // end o namespace poro
 #endif
