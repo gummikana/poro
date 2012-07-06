@@ -44,10 +44,20 @@ namespace {
 	
 	//----------------------------------------------------------------------------
 
-	struct SpriteLoadHelper
+	struct SpriteLoadHelper 
 	{
+		SpriteLoadHelper() : 
+			filename(),
+			offset( 0, 0 ),
+			scale( 1, 1 ),
+			default_animation()
+		{
+		}
+
 		std::string filename;
 		types::vector2 offset;
+		types::vector2 scale;
+		std::string default_animation;
 
 		std::vector< Sprite::RectAnimation* > rect_animations;
 
@@ -56,6 +66,9 @@ namespace {
 			XML_BindAttributeAlias( filesys, filename, "filename" );
 			XML_BindAttributeAlias( filesys, offset.x, "offset_x" );
 			XML_BindAttributeAlias( filesys, offset.y, "offset_y" );
+			XML_BindAttributeAlias( filesys, scale.x, "scale_x" );
+			XML_BindAttributeAlias( filesys, scale.y, "scale_y" );
+			XML_BindAttributeAlias( filesys, default_animation, "default_animation" );
 			
 			ceng::VectorXmlSerializer< Sprite::RectAnimation > rect_serializer( rect_animations, "RectAnimation" );
 			rect_serializer.Serialize( filesys );
@@ -129,6 +142,9 @@ Sprite* LoadSprite( const std::string& filename )
 
 		result->SetRectAnimations( sprite_data.rect_animations );
 		result->SetCenterOffset( sprite_data.offset );
+		result->SetScale( sprite_data.scale.x, sprite_data.scale.y );
+		if( sprite_data.default_animation.empty() == false ) 
+			result->PlayAnimation( sprite_data.default_animation );
 
 		poro::ITexture* image = GetTexture( sprite_data.filename );
 		if( image == NULL ) return result;
