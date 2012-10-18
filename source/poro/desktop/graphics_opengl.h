@@ -39,16 +39,21 @@ class GraphicsOpenGL : public IGraphics
 public:
 	GraphicsOpenGL();
 
+	//-------------------------------------------------------------------------
+
 	virtual bool		Init( int width, int height, bool fullscreen, const types::string& caption );
 	virtual void		SetInternalSize( types::Float32 width, types::Float32 height );
     virtual void        SetWindowSize(int width, int height);
     virtual void        SetFullscreen(bool fullscreen);
     virtual bool        GetFullscreen() { return mFullscreen; }
+	
+	//-------------------------------------------------------------------------
 
 	virtual void		SetSettings( const GraphicsSettings& settings );
 	virtual void        SetDrawTextureBuffering( bool buffering );
 	virtual bool		GetDrawTextureBuffering() const;
 
+	//-------------------------------------------------------------------------
 
 	virtual ITexture*	CreateTexture( int width, int height );
 	virtual ITexture*	CloneTexture( ITexture* other );
@@ -56,7 +61,7 @@ public:
 	virtual ITexture*	LoadTexture( const types::string& filename );
 	virtual void		ReleaseTexture( ITexture* texture );
 
-
+	//-------------------------------------------------------------------------
 
 	virtual void		DrawTexture( ITexture* texture, 
 									types::Float32 x, 
@@ -84,19 +89,33 @@ public:
 		const types::fcolor& alpha_color );
 
 
+	//-------------------------------------------------------------------------
+
 	virtual void		BeginRendering();
 	virtual void		EndRendering();
 	
+	//-------------------------------------------------------------------------
+
 	virtual void		DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth, float width, bool loop );
 	virtual void		DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color );
 	virtual void		DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture,  const types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ), types::vec2* tex_coords = NULL, int count = 0 );
 	
+	//-------------------------------------------------------------------------
+
 	virtual IGraphicsBuffer* CreateGraphicsBuffer(int width, int height);
 	virtual void DestroyGraphicsBuffer(IGraphicsBuffer* buffer);
-	
+
+	//-------------------------------------------------------------------------
+
 	types::vec2     ConvertToInternalPos( int x, int y );
 
     void    ResetWindow();
+
+	//-------------------------------------------------------------------------
+
+	void SaveScreenshot( const std::string& filename );
+
+	//-------------------------------------------------------------------------
 private:
     
     bool    mFullscreen;

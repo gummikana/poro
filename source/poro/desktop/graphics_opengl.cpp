@@ -36,10 +36,10 @@
 
 #define PORO_ERROR "ERROR: "
 
-#ifdef PORO_SAVE_ALPHA_FIXED_PNG_FILES
-#	define STB_IMAGE_WRITE_IMPLEMENTATION
-#	include "../external/stb_image_write.h"
-#endif
+// for screenshot saving
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "../external/stb_image_write.h"
+
 
 //=============================================================================
 namespace poro {
@@ -1237,9 +1237,40 @@ void GraphicsOpenGL::FlushDrawTextureBuffer()
 }
 //=============================================================================
 
+void GraphicsOpenGL::SaveScreenshot( const std::string& filename )
+{
+	int width  = (int)mViewportSize.x;
+	int height = (int)mViewportSize.y;
+
+	unsigned char * pixels = new unsigned char [ 3 * width * height];
+	glReadPixels((int)mViewportOffset.x, (int)mViewportOffset.y, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+
+	// need to flip the pixels
+	for( int x = 0; x < width * 3; ++x ) 
+	{
+		for( int y = 0; y < height / 2; ++y ) 
+		{
+			ceng::math::Swap( 
+				pixels[ x + 3 * width * y ], 
+				pixels[ x + 3 * width * ( height - y - 1 ) ] );
+		}
+	}
+
+	int result = stbi_write_png( filename.c_str(), width, height, 3, pixels, width * 3 );
+	if( result == 0 ) poro_logger << "Error SaveScreenshot() - couldn't write to file: " << filename << std::endl;
+
+
+	delete [] pixels;	
+}
+
+
+//=============================================================================
+
 unsigned char* ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp )
 {
 	return stbi_load( filename, x, y, comp, req_comp );
 }
+
+
 
 } // end o namespace poro

@@ -210,6 +210,10 @@ public:
 	virtual void DestroyGraphicsBuffer(IGraphicsBuffer* buffer);
 
 	//-------------------------------------------------------------------------
+	// Save screen (only supports .png format)
+	virtual void SaveScreenshot( const std::string& filename ) { }
+
+	//-------------------------------------------------------------------------
 
 protected:
     bool mClearBackground;
