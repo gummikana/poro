@@ -130,7 +130,7 @@ int Random( int low, int high )
 	int t = high - low;
 	return ( std::rand()%(t+1) ) + low;
 #else
-	return ceng::Global_LGMRandom::LGMRandom( low, high );
+	return ceng::Global_LGMRandom::Random( low, high );
 #endif
 }
 
@@ -141,7 +141,7 @@ float Randomf( float low, float high )
 #elif defined(CENG_USE_C_RAND)
 	return low+((high-low)*((float)std::rand() / (float)RAND_MAX) );
 #else
-	return ceng::Global_LGMRandom::LGMRandomf( low, high );
+	return ceng::Global_LGMRandom::Randomf( low, high );
 #endif
 }
 
