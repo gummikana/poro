@@ -39,10 +39,11 @@ typedef ceng::math::CVector2< float >	vector2;
 typedef ceng::math::CMat22< float >		mat22;
 typedef ceng::math::CXForm< float >		xform;
 
+typedef ceng::math::CVector2< double >	dvector2;
+
 typedef ceng::math::CVector2< int >		point;
-/*typedef ceng::bitmask::Point			ship_point;
-typedef ceng::bitmask::PointXForm		ship_xform;
-typedef ceng::bitmask::PointMatrix		ship_matrix;*/
+typedef ceng::CRect< int >				irect;
+
 typedef uint32							ticks;
 typedef ceng::math::CAngle< float >		angle;
 
