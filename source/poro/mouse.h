@@ -36,32 +36,36 @@ public:
 		MOUSE_BUTTON_RIGHT = 2,
 		MOUSE_BUTTON_MIDDLE = 3,
 		MOUSE_BUTTON_WHEEL_UP = 4,
-		MOUSE_BUTTON_WHEEL_DOWN = 5
+		MOUSE_BUTTON_WHEEL_DOWN = 5,
+		_MOUSE_BUTTON_COUNT = 6
 	};
 
-	Mouse() : mCursorVisible( true ), mMousePos( 0, 0 ) { }
+	Mouse();
 	virtual ~Mouse() { }
 	
-	void AddMouseListener(IMouseListener* listener);
-	void RemoveMouseListener(IMouseListener* listener);
+	void AddMouseListener( IMouseListener* listener );
+	void RemoveMouseListener( IMouseListener* listener );
 
-	void FireMouseMoveEvent(const types::vec2& pos);
-	void FireMouseDownEvent(const types::vec2& pos, int button);
-	void FireMouseUpEvent(const types::vec2& pos, int button);
+	void FireMouseMoveEvent( const types::vec2& pos );
+	void FireMouseDownEvent( const types::vec2& pos, int button );
+	void FireMouseUpEvent( const types::vec2& pos, int button );
 
-	virtual bool IsCursorVisible();
+	virtual bool IsCursorVisible() const;
 	virtual void HideCursor();
 	virtual void ShowCursor();
 	virtual void SetCursorVisiblity( bool show_cursor );
 
 	virtual types::vec2 GetMousePos() const;
+	virtual bool		IsButtonDown( int button ) const;
 
 private:
-	std::vector<IMouseListener*> mMouseListeners;
-	bool mCursorVisible;
-	types::vec2 mMousePos;
+	std::vector< IMouseListener* >	mMouseListeners;
+	std::vector< bool >				mMouseButtonsDown;
+	
+	bool							mCursorVisible;
+	types::vec2						mMousePos;
 };
 
-}
+} // end of namespace poro
 
 #endif

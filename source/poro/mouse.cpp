@@ -26,17 +26,29 @@
 namespace poro {
 //-----------------------------------------------------------------------------
 
-void Mouse::AddMouseListener(IMouseListener *listener)
-{
-	// poro_logger << "Added mouse listener" << std::endl;
-	mMouseListeners.push_back(listener);
+Mouse::Mouse() : 
+	mMouseListeners(),
+	mMouseButtonsDown( _MOUSE_BUTTON_COUNT ),
+	mCursorVisible( true ),
+	mMousePos( 0, 0 ) 
+{ 
+	for( std::size_t i = 0; i < mMouseButtonsDown.size(); ++i ) 
+		mMouseButtonsDown[ i ] = false;
 }
 
-void Mouse::RemoveMouseListener(IMouseListener *listener)
+//-----------------------------------------------------------------------------
+
+void Mouse::AddMouseListener( IMouseListener* listener )
+{
+	// poro_logger << "Added mouse listener" << std::endl;
+	mMouseListeners.push_back( listener );
+}
+
+void Mouse::RemoveMouseListener( IMouseListener* listener )
 {
 	// poro_logger << "Remove mouse listener";
 	
-	std::vector< IMouseListener* >::iterator i = std::find(mMouseListeners.begin(),mMouseListeners.end(),listener);
+	std::vector< IMouseListener* >::iterator i = std::find( mMouseListeners.begin(), mMouseListeners.end(), listener );
 
 	// poro_assert( i != mMouseListeners.end() );
 
@@ -45,33 +57,33 @@ void Mouse::RemoveMouseListener(IMouseListener *listener)
 }
 //-----------------------------------------------------------------------------
 
-void Mouse::FireMouseMoveEvent(const types::vec2& pos)
+void Mouse::FireMouseMoveEvent( const types::vec2& pos )
 {
 	mMousePos = pos;
-	for( std::size_t i = 0; i < mMouseListeners.size() ; i++)
-	{
-		mMouseListeners[i]->MouseMove(pos);
-	}
+	for( std::size_t i = 0; i < mMouseListeners.size(); i++ )
+		mMouseListeners[i]->MouseMove( pos );
 }
 
-void Mouse::FireMouseDownEvent(const types::vec2& pos, int button)
+void Mouse::FireMouseDownEvent( const types::vec2& pos, int button )
 {
-	for( std::size_t i = 0; i < mMouseListeners.size() ; i++)
-	{
-		mMouseListeners[i]->MouseButtonDown(pos, button);
-	}
+	for( std::size_t i = 0; i < mMouseListeners.size(); i++ )
+		mMouseListeners[i]->MouseButtonDown( pos, button );
+
+	if( button >= 0 && button < (int)mMouseButtonsDown.size() )
+		mMouseButtonsDown[ button ] = true;
 }
 
-void Mouse::FireMouseUpEvent(const types::vec2& pos, int button)
+void Mouse::FireMouseUpEvent( const types::vec2& pos, int button )
 {
-	for( std::size_t i = 0; i < mMouseListeners.size() ; i++)
-	{
-		mMouseListeners[i]->MouseButtonUp(pos, button);
-	}
+	for( std::size_t i = 0; i < mMouseListeners.size() ; i++ )
+		mMouseListeners[i]->MouseButtonUp( pos, button );
+
+	if( button >= 0 && button < (int)mMouseButtonsDown.size() )
+		mMouseButtonsDown[ button ] = false;
 }
 //-----------------------------------------------------------------------------
 
-bool Mouse::IsCursorVisible()
+bool Mouse::IsCursorVisible() const 
 {
 	return mCursorVisible;
 }
@@ -97,5 +109,15 @@ types::vec2 Mouse::GetMousePos() const
 {
 	return mMousePos;
 }
+
+bool Mouse::IsButtonDown( int button ) const 
+{
+	if( button >= 0 && button < (int)mMouseButtonsDown.size() )
+		return mMouseButtonsDown[ button ];
+
+	return false;
+}
+
+//-----------------------------------------------------------------------------
 
 } // end of namespace poro
