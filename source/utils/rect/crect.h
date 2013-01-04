@@ -162,8 +162,12 @@ public:
 	}
 	*/
 
+	T GetLeft() const	{ return x; }
+	T GetRight() const	{ return x + w; }
+	T GetTop() const	{ return y; }
+	T GetBottom() const	{ return y + h; }
 
-
+	//-------------------------------------------------------------------------
 
 
 
