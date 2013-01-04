@@ -50,9 +50,15 @@ const float pi = 3.1415926f;
 //.............................................................................
 
 template< typename Type >
-inline Type Min( const Type& c1, const Type& c2 )
+inline const Type& Min( const Type& c1, const Type& c2 )
 {
 	return ( c1 < c2 )?c1:c2;
+}
+
+template< typename Type >
+inline const Type& Min( const Type& c1, const Type& c2, const Type& c3 )
+{
+	return ( c1 < Min( c2, c3 ) )?c1:Min( c2, c3 );
 }
 
 //=============================================================================
@@ -64,9 +70,16 @@ inline Type Min( const Type& c1, const Type& c2 )
 //.............................................................................
 
 template< typename Type >
-inline Type Max( const Type& c1, const Type& c2 )
+inline const Type& Max( const Type& c1, const Type& c2 )
 {
 	return ( c1 < c2 )?c2:c1;
+}
+
+
+template< typename Type >
+inline const Type& Max( const Type& c1, const Type& c2, const Type& c3 )
+{
+	return ( c1 < Max( c2, c3 ) )?Max( c2, c3 ):c1;
 }
 
 //=============================================================================

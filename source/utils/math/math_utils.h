@@ -118,9 +118,10 @@ CMat22< Type > Abs(const CMat22< Type >& A)
 	return CMat22< Type >(Abs(A.col1), Abs(A.col2));
 }
 
-inline float Sign(float x)
+template< class Type >
+inline Type Sign( Type value )
 {
-	return x < 0.0f ? -1.0f : 1.0f;
+	return value < (Type)0 ? (Type)-1 : (Type)1;
 }
 
 
