@@ -154,13 +154,6 @@ public:
 	}
 	
 	//-------------------------------------------------------------------------
-	/*
-	template< class Ty >
-	bool operator ==( Ty& surface ) const
-	{
-		return operator==( CreateRect( surface ) );
-	}
-	*/
 
 	T GetLeft() const	{ return x; }
 	T GetRight() const	{ return x + w; }
@@ -168,8 +161,6 @@ public:
 	T GetBottom() const	{ return y + h; }
 
 	//-------------------------------------------------------------------------
-
-
 
 	T	x;
 	T	y;
