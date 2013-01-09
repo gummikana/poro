@@ -57,7 +57,8 @@ public:
 	~TextSprite();
 
 	//-------------------------------------------------------------------------
-	void SetText( const std::string& text );
+	void			SetText( const std::string& text );
+	std::string		GetText() const;
 	
 	virtual void				MoveCenterTo( const types::vector2& p );
 	virtual types::vector2		GetCenterPos() const;
@@ -106,6 +107,10 @@ protected:
 
 inline CFont* TextSprite::GetFont() {
 	return mFont;
+}
+
+inline std::string TextSprite::GetText() const {
+	return mText;
 }
 
 // ----------------------------------------------------------------------------
