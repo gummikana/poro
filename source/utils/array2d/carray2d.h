@@ -298,11 +298,22 @@ public:
 
 	bool Empty() const { return myDataArray.empty(); }
 
+	CSafeArray< _Ty >& GetData() { return myDataArray; }
+	const CSafeArray< _Ty >& GetData() const { return myDataArray; }
+
 private:
 
 	void Allocate()
 	{
+		/*
 		int n_size = (myWidth + 1) * ( myHeight + 1 );
+		if( n_size != mySize )
+		{
+			mySize = n_size;
+			myDataArray.resize( mySize + 1 );
+		}*/
+
+		int n_size = (myWidth) * ( myHeight );
 		if( n_size != mySize )
 		{
 			mySize = n_size;
