@@ -13,6 +13,8 @@ namespace ceng
 	std::string GetDateForFile( const std::string& file );
 	bool		DoesExist( const std::string& file );
 
+	void CopyFileCeng( const std::string& from, const std::string& to );
+
 	long ReadFileSize( std::fstream& file );
 	long ReadFileSize( const std::string& file );
 

@@ -311,4 +311,30 @@ std::string MakeUniqueFilename( const std::string& file, const std::string& exte
 }
 
 
+void CopyFileCeng( const std::string& from, const std::string& to )
+{
+	CopyFile( from.c_str(), to.c_str(), false );
+
+	/*
+	const std::size_t BUFFER_SIZE = 8192;
+
+    char buf[BUFFER_SIZE];
+    std::size_t size;
+
+	FILE* source = fopen(from.c_str(), "rb");
+	FILE* dest = fopen(to.c_str(), "wb");
+
+	while(size = fread(buf, 1, BUFFER_SIZE, source)) {
+        fwrite(buf, 1, size, dest);
+    }
+
+    fclose(source);
+    fclose(dest);
+	*/
+	 //std::ifstream  src( from.c_str() );
+  //   std::ofstream  dst( to.c_str() );
+
+  //   dst << src.rdbuf();
+}
+
 } // end o namespace ceng
