@@ -42,7 +42,7 @@ template< class T >
 class CAverager
 {
 public:
-	CAverager() : value( T() ), count( 0 ) { }
+	CAverager() : value( T() ), current_value( T() ), count( 0 ) { }
 
 	virtual ~CAverager() { } 
 
@@ -50,6 +50,7 @@ public:
 	
 	virtual T Add( const T& other )
 	{
+		current_value = other;
 		value += other;
 		count++;
 
@@ -69,8 +70,13 @@ public:
 		return (T)( value / (T)count );
 	}
 
+	T GetCurrent() const { return current_value; }
+	T GetTotal() const { return value; }
+	unsigned int GetCount() const { return count; }
+
 private:
 	T value;
+	T current_value;
 	unsigned int count;
 };
 
