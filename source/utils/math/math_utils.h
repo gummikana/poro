@@ -214,8 +214,8 @@ inline CMat22< Type > Mul( const CMat22< Type >& A, const CMat22< Type >& B )
 template< class Type >
 inline CVector2< Type > ClosestPointOnLineSegment( const CVector2< Type >& a, const CVector2< Type >& b, const CVector2< Type >& p )
 {
-	CVector2< Type > c( p - a );
-	CVector2< Type > v( b - a );
+	CVector2< float > c( p - a );
+	CVector2< float > v( b - a );
 	float distance = v.Length();
 	
 	// optimized normalized
@@ -226,7 +226,7 @@ inline CVector2< Type > ClosestPointOnLineSegment( const CVector2< Type >& a, co
 		v.y /= distance;
 	}
 
-	float t = Dot( v, c );
+	float t = (float)Dot( v, c );
 
 	if (t < 0)
 		return a;
@@ -236,7 +236,7 @@ inline CVector2< Type > ClosestPointOnLineSegment( const CVector2< Type >& a, co
 
 	v *= t;
 
-	return a + v;
+	return a + CVector2< Type >( v );
 }
 
 template< class Type >

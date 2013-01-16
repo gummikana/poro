@@ -71,9 +71,9 @@ public:
 	}
 
 	
-	CVector2< Type >& operator *= ( const Type& a )
+	CVector2< Type >& operator *= ( float a )
 	{
-		x *= a; y *= a;
+		x = (Type)(x * a); y = (Type)(y * a);
 
 		return *this;
 	}
@@ -124,9 +124,9 @@ public:
 		return ( x * x + y * y );
 	}
 
-	Type Length() const
+	float Length() const
 	{
-		return (Type)sqrtf( (float)LengthSquared() );
+		return sqrtf( (float)LengthSquared() );
 	}
 
 	CVector2< Type > Normalize() const
