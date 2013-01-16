@@ -30,7 +30,18 @@
 #include "joystick.h"
 #include "keyboard.h"
 
+namespace poro { class IPlatform; }
+
+//=============================================================================
+// Function that returns a pointer to IPlatform class, can be used instead of
+// the monsterous poro::IPlatform::Instance() function
+
+poro::IPlatform* Poro();
+
+//=============================================================================
+
 namespace poro {
+
 
 class IPlatform
 {
@@ -216,5 +227,12 @@ inline int IPlatform::GetRandomSeed() {
 
 
 } // end o namespace poro
+//-----------------------------------------------------------------------------
+
+inline poro::IPlatform* Poro() { 
+	return poro::IPlatform::Instance(); 
+}
+
+//-----------------------------------------------------------------------------
 
 #endif

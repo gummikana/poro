@@ -23,12 +23,8 @@
 #include "run_poro.h"
 
 //=============================================================================
-
-poro::IPlatform* Poro();
-
-//=============================================================================
-
-inline poro::IPlatform* Poro() { return poro::IPlatform::Instance(); }
-
-
+// moved Poro() function to iplatform.h.
+// Why? because that way we don't have to include all of poro if we only need
+// some of the platform classes
+//
 #endif
