@@ -212,6 +212,7 @@ public:
 	//-------------------------------------------------------------------------
 	// Save screen (only supports .png format)
 	virtual void SaveScreenshot( const std::string& filename ) { }
+	virtual void SaveScreenshot( const std::string& filename, int x, int y, int w, int h ) { }
 
 	//-------------------------------------------------------------------------
 

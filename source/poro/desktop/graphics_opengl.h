@@ -114,6 +114,7 @@ public:
 	//-------------------------------------------------------------------------
 
 	void SaveScreenshot( const std::string& filename );
+	void SaveScreenshot( const std::string& filename, int x, int y, int w, int h );
 
 	//-------------------------------------------------------------------------
 private:

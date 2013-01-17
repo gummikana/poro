@@ -1237,13 +1237,16 @@ void GraphicsOpenGL::FlushDrawTextureBuffer()
 }
 //=============================================================================
 
-void GraphicsOpenGL::SaveScreenshot( const std::string& filename )
+void GraphicsOpenGL::SaveScreenshot( const std::string& filename, int pos_x, int pos_y, int w, int h )
 {
-	int width  = (int)mViewportSize.x;
+	int width = (int)mViewportSize.x;
 	int height = (int)mViewportSize.y;
 
-	unsigned char * pixels = new unsigned char [ 3 * width * height];
-	glReadPixels((int)mViewportOffset.x, (int)mViewportOffset.y, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+	static unsigned char* pixels = new unsigned char[ 3 * (int)mViewportSize.x * (int)mViewportSize.y ];
+
+	// read the whole image into a buffer, since this crashes with unspecified sizes
+	glReadPixels( (int)mViewportOffset.x, (int)mViewportOffset.y, (int)mViewportSize.x, (int)mViewportSize.y, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+
 
 	// need to flip the pixels
 	for( int x = 0; x < width * 3; ++x ) 
@@ -1254,13 +1257,38 @@ void GraphicsOpenGL::SaveScreenshot( const std::string& filename )
 				pixels[ x + 3 * width * y ], 
 				pixels[ x + 3 * width * ( height - y - 1 ) ] );
 		}
+
+	}
+	
+
+	unsigned char* other_pixels = pixels;
+
+	// copy to other buffer
+	if( pos_x != 0 || pos_y != 0 || w != width || height != h ) 
+	{
+		other_pixels = new unsigned char[ 3 * w * h ];	
+		for( int y = 0; y < h; ++y )
+		{
+			for( int x = 0; x < w * 3; ++x )
+			{
+				int p1 = (x + 3 * w * y);
+				int p2 = (x + (pos_x * 3)) + ( 3 * width * ( y + pos_y));
+				other_pixels[ p1 ] = pixels[ p2 ];
+			}
+		}
 	}
 
-	int result = stbi_write_png( filename.c_str(), width, height, 3, pixels, width * 3 );
+	int result = stbi_write_png( filename.c_str(), w, h, 3, other_pixels, w * 3 );
 	if( result == 0 ) poro_logger << "Error SaveScreenshot() - couldn't write to file: " << filename << std::endl;
 
+	if( other_pixels != pixels ) delete [] other_pixels;
+	// no need to release the static pixels
+	// delete [] pixels;	
+}
 
-	delete [] pixels;	
+void GraphicsOpenGL::SaveScreenshot( const std::string& filename )
+{
+	SaveScreenshot( filename, 0, 0, (int)mViewportSize.x, (int)mViewportSize.y );
 }
 
 
