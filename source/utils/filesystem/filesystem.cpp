@@ -52,6 +52,71 @@ namespace ceng {
 
 namespace {
 std::string separator = "/";
+
+bool FolderExists( const std::string& directory )
+{
+	#ifdef CENG_PLATFORM_WINDOWS
+		return GetFileAttributes( directory.c_str() ) != INVALID_FILE_ATTRIBUTES;
+	#elif defined(CENG_PLATFORM_MACOSX) || defined(CENG_PLATFORM_IOS)
+		BOOL isDir;
+		NSString *path = [[NSString alloc] initWithCString:directory.c_str() encoding:NSMacOSRomanStringEncoding];
+		@try
+		{
+			NSFileManager *fileManager = [NSFileManager defaultManager];
+			if ([fileManager fileExistsAtPath:path isDirectory:&isDir] && isDir)
+				return true;
+		}
+		@finally
+		{
+			[path release];
+		}
+		return false;
+	#elif defined(CENG_PLATFORM_LINUX)
+        struct stat sb;
+        return (stat(directory.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode));
+    #endif
+}
+
+
+} // end of anonymous namespace
+
+
+void CreateDir( const std::string& _dir )
+{
+	#ifdef CENG_PLATFORM_WINDOWS
+	if( _dir.empty() ||  FolderExists( _dir ) )
+		return;
+	CreateDir( GetParentPath( _dir ) );
+
+	CreateDirectory( _dir.c_str(), 0 );
+	#elif defined(CENG_PLATFORM_MACOSX) || defined(CENG_PLATFORM_IOS)
+
+        if( _dir.empty() ||  FolderExists( _dir ) )
+            return;
+        CreateDir( GetParentPath( _dir ) );
+
+        // CreateDirectory( _dir.c_str(), 0 )
+		NSString *path = [[NSString alloc] initWithCString:_dir.c_str() encoding:NSMacOSRomanStringEncoding];
+		@try
+		{
+			[[NSFileManager defaultManager] createDirectoryAtPath:path attributes:nil];
+		}
+		@finally
+		{
+			[path release];
+		}
+	#elif defined(CENG_PLATFORM_LINUX) && !defined(NO_QT)
+	    if( _dir.empty() ||  FolderExists( _dir ) )
+            return;
+        CreateDir( GetParentPath( _dir ) );
+
+        QString temp( _dir.c_str() );
+        QDir().mkdir( temp );
+		// mkdir(_dir.c_str(),O_CREAT);
+    #endif
+
+	// fs::create_directories( _dir );
+	return;
 }
 
 bool DoesExist( const std::string& filename )

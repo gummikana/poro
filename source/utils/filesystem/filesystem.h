@@ -10,6 +10,7 @@
 
 namespace ceng
 {
+	void		CreateDir( const std::string& directory );
 	std::string GetDateForFile( const std::string& file );
 	bool		DoesExist( const std::string& file );
 
