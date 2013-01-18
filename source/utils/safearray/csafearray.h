@@ -14,10 +14,10 @@ template< typename Type, typename SizeType = int >
 class CSafeArray
 {
 public:
-	CSafeArray() : data( 0 ), size( SizeType() ) { }
+	CSafeArray() : data( 0 ), _size( SizeType() ) { }
 	CSafeArray( SizeType size ) : 
 		data( new Type[ size ] ),
-		size( size )
+		_size( size )
 	{
 		
 		/*for( SizeType i = 0; i < Size(); ++i ) 
@@ -28,7 +28,7 @@ public:
 	
 	CSafeArray( const CSafeArray& other ) :
 		data( 0 ), 
-		size( SizeType() )
+		_size( SizeType() )
 	{
 		operator=(other);
 	}
@@ -41,8 +41,8 @@ public:
 	const CSafeArray& operator=( const CSafeArray& other )
 	{
 		Clear();
-		data =  new Type[ other.size ];
-		size = other.size;
+		data =  new Type[ other._size ];
+		_size = other._size;
 		
 		/*
 		for( SizeType i = 0; i < Size(); ++i ) 
@@ -57,13 +57,13 @@ public:
 
 	inline Type& operator[]( SizeType i )
 	{
-		cassert( !( i < 0 || i >= size ) );
+		cassert( !( i < 0 || i >= _size ) );
 		return data[ i ];
 	}
 
 	inline const Type& operator[]( SizeType i ) const 
 	{
-		cassert( !( i < 0 || i >= size ) );
+		cassert( !( i < 0 || i >= _size ) );
 		return data[ i ];
 	}
 
@@ -71,20 +71,22 @@ public:
 	{
 		delete [] data;
 		data = 0;
-		size = 0;
+		_size = 0;
 	}
 
 	void clear() { Clear(); }
 
-	SizeType Size() const { return size; }
-	bool Empty() const { return size == 0; }
+	SizeType Size() const { return _size; }
+	SizeType size() const { return _size; }
+
+	bool Empty() const { return _size == 0; }
 	bool empty() const { return Empty(); }
 
 	void Resize( SizeType s ) 
 	{
 		Clear();
 		data =  new Type[ s ];
-		size = s;
+		_size = s;
 		
 		
 		/*for( SizeType i = 0; i < Size(); ++i ) 
@@ -118,7 +120,7 @@ public:
 
 	Type* data;
 private:
-	SizeType size;
+	SizeType _size;
 };
 
 } // end o namespace ceng
