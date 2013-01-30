@@ -3,9 +3,9 @@
 
 #include <vector>
 #include <string>
+#include <algorithm>
 
 namespace ceng {
-
 
 // adds an element to the vector if it doesn't exist in the container
 // returns true if the element was added
@@ -29,12 +29,51 @@ bool VectorContains( const std::vector< T >& container, const T& element )
 }
 
 
+// the standard way of removing an element by swapping it with the last and popping the last
+// stops at the first instance, use VectorRemoveAll to remove duplicates as well
+// returns true if found an element, false if none was found
+template< class T >
+bool VectorRemove( std::vector< T >& container, const T& element )
+{
+	for( std::size_t i = 0; i < container.size(); ++i ) 
+	{
+		if( container[ i ] == element ) {
+			container[ i ] = container[ container.size() - 1 ];
+			container.pop_back();
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
+template< class T >
+bool VectorRemoveAll( std::vector< T >& container, const T& element )
+{
+	bool result = false;
+	for( std::size_t i = 0; i < container.size(); ) 
+	{
+		if( container[ i ] == element ) {
+			container[ i ] = container[ container.size() - 1 ];
+			container.pop_back();
+			result = true;
+		} else {
+			++i;
+		}
+	}
+
+	return result;
+}
+
 //-----------------------------------------------------------------------------
 //
 // Serializing a vector of pointers 
 // this one is like one of the most used things I have reimplemented everytime
 // now it's in a nice templated class
 //
+class CXmlFileSys;
+
 template< class T >
 struct VectorXmlSerializer
 {
