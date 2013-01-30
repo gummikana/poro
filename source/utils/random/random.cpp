@@ -109,7 +109,7 @@ double CLGMRandom::Next()
 static int g_seed;
 
 inline void set_fastrand_seed( int seed ) {
-	g_seed = seed;
+	g_seed = seed ^ 13 - 1;
 }
 
 inline int fastrand() { 
