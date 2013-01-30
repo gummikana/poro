@@ -3,6 +3,7 @@
 
 // this is just a file that includes all the common poro include files
 
+#include "platform_defs.h"
 #include "iplatform.h"
 #include "iapplication.h"
 #include "igraphics.h"
