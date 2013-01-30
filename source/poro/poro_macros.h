@@ -21,13 +21,25 @@
 #ifndef INC_PORO_MACROS_H
 #define INC_PORO_MACROS_H
 
+#include "platform_defs.h"
 #include "poro_types.h"
 
 #include <assert.h>
 #include <iostream>
 
-#define poro_logger std::cout
-#define poro_assert assert
+#ifdef PORO_PLAT_WINDOWS
+
+#include "../utils/pow2assert/pow2assert.h"
+
+#  define poro_logger std::cout
+#  define poro_assert POW2_ASSERT
+
+#else
+
+#  define poro_logger std::cout
+#  define poro_assert assert
+
+#endif
 
 namespace poro {
 	inline types::fcolor GetFColor( float r, float g, float b, float a = 1.f );
