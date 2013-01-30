@@ -23,6 +23,7 @@
 #include "../../utils/singleton/csingletonptr.h"
 #include "../../utils/math/cvector2_serializer.h"
 #include "../../utils/math/point_inside.h"
+#include "../../utils/filesystem/filesystem.h"
 
 #include "../tween/tween_utils.h"
 
@@ -39,8 +40,34 @@ namespace as {
 ///////////////////////////////////////////////////////////////////////////////
 namespace {
 
-	std::map< std::string, poro::ITexture* > mTextureBuffer;
-	
+	struct TextureBuffer
+	{
+		TextureBuffer() :
+			texture( NULL ), 
+			time_stamp( "" )
+		{ }
+		
+		TextureBuffer( poro::ITexture* texture, const std::string& time_stamp ) :
+			texture( texture ), 
+			time_stamp( time_stamp )
+		{ }
+
+
+		poro::ITexture* texture;
+		std::string time_stamp;
+	};
+
+	typedef std::map< std::string, TextureBuffer* > TTextureBuffer;
+	TTextureBuffer mTextureBuffer;
+
+	// ---------
+
+	std::string GetTimeStampForFile( const std::string& filename )
+	{
+		// place holder
+		// return "0";
+		return ceng::GetDateForFile( filename );
+	}
 	
 	//----------------------------------------------------------------------------
 
@@ -80,14 +107,16 @@ namespace {
 
 void PreloadTexture( const std::string& filename )
 {
-	std::map< std::string, poro::ITexture* >::iterator i = mTextureBuffer.find( filename );
+	TTextureBuffer::iterator i = mTextureBuffer.find( filename );
 
 	if( i == mTextureBuffer.end() )
 	{
 		poro::IGraphics* graphics = poro::IPlatform::Instance()->GetGraphics();
 		poro::ITexture* image = graphics->LoadTexture( filename );
-		
-		mTextureBuffer.insert( std::pair< std::string, poro::ITexture* >( filename, image ) );
+		std::string time_stamp = GetTimeStampForFile( filename );
+
+		TextureBuffer* data = new TextureBuffer( image, time_stamp );
+		mTextureBuffer[ filename ] = data;
 		// return image;
 	}
 }
@@ -96,12 +125,12 @@ void PreloadTexture( const std::string& filename )
 
 void ReleasePreloadedTexture( const std::string& filename )
 {
-	std::map< std::string, poro::ITexture* >::iterator i = mTextureBuffer.find( filename );
+	TTextureBuffer::iterator i = mTextureBuffer.find( filename );
 
 	if( i != mTextureBuffer.end() )
 	{
 		poro::IGraphics* graphics = poro::IPlatform::Instance()->GetGraphics();
-		graphics->ReleaseTexture( i->second );
+		graphics->ReleaseTexture( i->second->texture );
 		delete i->second;
 
 		mTextureBuffer.erase( i );
@@ -112,19 +141,44 @@ void ReleasePreloadedTexture( const std::string& filename )
 
 poro::ITexture* GetTexture( const std::string& filename )
 {
-	std::map< std::string, poro::ITexture* >::iterator i = mTextureBuffer.find( filename );
+	TTextureBuffer::iterator i = mTextureBuffer.find( filename );
 
 	if( i == mTextureBuffer.end() )
 	{
 		poro::IGraphics* graphics = poro::IPlatform::Instance()->GetGraphics();
 		poro::ITexture* image = graphics->LoadTexture( filename );
-		
-		mTextureBuffer.insert( std::pair< std::string, poro::ITexture* >( filename, image ) );
+		std::string time_stamp = GetTimeStampForFile( filename );
+
+		TextureBuffer* data = new TextureBuffer( image, time_stamp );
+		mTextureBuffer[ filename ] = data;
 		return image;
 	}
 	else
 	{
-		return i->second;
+		// if check the timestamp
+
+		std::string time_stamp = GetTimeStampForFile( filename );
+		if( i->second->time_stamp != time_stamp ) 
+		{
+			// debug reasons
+			std::cout << "Reloading texture file: " << filename << std::endl;
+			// reload
+			poro::IGraphics* graphics = poro::IPlatform::Instance()->GetGraphics();
+			graphics->ReleaseTexture( i->second->texture );
+
+			std::cout << "Release of texture done: " << filename << std::endl;
+		
+			poro::ITexture* image = graphics->LoadTexture( filename );
+
+			std::cout << "Loading of new texture done: " << filename << std::endl;
+
+			i->second->texture = image;
+			i->second->time_stamp = time_stamp;
+
+		}
+
+		// else - don't check timestamps
+		return i->second->texture;
 	}
 }
 
