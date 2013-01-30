@@ -171,7 +171,6 @@ std::string GetDateForFile( const std::string& filename )
 			time = c_file.time_create;
 		else
 			time = c_file.time_access;
-		result = ss.str();
 
 		tm* timeinfo = localtime( &time );
 
@@ -180,6 +179,8 @@ std::string GetDateForFile( const std::string& filename )
 		ss << std::setfill('0') << std::setw( 2 ) << timeinfo->tm_mday;
 		ss << std::setfill('0') << std::setw( 2 ) << timeinfo->tm_hour;
 		ss << std::setfill('0') << std::setw( 2 ) << timeinfo->tm_min;
+		ss << std::setfill('0') << std::setw( 2 ) << timeinfo->tm_sec;
+		
 
 		result = ss.str();
 
@@ -204,6 +205,7 @@ std::string GetDateForFile( const std::string& filename )
 				ss << std::setfill('0') << std::setw( 2 ) << timeinfo->tm_mday;
 				ss << std::setfill('0') << std::setw( 2 ) << timeinfo->tm_hour;
 				ss << std::setfill('0') << std::setw( 2 ) << timeinfo->tm_min;
+				ss << std::setfill('0') << std::setw( 2 ) << timeinfo->tm_sec;
 
 				result = ss.str();
 			}
