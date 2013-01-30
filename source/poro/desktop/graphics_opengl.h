@@ -43,14 +43,14 @@ public:
 
 	virtual bool		Init( int width, int height, bool fullscreen, const types::string& caption );
 	virtual void		SetInternalSize( types::Float32 width, types::Float32 height );
-    virtual void        SetWindowSize(int width, int height);
-    virtual void        SetFullscreen(bool fullscreen);
-    virtual bool        GetFullscreen() { return mFullscreen; }
+	virtual void		SetWindowSize(int width, int height);
+	virtual void		SetFullscreen(bool fullscreen);
+	virtual bool		GetFullscreen() { return mFullscreen; }
 	
 	//-------------------------------------------------------------------------
 
 	virtual void		SetSettings( const GraphicsSettings& settings );
-	virtual void        SetDrawTextureBuffering( bool buffering );
+	virtual void		SetDrawTextureBuffering( bool buffering );
 	virtual bool		GetDrawTextureBuffering() const;
 
 	//-------------------------------------------------------------------------
@@ -107,9 +107,9 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	types::vec2     ConvertToInternalPos( int x, int y );
+	types::vec2 ConvertToInternalPos( int x, int y );
 
-    void    ResetWindow();
+	void ResetWindow();
 
 	//-------------------------------------------------------------------------
 
@@ -118,17 +118,17 @@ public:
 
 	//-------------------------------------------------------------------------
 private:
-    
-    bool    mFullscreen;
-    int     mWindowWidth;
-    int     mWindowHeight;
-    types::vec2 mViewportOffset;
-    types::vec2 mViewportSize;
-   
+
+	bool	mFullscreen;
+	int		mWindowWidth;
+	int		mWindowHeight;
+	types::vec2 mViewportOffset;
+	types::vec2 mViewportSize;
+
 	float mDesktopWidth;
 	float mDesktopHeight;
 	
-    bool mGlContextInitialized;
+	bool mGlContextInitialized;
 
 	void FlushDrawTextureBuffer();
 
