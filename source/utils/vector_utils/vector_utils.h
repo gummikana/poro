@@ -68,6 +68,25 @@ bool VectorRemoveAll( std::vector< T >& container, const T& element )
 
 //-----------------------------------------------------------------------------
 //
+// ArgsToVector
+// parses program arguments into a std::vector< std::string >, which is much
+// nicer to use...
+//
+std::vector< std::string > ArgsToVector( int argc, char** args );
+
+inline std::vector< std::string > ArgsToVector( int argc, char** args )
+{
+	std::vector< std::string > return_value;
+
+	int i;
+	for ( i=1; i < argc; i++ ) 
+		return_value.push_back( args[i] );
+
+	return return_value;
+}
+
+//-----------------------------------------------------------------------------
+//
 // Serializing a vector of pointers 
 // this one is like one of the most used things I have reimplemented everytime
 // now it's in a nice templated class
