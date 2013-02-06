@@ -150,7 +150,10 @@ public:
 			mPositionY( 0 ),
 			mWaitTime( 0 ),
 			mCurrentTime( 0 ),
-			mLoop( true )
+			mHasNewCenterOffset( false ),
+			mCenterOffset( 0, 0 ),
+			mLoop( true ),
+			mNextAnimation( "" )
 		{
 		}
 
@@ -169,7 +172,11 @@ public:
 		float mWaitTime;
 		float mCurrentTime;
 
+		bool			mHasNewCenterOffset;
+		types::vector2	mCenterOffset;
 		bool mLoop;
+
+		std::string		mNextAnimation;
 
 		void Update( Sprite* sprite, float dt );
 		void SetFrame( Sprite* sprite, int frame );

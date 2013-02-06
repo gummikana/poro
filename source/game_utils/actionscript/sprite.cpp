@@ -668,7 +668,19 @@ void Sprite::RectAnimation::Update( Sprite* sprite, float dt )
 	
 void Sprite::RectAnimation::SetFrame( Sprite* sprite, int frame )
 {
-	if( frame >= mFrameCount && mLoop == false ) return;
+	// is at the end
+	if( frame >= mFrameCount && mLoop == false ) 
+	{
+		if( mNextAnimation.empty() == false ) 
+		{
+			sprite->PlayRectAnimation( mNextAnimation );
+			return;
+		}
+
+		return;
+	}
+
+	// --- figure the frame --
 
 	if( frame == 0 || 
 	   frame != mCurrentFrame ) 
@@ -678,8 +690,12 @@ void Sprite::RectAnimation::SetFrame( Sprite* sprite, int frame )
 		cassert( sprite );
 		mCurrentFrame = frame;
 		sprite->SetRect( FigureOutRectPos( mCurrentFrame, mWidth, mHeight, mFramesPerRow, mPositionX, mPositionY ) );
+		
+		if( mHasNewCenterOffset ) sprite->SetCenterOffset( mCenterOffset );
+
 	}
 }
+
 void Sprite::RectAnimation::Serialize( ceng::CXmlFileSys* filesys )
 {
 	XML_BindAttributeAlias( filesys, mName, "name" );
@@ -694,7 +710,13 @@ void Sprite::RectAnimation::Serialize( ceng::CXmlFileSys* filesys )
 
 	XML_BindAttributeAlias( filesys, mWaitTime, "frame_wait" );
 
+	XML_BindAttributeAlias( filesys, mHasNewCenterOffset, "has_offset" );
+	XML_BindAttributeAlias( filesys, mCenterOffset.x, "offset_x" );
+	XML_BindAttributeAlias( filesys, mCenterOffset.y, "offset_y" );
+
 	XML_BindAttributeAlias( filesys, mLoop, "loop" );
+
+	XML_BindAttributeAlias( filesys, mNextAnimation, "next_animation" );
 }
 
 
@@ -702,10 +724,12 @@ void Sprite::RectAnimation::Serialize( ceng::CXmlFileSys* filesys )
 
 void Sprite::SetRectAnimation( RectAnimation* animation )
 {
-	if( mRectAnimation && mRectAnimation->mKillMe ) 
+	if( mRectAnimation != animation && mRectAnimation && mRectAnimation->mKillMe ) {
 		delete mRectAnimation;
+		mRectAnimation = NULL;
+	}
 
-	if( mRectAnimation != animation && mRectAnimation )
+	if( mRectAnimation )
 		mRectAnimation->mCurrentFrame = 0;
 
 	mRectAnimation = animation;
