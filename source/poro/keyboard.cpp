@@ -94,4 +94,36 @@ void Keyboard::SetKeyDown( int key, bool down )
 	mKeysDown[ key ] = down;
 }
 
+namespace {
+
+// these are ripped from SDL
+enum SDL_RIPOFF
+{
+	POROK_RSHIFT		= 303,
+	POROK_LSHIFT		= 304,
+	POROK_RCTRL			= 305,
+	POROK_LCTRL			= 306,
+	POROK_RALT			= 307,
+	POROK_LALT			= 308,
+};	
+} // end of anonymous namespace
+
+bool Keyboard::IsShiftDown() const
+{
+	return ( IsKeyDown( POROK_LSHIFT ) || IsKeyDown( POROK_RSHIFT ) );
+}
+
+
+bool Keyboard::IsAltDown() const
+{
+	return ( IsKeyDown( POROK_LALT ) || IsKeyDown( POROK_RALT ) );
+}
+
+
+bool Keyboard::IsCtrlDown() const
+{
+	return ( IsKeyDown( POROK_LCTRL ) || IsKeyDown( POROK_RCTRL ) );
+}
+
+
 } // end of namespace poro

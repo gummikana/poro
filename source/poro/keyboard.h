@@ -42,6 +42,10 @@ public:
 
 	bool IsKeyDown( int button ) const;
 
+	bool IsShiftDown() const;
+	bool IsAltDown() const;
+	bool IsCtrlDown() const;
+
 private:
 	void SetKeyDown( int button, bool down );
 
