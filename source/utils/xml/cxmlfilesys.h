@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- * Copyright (c) 2003 - 2011 Petri Purho
+ * Copyright (c) 2003 - 2013 Petri Purho
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -28,6 +28,10 @@
 // Bridge between the CXmlNode datastructure and various amounths of classes
 //
 //.............................................................................
+//
+// 15.02.2013 Pete
+//		Added XML_BindPtrAlias implementation in here, might have to move it
+//		off it is starts causing problems or isn't general enough
 //
 // 14.03.2006 Pete
 //		Fixed a direct filesys calling from the XML_BindAttributeAlias() to
@@ -313,6 +317,34 @@ T XML_CAnyContainerCast( const CAnyContainer& any, const T& t )
 
 #define XML_BindAttributeAlias( x, y, a ) if( x->IsWriting() ) { x->AddAttribute( a, y ); } else if( x->IsReading() ) { if( x->GetNode()->HasAttribute( a ) ) y = ::ceng::XML_CAnyContainerCast( x->GetNode()->GetAttributeValue( a ), y ); }
 #define XML_BindAttribute( x, y ) XML_BindAttributeAlias( x, y, #y );
+
+
+// -- Here's an implementation that helps with some cases. Not sure if I should it put it 
+// here or not, but at least it's been pretty useful in place so what the hell
+
+template< class T >
+void XML_BindPtrAlias( ceng::CXmlFileSys* filesys, T*& pointer, const std::string& name )
+{
+	cassert( filesys );
+	if( filesys->IsWriting() )
+	{
+		if( pointer ) XML_BindAlias( filesys, *pointer, name );
+	}
+	else if( filesys->IsReading() )
+	{
+		if( filesys->HasChildNamed( name ) == false )
+		{
+			// if we auto delete these?
+			delete pointer;
+			pointer = NULL;
+		}
+		else
+		{
+			if( pointer == NULL ) pointer = new T;
+			XML_BindAlias( filesys, *pointer, name );
+		}
+	}
+}
 
 }
 
