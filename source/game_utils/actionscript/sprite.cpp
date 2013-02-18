@@ -663,10 +663,10 @@ void Sprite::RectAnimation::Update( Sprite* sprite, float dt )
 		}
 	}
 
-	SetFrame(sprite, frame);
+	SetFrame( sprite, frame, false );
 }
 	
-void Sprite::RectAnimation::SetFrame( Sprite* sprite, int frame )
+void Sprite::RectAnimation::SetFrame( Sprite* sprite, int frame, bool update_anyhow )
 {
 	// is at the end
 	if( frame >= mFrameCount && mLoop == false ) 
@@ -683,7 +683,7 @@ void Sprite::RectAnimation::SetFrame( Sprite* sprite, int frame )
 	// --- figure the frame --
 
 	if( frame == 0 || 
-	   frame != mCurrentFrame ) 
+	   frame != mCurrentFrame || update_anyhow ) 
 	{
 		// if( frame > mFrameCount && mLoop ) frame = frame % mFrameCount;
 
@@ -845,7 +845,7 @@ void Sprite::PlayAnimation( const std::string& animation_name )
 void Sprite::SetAnimationFrame(int frame) 
 {
 	if( mAnimationUpdater.get() ) mAnimationUpdater->SetFrame( frame );
-	if( mRectAnimation ) mRectAnimation->SetFrame( this, frame );
+	if( mRectAnimation ) mRectAnimation->SetFrame( this, frame, false );
 }
 //-----------------------------------------------------------------------------
 

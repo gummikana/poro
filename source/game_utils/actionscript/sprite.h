@@ -221,7 +221,7 @@ public:
 		std::vector< ChildAnimation* > mChildAnimations;
 
 		void Update( Sprite* sprite, float dt );
-		void SetFrame( Sprite* sprite, int frame );
+		void SetFrame( Sprite* sprite, int frame, bool update_anyhow );
 
 		void Serialize( ceng::CXmlFileSys* filesys );
 	};
