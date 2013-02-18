@@ -136,6 +136,38 @@ public:
 
 	
 	//-------------------------------------------------------------------------
+	struct ChildAnimation
+	{
+		ChildAnimation() :
+			frame( 0 ),
+			sprite_name("unknown"),
+			position(0,0),
+			rotation( 0 ),
+			alpha( 1.f ),
+			scale( 1.f, 1.f )
+		{
+		}
+
+		void Serialize( ceng::CXmlFileSys* filesys )
+		{
+			XML_BindAttributeAlias( filesys, frame, "frame" );
+			XML_BindAttributeAlias( filesys, sprite_name, "sprite_name" );
+			XML_BindAttributeAlias( filesys, position.x, "position_x" );
+			XML_BindAttributeAlias( filesys, position.y, "position_y" );
+			XML_BindAttributeAlias( filesys, rotation, "rotation" );
+			XML_BindAttributeAlias( filesys, alpha, "alpha" );
+			XML_BindAttributeAlias( filesys, scale.x, "scale_x" );
+			XML_BindAttributeAlias( filesys, scale.y, "scale_y" );
+		}
+
+		int					frame;
+		std::string			sprite_name;
+		types::vector2		position;
+		float				rotation;
+		float				alpha;
+		types::vector2		scale;
+	};
+
 	struct RectAnimation
 	{
 		RectAnimation() :
@@ -155,6 +187,14 @@ public:
 			mLoop( true ),
 			mNextAnimation( "" )
 		{
+		}
+
+		~RectAnimation()
+		{
+			for( std::size_t i = 0; i < mChildAnimations.size(); ++i ) 
+				delete mChildAnimations[ i ];
+
+			mChildAnimations.clear();
 		}
 
 		std::string mName;
@@ -177,6 +217,8 @@ public:
 		bool mLoop;
 
 		std::string		mNextAnimation;
+
+		std::vector< ChildAnimation* > mChildAnimations;
 
 		void Update( Sprite* sprite, float dt );
 		void SetFrame( Sprite* sprite, int frame );

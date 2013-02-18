@@ -693,6 +693,31 @@ void Sprite::RectAnimation::SetFrame( Sprite* sprite, int frame )
 		
 		if( mHasNewCenterOffset ) sprite->SetCenterOffset( mCenterOffset );
 
+		// update children
+		// find the animations with the frame
+		for( std::size_t i = 0; i < mChildAnimations.size(); ++i )
+		{
+			const ChildAnimation* child_anim = mChildAnimations[ i ];
+			cassert( child_anim );
+			if( child_anim->frame == frame ) 
+			{
+				Sprite* child = NULL;
+
+				as::Sprite* parent = dynamic_cast< Sprite* >( sprite->getParent() );
+				
+
+				if( parent ) child = parent->GetChildByName( child_anim->sprite_name );
+				else child = sprite->GetChildByName( child_anim->sprite_name );
+
+				if( child == NULL ) continue;
+
+				child->MoveTo( child_anim->position );
+				child->SetRotation( child_anim->rotation );
+				child->SetAlpha( child_anim->alpha );
+				child->SetScale( child_anim->scale.x, child_anim->scale.y );
+				// sprite->ApplyChildAnimation( mChildAnimations[ i ] );
+			}
+		}
 	}
 }
 
@@ -717,6 +742,9 @@ void Sprite::RectAnimation::Serialize( ceng::CXmlFileSys* filesys )
 	XML_BindAttributeAlias( filesys, mLoop, "loop" );
 
 	XML_BindAttributeAlias( filesys, mNextAnimation, "next_animation" );
+
+	ceng::VectorXmlSerializer< Sprite::ChildAnimation > serializer( mChildAnimations, "ChildAnimations" );
+	serializer.Serialize( filesys );
 }
 
 
