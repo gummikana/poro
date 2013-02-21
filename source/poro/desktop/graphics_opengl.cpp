@@ -1298,5 +1298,9 @@ unsigned char* ImageLoad( char const *filename, int *x, int *y, int *comp, int r
 	return stbi_load( filename, x, y, comp, req_comp );
 }
 
+int				ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes )
+{
+	return stbi_write_png( filename, x, y, comp, data, stride_bytes );
+}
 
 } // end o namespace poro

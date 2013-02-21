@@ -140,8 +140,9 @@ private:
 
 //-----------------------------------------------------------------------------
 
-// ImageLoad is just a wrapper for stbi_load
-unsigned char* ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp );
+// ImageLoad is just a wrapper for stbi_load and stbi_write_png
+unsigned char*	ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp );
+int				ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes );
 
 //-----------------------------------------------------------------------------
 
