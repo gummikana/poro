@@ -29,8 +29,8 @@
 namespace ceng {
 namespace types
 {
-	typedef CColor< CColor< int >::uint8 >	color;
-	typedef CColorFloat						fcolor;
+	typedef CColorUint8				color;
+	typedef CColorFloat				fcolor;
 	typedef color::uint8 uint8;
 	typedef color::uint32 uint32;
 }
