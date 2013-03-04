@@ -380,8 +380,14 @@ std::string MakeUniqueFilename( const std::string& file, const std::string& exte
 
 void CopyFileCeng( const std::string& from, const std::string& to )
 {
+#ifdef CENG_PLATFORM_WINDOWS
 	CopyFile( from.c_str(), to.c_str(), false );
+#else
+	std::ifstream  src( from.c_str() );
+	std::ofstream  dst( to.c_str() );
 
+	dst << src.rdbuf();
+#endif
 	/*
 	const std::size_t BUFFER_SIZE = 8192;
 
@@ -398,10 +404,6 @@ void CopyFileCeng( const std::string& from, const std::string& to )
     fclose(source);
     fclose(dest);
 	*/
-	 //std::ifstream  src( from.c_str() );
-  //   std::ofstream  dst( to.c_str() );
-
-  //   dst << src.rdbuf();
 }
 
 } // end o namespace ceng
