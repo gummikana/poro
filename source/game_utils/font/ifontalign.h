@@ -57,11 +57,18 @@ public:
 	//! This gets called from the font when it need to write longer texts that 
 	//! need warp to multiple lines
 
-	virtual std::vector< types::rect > GetRectPositions( 
+	/*virtual std::vector< types::rect > GetRectPositions( 
 		const std::vector< types::rect >& texture_rects, 
 		const std::string& text, 
 		const types::rect& fit_in_here, 
 		CFont* font ) = 0;
+	*/
+	virtual void GetRectPositions( 
+		const std::string& text, 
+		const types::rect& fit_in_here, 
+		CFont* font,
+		std::vector< types::rect >& out_texture_rects, 
+		std::vector< types::rect >& out_screen_rects ) = 0;
 	
 
 	virtual FONT_ALIGN GetAlignmentType() const = 0;

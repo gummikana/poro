@@ -27,6 +27,12 @@
 //
 //.............................................................................
 //
+// 27.02.2013 Pete
+//		Refactored the code from using simple rects to using texture rects,
+//		offset and width. Implemented it so that it loads the old XML files 
+//		fine and parses them into the new implemention. Backward compability
+//		should work.
+//
 // 16.05.2010 Pete
 //		* Modified heavily to remove all depencies to any real graphics thing
 //		* Added depency to XML so we can finally serialize our fonts in XML
@@ -65,32 +71,53 @@ class CFont
 public:
 	typedef int CharType;
 
+	struct CharQuad
+	{
+		CharQuad() : rect(), offset(), width( 0 ) { }
+		CharQuad( const types::rect& rect, const types::vector2& offset, float width ) : rect( rect ), offset( offset ), width( width ) { }
+
+		types::rect			rect;
+		types::vector2		offset;
+		float				width;
+		
+		void Serialize( ceng::CXmlFileSys* filesys );
+	};
+	
+	//-------------------------------------------------------------------------
+
+
 	CFont();
 	virtual ~CFont();
+
+
 
 	std::vector< types::rect > GetRectsForText( const std::string& text );
 
 	types::rect		GetCharPosition( CharType c ) const;
-	void			SetCharPosition( CharType c, const types::rect& r )	{ myCharPositions[ c ] = r; }
+	void			SetCharPosition( CharType c, const types::rect& r );
 
+	CharQuad*		GetCharQuad( CharType c ) const;
+	void			SetCharQuad( CharType c, CharQuad* quad );
+
+	float	GetOffsetLineHeight() const		{ return mOffsetLineHeight; }
 	float   GetLineHeight() const;
-	void	SetLineHeight( float lh )		{ myLineHeight = lh; }
+	void	SetLineHeight( float lh )		{ mLineHeight = lh; }
 
-	float   GetCharSpace() const			{ return myCharSpace; }
-	void	SetCharSpace( float cs )		{ myCharSpace = cs; }
+	float   GetCharSpace() const			{ return mCharSpace; }
+	void	SetCharSpace( float cs )		{ mCharSpace = cs; }
 
-	float	GetWordSpace() const			{ return myWordSpace; }
-	void	SetWordSpace( float ws )		{ myWordSpace = ws; }
+	float	GetWordSpace() const			{ return mWordSpace; }
+	void	SetWordSpace( float ws )		{ mWordSpace = ws; }
 
-	void		SetTextureFilename( const std::string& filename ) { myTextureFilename = filename; }
-	std::string GetTextureFilename() const { return myTextureFilename; }
+	void		SetTextureFilename( const std::string& filename ) { mTextureFilename = filename; }
+	std::string GetTextureFilename() const { return mTextureFilename; }
 
-	void		SetFilename( const std::string& filename ) { myFilename = filename; }
-	std::string GetFilename() const { return myFilename; }
+	void		SetFilename( const std::string& filename ) { mFilename = filename; }
+	std::string GetFilename() const { return mFilename; }
 
-	bool	IsEmpty() const { return myCharPositions.empty(); }
+	bool	IsEmpty() const { return mCharQuads.empty(); }
 
-	virtual float GetWidth( const std::string& text );
+	virtual float GetWidth( const std::string& text ) const;
 
 
 	void Serialize( ceng::CXmlFileSys* filesys );
@@ -101,32 +128,36 @@ protected:
 
 	void Clear()
 	{
-		myCharPositions.clear();
-		myTextureFilename.clear();
-		myLineHeight = 0;
-		myCharSpace = 0;
-		myWordSpace = 0;
+		for( std::size_t i = 0; i < mCharQuads.size(); ++i ) 
+			delete mCharQuads[ i ];
+
+		mCharQuads.clear();
+		mTextureFilename.clear();
+		mLineHeight = 0;
+		mCharSpace = 0;
+		mWordSpace = 0;
 	}
 
-	typedef std::map< CharType, types::rect > MapType;
-	MapType	myCharPositions;
+	typedef std::map< CharType, CharQuad* > MapQuadType;
+	MapQuadType mCharQuads;
 
-	float	myLineHeight;
-	float	myCharSpace;
-	float	myWordSpace;
+	float	mLineHeight;
+	float	mCharSpace;
+	float	mWordSpace;
+	float	mOffsetLineHeight;
 
-	std::string myTextureFilename;
-	std::string myFilename;
+	std::string mTextureFilename;
+	std::string mFilename;
 };
 
-inline types::rect	CFont::GetCharPosition( CFont::CharType c ) const
-{ 
-	MapType::const_iterator i = myCharPositions.find( c );
-	if( i != myCharPositions.end() )
+//-----------------------------------------------------------------------------
+
+inline CFont::CharQuad* CFont::GetCharQuad( CharType c ) const {
+	MapQuadType::const_iterator i = mCharQuads.find( c );
+	if( i != mCharQuads.end() )
 		return i->second;
 	else
-		return types::rect();
+		return NULL;
 }
-
 
 #endif

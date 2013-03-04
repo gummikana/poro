@@ -426,12 +426,10 @@ void CTextSprite::SetText( const std::string& text )
 		}
 		else if( myFontAlign )
 		{
-			myOutRects = myFontAlign->GetRectPositions( myInRects, myText, types::rect( 0, 0, myTextBox.w, myTextBox.h ), myFont );
+			myFontAlign->GetRectPositions( myText, types::rect( 0, 0, myTextBox.w, myTextBox.h ), myFont, myInRects, myOutRects );
 			myRealW = myTextBox.w;
 			myRealH = myTextBox.h;
 		}
-
-
 	}
 }
 

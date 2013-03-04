@@ -29,11 +29,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 CFont::CFont() : 
-	myCharPositions(),
-	myLineHeight( 0 ),
-	myCharSpace( 0 ),
-	myWordSpace( 0 ),
-	myTextureFilename()
+	mOffsetLineHeight( 0 ),
+	mLineHeight( 0 ),
+	mCharSpace( 0 ),
+	mWordSpace( 0 ),
+	mTextureFilename()
 {
 }
 
@@ -46,7 +46,37 @@ CFont::~CFont()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-float CFont::GetWidth( const std::string& text )
+void CFont::SetCharQuad( CharType c, CharQuad* quad )
+{
+	mCharQuads[ c ] = quad;
+
+	if( quad && (-quad->offset.y) > mOffsetLineHeight ) 
+		mOffsetLineHeight = (-quad->offset.y);
+	// check for max offset.y ...
+}
+
+types::rect	CFont::GetCharPosition( CharType c ) const
+{
+	if( GetCharQuad( c ) ) return GetCharQuad( c )->rect;
+	return types::rect( 0, 0, 0, 0 );
+}
+
+void CFont::SetCharPosition( CharType c, const types::rect& r )	
+{ 
+	CharQuad* char_quad = GetCharQuad( c );
+	if( char_quad == NULL ) 
+	{
+		char_quad = new CharQuad;
+		char_quad->width = r.w;
+		char_quad->offset.x = 0;
+		char_quad->offset.y = 0;
+	}
+	char_quad->rect = r;
+
+	SetCharQuad( c, char_quad );
+}
+
+float CFont::GetWidth( const std::string& text ) const
 {
 	std::size_t i;
 	float space = 0;
@@ -54,9 +84,8 @@ float CFont::GetWidth( const std::string& text )
 	{
 
 		CharType c = (CharType)text[ i ];
-		// cassert( !myCharPositions[ c ].empty() );
-		if( !myCharPositions[ c ].empty() ) 
-			space += ( myCharPositions[ c ].w + myCharSpace );
+		if( GetCharQuad( c ) ) 
+			space += GetCharQuad( c )->width + mCharSpace;
 	}
 
 	float scale = 1.f;
@@ -72,9 +101,7 @@ std::vector< types::rect > CFont::GetRectsForText( const std::string& text )
 	for( i = 0; i < text.size(); i++ )
 	{
 		CharType c = (CharType)text[ i ];
-		// cassert( !myCharPositions[ c ].empty() );
-		//if( !myCharPositions[ c ].empty() ) 
-		result.push_back( myCharPositions[ c ] );
+		result.push_back( GetCharPosition( c ) );
 	}
 
 	return result;
@@ -83,7 +110,7 @@ std::vector< types::rect > CFont::GetRectsForText( const std::string& text )
 
 float CFont::GetLineHeight() const	
 { 
-	return myLineHeight; 
+	return mLineHeight; 
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -113,25 +140,57 @@ namespace
 		types::rect recto;
 		CFont::CharType id;
 	};
+
+	struct FontQuadHelper
+	{
+		FontQuadHelper() : char_quad( NULL ) { }
+		FontQuadHelper(  CFont::CharType id, CFont::CharQuad* char_quad ) : id( id ), char_quad( char_quad ) { }
+
+		void Serialize( ceng::CXmlFileSys* filesys ) 
+		{
+			int i_id = (int)id;
+
+			XML_BindAttributeAlias( filesys, i_id, "id" );
+			
+			if( char_quad == NULL ) { char_quad = new CFont::CharQuad; }
+			char_quad->Serialize( filesys );
+
+			id = (CFont::CharType)i_id;
+		}
+
+		CFont::CharQuad* char_quad;
+		CFont::CharType id;
+	};
 } // end of anonymous namespace
+
+void CFont::CharQuad::Serialize( ceng::CXmlFileSys* filesys )
+{
+	XML_BindAttributeAlias( filesys, rect.x, "rect_x" );
+	XML_BindAttributeAlias( filesys, rect.y, "rect_y" );
+	XML_BindAttributeAlias( filesys, rect.w, "rect_w" );
+	XML_BindAttributeAlias( filesys, rect.h, "rect_h" );
+	XML_BindAttributeAlias( filesys, offset.x, "offset_x" );
+	XML_BindAttributeAlias( filesys, offset.y, "offset_y" );
+	XML_BindAttributeAlias( filesys, width,		"width" ) ;
+}
+
 
 void CFont::Serialize( ceng::CXmlFileSys* filesys )
 {
 	if( filesys->IsReading() )
 		Clear();
 
-	XML_BindAlias( filesys, myTextureFilename,	"Texture" );
-	XML_BindAlias( filesys, myLineHeight,		"LineHeight" );
-	XML_BindAlias( filesys, myCharSpace,		"CharSpace" );
-	XML_BindAlias( filesys, myWordSpace,		"WordSpace" );
+	XML_BindAlias( filesys, mTextureFilename,	"Texture" );
+	XML_BindAlias( filesys, mLineHeight,		"LineHeight" );
+	XML_BindAlias( filesys, mCharSpace,		"CharSpace" );
+	XML_BindAlias( filesys, mWordSpace,		"WordSpace" );
 
 	if( filesys->IsWriting() )
 	{
-		MapType::iterator i = myCharPositions.begin();
-		for( i = myCharPositions.begin(); i != myCharPositions.end(); ++i )
+		for( MapQuadType::iterator i = mCharQuads.begin(); i != mCharQuads.end(); ++i )
 		{
-			FontSerializeHelper helper( i->first, i->second );
-			XML_BindAlias( filesys, helper, "Char" );
+			FontQuadHelper helper( i->first, i->second );
+			XML_BindAlias( filesys, helper, "QuadChar" );
 		}
 	}
 	else if( filesys->IsReading() )
@@ -142,7 +201,13 @@ void CFont::Serialize( ceng::CXmlFileSys* filesys )
 			{
 				FontSerializeHelper helper;
 				XmlConvertTo( filesys->GetNode()->GetChild( i ), helper );
-				myCharPositions[ helper.id ] = helper.recto;
+				SetCharPosition( helper.id, helper.recto );
+			}
+			else if( filesys->GetNode()->GetChild( i )->GetName() == "QuadChar" ) 
+			{
+				FontQuadHelper helper;
+				XmlConvertTo( filesys->GetNode()->GetChild( i ), helper );
+				SetCharQuad( helper.id, helper.char_quad );
 			}
 		}
 	}

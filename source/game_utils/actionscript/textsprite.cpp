@@ -136,6 +136,66 @@ void TextSprite::RecalcuateRects()
 {
 	if( mFont ) 
 	{
+
+		if( mFontAlign == NULL || mTextBox.w < 0 )
+		{
+			mOutRects.clear();
+
+			types::vector2 f_pos( 0, 0 );
+
+			mInRects.resize( mText.size() );
+			for( std::size_t i = 0; i < mText.size(); i++ )
+			{
+				CFont::CharType c = (CFont::CharType)mText[ i ];
+				CFont::CharQuad* char_quad = mFont->GetCharQuad( c );
+				cassert( char_quad );
+				if( char_quad == NULL ) continue;
+				mInRects[ i ] = char_quad->rect;
+
+				/*
+				int round_x = (int)floor(f_pos.x + char_quad->offset.x);
+				int round_y = (int)floor(f_pos.y + char_quad->offset.y + mFont->GetOffsetLineHeight());
+				*/
+				float round_x = f_pos.x + char_quad->offset.x;
+				float round_y = f_pos.y + char_quad->offset.y + mFont->GetOffsetLineHeight();
+
+				types::rect font_rect = mInRects[ i ];
+				font_rect.x = (float)round_x;
+				font_rect.y = (float)round_y;
+				font_rect.w = mInRects[ i ].w;
+				font_rect.h = mInRects[ i ].h;
+				
+				mOutRects.push_back( font_rect );
+				f_pos.x += char_quad->width + mFont->GetCharSpace();
+			}
+
+			// figure out mRealSize.x && mRealSize.y
+			types::vector2 min_p( FLT_MAX, FLT_MAX );
+			types::vector2 max_p( FLT_MIN, FLT_MIN );
+			for( std::size_t i = 0; i < mOutRects.size(); ++i )
+			{
+				if( mOutRects[ i ].w >= 0 &&
+					mOutRects[ i ].h >= 0 )
+				{
+					min_p.x = ceng::math::Min( min_p.x, mOutRects[ i ].x );
+					min_p.y = ceng::math::Min( min_p.y, mOutRects[ i ].y );
+					max_p.x = ceng::math::Max( max_p.x, mOutRects[ i ].x + mOutRects[ i ].w );
+					max_p.y = ceng::math::Max( max_p.y, mOutRects[ i ].y + mOutRects[ i ].h );
+				}
+
+				mRealSize.x = max_p.x - min_p.x;
+				mRealSize.y = max_p.y - min_p.y;
+			}
+		}
+		else
+		{
+			// mInRects = mFont->GetRectsForText( mText );
+			// mOutRects = 
+			mFontAlign->GetRectPositions( mText, types::rect( 0, 0, mTextBox.w, mTextBox.h ), mFont, mInRects, mOutRects );
+			mRealSize.x = mTextBox.w;
+			mRealSize.y = mTextBox.h;
+		}
+#if 0 
 		mInRects = mFont->GetRectsForText( mText );
 		mOutRects.clear();
 
@@ -177,6 +237,7 @@ void TextSprite::RecalcuateRects()
 			mRealSize.x = mTextBox.w;
 			mRealSize.y = mTextBox.h;
 		}
+#endif
 	}
 }
 
@@ -252,7 +313,7 @@ bool TextSprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transfo
 			r.x += start_pos.x;
 			r.y += start_pos.y;
 
-			if( r.w == 0 || r.h == 0 ) {
+			if( r.w <= 0 || r.h <= 0 ) {
 				// don't do anything
 			} else {
 				mXForm.position.x = r.x;
@@ -364,48 +425,6 @@ int	 TextSprite::GetCursorTextPosition( const types::vector2& p )
 
 	return closest_i;
 }
-
-//=============================================================================
-
-namespace
-{
-	//template< class VectorType >
-	template< class T >
-	struct PointerVectorSerializeHelper
-	{
-		PointerVectorSerializeHelper( std::vector<T*>& _vector, const std::string& _name ) : vector( _vector ), name(_name) { }
-				
-		void Serialize( ceng::CXmlFileSys* filesys )
-		{
-			if( filesys->IsWriting() )
-			{
-				for( std::size_t i = 0; i < vector.size(); ++i )
-				{
-					cassert( vector[i] != NULL );
-					XML_BindAlias( filesys, *(vector[i]), name.c_str() );
-				}
-			}
-			else if ( filesys->IsReading() )
-			{
-				for( int i = 0; i < filesys->GetNode()->GetChildCount(); i++ )
-				{
-					if( filesys->GetNode()->GetChild( i )->GetName() == name.c_str() ) 
-					{
-						T* tmp = new T; 
-						XmlConvertTo( filesys->GetNode()->GetChild( i ), *tmp );
-						vector.push_back(tmp);
-					}
-				}
-			}
-						
-		}
-		
-		std::vector<T*>& vector;
-		std::string name;
-
-	};
-	
-} // end of anonymous namespace
 
 //=============================================================================
 

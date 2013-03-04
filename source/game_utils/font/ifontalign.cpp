@@ -45,6 +45,8 @@ public:
 
 	virtual int FindLineBreak( CFont* font, const std::string& text, const types::rect& rect, int start_pos, float& gfx_line_width )
 	{
+		cassert( font );
+
 		float gfx_w = 0;
 		float gfx_add_w = 0;
 		int str_pos = start_pos;
@@ -77,8 +79,8 @@ public:
 
 			str_pos = str_next_pos;
 
-			if ( text[ str_pos ] == ' ' )
-				gfx_w += font->GetCharPosition( static_cast< CFont::CharType >( ' ' ) ).w;
+			if ( text[ str_pos ] == ' ' && font->GetCharQuad( static_cast< CFont::CharType >( ' ' ) ) )
+				gfx_w += font->GetCharQuad( static_cast< CFont::CharType >( ' ' ) )->width;
 			
 			str_pos++;
 
@@ -94,7 +96,9 @@ public:
 		// BUGBUG for bughunting
 		// myBugLine = text.substr( start_pos, ( str_pos - start_pos ) );
 
-		gfx_line_width = gfx_w - font->GetCharPosition( static_cast< CFont::CharType >(' ') ).w;
+		if( font->GetCharQuad( static_cast< CFont::CharType >( ' ' ) ) )
+			gfx_line_width = gfx_w - font->GetCharQuad( static_cast< CFont::CharType >(' ') )->width;
+		
 		return ( str_pos );
 	}
 
@@ -104,6 +108,71 @@ public:
 
 	//-------------------------------------------------------------------------
 
+	void GetRectPositions( 
+		const std::string& text, 
+		const types::rect& fit_in_here, 
+		CFont* font,
+		std::vector< types::rect >& out_texture_rects, 
+		std::vector< types::rect >& out_screen_rects )
+	{
+		types::vector2 f_pos( fit_in_here.x, fit_in_here.y );
+	
+		out_texture_rects.resize( text.size() );
+		out_screen_rects.resize( text.size() );
+
+		int text_i = 0;
+		float graphics_width = 0;
+		const types::rect EMPTY_RECT( 0, 0, -1, -1 );
+		while( text_i < (int)text.size() )
+		{
+			int line_break = FindLineBreak( font, text, fit_in_here, text_i, graphics_width );
+			f_pos.x = FigureOutXPosition( fit_in_here, graphics_width );
+			
+			cassert( text_i >= 0		&& text_i < (int)text.size() );
+			cassert( line_break >= 0	&& line_break <= (int)text.size() );
+
+			for( int i = text_i; i < line_break; ++i )
+			{
+				CFont::CharQuad* char_quad = font->GetCharQuad( static_cast< CFont::CharType >( text[ i ] ) );
+				cassert( i < (int)out_texture_rects.size() );
+				cassert( i < (int)out_screen_rects.size() );
+				out_texture_rects[ i ] = EMPTY_RECT;
+				out_screen_rects[ i ] = EMPTY_RECT;
+
+				if( char_quad == NULL || IsLineBreak( text[ i ] ) )
+				{
+					continue;
+				}
+				else
+				{
+					out_texture_rects[ i ] = char_quad->rect;
+
+					int round_x = (int)floor(f_pos.x + char_quad->offset.x);
+					int round_y = (int)floor(f_pos.y + char_quad->offset.y + font->GetOffsetLineHeight());
+					
+					types::rect font_rect;
+					font_rect.x = (float)round_x;
+					font_rect.y = (float)round_y;
+					font_rect.w = char_quad->rect.w;
+					font_rect.h = char_quad->rect.h;
+					
+					out_screen_rects[ i ] = font_rect;
+					f_pos.x += char_quad->width + font->GetCharSpace();
+				}
+			}
+
+			
+			f_pos.y += font->GetLineHeight();
+
+			if( line_break <= text_i )
+				line_break = text_i + 1;
+			
+			text_i = line_break;
+		}
+
+	}
+
+	/*
 	virtual std::vector< types::rect > GetRectPositions( const std::vector< types::rect >& texture_rects, const std::string& text, const types::rect& fit_in_here, CFont* font )
 	{
 		cassert( texture_rects.size() == text.size() );
@@ -145,7 +214,7 @@ public:
 			text_i = line_break;
 		}
 		return result;
-	}
+	}*/
 
 	//-------------------------------------------------------------------------
 
