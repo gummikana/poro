@@ -211,10 +211,14 @@ public:
 
 	//-------------------------------------------------------------------------
 	// Save screen (only supports .png format)
-	virtual void SaveScreenshot( const std::string& filename ) { }
-	virtual void SaveScreenshot( const std::string& filename, int x, int y, int w, int h ) { }
+	virtual void SaveScreenshot( const std::string& filename )								{ poro_assert( false && "IMPLEMENTATION NEEDED" ); }
+	virtual void SaveScreenshot( const std::string& filename, int x, int y, int w, int h )	{ poro_assert( false && "IMPLEMENTATION NEEDED" ); }
 
 	//-------------------------------------------------------------------------
+	// Methods for loading and saving images to a pixel buffer
+	// ImageSave only supports .png formats
+	virtual unsigned char*	ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp )						{ poro_assert( false && "IMPLEMENTATION NEEDED" ); return NULL; }
+	virtual int				ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes )	{ poro_assert( false && "IMPLEMENTATION NEEDED" ); return -1; }
 
 protected:
     bool mClearBackground;

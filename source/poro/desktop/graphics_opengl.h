@@ -117,6 +117,9 @@ public:
 	void SaveScreenshot( const std::string& filename, int x, int y, int w, int h );
 
 	//-------------------------------------------------------------------------
+	virtual unsigned char*	ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp );
+	virtual int				ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes );
+
 private:
 
 	bool	mFullscreen;
@@ -141,8 +144,8 @@ private:
 //-----------------------------------------------------------------------------
 
 // ImageLoad is just a wrapper for stbi_load and stbi_write_png
-unsigned char*	ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp );
-int				ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes );
+// unsigned char*	ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp );
+// int				ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes );
 
 //-----------------------------------------------------------------------------
 

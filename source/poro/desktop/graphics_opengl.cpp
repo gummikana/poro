@@ -1290,17 +1290,27 @@ void GraphicsOpenGL::SaveScreenshot( const std::string& filename )
 	SaveScreenshot( filename, 0, 0, (int)mViewportSize.x, (int)mViewportSize.y );
 }
 
+unsigned char*	GraphicsOpenGL::ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp )
+{
+	return stbi_load( filename, x, y, comp, req_comp );
+}
+
+int	GraphicsOpenGL::ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes )
+{
+	return stbi_write_png( filename, x, y, comp, data, stride_bytes );
+}
 
 //=============================================================================
-
+#if 0 
 unsigned char* ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp )
 {
 	return stbi_load( filename, x, y, comp, req_comp );
 }
 
-int				ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes )
+int	ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes )
 {
 	return stbi_write_png( filename, x, y, comp, data, stride_bytes );
 }
-
+#endif 
+//-----------------------------------------------------------------------------
 } // end o namespace poro
