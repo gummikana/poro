@@ -40,6 +40,25 @@ namespace math {
 //=============================================================================
 const float pi = 3.1415926f;
 
+//-----------------------------------------------------------------------------
+// returns a rounded value, if the value is less than 0, rounds it "down"
+// otherwise rounds it rounds it up by 0.5f
+float Round( float value );
+double Round( double value );
+
+inline float Round( float value )
+{
+	if( value < 0 ) value -= 0.5f;
+	else value += 0.5f;
+	return floor( value );
+}
+
+inline double Round( double value )
+{
+	if( value < 0 ) value -= 0.5;
+	else value += 0.5;
+	return floor( value );
+}
 
 //=============================================================================
 // Min -function returns the smaller one
