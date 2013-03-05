@@ -62,6 +62,7 @@ GTween::GTween() :
 	mCompleted( false ),
 	mLooping( false ),
 	mOnLoop( false ),
+	mClampValues( false ),
 	mKillMeAutomatically( false ),
 	mMathFunc( NULL )
 {
@@ -79,6 +80,7 @@ GTween::GTween( float duration, bool auto_kill ) :
 	mCompleted( false ),
 	mLooping( false ),
 	mOnLoop( false ),
+	mClampValues( false ),
 	mKillMeAutomatically( auto_kill ),
 	mMathFunc( NULL )
 {
@@ -222,6 +224,8 @@ void GTween::Update( float dt )
 		if( mMathFunc )
 			t = mMathFunc->f( t );
 
+		if( mClampValues ) t = ceng::math::Clamp( t, 0.f, 1.f );
+
 		for( std::size_t i = 0; i < mInterpolators.size(); ++i )
 		{
 			mInterpolators[ i ]->Update( t );
@@ -242,6 +246,8 @@ void GTween::Update( float dt )
 		
 		if( mMathFunc )
 			t = mMathFunc->f( t );
+
+		if( mClampValues ) t = ceng::math::Clamp( t, 0.f, 1.f );
 
 		for( std::size_t i = 0; i < mInterpolators.size(); ++i )
 		{

@@ -73,7 +73,9 @@ public:
 	void Kill();
 	void SetAutoKill( bool kill_me_when_done );
 
-	void SetLooping( bool looping ) { mLooping = looping; }
+	void SetLooping( bool looping );
+	void SetClampValues( bool clamp );
+
 
 	template< class T >
 	void AddVariable( T& reference, const T& target_value, const std::string& name )
@@ -149,11 +151,21 @@ private:
 	bool mLooping;
 	bool mOnLoop;
 
+	bool mClampValues;
+
 	ceng::easing::IEasingFunc* mMathFunc;
 
 };
 
 //-----------------------------------------------------------------------------
 
+inline void GTween::SetLooping( bool looping ) { 
+	mLooping = looping; 
+}
 
+inline void GTween::SetClampValues( bool clamp ) { 
+	mClampValues = clamp; 
+}
+
+//-----------------------------------------------------------------------------
 #endif
