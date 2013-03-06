@@ -54,28 +54,31 @@ public:
 	typedef unsigned int uint32;
 	typedef unsigned char uint8;
 
-	void InitMasks();
+	static void InitMasks();
 
 	CColorFloat( float r = 0, float g = 0, float b = 0, float a = 1.f ) :
 		r( r ),
 		g( g ),
 		b( b ),
-		a( a )
+		a( a ),
+		multiplied_with_alpha( false )
 	{
 		InitMasks();
 	}
 
 	CColorFloat( const CColorFloat& other ) : 
-	  r( other.r ),
-      g( other.g ),
-	  b( other.b ),
-	  a( other.a )
+		r( other.r ),
+		g( other.g ),
+		b( other.b ),
+		a( other.a ),
+		multiplied_with_alpha( false )
 	{
 		InitMasks();
 	}
 
 
-	CColorFloat( const uint32 clor )
+	CColorFloat( const uint32 clor ) :
+		multiplied_with_alpha( false )
 	{
 		InitMasks();
 		Set32( clor );	
@@ -291,6 +294,8 @@ public:
 private:
 
 	static bool masks_initialized;
+
+public:
 	static uint32	RMask;
 	static uint32	GMask;
 	static uint32	BMask;
@@ -311,7 +316,7 @@ public:
 
 	typedef unsigned int uint32;
 	typedef unsigned char uint8;
-	void InitMasks();
+	static void InitMasks();
 
 	CColorUint8( uint8 r = 0, uint8 g = 0, uint8 b = 0, uint8 a = 255 ) :
 		r( r ),
@@ -537,6 +542,8 @@ public:
 private:
 
 	static bool masks_initialized;
+public:
+
 	static uint32	RMask;
 	static uint32	GMask;
 	static uint32	BMask;

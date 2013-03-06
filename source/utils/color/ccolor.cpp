@@ -84,7 +84,7 @@ void CColorFloat::InitMasks()
 
 		masks_initialized = true;
 	}
-	multiplied_with_alpha = false;
+
 }
 
 
