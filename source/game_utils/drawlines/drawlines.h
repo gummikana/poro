@@ -52,6 +52,9 @@ void DrawCircle( poro::IGraphics* graphics, const types::vector2& position, floa
 // draws a box with DrawLine method
 void DrawBox( poro::IGraphics* graphics, const types::vector2& min_pos, const types::vector2& max_pos, const poro::types::fcolor& color, types::camera* camera = NULL );
 
+//-----------------------------------------------------------------------------
+
+void DrawHersheyText( poro::IGraphics* graphics, const std::string& text, const types::vector2& start_pos = types::vector2( 0, 0 ), float text_size = 24.f, const poro::types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ), types::camera* camera = NULL );
 
 //-----------------------------------------------------------------------------
 
