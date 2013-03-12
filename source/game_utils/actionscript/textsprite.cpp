@@ -148,7 +148,7 @@ void TextSprite::RecalcuateRects()
 			{
 				CFont::CharType c = (CFont::CharType)mText[ i ];
 				CFont::CharQuad* char_quad = mFont->GetCharQuad( c );
-				cassert( char_quad );
+				// cassert( char_quad );
 				if( char_quad == NULL ) continue;
 				mInRects[ i ] = char_quad->rect;
 
