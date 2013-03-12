@@ -254,6 +254,9 @@ public:
 	
 	//-------------------------------------------------------------------------
 
+	virtual const std::string& GetFilename() const;
+	virtual void SetFilename( const std::string& filename );
+
 protected:
 
 	void FindSpritesAtPointImpl( const types::vector2& pos, Transform& transform, std::vector< Sprite* >& results );
@@ -287,6 +290,9 @@ protected:
 	Animations*								mAnimations;
 	std::auto_ptr< SpriteAnimationUpdater >	mAnimationUpdater;
 	std::vector< RectAnimation* >			mRectAnimations;
+	
+	// filename
+	std::string								mFilename;
 };
 
 // ----------------------------------------------------------------------------
@@ -513,9 +519,16 @@ inline void Sprite::RemoveRect() {
 	}
 }
 
-
 inline types::xform	Sprite::GetXForm() const {
 	return mXForm;
+}
+
+inline const std::string& Sprite::GetFilename() const {
+	return mFilename;
+}
+
+inline void Sprite::SetFilename( const std::string& filename ) {
+	mFilename = filename;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

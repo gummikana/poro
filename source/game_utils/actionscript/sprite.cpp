@@ -206,6 +206,8 @@ Sprite* LoadSprite( const std::string& filename )
 		result->SetTexture( image );
 		result->SetSize( (int)image->GetWidth(), (int)image->GetHeight() );
 
+		result->SetFilename( filename );
+
 		return result;
 	}
 	else
@@ -220,6 +222,8 @@ Sprite* LoadSprite( const std::string& filename )
 
 		result->SetTexture( image );
 		result->SetSize( (int)image->GetWidth(), (int)image->GetHeight() );
+
+		result->SetFilename( filename );
 
 		return result;
 	}
