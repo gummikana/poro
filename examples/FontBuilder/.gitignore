@@ -1,0 +1,5 @@
+build/VC9/*.ncb
+build/VC9/*.suo
+build/VC9/*.user
+build/VC9/Debug/*
+build/VC9/Release/*

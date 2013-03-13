@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C++ Express 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "I need to the libraries for a console app", "VC9.vcproj", "{8502A1BB-4F00-434F-8087-F4418991598F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8502A1BB-4F00-434F-8087-F4418991598F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8502A1BB-4F00-434F-8087-F4418991598F}.Debug|Win32.Build.0 = Debug|Win32
+		{8502A1BB-4F00-434F-8087-F4418991598F}.Release|Win32.ActiveCfg = Release|Win32
+		{8502A1BB-4F00-434F-8087-F4418991598F}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
