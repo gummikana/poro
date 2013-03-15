@@ -41,11 +41,13 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual bool		Init( int width, int height, bool fullscreen, const types::string& caption );
-	virtual void		SetInternalSize( types::Float32 width, types::Float32 height );
-	virtual void		SetWindowSize(int width, int height);
-	virtual void		SetFullscreen(bool fullscreen);
-	virtual bool		GetFullscreen() { return mFullscreen; }
+	virtual bool				Init( int width, int height, bool fullscreen, const types::string& caption );
+	virtual void				SetInternalSize( types::Float32 width, types::Float32 height );
+	virtual poro::types::vec2	GetInternalSize() const;
+	virtual void				SetWindowSize(int width, int height);
+	virtual poro::types::vec2	GetWindowSize() const;
+	virtual void				SetFullscreen(bool fullscreen);
+	virtual bool				GetFullscreen() { return mFullscreen; }
 	
 	//-------------------------------------------------------------------------
 

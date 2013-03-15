@@ -651,6 +651,7 @@ bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::
 #endif
 	return 1;
 }
+//-----------------------------------------------------------------------------
 
 void GraphicsOpenGL::SetInternalSize( types::Float32 width, types::Float32 height )
 {
@@ -662,6 +663,13 @@ void GraphicsOpenGL::SetInternalSize( types::Float32 width, types::Float32 heigh
 	}
 }
 
+poro::types::vec2 GraphicsOpenGL::GetInternalSize() const
+{
+	return poro::types::vec2( IPlatform::Instance()->GetInternalWidth(), IPlatform::Instance()->GetInternalHeight() );
+}
+
+//-----------------------------------------------------------------------------
+
 void GraphicsOpenGL::SetWindowSize(int window_width, int window_height)
 {
 	if( mWindowWidth != window_width || mWindowHeight != window_height )
@@ -671,6 +679,12 @@ void GraphicsOpenGL::SetWindowSize(int window_width, int window_height)
 		ResetWindow();
 	}
 }
+
+poro::types::vec2	GraphicsOpenGL::GetWindowSize() const 
+{
+	return poro::types::vec2( (poro::types::Float32)mWindowWidth, (poro::types::Float32)mWindowHeight );
+}
+//-----------------------------------------------------------------------------
 
 void GraphicsOpenGL::SetFullscreen(bool fullscreen)
 {

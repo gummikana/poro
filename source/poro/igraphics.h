@@ -75,15 +75,17 @@ public:
 	virtual ~IGraphics() { }
 	//-------------------------------------------------------------------------
 
-	virtual bool		Init( int width, int height, bool fullscreen, const types::string& caption ) = 0;
-	virtual void		SetInternalSize( types::Float32 width, types::Float32 height ) { poro_assert( false ); /* You have to implement this */ }
-    virtual void        SetWindowSize(int width, int height) { poro_assert( false ); /* You have to implement this */ }
-    virtual void        SetFullscreen(bool fullscreen) { poro_assert( false ); /* You have to implement this */ }
-    virtual bool        GetFullscreen() { poro_assert( false ); return false;/* You have to implement this */ }
+	virtual bool				Init( int width, int height, bool fullscreen, const types::string& caption ) = 0;
+	virtual void				SetInternalSize( types::Float32 width, types::Float32 height )		{ poro_assert( false ); /* You have to implement this */ }
+	virtual poro::types::vec2	GetInternalSize() const												{ poro_assert( false ); /* You have to implement this */ return poro::types::vec2(); }
+    virtual void				SetWindowSize( int width, int height )								{ poro_assert( false ); /* You have to implement this */ }
+	virtual poro::types::vec2	GetWindowSize() const												{ poro_assert( false ); /* You have to implement this */ return poro::types::vec2(); }
+    virtual void				SetFullscreen( bool fullscreen )									{ poro_assert( false ); /* You have to implement this */ }
+    virtual bool				GetFullscreen()														{ poro_assert( false ); return false;/* You have to implement this */ }
 
 	//-------------------------------------------------------------------------
 
-	virtual void		SetSettings( const GraphicsSettings& settings ) { }
+	virtual void				SetSettings( const GraphicsSettings& settings ) { }
 
 	virtual void				SetFillColor( const poro::types::fcolor& c );
 	virtual poro::types::fcolor	GetFillColor() const;
