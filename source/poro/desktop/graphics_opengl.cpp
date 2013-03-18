@@ -1042,12 +1042,12 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 			return;
 		
 		//Internal rescale
-		float xPlatformScale, yPlatformScale;
-		xPlatformScale = (float)mViewportSize.x / (float)poro::IPlatform::Instance()->GetInternalWidth();
-		yPlatformScale = (float)mViewportSize.y / (float)poro::IPlatform::Instance()->GetInternalHeight();
+		// float xPlatformScale, yPlatformScale;
+		// xPlatformScale = (float)mViewportSize.x / (float)poro::IPlatform::Instance()->GetInternalWidth();
+		// yPlatformScale = (float)mViewportSize.y / (float)poro::IPlatform::Instance()->GetInternalHeight();
 
-		xPlatformScale = 1.f;
-		yPlatformScale = 1.f;
+		const float xPlatformScale = 1.f;
+		const float yPlatformScale = 1.f;
 
 		
 		const int max_buffer_size = 256;
@@ -1099,10 +1099,13 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 		if(vertCount == 0)
 			return;
 
-		//Internal rescale
-		float xPlatformScale, yPlatformScale;
-		xPlatformScale = (float)mViewportSize.x / (float)poro::IPlatform::Instance()->GetInternalWidth();
-		yPlatformScale = (float)mViewportSize.y / (float)poro::IPlatform::Instance()->GetInternalHeight();
+		// Internal rescale
+		// float xPlatformScale, yPlatformScale;
+		// xPlatformScale = (float)mViewportSize.x / (float)poro::IPlatform::Instance()->GetInternalWidth();
+		// yPlatformScale = (float)mViewportSize.y / (float)poro::IPlatform::Instance()->GetInternalHeight();
+
+		const float xPlatformScale = 1.f;
+		const float yPlatformScale = 1.f;
 
 		const int max_buffer_size = 256;
 		static GLfloat glVertices[ max_buffer_size ];
