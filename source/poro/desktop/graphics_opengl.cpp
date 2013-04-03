@@ -1282,6 +1282,11 @@ void GraphicsOpenGL::SaveScreenshot( const std::string& filename, int pos_x, int
 	// copy to other buffer
 	if( pos_x != 0 || pos_y != 0 || w != width || height != h ) 
 	{
+		pos_x = (int)( ((float)pos_x) * ( mViewportSize.x / GetInternalSize().x ) );
+		pos_y = (int)( ((float)pos_y) * ( mViewportSize.y / GetInternalSize().y  ) );
+		w = (int)( ((float)w) * ( mViewportSize.x / GetInternalSize().x ) );
+		h = (int)( ((float)h) * ( mViewportSize.y / GetInternalSize().y ) );
+
 		other_pixels = new unsigned char[ 3 * w * h ];	
 		for( int y = 0; y < h; ++y )
 		{
