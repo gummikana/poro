@@ -24,7 +24,6 @@
 
 #include <iostream>
 
-#include "../../types.h"
 #include "actionscript_types.h"
 #include "eventdispatcher.h"
 #include "vector.h"

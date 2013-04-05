@@ -34,7 +34,6 @@
 
 #include "utils/camera/icamera.h"
 #include "utils/math/math_utils.h"
-#include "../../types.h"
 
 class CCameraTransformer : public types::camera
 {

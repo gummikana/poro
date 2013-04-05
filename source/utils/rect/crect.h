@@ -194,7 +194,13 @@ Ty CRectCast( const CRect< Tx >& other )
 	return tmp;
 }
 
-
 } // end of namespace ceng
+
+// ---------- types -------------------------
+
+namespace types {
+	typedef ceng::CRect< float >			rect;
+	typedef ceng::CRect< int >				irect;
+} // end of namespace types
 
 #endif

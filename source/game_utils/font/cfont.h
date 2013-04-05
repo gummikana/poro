@@ -60,8 +60,10 @@
 #include <vector>
 #include <map>
 
-#include "../../types.h"
+#include "../../utils/rect/crect.h"
+#include "../../utils/math/cvector2.h"
 
+namespace ceng { class CXmlFileSys; }
 
 // CFont is a class that only contains data about the font texture
 // someone else has to do all the hard work of drawing the font on

@@ -110,4 +110,10 @@ struct CMat22
 } // end of namespace math
 } // end of namespace ceng
 
+//----------------- types --------------------------------------------
+
+namespace types { 
+	typedef ceng::math::CMat22< float >		mat22;
+} // end of namespace types
+
 #endif

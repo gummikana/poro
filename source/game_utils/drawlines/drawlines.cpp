@@ -22,6 +22,10 @@
 #include "drawlines.h"
 
 #include "../../poro/igraphics.h"
+
+#include "../../utils/math/math_utils.h"
+#include "../../utils/debug.h"
+
 //-----------------------------------------------------------------------------
 
 namespace {

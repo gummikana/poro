@@ -22,7 +22,9 @@
 #ifndef INC_ACTIONSCRIPT_TYPES_H
 #define INC_ACTIONSCRIPT_TYPES_H
 
-#include "../../types.h"
+#include <string>
+
+#include "../../utils/math/cvector2.h"
 #include "../../utils/smartptr/csmartptr.h"
 
 namespace as { 

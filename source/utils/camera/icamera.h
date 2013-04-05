@@ -87,4 +87,8 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 } // end of namespace ceng
 
+namespace types {
+	typedef ceng::ICamera< ceng::math::CVector2< float > >	camera;
+}
+
 #endif

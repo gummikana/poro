@@ -35,7 +35,7 @@
 
 #include <string>
 #include <vector>
-#include "../../types.h"
+#include "../../utils/rect/crect.h"
 
 class CFont;
 

@@ -15,7 +15,7 @@ float PetriHacks::LittleBackAndForth::f( float x ) { return ((pow(x+0.17f, 1.3f)
 
 float PetriHacks::DimishingShakeBack::f( float x ) { return ( ( cos( x * 3.1415f ) + 1 ) * 0.5f )  * sin( x * 30.0f ); }
 
-float PetriHacks::DimishingShake::f( float x ) { return ( ( cos( x * 3.1415 ) + 1 ) * 0.5 )  * sin( x * 30.0 ) + x; }
+float PetriHacks::DimishingShake::f( float x ) { return ( ( cos( x * 3.1415f ) + 1 ) * 0.5f )  * sin( x * 30.0f ) + x; }
 
 // Randomf, just gives you a ceng::math::Randomf(0,1) as a result
 float PetriHacks:: Randomf::f( float x ) { return ceng::Randomf( 0.f, 1.f ); }

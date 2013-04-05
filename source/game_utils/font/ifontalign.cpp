@@ -21,6 +21,7 @@
 
 #include "ifontalign.h"
 #include "cfont.h"
+#include "../../utils/debug.h"
 
 //-----------------------------------------------------------------------------
 namespace {

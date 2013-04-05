@@ -27,7 +27,6 @@
 #include "poro_types.h"
 #include "poro_macros.h"
 #include "itexture.h"
-#include "../types.h"
 
 //Number of vertices that can be stored in the DrawTextureBuffer.
 //6000 = 2000 triangles = 1000 quads, since we use GL_TRIANGLES.

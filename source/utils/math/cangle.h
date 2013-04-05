@@ -99,4 +99,11 @@ template< typename T >  const T CAngle< T >::TWO_PI = (T)(2 * ceng::math::pi);
 } // end of namespace math
 } // end o namespace ceng
 
+
+// ---------------- types ---------------------
+
+namespace types { 
+	typedef ceng::math::CAngle< float >		angle;
+} // end of namespace types
+
 #endif

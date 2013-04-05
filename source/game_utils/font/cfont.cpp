@@ -20,10 +20,12 @@
 
 
 #include "cfont.h"
-#include "../../utils/debug.h"
 
 #include <limits>
 #include <cstdio>
+
+#include "../../utils/xml/cxml.h"
+#include "../../utils/debug.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////

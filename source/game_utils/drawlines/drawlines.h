@@ -22,9 +22,11 @@
 #ifndef INC_DRAWLINES_H
 #define INC_DRAWLINES_H
 
+#include <vector>
+
 #include "../../poro/poro_types.h"
 #include "../../poro/poro_macros.h"
-#include "../../types.h"
+#include "../../utils/camera/icamera.h"
 
 namespace poro { class IGraphics; }
 //-----------------------------------------------------------------------------

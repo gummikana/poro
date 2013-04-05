@@ -33,6 +33,7 @@
 #define INC_CCOLOR_H
 
 #include <math.h>
+#include "../staticarray/cstaticarray.h"
 
 //! Color class
 /*! A basic color class that thinks that each color component is a 8 bit integer
@@ -868,6 +869,18 @@ CColorFloat operator * ( T s, const CColorFloat& c)
 }
 
 } //end o namespace ceng
+
+
+// -------------- types ------------------------------
+
+namespace types { 
+
+typedef ceng::CStaticArray< unsigned char, 4 >	ccolor;
+typedef ceng::CColorFloat						fcolor;
+
+} // end of namespace types
+
+
 #endif
 
 

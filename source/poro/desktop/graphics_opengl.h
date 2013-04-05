@@ -22,7 +22,6 @@
 #define INC_GRAPHICS_OPENGL_H
 
 #include "../poro_types.h"
-#include "../../types.h"
 #include "../igraphics.h"
 
 

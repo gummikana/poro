@@ -192,4 +192,14 @@ public:
 } // end  of namespace math
 } // end of namespace ceng
 
+// ---------- types ----------
+namespace types { 
+	typedef ceng::math::CVector2< float >	vector2;
+	typedef ceng::math::CVector2< double >	dvector2;
+	typedef ceng::math::CVector2< int >		ivector2;
+
+	typedef ceng::math::CVector2< int >		point;
+
+} // end of namespace types
+
 #endif

@@ -22,7 +22,6 @@
 #ifndef INC_TWEEN_UTILS_H
 #define INC_TWEEN_UTILS_H
 
-#include "../../types.h"
 #include "../../utils/easing/easing.h"
 #include "gtween.h"
 

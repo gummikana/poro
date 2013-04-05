@@ -75,6 +75,7 @@ bool FolderExists( const std::string& directory )
         struct stat sb;
         return (stat(directory.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode));
     #endif
+	return false;
 }
 
 

@@ -30,9 +30,11 @@
 #include "../../poro/igraphics.h"
 #include "../../poro/itexture.h"
 
-#include "actionscript_types.h"
+#include "../../utils/math/cvector2.h"
+#include "../../utils/rect/crect.h"
 #include "../../utils/math/math_utils.h"
-#include "../../utils/string/enum.h"
+#include "../../utils/camera/icamera.h"
+#include "../../utils/xml/cxml.h"
 
 #include "displayobjectcontainer.h"
 
@@ -448,7 +450,7 @@ inline bool Sprite::GetVisibility() const {
 }
 
 inline void	Sprite::SetBlendMode( int blend_mode ) {
-	mBlendMode = (types::int8)blend_mode;
+	mBlendMode = (poro::types::Int8)blend_mode;
 }
 
 inline int Sprite::GetBlendMode() const {

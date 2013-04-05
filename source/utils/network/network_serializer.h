@@ -235,8 +235,13 @@ namespace network_utils
 	};
 
 	//-------------------------------------------------------------------------
-
-
 } // end o namespace network utils
+
+
+// -------------- types ---------------------------
+
+namespace types { 
+	typedef network_utils::ISerializer		bit_serialize;
+} // end of namespace types
 
 #endif

@@ -69,6 +69,7 @@
 #include <map>
 #include <string>
 #include "../xml/canycontainer.h"
+#include "../xml/cxml.h"
 
 namespace ceng {
 

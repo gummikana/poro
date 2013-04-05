@@ -82,5 +82,11 @@ struct CXForm
 } // end of namespace math
 } // End of namespace ceng
 
+// -------------- types --------------------------
+
+namespace types { 
+	typedef ceng::math::CXForm< float >		xform;
+} // end of namespace types
+
 
 #endif

@@ -72,7 +72,7 @@ int CGridPoint_Test()
 	return 0;
 }
 
-TEST_REGISTER( CGridPoint_Test );
+// TEST_REGISTER( CGridPoint_Test );
 
 } // end of namespace test 
 } // end of namespace ceng

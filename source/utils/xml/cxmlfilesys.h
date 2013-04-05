@@ -29,6 +29,9 @@
 //
 //.............................................................................
 //
+// 23.02.2013 Pete
+//		Added XmlVectorSerializer implemention.
+//
 // 15.02.2013 Pete
 //		Added XML_BindPtrAlias implementation in here, might have to move it
 //		off it is starts causing problems or isn't general enough
@@ -321,7 +324,7 @@ T XML_CAnyContainerCast( const CAnyContainer& any, const T& t )
 
 // -- Here's an implementation that helps with some cases. Not sure if I should it put it 
 // here or not, but at least it's been pretty useful in place so what the hell
-
+//----------------------------------------------------------------------------------
 template< class T >
 void XML_BindPtrAlias( ceng::CXmlFileSys* filesys, T*& pointer, const std::string& name )
 {
@@ -346,7 +349,56 @@ void XML_BindPtrAlias( ceng::CXmlFileSys* filesys, T*& pointer, const std::strin
 	}
 }
 
-}
+
+//-----------------------------------------------------------------------------
+//
+// Serializing a vector of pointers 
+// this one is like one of the most used things I have reimplemented everytime
+// now it's in a nice templated class
+//
+
+template< class T >
+struct XmlVectorSerializer
+{
+	XmlVectorSerializer( std::vector< T* >& array, const std::string& name ) : array( array ), name( name ) { }
+
+	void Serialize( ceng::CXmlFileSys* filesys )
+	{
+		if( filesys->IsWriting() )
+		{
+			for( std::size_t i = 0; i < array.size(); ++i )
+			{
+				if( array[ i ] )
+					XML_BindAlias( filesys, *(array[i]), name );
+			}
+		}
+		else if ( filesys->IsReading() )
+		{
+			// clears the pointers
+			for( std::size_t i = 0; i < array.size(); ++i )
+				delete array[ i ];
+
+			array.clear();
+			int i = 0;
+			for( i = 0; i < filesys->GetNode()->GetChildCount(); i++ )
+			{
+				if( filesys->GetNode()->GetChild( i )->GetName() == name )
+				{
+					T* temp = new T;
+					ceng::XmlConvertTo( filesys->GetNode()->GetChild( i ), *temp );
+					array.push_back( temp );
+				}
+			}
+		}
+	}
+
+	std::vector< T* >& array;
+	std::string name;
+};
+
+//-----------------------------------------------------------------------------
+
+} // end of namespace ceng 
 
 
 #endif
