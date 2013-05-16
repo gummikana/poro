@@ -48,7 +48,7 @@ int EventRecorderImpl::GetRandomSeed()
 {
 	if( mRandomSeed == 0 ) 
 	{
-		mRandomSeed = (int)time(NULL);
+		mRandomSeed = (int)( time(NULL) * time(NULL) );
 
 		std::stringstream ss;
 		ss << "randomseed " << mRandomSeed;
