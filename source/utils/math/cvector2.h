@@ -39,13 +39,13 @@ public:
 
 	CVector2() : x( Type() ), y( Type() ) { }
 
-	CVector2( const Type& x, const Type& y) : x( x ), y( y ) { }
+	CVector2( Type x, Type y) : x( x ), y( y ) { }
 
 	template< class T >
 	explicit CVector2( const T& other ) : x( (Type)( other.x ) ), y( (Type)(other.y) ) { }
 
 
-	void Set( const Type& x_, const Type& y_) { x = x_; y = y_; }
+	void Set( Type x_, Type y_) { x = x_; y = y_; }
 
 	//=========================================================================
 
@@ -131,10 +131,10 @@ public:
 
 	CVector2< Type > Normalize() const
 	{
-		Type d = Length();
+		float d = Length();
 		
 		if( d > 0 )
-			return CVector2< Type >( x / d, y / d );
+			return CVector2< Type >( Type( x / d ), Type( y / d ) );
 		else 
 			return CVector2< Type >( 0, 0 );
 	}
