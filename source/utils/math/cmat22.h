@@ -50,6 +50,8 @@ struct CMat22
 
 	CMat22( const CVector2< Type >& col1, const CVector2< Type >& col2 ) : col1(col1), col2(col2) {}
 
+	CMat22( Type c1x, Type c1y, Type c2x, Type c2y ) : col1( c1x, c1y ), col2( c2x, c2y ) {}
+
 	CMat22< Type > Transpose() const
 	{
 		return CMat22< Type >( CVector2< Type >( col1.x, col2.x ), CVector2< Type >( col1.y, col2.y ) );
