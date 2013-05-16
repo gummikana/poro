@@ -39,6 +39,7 @@
 // for screenshot saving
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "../external/stb_image_write.h"
+#undef STB_IMAGE_WRITE_IMPLEMENTATION
 
 
 //=============================================================================
