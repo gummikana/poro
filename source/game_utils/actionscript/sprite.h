@@ -104,6 +104,7 @@ public:
 	types::vector2	GetCenterOffset() const;
 	void			SetSize( int w, int h );
 	types::xform	GetXForm() const;
+	void			SetXForm( const types::xform& transform );
 	types::rect		GetRect() const;
 	void			SetRect( const types::rect& r );
 	void			RemoveRect();
@@ -523,6 +524,10 @@ inline void Sprite::RemoveRect() {
 
 inline types::xform	Sprite::GetXForm() const {
 	return mXForm;
+}
+
+inline void Sprite::SetXForm( const types::xform& transform ) {
+	mXForm = transform;
 }
 
 inline const std::string& Sprite::GetFilename() const {
