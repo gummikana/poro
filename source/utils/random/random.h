@@ -77,6 +77,13 @@ float	LGMRandomf( float low, float high );
 
 //=============================================================================
 
+template< class T >
+void RandomizeValue( T& value, float percent_how_much )
+{
+	if( percent_how_much == 0 ) return;
+	value += value * ceng::Randomf( -percent_how_much, percent_how_much );
+}
+
 //-----------------------------------------------------------------------------
 
 void	set_fastrand_seed( int seed );
