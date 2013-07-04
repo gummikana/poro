@@ -662,8 +662,17 @@ void Sprite::RectAnimation::Update( Sprite* sprite, float dt )
 		while( mCurrentTime >= mWaitTime ) {
 			mCurrentTime -= mWaitTime;
 			frame++;
-			if( frame >= mFrameCount && mLoop )
-				frame = 0;
+			if( frame >= mFrameCount) {
+				if( mLoop ) {
+					frame = 0;
+				} else {
+					if( mNextAnimation.empty() == false ) {
+						sprite->PlayRectAnimation( mNextAnimation );
+						return;
+					}
+				}
+
+			}
 		}
 	}
 
@@ -799,6 +808,17 @@ void Sprite::PlayRectAnimation( const std::string& name )
 			return;
 		}
 	}
+}
+//-------------------------------------------------------------------------
+
+bool Sprite::IsRectAnimationPlaying() const
+{
+	if( mRectAnimation == NULL ) return false;
+	if( mRectAnimation->mLoop ) return true;
+	if( mRectAnimation->mCurrentFrame >= mRectAnimation->mFrameCount - 1 ) 
+		return false;
+
+	return true;
 }
 //-------------------------------------------------------------------------
 

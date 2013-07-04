@@ -239,6 +239,8 @@ public:
 	// looks in mRectAnimations for a rect animation with the name
 	void PlayRectAnimation( const std::string& name );
 
+	bool IsRectAnimationPlaying() const;
+
 	std::string GetRectAnimationName() const;
 	
 	// this is a global animations sheet that the animation for PlayAnimation is loaded from
