@@ -57,8 +57,8 @@ public:
 	~TextSprite();
 
 	//-------------------------------------------------------------------------
-	void			SetText( const std::string& text );
-	std::string		GetText() const;
+	virtual void		SetText( const std::string& text );
+	virtual std::string	GetText() const;
 	
 	virtual void				MoveCenterTo( const types::vector2& p );
 	virtual types::vector2		GetCenterPos() const;
