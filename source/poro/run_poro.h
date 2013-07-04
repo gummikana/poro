@@ -13,7 +13,7 @@
 #include "iplatform.h"
 #include "igraphics.h"
 
-#ifdef PORO_PLATFORM_IPHONE
+#ifdef PORO_PLAT_IPHONE
 #include "iphone/platform_iphone.h"
 #endif
 

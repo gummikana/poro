@@ -88,7 +88,8 @@ public:
 	virtual void DoEventPlayback( const std::string& filename );
 
 	// filesystem
-	virtual void SetWorkingDir( poro::types::string dir = poro::types::string(".") );
+	virtual void				SetWorkingDir( poro::types::string dir = poro::types::string(".") );
+	virtual poro::types::string	GetWorkingDir() const;
 
 	// random seed
 	virtual int GetRandomSeed();
@@ -118,6 +119,7 @@ protected:
 	types::vec2					    mMousePos;
 	int								mSleepingMode;
 	bool							mPrintFramerate;
+	poro::types::string				mWorkingDir;
 
 private:
 };
@@ -179,7 +181,13 @@ inline void PlatformDesktop::SetSleepingMode( int sleep_mode ) {
 inline void PlatformDesktop::SetWorkingDir( poro::types::string dir )  {
 	//TODO implement
 	//chdir(dir);
+	mWorkingDir = dir;
 }
+
+inline poro::types::string	PlatformDesktop::GetWorkingDir() const {
+	return mWorkingDir;
+}
+
 
 inline void PlatformDesktop::SetPrintFramerate( bool framerate ) {
 	mPrintFramerate = framerate;

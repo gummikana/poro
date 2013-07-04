@@ -116,6 +116,7 @@ public:
 
 	// filesystem
 	virtual void				SetWorkingDir(poro::types::string dir = poro::types::string("."));
+	virtual poro::types::string GetWorkingDir() const;
 	virtual poro::types::string GetDocumentDir();
 
 	// RANDOM SEED
@@ -218,6 +219,12 @@ inline poro::types::string IPlatform::GetDocumentDir() {
 	poro_assert( false );
 	return poro::types::string();
 }
+
+inline poro::types::string IPlatform::GetWorkingDir() const {
+	poro_assert( false );
+	return poro::types::string();
+}
+
 
 inline int IPlatform::GetRandomSeed() {
 	poro_assert( false );
