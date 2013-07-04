@@ -240,6 +240,7 @@ public:
 	void PlayRectAnimation( const std::string& name );
 
 	bool IsRectAnimationPlaying() const;
+	bool HasRectAnimation( const std::string& name ) const;
 
 	std::string GetRectAnimationName() const;
 	

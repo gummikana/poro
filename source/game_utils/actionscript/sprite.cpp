@@ -822,6 +822,21 @@ bool Sprite::IsRectAnimationPlaying() const
 }
 //-------------------------------------------------------------------------
 
+bool Sprite::HasRectAnimation( const std::string& name ) const
+{
+	if( mRectAnimation && mRectAnimation->mName == name ) return true;
+
+	for( std::size_t i = 0; i < mRectAnimations.size(); ++i ) 
+	{
+		cassert( mRectAnimations[ i ] );
+		if( mRectAnimations[ i ]->mName == name ) 
+			return true;
+	}
+
+	return false;
+}
+//-------------------------------------------------------------------------
+
 std::string Sprite::GetRectAnimationName() const
 {
 	if( mRectAnimation ) return mRectAnimation->mName;
