@@ -66,10 +66,13 @@ public:
 	//-------------------------------------------------------------------------
 	
 	virtual void SetFilename( const std::string& filename ) { }
-	virtual void EndOfFrame() { }
+	virtual void StartOfFrame( float start_time ) { }
+	virtual void EndOfFrame( float end_time ) { }
 	virtual void DoPlaybacksForFrame() { }
 
 	//-------------------------------------------------------------------------
+
+	virtual int GetFrameLength() const { return 0; }
 
 protected:
 	Keyboard* mKeyboard;

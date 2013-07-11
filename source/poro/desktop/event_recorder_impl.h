@@ -44,13 +44,17 @@ public:
 	//-------------------------------------------------------------------------
 
 	virtual void SetFilename( const std::string& filename );
-	virtual void EndOfFrame(); 
+	
+	virtual void StartOfFrame( float start_time );
+	virtual void EndOfFrame( float end_time );
+
 
 	//-------------------------------------------------------------------------
 protected:
 	std::vector< std::string > mEventBuffer;
 	std::string mFilename;
 	int mFrameCount;
+	float mFrameStartTime;
 
 };
 //-----------------------------------------------------------------------------

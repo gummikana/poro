@@ -59,8 +59,10 @@ public:
 
 	virtual void DoPlaybacksForFrame();
 
-
 	//-------------------------------------------------------------------------
+
+	virtual int GetFrameLength() const;
+
 protected:
 
 	//-------------------------------------------------------------------------
@@ -72,10 +74,11 @@ protected:
 
 	struct PlaybackEvent
 	{
-		PlaybackEvent() : frame( 0 ), str() { }
-		PlaybackEvent( int frame, const std::string& str ) : frame( frame ), str( str ) { }
+		PlaybackEvent() : frame( 0 ),  frame_lasted( 0 ), str() { }
+		PlaybackEvent( int frame, int frame_lasted, const std::string& str ) : frame( frame ), frame_lasted( 0 ), str( str ) { }
 
 		int frame;
+		int frame_lasted;
 		std::string str;
 	};
 

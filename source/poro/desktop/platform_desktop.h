@@ -86,6 +86,7 @@ public:
 	virtual bool GetEventRecording() const;
 	
 	virtual void DoEventPlayback( const std::string& filename );
+	virtual bool IsBreakpointFrame();
 
 	// filesystem
 	virtual void				SetWorkingDir( poro::types::string dir = poro::types::string(".") );

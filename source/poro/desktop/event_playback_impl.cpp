@@ -200,7 +200,7 @@ void EventPlaybackImpl::LoadPlaybacksFromFile( const std::string& filename )
 	poro_assert( mPlaybacks.empty() );
 
 	int random_seed = 0;
-
+	int line_num = 0;
 	if( filename.empty() == false )
 	{
 		file_input.open( filename.c_str(), std::ios::in );
@@ -217,7 +217,19 @@ void EventPlaybackImpl::LoadPlaybacksFromFile( const std::string& filename )
 				std::vector< std::string > linenum_and_rest = Split( ":", line );
 				if( linenum_and_rest.size() > 1 ) 
 				{
-					int frame = CastFromString< int >( linenum_and_rest[ 0 ] );
+					int frame = line_num++;
+					int frame_lasted = 0;
+
+					// remove the timestamp of how long using this took
+					if( linenum_and_rest[ 0 ].empty() == false && linenum_and_rest[ 0 ].find( "," ) != linenum_and_rest[ 0 ].npos )
+					{
+						std::vector< std::string > tmp = Split( ",", linenum_and_rest[ 0 ] );
+						linenum_and_rest[ 0 ] = tmp[ 0 ];
+						if( tmp.size() > 1 ) tmp = Split( " ", tmp[ 1 ] );
+						if( tmp.size() > 0 ) frame_lasted = CastFromString< int >( tmp[ 0 ] );
+					}
+
+					frame = CastFromString< int >( linenum_and_rest[ 0 ] );
 					
 					std::vector< std::string > list_of_events = Split( ",", linenum_and_rest[ 1 ] );
 
@@ -225,6 +237,7 @@ void EventPlaybackImpl::LoadPlaybacksFromFile( const std::string& filename )
 					{
 						PlaybackEvent* pevent = new PlaybackEvent;
 						pevent->frame = frame;
+						pevent->frame_lasted = frame_lasted;
 						std::string str = RemoveWhiteSpace( list_of_events[ i ] );
 						pevent->str = str;
 						
@@ -237,6 +250,7 @@ void EventPlaybackImpl::LoadPlaybacksFromFile( const std::string& filename )
 							{
 								std::vector< std::string > pieces = Split( " ", str );
 								random_seed = ParseSafely< int >( pieces, 1 );
+								std::cout << "randomseed: " << random_seed << std::endl;
 							}
 						}
 					}
@@ -333,6 +347,16 @@ void EventPlaybackImpl::DoPlaybacksForFrame()
 	SetEventsEnabled( false );
 	mFrameCount++;
 }
+//=============================================================================
+
+int EventPlaybackImpl::GetFrameLength() const
+{
+	if( mFrameCount > 1 && mFrameCount < (int) mPlaybacks.size() ) 
+		return mPlaybacks[ mFrameCount - 2]->frame_lasted;
+
+	return 0;
+}
+
 //=============================================================================
 
 void EventPlaybackImpl::LoadFromFile( const std::string& filename )

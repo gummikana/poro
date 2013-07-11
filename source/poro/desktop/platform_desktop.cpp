@@ -189,6 +189,9 @@ void PlatformDesktop::StartMainLoop()
 
 void PlatformDesktop::SingleLoop() 
 {
+	if( mEventRecorder )
+		mEventRecorder->StartOfFrame( GetUpTime() );
+
 	HandleEvents();
 
 	poro_assert( GetApplication() );
@@ -209,7 +212,7 @@ void PlatformDesktop::SingleLoop()
 	mGraphics->EndRendering();
 
 	if( mEventRecorder )
-		mEventRecorder->EndOfFrame();
+		mEventRecorder->EndOfFrame( GetUpTime() );
 }
 //-----------------------------------------------------------------------------
 
@@ -387,6 +390,13 @@ void PlatformDesktop::DoEventPlayback( const std::string& filename )
 	EventPlaybackImpl* temp = new EventPlaybackImpl( mKeyboard, mMouse, mTouch );
 	temp->LoadFromFile( filename );
 	mEventRecorder = temp;
+}
+
+bool PlatformDesktop::IsBreakpointFrame()
+{
+	if( mEventRecorder == NULL ) return false;
+	if( mEventRecorder->IsPlaybacking() == false ) return false;
+	return ( mEventRecorder->GetFrameLength() > 20 );
 }
 
 //-----------------------------------------------------------------------------

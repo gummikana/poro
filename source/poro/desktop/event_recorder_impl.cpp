@@ -29,7 +29,8 @@ std::string GetEventRecorderFilename()
 EventRecorderImpl::EventRecorderImpl() : 
 	EventRecorder(), 
 	mFrameCount( 0 ), 
-	mFilename() 
+	mFilename(),
+	mFrameStartTime( 0 )
 { 
 	mFilename = GetEventRecorderFilename();
 }
@@ -37,7 +38,8 @@ EventRecorderImpl::EventRecorderImpl() :
 EventRecorderImpl::EventRecorderImpl( Keyboard* keyboard, Mouse* mouse, Touch* touch ) : 
 	EventRecorder( keyboard, mouse, touch ), 
 	mFrameCount( 0 ),
-	mFilename() 
+	mFilename(),
+	mFrameStartTime( 0 )
 { 
 	mFilename = GetEventRecorderFilename();
 }
@@ -134,8 +136,13 @@ void EventRecorderImpl::FireTouchUpEvent(const types::vec2& pos, int touchId) {
 void EventRecorderImpl::SetFilename( const std::string& filename ) {
 	mFilename = filename;
 }
+//-----------------------------------------------------------------------------
 
-void EventRecorderImpl::EndOfFrame() {
+void EventRecorderImpl::StartOfFrame( float start_time ) {
+	mFrameStartTime = start_time;
+}
+
+void EventRecorderImpl::EndOfFrame( float time ) {
 
 	std::ofstream		file_out;
 	if( mFrameCount == 0 ) 
@@ -145,7 +152,7 @@ void EventRecorderImpl::EndOfFrame() {
 
 
 
-	file_out << mFrameCount << ": ";
+	file_out << mFrameCount << ", " << (int)(( time - mFrameStartTime ) * 1000.f) << " ms : ";
 	for( int i = 0; i < (int)mEventBuffer.size(); ++i ) {
 		file_out << mEventBuffer[ i ];
 		if( i < (int)mEventBuffer.size() - 1 ) 
