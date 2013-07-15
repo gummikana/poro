@@ -198,7 +198,10 @@ Sprite* LoadSprite( const std::string& filename )
 		result->SetCenterOffset( sprite_data.offset );
 		result->SetScale( sprite_data.scale.x, sprite_data.scale.y );
 		if( sprite_data.default_animation.empty() == false ) 
+		{
 			result->PlayAnimation( sprite_data.default_animation );
+			result->PlayRectAnimation( sprite_data.default_animation );
+		}
 
 		poro::ITexture* image = GetTexture( sprite_data.filename );
 		if( image == NULL ) return result;
@@ -207,6 +210,7 @@ Sprite* LoadSprite( const std::string& filename )
 		result->SetSize( (int)image->GetWidth(), (int)image->GetHeight() );
 
 		result->SetFilename( filename );
+		
 
 		return result;
 	}
