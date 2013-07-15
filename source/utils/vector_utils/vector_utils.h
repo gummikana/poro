@@ -66,6 +66,20 @@ bool VectorRemoveAll( std::vector< T >& container, const T& element )
 	return result;
 }
 
+// used to release a vector full of pointers
+// deletes the pointers and clears the vector
+template< class T >
+void VectorClearPointers( std::vector< T* >& container )
+{
+	for( std::size_t i = 0; i < container.size(); ++i ) 
+	{
+		delete container[ i ];
+	}
+
+	container.clear();
+}
+
+
 //-----------------------------------------------------------------------------
 //
 // ArgsToVector
