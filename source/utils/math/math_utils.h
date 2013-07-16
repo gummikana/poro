@@ -212,7 +212,7 @@ inline CMat22< Type > Mul( const CMat22< Type >& A, const CMat22< Type >& B )
 
 
 template< class Type >
-inline CVector2< Type > ClosestPointOnLineSegment( const CVector2< Type >& a, const CVector2< Type >& b, const CVector2< Type >& p )
+inline CVector2< float > ClosestPointOnLineSegment( const CVector2< Type >& a, const CVector2< Type >& b, const CVector2< Type >& p )
 {
 	CVector2< float > c( p - a );
 	CVector2< float > v( b - a );
@@ -229,28 +229,28 @@ inline CVector2< Type > ClosestPointOnLineSegment( const CVector2< Type >& a, co
 	float t = (float)Dot( v, c );
 
 	if (t < 0)
-		return a;
+		return CVector2< float >( a );
 
 	if (t > distance )
-		return b;
+		return CVector2< float >( b );
 
 	v *= t;
 
-	return a + CVector2< Type >( v );
+	return CVector2< float >( a ) + v;
 }
 
 template< class Type >
-inline Type DistanceFromLineSquared( const CVector2< Type >& a, const CVector2< Type >& b, const CVector2< Type >& p )
+inline float DistanceFromLineSquared( const CVector2< Type >& a, const CVector2< Type >& b, const CVector2< Type >& p )
 {
-	CVector2< Type > delta = ClosestPointOnLineSegment( a, b, p ) - p;
+	CVector2< float > delta = ClosestPointOnLineSegment( a, b, p ) - CVector2< float >( p );
 
 	return delta.LengthSquared();
 }
 
 template< class Type >
-inline Type DistanceFromLine( const CVector2< Type >& a, const CVector2< Type >& b, const CVector2< Type >& p )
+inline float DistanceFromLine( const CVector2< Type >& a, const CVector2< Type >& b, const CVector2< Type >& p )
 {
-	return (Type)sqrt( DistanceFromLineSquared( a, b, p ) );
+	return sqrtf( (float)DistanceFromLineSquared( a, b, p ) );
 }
 
 template< class T >
