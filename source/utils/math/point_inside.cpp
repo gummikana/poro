@@ -168,9 +168,9 @@ bool TestLineAABB( const CVector2< PointType >& p0, const CVector2< PointType >&
 	typedef CVector2< PointType > Vector;
 
 	// Point	rect_center = ( rect_min + rect_max ) * 0.5f;
-	const Vector	rect_extents = rect_max - rect_min;
-	const Vector	line_halfwidth = p1 - p0;
-	const Point		line_midpoint = p0 + p1 - rect_min - rect_max;
+	const Vector	rect_extents( rect_max - rect_min );
+	const Vector	line_halfwidth( p1 - p0 );
+	const Point		line_midpoint( p0 + p1 - rect_min - rect_max );
 	// line_midpoint = line_midpoint - rect_center;		// Translate box and segment to origin
 
 	// Try world coordinate axes as separating axes
