@@ -274,11 +274,11 @@ bool LineIntersection( const CVector2< T >& startA, const CVector2< T >& endA,
 		return false; // intersection point isn't between the start and endpoints
 
 
-	CVector2< T > position(
+	result.Set(
 			startA.x + uA * (endA.x - startA.x),
 			startA.y + uA * (endA.y - startA.y) );
 
-	result = position;
+	// result = position;
 	return true;
 }
 

@@ -159,5 +159,37 @@ bool DoesLineAndBoxCollide( const CVector2< PointType >& p1, const CVector2< Poi
 
 ///////////////////////////////////////////////////////////////////////////////
 
+bool TestLineAABB( const CVector2< PointType >& p0, const CVector2< PointType >& p1, 
+						   const CVector2< PointType >& rect_min, const CVector2< PointType >& rect_max )
+{
+	typedef CVector2< PointType > Point;
+	typedef CVector2< PointType > Vector;
+
+	// Point	rect_center = ( rect_min + rect_max ) * 0.5f;
+	Vector	rect_extents = rect_max - rect_min;
+	Vector	line_halfwidth = p1 - p0;
+	Point	line_midpoint = p0 + p1 - rect_min - rect_max;
+	// line_midpoint = line_midpoint - rect_center;		// Translate box and segment to origin
+
+	// Try world coordinate axes as separating axes
+	float adx = abs( line_halfwidth.x );
+	if( abs( line_midpoint.x ) > rect_extents.x + adx ) return false;
+
+	float ady = abs( line_halfwidth.y );
+	if( abs( line_midpoint.y ) > rect_extents.y + ady ) return false;
+
+	// Add in an epsilon term to counteract arithmetic errors when segment is 
+	// (near) parallel to a coordinate axis
+	adx += FLT_EPSILON;
+	ady += FLT_EPSILON;
+
+	// Try cross products of segment direction vector with coordinate axes
+	if( abs(line_midpoint.x * line_halfwidth.y - line_midpoint.y * line_halfwidth.x ) > rect_extents.x * ady + rect_extents.y * adx ) return false;
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 } // end of namespace math
 } // end of namespace ceng
