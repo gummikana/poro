@@ -672,6 +672,19 @@ void DrawLines( poro::IGraphics* graphics, const std::vector< poro::types::vec2 
     graphics->DrawLines( lines, color, smooth_lines, line_width );
 }
 
+// draws a line segment
+void DrawLines( poro::IGraphics* graphics, const std::vector< types::vector2 >& lines, const poro::types::fcolor& color, types::camera* camera )
+{
+	std::vector< poro::types::vec2 > t_lines( lines.size() );
+	for( std::size_t i = 0; i < lines.size(); ++i ) 
+	{
+		t_lines[i].x = lines[i].x;
+		t_lines[i].y = lines[i].y;
+	}
+
+	DrawLines( graphics, t_lines, color, camera );
+}
+
 
 //-----------------------------------------------------------------------------
 

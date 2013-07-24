@@ -45,6 +45,9 @@ void DrawLine( poro::IGraphics* graphics, const types::vector2& p1, const types:
 // draws a line segment
 void DrawLines( poro::IGraphics* graphics, const std::vector< poro::types::vec2 >& lines, const poro::types::fcolor& color, types::camera* camera = NULL );
 
+// draws a line segment
+void DrawLines( poro::IGraphics* graphics, const std::vector< types::vector2 >& lines, const poro::types::fcolor& color, types::camera* camera = NULL );
+
 // draws an arrow, useful for visualizing vectors
 void DrawArrow( poro::IGraphics* graphics, const types::vector2& p1, const types::vector2& p2, const poro::types::fcolor& color, float arrow_size = 10, types::camera* camera = NULL );
 
