@@ -50,6 +50,7 @@ bool IsPointInsideRect( const CVector2< PointType >& point, const CVector2< Poin
 bool IsPointInsideCircle( const CVector2< PointType >& point, const CVector2< PointType >& position, float d );
 
 bool IsPointInsidePolygon( const CVector2< PointType >& point, const std::vector< CVector2< PointType > >& polygon );
+bool IsPointInsidePolygon( const CVector2< int >& point, const std::vector< CVector2< int > >& polygon );
 
 template< class Type >
 bool IsPointInsideAABB( const Type& point, const Type& rect_low, const Type& rect_high )

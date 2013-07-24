@@ -33,7 +33,8 @@ namespace math {
 // http://www.programmersheaven.com/download/33146/download.aspx
 // Point in Polygon test by Hesham Ebrahimi 
 namespace {
-	inline PointType isLeft( const CVector2< PointType >& p0, const CVector2< PointType >& p1, const CVector2< PointType >& p2 )
+	template< class TType >
+	inline TType isLeft( const CVector2< TType >& p0, const CVector2< TType >& p1, const CVector2< TType >& p2 )
 	{
 		return ( (p1.x - p0.x) * (p2.y - p0.y)
 				- (p2.x - p0.x) * (p1.y - p0.y) );
@@ -67,6 +68,105 @@ bool IsPointInsidePolygon( const CVector2< PointType >& point, const std::vector
 
 	return true;
 }
+
+bool IsPointInsidePolygon( const CVector2< int >& point, const std::vector< CVector2< int > >& polygon )
+{
+    int    wn = 0;    // the winding number counter
+
+	// std::vector<CPoint *>::iterator it;
+	unsigned int i = 0;
+    // loop through all edges of the polygon
+    for( i = 0; i < polygon.size()-1; i++ ) // edge from V[i] to V[i+1]
+	{
+        if( polygon[ i ].y <= point.y ) {         // start y <= pt->y
+            if( polygon[ i + 1 ].y > point.y )      // an upward crossing
+                if( isLeft( polygon[ i ], polygon[ i + 1 ], point ) > 0 )  // P left of edge
+                    ++wn;            // have a valid up intersect
+        }
+        else {                       // start y > P.y (no test needed)
+            if( polygon[ i + 1].y <= point.y )     // a downward crossing
+                if( isLeft( polygon[ i ], polygon[ i + 1 ], point ) < 0 )  // P right of edge
+                    --wn;            // have a valid down intersect
+        }
+    }
+    if ( wn==0 )
+		return false;
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// Stolen from http://erich.realtimerendering.com/ptinpoly/
+//
+/* ======= Crossings algorithm ============================================ */
+
+/* Shoot a test ray along +X axis.  The strategy, from MacMartin, is to
+ * compare vertex Y values to the testing point's Y and quickly discard
+ * edges which are entirely to one side of the test ray.
+ *
+ * Input 2D polygon _pgon_ with _numverts_ number of vertices and test point
+ * _point_, returns 1 if inside, 0 if outside.	WINDING and CONVEX can be
+ * defined for this test.
+ */
+// int CrossingsTest( const std::vector< types::vector2 >& pgon, numverts, point )
+#if 0 
+bool IsPointInsidePolygon( const CVector2< PointType >& point, const std::vector< CVector2< PointType > >& pgon )
+{
+	int numverts = (int)pgon.size();
+	bool inside_flag = false;
+	bool yflag0, yflag1, xflag0;
+	// float ty, tx; // , vtx0, vtx1 ;
+
+    PointType tx = point.x ;
+    PointType ty = point.y ;
+
+	types::vector2 vtx0 = pgon[numverts-1];
+	
+/* get test bit for above/below X axis */
+    yflag0 = ( vtx0.y >= ty ) ;
+	types::vector2 vtx1 = pgon[0];
+
+	for( int j = 1; j < numverts + 1; ++j ) 
+	{
+		// for ( j = numverts+1 ; --j ; ) {
+
+		yflag1 = ( vtx1.y >= ty ) ;
+		/* check if endpoints straddle (are on opposite sides) of X axis
+		 * (i.e. the Y's differ); if so, +X ray could intersect this edge.
+		 */
+		if ( yflag0 != yflag1 ) {
+			xflag0 = ( vtx0.x >= tx ) ;
+			/* check if endpoints are on same side of the Y axis (i.e. X's
+			 * are the same); if so, it's easy to test if edge hits or misses.
+			 */
+			if ( xflag0 == ( vtx1.x >= tx ) ) {
+
+			/* if edge's X values both right of the point, must hit */
+			if ( xflag0 ) inside_flag = !inside_flag ;
+			} else {
+			/* compute intersection of pgon segment with +X ray, note
+			 * if >= point's X; if so, the ray hits it.
+			 */
+			if ( (vtx1.x - (vtx1.y-ty)*
+				 ( vtx0.x-vtx1.x)/(vtx0.y-vtx1.y)) >= tx ) {
+				inside_flag = !inside_flag ;
+			}
+			}
+		}
+
+		/* move to next pair of vertices, retaining info as possible */
+		yflag0 = yflag1 ;
+		vtx0 = vtx1 ;
+		if( j < numverts )
+			vtx1 = pgon[j];
+		else 
+			vtx1 = pgon[j - numverts];
+    }
+
+    return( inside_flag ) ;
+}
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
