@@ -114,23 +114,23 @@ int	PlatformIPhone::GetFrameNum() {
 	return mFrameCount;
 }
 
-types::Float32 PlatformIPhone::GetUpTime() {
-	return (types::Float32)(CFAbsoluteTimeGetCurrent() - mInitTime);
+types::Double32 PlatformIPhone::GetUpTime() {
+	return (types::Double32)(CFAbsoluteTimeGetCurrent() - mInitTime);
 }
 
-void PlatformIPhone::Sleep( types::Float32 seconds ){
+void PlatformIPhone::Sleep( types::Double32 seconds ){
 	// std::cout << "Sleep called: " << seconds << std::endl;
 	[NSThread sleepForTimeInterval:(seconds)];
 }
 
 void PlatformIPhone::timerLoop() {
-	const types::Float32 upTime = GetUpTime();
-	types::Float32 deltaTime = upTime - mFrameTimePrevious;
+	const types::Double32 upTime = GetUpTime();
+	types::Double32 deltaTime = upTime - mFrameTimePrevious;
 	mFrameTimePrevious = upTime;
 	mFrameCount++;
 	
-	static types::Float32 last_frame_rate = 0;
-	if( upTime - last_frame_rate > 1.f ) {
+	static types::Double32 last_frame_rate = 0;
+	if( upTime - last_frame_rate > 1.0 ) {
 		//std::cout << "FPS: " << mFrameCount << "\t" << GetUpTime() << std::endl;
 		mFrameRate = mFrameCount;
 		mFrameCount = 0;
@@ -149,7 +149,7 @@ void PlatformIPhone::timerLoop() {
 	
 			
 	// elapsed time and sleep
-	const types::Float32 elapsed_time = GetUpTime() - upTime;
+	const types::Double32 elapsed_time = GetUpTime() - upTime;
 	if( elapsed_time < mOneFrameShouldLast )
 		Sleep( mOneFrameShouldLast - elapsed_time );
 }

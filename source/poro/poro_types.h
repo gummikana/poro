@@ -34,6 +34,7 @@ namespace types {
 	typedef unsigned short	Uint16;
 	typedef unsigned int	Uint32;
 	typedef float			Float32;
+	typedef double			Double32;
 
 	// for unicode support
 	typedef Uint16			charset;

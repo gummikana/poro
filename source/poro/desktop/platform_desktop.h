@@ -76,9 +76,9 @@ public:
 	virtual void	        SetFrameRate( int targetRate, bool fixed_timestep = true );
 	virtual int	            GetFrameRate();
 	virtual int		        GetFrameNum();
-	virtual void	        Sleep( types::Float32 seconds );
+	virtual void	        Sleep( types::Double32 seconds );
 	virtual void			SetSleepingMode( int sleep_mode );
-	virtual types::Float32  GetUpTime();
+	virtual types::Double32 GetUpTime();
 	virtual void			SetPrintFramerate( bool fps );
 
 	// event recordings
@@ -107,7 +107,7 @@ protected:
 	bool							mFixedTimeStep;
 	int								mFrameCount;
 	int								mFrameRate;
-	types::Float32					mOneFrameShouldLast;
+	types::Double32					mOneFrameShouldLast;
 	int								mWidth;
 	int								mHeight;
 	EventRecorder*					mEventRecorder;
@@ -163,7 +163,7 @@ inline int	PlatformDesktop::GetJoystickCount() const  {
 // ---
 inline void PlatformDesktop::SetFrameRate( int targetRate, bool fixed_time_step ) {
 	mFrameRate = targetRate;
-	mOneFrameShouldLast = 1.f / (types::Float32)targetRate;
+	mOneFrameShouldLast = 1.0 / (types::Double32)targetRate;
 	mFixedTimeStep = fixed_time_step;
 }
 

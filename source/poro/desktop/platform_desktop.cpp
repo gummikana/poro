@@ -37,6 +37,43 @@
 #include "joystick_impl.h"
 #include "mouse_impl.h"
 
+namespace {
+
+#ifdef PORO_PLAT_WINDOWS
+
+double cpu_frequence = 0.0;
+__int64 counter_start_time = 0;
+
+void StartCounter()
+{
+    LARGE_INTEGER li;
+    if(!QueryPerformanceFrequency(&li))
+		std::cout << "QueryPerformanceFrequency failed" << std::endl;
+
+    cpu_frequence = double(li.QuadPart);
+
+    QueryPerformanceCounter(&li);
+    counter_start_time = li.QuadPart;
+}
+
+double GetPreciseTime()
+{
+    LARGE_INTEGER li;
+    QueryPerformanceCounter(&li);
+    return ( double(li.QuadPart-counter_start_time)/cpu_frequence );
+}
+
+#else
+
+void StartCounter() { }
+
+#define GetPreciseTime() double(SDL_GetTicks() * 0.001 )
+
+#endif
+
+
+
+} // end of anonymous time
 
 namespace poro {
 
@@ -63,7 +100,7 @@ PlatformDesktop::PlatformDesktop() :
 	mSleepingMode( PORO_MAXIMIZE_SLEEP ),
 	mPrintFramerate( false )
 {
-
+	StartCounter();
 }
 
 PlatformDesktop::~PlatformDesktop()
@@ -144,13 +181,13 @@ void PlatformDesktop::StartMainLoop()
 	if( mApplication )
 		mApplication->Init();
 
-    types::Float32  mFrameCountLastTime = 0;
-    int             mFrameRateUpdateCounter = 0;
-	types::Float32	mProcessorRate = 0;
+    types::Double32		mFrameCountLastTime = 0;
+    int					mFrameRateUpdateCounter = 0;
+	types::Double32		mProcessorRate = 0;
 
 	while( mRunning )
 	{
-	    const types::Float32 time_before = GetUpTime();
+	    const types::Double32 time_before = GetUpTime();
 
 		SingleLoop();
 
@@ -158,8 +195,8 @@ void PlatformDesktop::StartMainLoop()
 			mRunning = false;
 
 
-        const types::Float32 time_after = GetUpTime();
-        const types::Float32 elapsed_time = ( time_after - time_before );
+        const types::Double32 time_after = GetUpTime();
+        const types::Double32 elapsed_time = ( time_after - time_before );
         if( elapsed_time < mOneFrameShouldLast )
             Sleep( mOneFrameShouldLast - elapsed_time );
 
@@ -169,14 +206,14 @@ void PlatformDesktop::StartMainLoop()
 		mProcessorRate += ( elapsed_time / mOneFrameShouldLast );
         mFrameCount++;
         mFrameRateUpdateCounter++;
-        if( ( GetUpTime() - mFrameCountLastTime ) >= 1.f )
+        if( ( GetUpTime() - mFrameCountLastTime ) >= 1.0 )
         {
             mFrameCountLastTime = GetUpTime();
             mFrameRate = mFrameRateUpdateCounter;
             mFrameRateUpdateCounter = 0;
 
 			if( mPrintFramerate )
-				std::cout << "Fps: " << mFrameRate << " (CPU): " << ( mProcessorRate / (types::Float32)mFrameRate ) * 100.f << "%" << std::endl;
+				std::cout << "Fps: " << mFrameRate << " (CPU): " << ( mProcessorRate / (types::Double32)mFrameRate ) * 100.f << "%" << std::endl;
 			
 			mProcessorRate = 0;
         }
@@ -190,33 +227,33 @@ void PlatformDesktop::StartMainLoop()
 void PlatformDesktop::SingleLoop() 
 {
 	if( mEventRecorder )
-		mEventRecorder->StartOfFrame( GetUpTime() );
+		mEventRecorder->StartOfFrame( GetTime() );
 
 	HandleEvents();
 
 	poro_assert( GetApplication() );
 	poro_assert( mGraphics );
 
-	float dt = mOneFrameShouldLast;
+	types::Double32 dt = mOneFrameShouldLast;
 	if( mFixedTimeStep == false )
 	{
-		static types::Float32 last_time_update_called = 0;
-		dt = ( GetUpTime() - last_time_update_called );
+		static types::Double32 last_time_update_called = 0;
+		dt = (types::Double32)( GetUpTime() - last_time_update_called );
 		last_time_update_called = GetUpTime();
 	}
 
-	GetApplication()->Update( dt );
+	GetApplication()->Update( (types::Float32)(dt) );
 
 	mGraphics->BeginRendering();
-	GetApplication ()->Draw(mGraphics);
+	GetApplication()->Draw(mGraphics);
 	mGraphics->EndRendering();
 
 	if( mEventRecorder )
-		mEventRecorder->EndOfFrame( GetUpTime() );
+		mEventRecorder->EndOfFrame( GetTime() );
 }
 //-----------------------------------------------------------------------------
 
-void PlatformDesktop::Sleep( types::Float32 seconds )
+void PlatformDesktop::Sleep( types::Double32 seconds )
 {
 	if( mSleepingMode == PORO_NEVER_SLEEP ) {
 		return;
@@ -225,7 +262,7 @@ void PlatformDesktop::Sleep( types::Float32 seconds )
 		SDL_Delay( 0 );
 	}
 	else if( mSleepingMode == PORO_MAXIMIZE_SLEEP ) {
-		SDL_Delay( (Uint32)( seconds * 1000.f ) );
+		SDL_Delay( (Uint32)( seconds * 1000.0 ) );
 	}
 }
 //-----------------------------------------------------------------------------
@@ -322,9 +359,9 @@ void PlatformDesktop::HandleEvents()
 }
 //-----------------------------------------------------------------------------
 
-types::Float32 PlatformDesktop::GetUpTime() 
+types::Double32 PlatformDesktop::GetUpTime() 
 {
-	return (types::Float32)( SDL_GetTicks() ) * 0.001f;
+	return GetPreciseTime();
 }
 
 void PlatformDesktop::SetWindowSize( int width, int height ) 

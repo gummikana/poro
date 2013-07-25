@@ -54,11 +54,11 @@ public:
 	virtual void Destroy();
 	
 	virtual int				GetFrameNum();
-	virtual types::Float32	GetUpTime();
+	virtual types::Double32	GetUpTime();
 	virtual	int				GetFrameRate();
 	virtual int				GetWidth() { return mWidth; };
 	virtual int				GetHeight() { return mHeight; };
-	virtual void			Sleep( types::Float32 seconds );
+	virtual void			Sleep( types::Double32 seconds );
 
 	virtual void SetFrameRate(int targetRate, bool fixedTimeStep = true);
 

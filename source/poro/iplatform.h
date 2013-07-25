@@ -102,10 +102,10 @@ public:
 	virtual void	        SetFrameRate( int targetRate, bool fixed_timestep = true );
 	virtual int             GetFrameRate()						{ poro_assert( false ); return 0; }
 	virtual int		        GetFrameNum()						{ poro_assert( false ); return 0; }
-	virtual void	        Sleep( types::Float32 seconds )		{ poro_assert( false ); }
+	virtual void	        Sleep( types::Double32 seconds )	{ poro_assert( false ); }
 	virtual void			SetSleepingMode( int sleep_mode )	{ poro_assert( false ); }
-	virtual types::Float32  GetUpTime()							{ poro_assert( false ); return 0; }
-	virtual types::Float32	GetTime()							{ return GetUpTime(); }
+	virtual types::Double32	GetUpTime()							{ poro_assert( false ); return 0; }
+	virtual types::Float32	GetTime()							{ return (types::Float32)GetUpTime(); }
 	virtual void			SetPrintFramerate( bool fps )		{ }
 
 	// event recording
