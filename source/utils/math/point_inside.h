@@ -64,6 +64,22 @@ bool DoesLineAndBoxCollide( const CVector2< PointType >& p1, const CVector2< Poi
 bool TestLineAABB( const CVector2< PointType >& p1, const CVector2< PointType >& p2, 
 						   const CVector2< PointType >& rect_low, const CVector2< PointType >& rect_high ); 
 
+template< class PType >
+bool TestAABBAABBIntersection( const CVector2< PType >& a_min, const CVector2< PType >& a_max,
+							  const CVector2< PType >& b_min, const CVector2< PType >& b_max )
+{
+    if (a_max.x < b_min.x || 
+        a_max.y < b_min.y || 
+        a_min.x > b_max.x || 
+        a_min.y > b_max.y) 
+    {
+        return false;
+    }
+    return true;
+}
+
+
+
 } // end of namespace math
 } // end of namespace ceng
 
