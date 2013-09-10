@@ -72,22 +72,14 @@ CVector2< Type > Cross( Type s, const CVector2< Type >& a)
 	return CVector2< Type >(-s * a.y, s * a.x);
 }
 
+// ----------------------------------------------------------------------------
+
 template< class Type >
 CVector2< Type > operator * (const CMat22< Type >& A, const CVector2< Type >& v)
 {
 	return CVector2< Type >(A.col1.x * v.x + A.col2.x * v.y, A.col1.y * v.x + A.col2.y * v.y);
 }
-/*
-inline Vec2 operator + (const Vec2& a, const Vec2& b)
-{
-	return Vec2(a.x + b.x, a.y + b.y);
-}
 
-inline Vec2 operator - (const Vec2& a, const Vec2& b)
-{
-	return Vec2(a.x - b.x, a.y - b.y);
-}
-*/
 template< class Type >
 CVector2< Type > operator * ( Type s, const CVector2< Type >& v)
 {
@@ -106,6 +98,8 @@ CMat22< Type > operator * (const CMat22< Type >& A, const CMat22< Type >& B)
 	return CMat22< Type >(A * B.col1, A * B.col2);
 }
 
+// ----------------------------------------------------------------------------
+
 template< class Type >
 CVector2< Type > Abs(const CVector2< Type >& a)
 {
@@ -118,12 +112,15 @@ CMat22< Type > Abs(const CMat22< Type >& A)
 	return CMat22< Type >(Abs(A.col1), Abs(A.col2));
 }
 
+// ----------------------------------------------------------------------------
+
 template< class Type >
 inline Type Sign( Type value )
 {
 	return value < (Type)0 ? (Type)-1 : (Type)1;
 }
 
+// ----------------------------------------------------------------------------
 
 template< class Type >
 CVector2< Type > Mul( const CVector2< Type >& a, const CVector2< Type >& b )
@@ -210,6 +207,7 @@ inline CMat22< Type > Mul( const CMat22< Type >& A, const CMat22< Type >& B )
 	return C;
 }
 
+// ----------------------------------------------------------------------------
 
 template< class Type >
 inline CVector2< float > ClosestPointOnLineSegment( const CVector2< Type >& a, const CVector2< Type >& b, const CVector2< Type >& p )
@@ -239,6 +237,8 @@ inline CVector2< float > ClosestPointOnLineSegment( const CVector2< Type >& a, c
 	return CVector2< float >( a ) + v;
 }
 
+// ----------------------------------------------------------------------------
+
 template< class Type >
 inline float DistanceFromLineSquared( const CVector2< Type >& a, const CVector2< Type >& b, const CVector2< Type >& p )
 {
@@ -247,11 +247,15 @@ inline float DistanceFromLineSquared( const CVector2< Type >& a, const CVector2<
 	return delta.LengthSquared();
 }
 
+// ----------------------------------------------------------------------------
+
 template< class Type >
 inline float DistanceFromLine( const CVector2< Type >& a, const CVector2< Type >& b, const CVector2< Type >& p )
 {
 	return sqrtf( (float)DistanceFromLineSquared( a, b, p ) );
 }
+
+// ----------------------------------------------------------------------------
 
 template< class T >
 bool LineIntersection( const CVector2< T >& startA, const CVector2< T >& endA,
@@ -282,23 +286,30 @@ bool LineIntersection( const CVector2< T >& startA, const CVector2< T >& endA,
 	return true;
 }
 
-// Random number in range [-1,1]
-/*inline float Random()
+// ----------------------------------------------------------------------------
+
+template< class PType >
+float DistanceFromAABB( const CVector2< PType >& point, const CVector2< PType >& aabb_min, const CVector2< PType >& aabb_max )
 {
-	float r = (float)rand();
-	r /= RAND_MAX;
-	r = 2.0f * r - 1.0f;
-	return r;
+	if( IsPointInsideAABB( point, aabb_min, aabb_max ) ) return 0;
+
+	float lowest = 0;
+	float temp = ceng::math::DistanceFromLineSquared( aabb_min, types::ivector2( aabb_max.x, aabb_min.y ), point );
+	if( temp < lowest ) lowest = temp;
+
+	temp = ceng::math::DistanceFromLineSquared( types::ivector2( aabb_max.x, aabb_min.y ), types::ivector2( aabb_max.x, aabb_max.y ), point );
+	if( temp < lowest ) lowest = temp;
+
+	temp = ceng::math::DistanceFromLineSquared( types::ivector2( aabb_max.x, aabb_max.y ), types::ivector2( aabb_min.x, aabb_max.y ), point );
+	if( temp < lowest ) lowest = temp;
+
+	temp = ceng::math::DistanceFromLineSquared( types::ivector2( aabb_min.x, aabb_max.y ), types::ivector2( aabb_min.x, aabb_min.y ), point );
+	if( temp < lowest ) lowest = temp;
+
+	return sqrtf( lowest );
 }
 
-inline float Random(float lo, float hi)
-{
-	float r = (float)rand();
-	r /= RAND_MAX;
-	r = (hi - lo) * r + lo;
-	return r;
-}*/
-
+// ----------------------------------------------------------------------------
 } // end of namespace math
 } // end of namespace ceng
 
