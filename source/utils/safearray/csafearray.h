@@ -98,7 +98,7 @@ public:
 
 	inline const Type& At( SizeType i ) const
 	{
-		if( i < 0 || i >= size )
+		if( i < 0 || i >= _size )
 			return Type();
 
 		return data[ i ];
@@ -106,14 +106,14 @@ public:
 
 	inline const Type& Rand( SizeType i ) const
 	{
-		cassert( !( i < 0 || i >= size ) );
+		cassert( !( i < 0 || i >= _size ) );
 
 		return data[ i ];
 	}
 
 	inline Type& Rand( SizeType i )
 	{
-		cassert( !( i < 0 || i >= size ) );
+		cassert( !( i < 0 || i >= _size ) );
 
 		return data[ i ];
 	}
