@@ -108,13 +108,15 @@ double CLGMRandom::Next()
 
 static int g_seed;
 
-inline void set_fastrand_seed( int seed ) {
+void set_fastrand_seed( int seed ) {
 	g_seed = seed ^ 13 - 1;
 }
 
-inline int fastrand() { 
+int fastrand() { 
   g_seed = (214013*g_seed+2531011); 
   return (g_seed>>16)&0x7FFF; 
+
+  // return ceng::Global_LGMRandom::Random( 0, 0x7FFF );
 } 
 
 ///////////////////////////////////////////////////////////////////////////////
