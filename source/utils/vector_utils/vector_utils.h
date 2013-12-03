@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <sstream>
+#include <fstream>
 
 namespace ceng {
 
@@ -145,6 +147,52 @@ struct VectorXmlSerializer
 	std::vector< T* >& array;
 	std::string name;
 };
+//-----------------------------------------------------------------------------
+
+// load from a file, saves each element as a separate element
+template< class T >
+void VectorLoadFromTxtFile( std::vector< T >& array, const std::string& filename )
+{
+	std::ifstream file( filename.c_str() );
+	std::string temp;
+	while( std::getline( file, temp ) ) 
+	{
+		T result = T();
+		std::stringstream ss( temp );
+		ss.operator>>( result );
+		array.push_back( result );
+	}
+
+	file.close();
+}
+
+template<>
+void VectorLoadFromTxtFile< std::string >( std::vector< std::string >& array, const std::string& filename );
+
+inline void VectorLoadFromTxtFile( std::vector< std::string >& array, const std::string& filename )
+{
+	std::ifstream file( filename.c_str() );
+	std::string temp;
+	while( std::getline( file, temp ) ) 
+	{
+		array.push_back( temp );
+	}
+
+	file.close();
+}
+
+// saves a vector to an file... each line is a separate element
+template< class T >
+void VectorSaveToTxtFile( std::vector< T >& array, const std::string& filename )
+{
+	std::ofstream file( filename.c_str(), std::ios::out );
+	for( std::size_t i = 0; i < array.size(); ++i ) 
+	{
+		file << array[i] << std::endl;
+	}
+	file.close();
+}
+
 //-----------------------------------------------------------------------------
 
 } //end of namespace ceng
