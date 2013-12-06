@@ -127,6 +127,10 @@ namespace {
 		for ( int i = 0 ; i < len; ++i )
 		{
 			Uint32 value = *( raw_pixel_data + i );
+
+			// Swap the bytes. ABGR to ARGB.
+			value = ((value & 0x000000FF) << 16) | ((value & 0x00FF0000) >> 16) | (value & 0xFF00FF00);
+
 			int x = i % w;
 			int y = (int)floor((double)i / w);
 			raw_pixel_data_copy->Rand( x, y ) = value;
