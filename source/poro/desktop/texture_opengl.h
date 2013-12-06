@@ -83,7 +83,9 @@ public:
 	virtual void DeletePixelData()
 	{
 		// HACK: inlined stb because include messes things up
-		free(mPixelData);
+		if (mPixelData != NULL)
+			free(mPixelData);
+
 		mPixelData = NULL;
 	}
 

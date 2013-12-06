@@ -110,23 +110,29 @@ namespace {
 	ceng::CArray2D< Uint32 >* GetPixelDataCopy( poro::ITexture* image)
 	{
 		//Copy the raw pixel data
-		ceng::CArray2D< Uint32 >* rawPixelDataCopy;
+		ceng::CArray2D< Uint32 >* raw_pixel_data_copy;
 
 		int w = image->GetWidth();
 		int h = image->GetHeight();
-		unsigned int* rawPixelData = reinterpret_cast< unsigned int * >( image->GetPixelData() );
-		rawPixelDataCopy = new ceng::CArray2D< Uint32 >( w, h );
+		unsigned char* raw_pixel_data_orig = image->GetPixelData();
+
+		if ( raw_pixel_data_orig == NULL )
+			return NULL;
+
+
+		Uint32* raw_pixel_data = reinterpret_cast< Uint32* >( raw_pixel_data_orig );
+		raw_pixel_data_copy = new ceng::CArray2D< Uint32 >( w, h );
 		
 		int len = w * h;
 		for ( int i = 0 ; i < len; ++i )
 		{
-			unsigned int value = *( rawPixelData + i );
+			Uint32 value = *( raw_pixel_data + i );
 			int x = i % w;
 			int y = (int)floor((double)i / w);
-			rawPixelDataCopy->Rand( x, y ) = value;
+			raw_pixel_data_copy->Rand( x, y ) = value;
 		}
 
-		return rawPixelDataCopy;
+		return raw_pixel_data_copy;
 	}
 
 	//----------------------------------------------------------------------------
@@ -141,10 +147,10 @@ namespace {
 			poro::ITexture* image = graphics->LoadTexture( filename, true );
 			std::string time_stamp = GetTimeStampForFile( filename );
 
-			ceng::CArray2D< Uint32 >* rawPixelDataCopy = GetPixelDataCopy( image );
+			ceng::CArray2D< Uint32 >* raw_pixel_data_copy = GetPixelDataCopy( image );
 			image->DeletePixelData();
 
-			TextureBuffer* data = new TextureBuffer( image, rawPixelDataCopy, time_stamp );
+			TextureBuffer* data = new TextureBuffer( image, raw_pixel_data_copy, time_stamp );
 			mTextureBuffer[ filename ] = data;
 			return data;
 		}
@@ -172,14 +178,14 @@ namespace {
 			
 				poro::ITexture* image = graphics->LoadTexture( filename, true );
 
-				ceng::CArray2D< Uint32 >* rawPixelDataCopy = GetPixelDataCopy( image );
+				ceng::CArray2D< Uint32 >* raw_pixel_data_copy = GetPixelDataCopy( image );
 				image->DeletePixelData();
 
 				std::cout << "Loading of new texture done: " << filename << std::endl;
 
 				i->second->texture = image;
 				i->second->time_stamp = time_stamp;
-				i->second->image_data = rawPixelDataCopy;
+				i->second->image_data = raw_pixel_data_copy;
 			}
 
 			// else - don't check timestamps
