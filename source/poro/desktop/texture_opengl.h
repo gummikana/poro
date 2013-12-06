@@ -25,6 +25,7 @@
 #include "../libraries.h"
 #include "../poro_types.h"
 
+
 namespace poro {
 
 class TextureOpenGL : public ITexture
@@ -37,7 +38,8 @@ public:
 		mExternalSizeX( 1.f ), 
 		mExternalSizeY( 1.f ),
 		mRealSizeX( 0 ),
-		mRealSizeY( 0 )
+		mRealSizeY( 0 ),
+		mPixelData( NULL )
 	{ 
 		mUv[ 0 ] = 0; 
 		mUv[ 1 ] = 0; 
@@ -52,7 +54,8 @@ public:
 		mExternalSizeX( other->mExternalSizeX ), 
 		mExternalSizeY( other->mExternalSizeY ),
 		mRealSizeX( other->mRealSizeX ),
-		mRealSizeY( other->mRealSizeY )
+		mRealSizeY( other->mRealSizeY ),
+		mPixelData( other->mPixelData )
 	{ 
 		mUv[ 0 ] = other->mUv[0]; 
 		mUv[ 1 ] = other->mUv[1]; 
@@ -71,6 +74,19 @@ public:
 	virtual std::string GetFilename() const								{ return mFilename; }
 	void				SetFilename( const types::string& filename )	{ mFilename = filename; }
 
+
+	virtual unsigned char* GetPixelData() const
+	{
+		return mPixelData;
+	}
+
+	virtual void DeletePixelData()
+	{
+		// HACK: inlined stb because include messes things up
+		free(mPixelData);
+		mPixelData = NULL;
+	}
+
 	virtual void SetUVCoords( float x1, float y1, float x2, float y2 ) 
 	{
 		mUv[ 0 ] = x1 * ( (float)mWidth / (float)mRealSizeX );
@@ -78,7 +94,6 @@ public:
 		mUv[ 2 ] = x2 * ( (float)mWidth / (float)mRealSizeX );
 		mUv[ 3 ] = y2 * ( (float)mHeight / (float)mRealSizeY );
 	}
-
 
 	types::Uint32	mTexture;
 	int				mWidth;
@@ -91,6 +106,7 @@ public:
 	int				mRealSizeX;
 	int				mRealSizeY;
 
+	unsigned char*	mPixelData;
 	types::string	mFilename;
 };
 

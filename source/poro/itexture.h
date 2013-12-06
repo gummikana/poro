@@ -46,11 +46,14 @@ public:
 	}
 
 	virtual types::string GetFilename() const = 0;
-	/*{ 
+	/*{
 		assert( false ); 
 		// Implement this ! 
 	}*/
 
+	virtual unsigned char* GetPixelData() const = 0;
+
+	virtual void DeletePixelData() = 0;
 };
 
 } // end o namespace poro

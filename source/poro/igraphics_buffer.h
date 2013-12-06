@@ -33,6 +33,7 @@ namespace poro {
 		virtual void		Release() { }
 		
 		virtual ITexture*	LoadTexture( const types::string& filename ) { return NULL; }
+		virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data ) { return NULL; }
 		virtual void		ReleaseTexture( ITexture* texture )  {  }
 
 		//IGraphics

@@ -236,7 +236,7 @@ namespace {
 	
 	///////////////////////////////////////////////////////////////////////////
 
-	TextureOpenGL* CreateImage( unsigned char* pixels, int w, int h, int bpp )
+	TextureOpenGL* CreateImage( unsigned char* pixels, int w, int h, int bpp, bool store_raw_pixel_data )
 	{
 		Uint32 oTexture = 0;
 		float uv[4];
@@ -253,7 +253,7 @@ namespace {
 		real_size[1] = h;
 		bool resize_to_power_of_two = OPENGL_SETTINGS.textures_resize_to_power_of_two;
 
-		bool release_new_pixels = false;
+		bool image_resized = false;
 		unsigned char* new_pixels = pixels;
 		
 	
@@ -266,7 +266,7 @@ namespace {
 			{
 				
 				new_pixels = ResizeImage( pixels, w, h, nw, nh );
-				release_new_pixels = true;
+				image_resized = true;
 
 				uv[0] = 0;						// Min X
 				uv[1] = 0;						// Min Y
@@ -295,15 +295,26 @@ namespace {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		}
 		
-		if( release_new_pixels )
-			delete [] new_pixels;
-
 		TextureOpenGL* result = new TextureOpenGL;
 		result->mTexture = oTexture;
 		result->mWidth = w;
 		result->mHeight = h;
 		result->mRealSizeX = real_size[ 0 ];
 		result->mRealSizeY = real_size[ 1 ];
+
+		if ( !store_raw_pixel_data )
+		{
+			delete [] new_pixels;
+			new_pixels = NULL;
+		}
+
+		result->mPixelData = new_pixels;
+
+		if ( image_resized )
+		{
+			stbi_image_free( pixels );
+			pixels = NULL;
+		}
 
 		for( int i = 0; i < 4; ++i )
 			result->mUv[ i ] = uv[ i ];
@@ -381,7 +392,7 @@ namespace {
 		return "";
 	}
 
-	TextureOpenGL* LoadTextureForReal( const types::string& filename )
+	TextureOpenGL* LoadTextureForReal( const types::string& filename, bool store_raw_pixel_data )
 	{
 		TextureOpenGL* result = NULL;
 		
@@ -408,8 +419,7 @@ namespace {
 #endif
 		}
 
-		result = CreateImage( data, x, y, bpp );
-		stbi_image_free(data);
+		result = CreateImage( data, x, y, bpp, store_raw_pixel_data );
 
 		return result;
 	}
@@ -430,10 +440,7 @@ namespace {
 		}
 
 		if( data )
-			result = CreateImage( data, width, height, bpp );
-
-		delete [] data;
-		data = NULL;
+			result = CreateImage( data, width, height, bpp , false);
 
 		return result;
 	}
@@ -801,7 +808,14 @@ void GraphicsOpenGL::SetTextureData( ITexture* texture, void* data )
 
 ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename )
 {
-	ITexture* result = LoadTextureForReal( filename );
+	ITexture* result = LoadTexture( filename, false );
+
+	return result;
+}
+
+ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename, bool store_raw_pixel_data )
+{
+	ITexture* result = LoadTextureForReal( filename, store_raw_pixel_data );
 	
 	if( result == NULL )
 		poro_logger << "Couldn't load image: " << filename << std::endl;

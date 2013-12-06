@@ -44,17 +44,21 @@ Sprite* LoadSpriteFromAtlas( const Texture& t )
 		return NULL;
 	}
 
-	poro::ITexture* clone = poro::IPlatform::Instance()->GetGraphics()->CloneTexture( from_memory );
+
+	poro::ITexture* texture_clone = poro::IPlatform::Instance()->GetGraphics()->CloneTexture( from_memory );
 	
 	int w = t.width;
 	int h = t.height;
 
-	clone->SetUVCoords( t.left, t.top, t.right, t.bottom );
-	clone->SetExternalSize( w, h );
+	texture_clone->SetUVCoords( t.left, t.top, t.right, t.bottom );
+	texture_clone->SetExternalSize( w, h );
+
+	ceng::CArray2D< Uint32 >* image_data = GetImageData( atlas_name );
 
 	Sprite* result = new Sprite;
-	result->SetTexture( clone );
-	result->SetSize( (int)clone->GetWidth(), (int)clone->GetHeight() );
+	result->SetTexture( texture_clone );
+	result->SetImageData( image_data );
+	result->SetSize( (int)texture_clone->GetWidth(), (int)texture_clone->GetHeight() );
 	result->SetX(t.x);
 	result->SetY(t.y);
 

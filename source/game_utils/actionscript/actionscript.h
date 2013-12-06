@@ -35,7 +35,10 @@
 
 #include "../../utils/random/random.h"
 
+
 namespace as {
+
+typedef poro::types::Uint32 Uint32;
 
 void trace( const std::string& what );
 
@@ -58,9 +61,10 @@ public:
 
 };
 
-poro::ITexture* GetTexture( const std::string& filename );
-as::Sprite*		LoadSprite( const std::string& filename );
-as::TextSprite* LoadTextSprite( const std::string& font_file );
+poro::ITexture*				GetTexture( const std::string& filename );
+ceng::CArray2D< Uint32 >*	GetImageData( const std::string& filename );
+as::Sprite*					LoadSprite( const std::string& filename );
+as::TextSprite*				LoadTextSprite( const std::string& font_file );
 
 } // end of namespace as
 

@@ -98,6 +98,7 @@ public:
 	virtual void		SetTextureData(ITexture* texture, void* data );
 
 	virtual ITexture*	LoadTexture( const types::string& filename ) = 0;
+	virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data ) = 0;
 	virtual void		ReleaseTexture( ITexture* texture )  = 0;
 
 	//-------------------------------------------------------------------------

@@ -18,7 +18,6 @@
  *
  ***************************************************************************/
 
-
 #include "sprite.h"
 #include "../../utils/singleton/csingletonptr.h"
 #include "../../utils/math/cvector2_serializer.h"
@@ -37,6 +36,8 @@
 
 namespace as { 
 
+typedef poro::types::Uint32 Uint32;
+
 ///////////////////////////////////////////////////////////////////////////////
 namespace {
 
@@ -47,13 +48,15 @@ namespace {
 			time_stamp( "" )
 		{ }
 		
-		TextureBuffer( poro::ITexture* texture, const std::string& time_stamp ) :
-			texture( texture ), 
+		TextureBuffer( poro::ITexture* texture, ceng::CArray2D< Uint32 >*image_data, const std::string& time_stamp ) :
+			texture( texture ),
+			image_data( image_data ),
 			time_stamp( time_stamp )
 		{ }
 
 
 		poro::ITexture* texture;
+		ceng::CArray2D< Uint32 >* image_data;
 		std::string time_stamp;
 	};
 
@@ -102,6 +105,88 @@ namespace {
 		}
 	};
 
+	//----------------------------------------------------------------------------
+
+	ceng::CArray2D< Uint32 >* GetPixelDataCopy( poro::ITexture* image)
+	{
+		//Copy the raw pixel data
+		ceng::CArray2D< Uint32 >* rawPixelDataCopy;
+
+		int w = image->GetWidth();
+		int h = image->GetHeight();
+		unsigned int* rawPixelData = reinterpret_cast< unsigned int * >( image->GetPixelData() );
+		rawPixelDataCopy = new ceng::CArray2D< Uint32 >( w, h );
+		
+		int len = w * h;
+		for ( int i = 0 ; i < len; ++i )
+		{
+			unsigned int value = *( rawPixelData + i );
+			int x = i % w;
+			int y = (int)floor((double)i / w);
+			rawPixelDataCopy->Rand( x, y ) = value;
+		}
+
+		return rawPixelDataCopy;
+	}
+
+	//----------------------------------------------------------------------------
+
+	TextureBuffer* GetTextureBuffer( const std::string& filename )
+	{
+		TTextureBuffer::iterator i = mTextureBuffer.find( filename );
+
+		if( i == mTextureBuffer.end() )
+		{
+			poro::IGraphics* graphics = poro::IPlatform::Instance()->GetGraphics();
+			poro::ITexture* image = graphics->LoadTexture( filename, true );
+			std::string time_stamp = GetTimeStampForFile( filename );
+
+			ceng::CArray2D< Uint32 >* rawPixelDataCopy = GetPixelDataCopy( image );
+			image->DeletePixelData();
+
+			TextureBuffer* data = new TextureBuffer( image, rawPixelDataCopy, time_stamp );
+			mTextureBuffer[ filename ] = data;
+			return data;
+		}
+		else
+		{
+			// if check the timestamp
+
+			std::string time_stamp = GetTimeStampForFile( filename );
+			if( i->second->time_stamp != time_stamp ) 
+			{
+				// debug reasons
+				std::cout << "Reloading texture file: " << filename << std::endl;
+				// reload
+				poro::IGraphics* graphics = poro::IPlatform::Instance()->GetGraphics();
+				graphics->ReleaseTexture( i->second->texture );
+
+				if ( i->second->image_data != NULL )
+				{
+					i->second->image_data->Clear();
+					delete i->second->image_data;
+					i->second->image_data = NULL;
+				}
+
+				std::cout << "Release of texture done: " << filename << std::endl;
+			
+				poro::ITexture* image = graphics->LoadTexture( filename, true );
+
+				ceng::CArray2D< Uint32 >* rawPixelDataCopy = GetPixelDataCopy( image );
+				image->DeletePixelData();
+
+				std::cout << "Loading of new texture done: " << filename << std::endl;
+
+				i->second->texture = image;
+				i->second->time_stamp = time_stamp;
+				i->second->image_data = rawPixelDataCopy;
+			}
+
+			// else - don't check timestamps
+			return i->second;
+		}
+	}
+
 } // end of anonymous namespace
 //-----------------------------------------------------------------------------
 
@@ -115,7 +200,7 @@ void PreloadTexture( const std::string& filename )
 		poro::ITexture* image = graphics->LoadTexture( filename );
 		std::string time_stamp = GetTimeStampForFile( filename );
 
-		TextureBuffer* data = new TextureBuffer( image, time_stamp );
+		TextureBuffer* data = new TextureBuffer( image, NULL, time_stamp );
 		mTextureBuffer[ filename ] = data;
 		// return image;
 	}
@@ -139,48 +224,22 @@ void ReleasePreloadedTexture( const std::string& filename )
 
 //-----------------------------------------------------------------------------
 
+
+
 poro::ITexture* GetTexture( const std::string& filename )
 {
-	TTextureBuffer::iterator i = mTextureBuffer.find( filename );
-
-	if( i == mTextureBuffer.end() )
-	{
-		poro::IGraphics* graphics = poro::IPlatform::Instance()->GetGraphics();
-		poro::ITexture* image = graphics->LoadTexture( filename );
-		std::string time_stamp = GetTimeStampForFile( filename );
-
-		TextureBuffer* data = new TextureBuffer( image, time_stamp );
-		mTextureBuffer[ filename ] = data;
-		return image;
-	}
-	else
-	{
-		// if check the timestamp
-
-		std::string time_stamp = GetTimeStampForFile( filename );
-		if( i->second->time_stamp != time_stamp ) 
-		{
-			// debug reasons
-			std::cout << "Reloading texture file: " << filename << std::endl;
-			// reload
-			poro::IGraphics* graphics = poro::IPlatform::Instance()->GetGraphics();
-			graphics->ReleaseTexture( i->second->texture );
-
-			std::cout << "Release of texture done: " << filename << std::endl;
-		
-			poro::ITexture* image = graphics->LoadTexture( filename );
-
-			std::cout << "Loading of new texture done: " << filename << std::endl;
-
-			i->second->texture = image;
-			i->second->time_stamp = time_stamp;
-
-		}
-
-		// else - don't check timestamps
-		return i->second->texture;
-	}
+	TextureBuffer* data = GetTextureBuffer( filename );
+	return data->texture;
 }
+
+ceng::CArray2D< Uint32 >* GetImageData( const std::string& filename )
+{
+	TextureBuffer* data = GetTextureBuffer( filename );
+	return data->image_data;
+}
+
+//-----------------------------------------------------------------------------
+
 
 //-----------------------------------------------------------------------------
 
@@ -198,19 +257,18 @@ Sprite* LoadSprite( const std::string& filename )
 		result->SetCenterOffset( sprite_data.offset );
 		result->SetScale( sprite_data.scale.x, sprite_data.scale.y );
 		if( sprite_data.default_animation.empty() == false ) 
-		{
 			result->PlayAnimation( sprite_data.default_animation );
-			result->PlayRectAnimation( sprite_data.default_animation );
-		}
 
 		poro::ITexture* image = GetTexture( sprite_data.filename );
 		if( image == NULL ) return result;
 
+		ceng::CArray2D< Uint32 >* image_data = GetImageData( sprite_data.filename );
+
 		result->SetTexture( image );
+		result->SetImageData( image_data );
 		result->SetSize( (int)image->GetWidth(), (int)image->GetHeight() );
 
 		result->SetFilename( filename );
-		
 
 		return result;
 	}
@@ -224,7 +282,10 @@ Sprite* LoadSprite( const std::string& filename )
 
 		if( image == NULL ) return result;
 
+		ceng::CArray2D< Uint32 >* image_data = GetImageData( filename );
+
 		result->SetTexture( image );
+		result->SetImageData( image_data );
 		result->SetSize( (int)image->GetWidth(), (int)image->GetHeight() );
 
 		result->SetFilename( filename );
@@ -243,6 +304,7 @@ Sprite::Sprite() :
 	mBlendMode( poro::IGraphics::BLEND_MODE_NORMAL ),
 	mName( "" ),
 	mTexture( NULL ),
+	mImageData( NULL ),
 	mSize( 0, 0 ),
 	mCenterOffset( 0, 0 ),
 	mXForm(),
@@ -641,22 +703,18 @@ void Sprite::MoveCenterTo( const types::vector2& p ) {
 
 //=============================================================================
 
-namespace {
-types::rect FigureOutRectPos( int frame, int width, int height, int how_many_per_row = 4, int x_starting_pos = 0, int y_starting_pos = 0 )
+types::rect Sprite::RectAnimation::FigureOutRectPos()
 {
-	// int how_many_per_row = 4;
-
-	int y_pos = (int)( frame / how_many_per_row );
-	int x_pos = frame % how_many_per_row;
+	int y_pos = (int)( mCurrentFrame / mFramesPerRow );
+	int x_pos = mCurrentFrame % mFramesPerRow;
 
 	return 
 		types::rect( 
-		(float)( x_starting_pos + x_pos * width ), 
-		(float)( y_starting_pos + y_pos * height ), 
-		(float)width, 
-		(float)height );
+		(float)( mPositionX + x_pos * mWidth ), 
+		(float)( mPositionY + y_pos * mHeight ), 
+		(float)mWidth, 
+		(float)mHeight );
 }
-} // end of anonymous namespace 
 
 void Sprite::RectAnimation::Update( Sprite* sprite, float dt )
 {
@@ -706,7 +764,7 @@ void Sprite::RectAnimation::SetFrame( Sprite* sprite, int frame, bool update_any
 
 		cassert( sprite );
 		mCurrentFrame = frame;
-		sprite->SetRect( FigureOutRectPos( mCurrentFrame, mWidth, mHeight, mFramesPerRow, mPositionX, mPositionY ) );
+		sprite->SetRect( FigureOutRectPos() );
 		
 		if( mHasNewCenterOffset ) sprite->SetCenterOffset( mCenterOffset );
 

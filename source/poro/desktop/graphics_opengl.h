@@ -60,6 +60,7 @@ public:
 	virtual ITexture*	CloneTexture( ITexture* other );
 	virtual void		SetTextureData(ITexture* texture, void* data );
 	virtual ITexture*	LoadTexture( const types::string& filename );
+	virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data );
 	virtual void		ReleaseTexture( ITexture* texture );
 
 	//-------------------------------------------------------------------------

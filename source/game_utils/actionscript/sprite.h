@@ -35,11 +35,14 @@
 #include "../../utils/math/math_utils.h"
 #include "../../utils/camera/icamera.h"
 #include "../../utils/xml/cxml.h"
+#include "../../utils/array2d/carray2d.h"
 
 #include "displayobjectcontainer.h"
 
 
 namespace as {
+
+typedef poro::types::Uint32 Uint32;
 
 // ----------------------------------------------------------------------------
 
@@ -94,9 +97,13 @@ public:
 	virtual types::vector2 GetTextureSize() const;
 	
 
-	void SetTexture( Image* texture );
-	void SetTextures( const std::vector< Image* >& textures );
-	Image* GetTexture();
+	void								SetTexture( Image* texture );
+	Image*								GetTexture();
+	void								Sprite::SetImageData( ceng::CArray2D< Uint32 >* image_data );
+	ceng::CArray2D< Uint32 >*			GetImageData();
+
+	//static Image*						GetTexture( const std::string& filename );
+	//static ceng::CArray2D< Uint32 >*	GetImageData( const std::string& filename );
 
 	void			SetZ( int z );
 	int				GetZ() const;
@@ -223,6 +230,7 @@ public:
 
 		std::vector< ChildAnimation* > mChildAnimations;
 
+		types::rect Sprite::RectAnimation::FigureOutRectPos();
 		void Update( Sprite* sprite, float dt );
 		void SetFrame( Sprite* sprite, int frame, bool update_anyhow );
 
@@ -280,6 +288,8 @@ protected:
 
 	std::string					mName;
 	Image*						mTexture;
+	ceng::CArray2D< Uint32 >*	mImageData;
+	
 	types::vector2				mSize;
 	types::vector2				mCenterOffset;
 	types::xform				mXForm;
@@ -479,12 +489,19 @@ inline bool Sprite::IsSpriteDead() const {
 }
 
 inline void Sprite::SetTexture( Image* texture ) { 
-	mTexture = texture; 
-	// mTextures[ 0 ] = texture; 
+	mTexture = texture;
 }
 
 inline Sprite::Image* Sprite::GetTexture() { 
 	return mTexture;
+}
+
+inline void Sprite::SetImageData( ceng::CArray2D< Uint32 >* image_data ) { 
+	mImageData = image_data;
+}
+
+inline ceng::CArray2D< Uint32 >* Sprite::GetImageData() { 
+	return mImageData;
 }
 
 inline void Sprite::SetZ( int z ) { 
