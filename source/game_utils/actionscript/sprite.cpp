@@ -242,11 +242,11 @@ void ReleasePreloadedTexture( const std::string& filename )
 
 poro::ITexture* GetTexture( const std::string& filename )
 {
-	TextureBuffer* data = GetTextureBuffer( filename );
+	TextureBuffer* buffer = GetTextureBuffer( filename );
 
 	if ( buffer == NULL ) return NULL;
 
-	return data->texture;
+	return buffer->texture;
 }
 
 ceng::CArray2D< Uint32 >* GetImageData( const std::string& filename, bool load_and_cache_if_needed )
