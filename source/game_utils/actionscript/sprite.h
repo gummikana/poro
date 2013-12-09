@@ -99,7 +99,7 @@ public:
 
 	void								SetTexture( Image* texture );
 	Image*								GetTexture();
-	void								Sprite::SetImageData( ceng::CArray2D< Uint32 >* image_data );
+	void								SetImageData( ceng::CArray2D< Uint32 >* image_data );
 	ceng::CArray2D< Uint32 >*			GetImageData();
 
 	//static Image*						GetTexture( const std::string& filename );
