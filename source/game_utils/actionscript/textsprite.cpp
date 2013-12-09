@@ -171,7 +171,7 @@ void TextSprite::RecalcuateRects()
 
 			// figure out mRealSize.x && mRealSize.y
 			types::vector2 min_p( FLT_MAX, FLT_MAX );
-			types::vector2 max_p( FLT_MIN, FLT_MIN );
+			types::vector2 max_p( -FLT_MAX, -FLT_MAX );
 			for( std::size_t i = 0; i < mOutRects.size(); ++i )
 			{
 				if( mOutRects[ i ].w >= 0 &&
