@@ -23,6 +23,7 @@
 #include "../../utils/math/cvector2_serializer.h"
 #include "../../utils/math/point_inside.h"
 #include "../../utils/filesystem/filesystem.h"
+#include "../../utils/imagetoarray/imagetoarray.h"
 
 #include "../tween/tween_utils.h"
 
@@ -148,13 +149,10 @@ namespace {
 		if( i == mTextureBuffer.end() )
 		{
 			poro::IGraphics* graphics = poro::IPlatform::Instance()->GetGraphics();
-			poro::ITexture* image = graphics->LoadTexture( filename, true );
+			poro::ITexture* image = graphics->LoadTexture( filename );
 			std::string time_stamp = GetTimeStampForFile( filename );
 
-			ceng::CArray2D< Uint32 >* raw_pixel_data_copy = GetPixelDataCopy( image );
-			image->DeletePixelData();
-
-			TextureBuffer* data = new TextureBuffer( image, raw_pixel_data_copy, time_stamp );
+			TextureBuffer* data = new TextureBuffer( image, NULL, time_stamp );
 			mTextureBuffer[ filename ] = data;
 			return data;
 		}
@@ -167,29 +165,31 @@ namespace {
 			{
 				// debug reasons
 				std::cout << "Reloading texture file: " << filename << std::endl;
-				// reload
+
+				// release old texture
 				poro::IGraphics* graphics = poro::IPlatform::Instance()->GetGraphics();
 				graphics->ReleaseTexture( i->second->texture );
 
+				std::cout << "Release of texture done: " << filename << std::endl;
+
+				// release old image data
 				if ( i->second->image_data != NULL )
 				{
 					i->second->image_data->Clear();
 					delete i->second->image_data;
 					i->second->image_data = NULL;
+
+					std::cout << "Release of image data done: " << filename << std::endl;
 				}
-
-				std::cout << "Release of texture done: " << filename << std::endl;
 			
-				poro::ITexture* image = graphics->LoadTexture( filename, true );
-
-				ceng::CArray2D< Uint32 >* raw_pixel_data_copy = GetPixelDataCopy( image );
-				image->DeletePixelData();
+				// reload
+				poro::ITexture* image = graphics->LoadTexture( filename );
 
 				std::cout << "Loading of new texture done: " << filename << std::endl;
 
 				i->second->texture = image;
 				i->second->time_stamp = time_stamp;
-				i->second->image_data = raw_pixel_data_copy;
+				i->second->image_data = NULL;
 			}
 
 			// else - don't check timestamps
@@ -242,10 +242,17 @@ poro::ITexture* GetTexture( const std::string& filename )
 	return data->texture;
 }
 
-ceng::CArray2D< Uint32 >* GetImageData( const std::string& filename )
+ceng::CArray2D< Uint32 >* GetImageData( const std::string& filename, bool load_and_cache_if_needed )
 {
 	TextureBuffer* data = GetTextureBuffer( filename );
-	return data->image_data;
+	ceng::CArray2D< Uint32 >* image_data = data->image_data;
+
+	if ( load_and_cache_if_needed && image_data == NULL)
+	{
+		LoadImage( filename, *image_data, true );
+		data->image_data = image_data;
+	}
+	return image_data;
 }
 
 //-----------------------------------------------------------------------------
@@ -269,13 +276,14 @@ Sprite* LoadSprite( const std::string& filename )
 		if( sprite_data.default_animation.empty() == false ) 
 			result->PlayAnimation( sprite_data.default_animation );
 
-		poro::ITexture* image = GetTexture( sprite_data.filename );
+		TextureBuffer* buffer = GetTextureBuffer( filename );
+		if ( buffer == NULL ) return result;
+
+		poro::ITexture* image = buffer->texture;
 		if( image == NULL ) return result;
 
-		ceng::CArray2D< Uint32 >* image_data = GetImageData( sprite_data.filename );
-
 		result->SetTexture( image );
-		result->SetImageData( image_data );
+		result->SetImageData( buffer->image_data );
 		result->SetSize( (int)image->GetWidth(), (int)image->GetHeight() );
 
 		result->SetFilename( filename );
@@ -288,14 +296,14 @@ Sprite* LoadSprite( const std::string& filename )
 
 		Sprite* result = new Sprite;
 
-		poro::ITexture* image = GetTexture( filename );
+		TextureBuffer* buffer = GetTextureBuffer( filename );
+		if ( buffer == NULL ) return result;
 
+		poro::ITexture* image = buffer->texture;
 		if( image == NULL ) return result;
 
-		ceng::CArray2D< Uint32 >* image_data = GetImageData( filename );
-
 		result->SetTexture( image );
-		result->SetImageData( image_data );
+		result->SetImageData( buffer->image_data );
 		result->SetSize( (int)image->GetWidth(), (int)image->GetHeight() );
 
 		result->SetFilename( filename );
