@@ -249,6 +249,7 @@ ceng::CArray2D< Uint32 >* GetImageData( const std::string& filename, bool load_a
 
 	if ( load_and_cache_if_needed && image_data == NULL)
 	{
+		image_data = new ceng::CArray2D< Uint32 >();
 		LoadImage( filename, *image_data, true );
 		data->image_data = image_data;
 	}
