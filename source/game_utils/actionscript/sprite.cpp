@@ -150,6 +150,9 @@ namespace {
 		{
 			poro::IGraphics* graphics = poro::IPlatform::Instance()->GetGraphics();
 			poro::ITexture* image = graphics->LoadTexture( filename );
+
+			if ( image == NULL ) return NULL;
+
 			std::string time_stamp = GetTimeStampForFile( filename );
 
 			TextureBuffer* data = new TextureBuffer( image, NULL, time_stamp );
@@ -184,6 +187,8 @@ namespace {
 			
 				// reload
 				poro::ITexture* image = graphics->LoadTexture( filename );
+
+				if ( image == NULL ) return NULL;
 
 				std::cout << "Loading of new texture done: " << filename << std::endl;
 
@@ -232,27 +237,32 @@ void ReleasePreloadedTexture( const std::string& filename )
 	}
 }
 
+
 //-----------------------------------------------------------------------------
-
-
 
 poro::ITexture* GetTexture( const std::string& filename )
 {
 	TextureBuffer* data = GetTextureBuffer( filename );
+
+	if ( buffer == NULL ) return NULL;
+
 	return data->texture;
 }
 
 ceng::CArray2D< Uint32 >* GetImageData( const std::string& filename, bool load_and_cache_if_needed )
 {
-	TextureBuffer* data = GetTextureBuffer( filename );
-	ceng::CArray2D< Uint32 >* image_data = data->image_data;
+	TextureBuffer* buffer = GetTextureBuffer( filename );
 
+	if ( buffer == NULL ) return NULL;
+
+	ceng::CArray2D< Uint32 >* image_data = buffer->image_data;
 	if ( load_and_cache_if_needed && image_data == NULL)
 	{
 		image_data = new ceng::CArray2D< Uint32 >();
 		LoadImage( filename, *image_data, true );
-		data->image_data = image_data;
+		buffer->image_data = image_data;
 	}
+
 	return image_data;
 }
 
