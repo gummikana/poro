@@ -287,7 +287,7 @@ Sprite* LoadSprite( const std::string& filename )
 		if( sprite_data.default_animation.empty() == false ) 
 			result->PlayAnimation( sprite_data.default_animation );
 
-		TextureBuffer* buffer = GetTextureBuffer( filename );
+		TextureBuffer* buffer = GetTextureBuffer( sprite_data.filename );
 		if ( buffer == NULL ) return result;
 
 		poro::ITexture* image = buffer->texture;
