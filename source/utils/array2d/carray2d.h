@@ -269,6 +269,8 @@ public:
 
 	void Crop( int _x, int _y, int _w, int _h )
 	{
+		cassert(false);
+
 	    /*
 		std::vector< _Ty > tmpDataArray;
 
@@ -300,6 +302,22 @@ public:
 
 	CSafeArray< _Ty >& GetData() { return myDataArray; }
 	const CSafeArray< _Ty >& GetData() const { return myDataArray; }
+
+	CArray2D< _Ty, _A>* CopyCropped( int _x, int _y, int _w, int _h)
+	{
+		CArray2D< _Ty, _A>* result = new CArray2D< _Ty, _A >( _w, _h);
+
+		int x, y;
+		for ( y = _y; y < _y + _h; y++ )
+		{
+			for ( x = _x; x < _x + _w; x++ )
+			{
+				result->myDataArray[ ( ( y - _y ) * _w ) + ( x - _x ) ] = At( x, y );
+			}
+		}
+
+		return result;
+	}
 
 private:
 
