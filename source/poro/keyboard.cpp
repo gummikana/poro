@@ -47,6 +47,20 @@ void Keyboard::RemoveKeyboardListener( IKeyboardListener* listener )
 		mListeners.erase( i );
 }
 
+//-----------------------------------------------------------------------------
+
+void Keyboard::OnFrameStart()
+{
+	// Reset the state
+	for( std::size_t i = 0; i < mKeysJustDown.size(); ++i )
+	{
+		mKeysJustDown[ i ] = false; 
+		mKeysJustUp[ i ] = false;
+	}
+}
+
+//-----------------------------------------------------------------------------
+
 void Keyboard::FireKeyDownEvent( int button, types::charset unicode )
 {
 	// this is here so we don't fire up the same down event if a listener is added on a down event
@@ -83,15 +97,42 @@ bool Keyboard::IsKeyDown( int button ) const
 	return false;
 }
 
+bool Keyboard::IsKeyJustDown( int button ) const
+{
+	if( button >= 0 &&
+		button < (int)mKeysJustDown.size() ) 
+		return mKeysJustDown[ button ];
+
+	return false;
+}
+
+bool Keyboard::IsKeyJustUp( int button ) const
+{
+	if( button >= 0 &&
+		button < (int)mKeysJustUp.size() ) 
+		return mKeysJustUp[ button ];
+
+	return false;
+}
+
 void Keyboard::SetKeyDown( int key, bool down )
 {
 	if( key < 0 ) return;
 	if( key > 10000 ) return;
 
 	if( key >= (int)mKeysDown.size() ) 
+	{
 		mKeysDown.resize( key + 1 );
+		mKeysJustDown.resize( key + 1 );
+		mKeysJustUp.resize( key + 1 );
+	}
 
 	mKeysDown[ key ] = down;
+
+	if ( down )
+		mKeysJustDown[ key ] = true;
+	else
+		mKeysJustUp[ key ] = true;
 }
 
 namespace {

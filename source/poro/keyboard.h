@@ -37,10 +37,14 @@ public:
 	void AddKeyboardListener( IKeyboardListener* listener );
 	void RemoveKeyboardListener( IKeyboardListener* listener );
 
+	void OnFrameStart();
+
 	void FireKeyDownEvent( int button, types::charset unicode  );
 	void FireKeyUpEvent( int button, types::charset unicode );
 
 	bool IsKeyDown( int button ) const;
+	bool IsKeyJustDown( int button ) const;
+	bool IsKeyJustUp( int button ) const; 
 
 	bool IsShiftDown() const;
 	bool IsAltDown() const;
@@ -52,6 +56,8 @@ private:
 	std::vector< IKeyboardListener* > mListeners;
 	
 	std::vector< bool > mKeysDown;
+	std::vector< bool > mKeysJustDown;
+	std::vector< bool > mKeysJustUp;
 
 
 };

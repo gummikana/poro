@@ -283,6 +283,7 @@ void PlatformDesktop::HandleEvents()
 
 	// Reset mouse state
 	mMouse->OnFrameStart();
+	mKeyboard->OnFrameStart();
 
 	// Handle events
 	SDL_Event event;
