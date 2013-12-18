@@ -281,6 +281,10 @@ void PlatformDesktop::HandleEvents()
 
 	poro_assert( mEventRecorder );
 
+	// Reset mouse state
+	mMouse->OnFrameStart();
+
+	// Handle events
 	SDL_Event event;
 	while( SDL_PollEvent( &event ) )
 	{

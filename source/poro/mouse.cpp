@@ -29,11 +29,17 @@ namespace poro {
 Mouse::Mouse() : 
 	mMouseListeners(),
 	mMouseButtonsDown( _MOUSE_BUTTON_COUNT ),
+	mMouseButtonsJustDown( _MOUSE_BUTTON_COUNT ),
+	mMouseButtonsJustUp( _MOUSE_BUTTON_COUNT ),
 	mCursorVisible( true ),
 	mMousePos( 0, 0 ) 
 { 
-	for( std::size_t i = 0; i < mMouseButtonsDown.size(); ++i ) 
-		mMouseButtonsDown[ i ] = false;
+	for( std::size_t i = 0; i < mMouseButtonsDown.size(); ++i )
+	{
+		mMouseButtonsDown[ i ] = false; 
+		mMouseButtonsJustDown[ i ] = false; 
+		mMouseButtonsJustUp[ i ] = false;
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -55,6 +61,19 @@ void Mouse::RemoveMouseListener( IMouseListener* listener )
 	if( i != mMouseListeners.end() )
 		mMouseListeners.erase( i );
 }
+
+//-----------------------------------------------------------------------------
+
+void Mouse::OnFrameStart()
+{
+	// Reset the state
+	for( std::size_t i = 0; i < mMouseButtonsDown.size(); ++i )
+	{
+		mMouseButtonsJustDown[ i ] = false; 
+		mMouseButtonsJustUp[ i ] = false;
+	}
+}
+
 //-----------------------------------------------------------------------------
 
 void Mouse::FireMouseMoveEvent( const types::vec2& pos )
@@ -71,6 +90,9 @@ void Mouse::FireMouseDownEvent( const types::vec2& pos, int button )
 
 	if( button >= 0 && button < (int)mMouseButtonsDown.size() )
 		mMouseButtonsDown[ button ] = true;
+	
+	if( button >= 0 && button < (int)mMouseButtonsDown.size() )
+		mMouseButtonsJustDown[ button ] = true;
 }
 
 void Mouse::FireMouseUpEvent( const types::vec2& pos, int button )
@@ -80,6 +102,9 @@ void Mouse::FireMouseUpEvent( const types::vec2& pos, int button )
 
 	if( button >= 0 && button < (int)mMouseButtonsDown.size() )
 		mMouseButtonsDown[ button ] = false;
+	
+	if( button >= 0 && button < (int)mMouseButtonsDown.size() )
+		mMouseButtonsJustUp[ button ] = true;
 }
 //-----------------------------------------------------------------------------
 
@@ -118,6 +143,21 @@ bool Mouse::IsButtonDown( int button ) const
 	return false;
 }
 
+bool Mouse::IsButtonJustDown( int button ) const 
+{
+	if( button >= 0 && button < (int)mMouseButtonsJustDown.size() )
+		return mMouseButtonsJustDown[ button ];
+
+	return false;
+}
+
+bool Mouse::IsButtonJustUp( int button ) const 
+{
+	if( button >= 0 && button < (int)mMouseButtonsJustUp.size() )
+		return mMouseButtonsJustUp[ button ];
+
+	return false;
+}
 //-----------------------------------------------------------------------------
 
 } // end of namespace poro

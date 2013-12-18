@@ -46,6 +46,8 @@ public:
 	void AddMouseListener( IMouseListener* listener );
 	void RemoveMouseListener( IMouseListener* listener );
 
+	void OnFrameStart();
+
 	void FireMouseMoveEvent( const types::vec2& pos );
 	void FireMouseDownEvent( const types::vec2& pos, int button );
 	void FireMouseUpEvent( const types::vec2& pos, int button );
@@ -57,10 +59,14 @@ public:
 
 	virtual types::vec2 GetMousePos() const;
 	virtual bool		IsButtonDown( int button ) const;
+	virtual bool		IsButtonJustDown( int button ) const;
+	virtual bool		IsButtonJustUp( int button ) const;
 
 private:
 	std::vector< IMouseListener* >	mMouseListeners;
 	std::vector< bool >				mMouseButtonsDown;
+	std::vector< bool >				mMouseButtonsJustDown;
+	std::vector< bool >				mMouseButtonsJustUp;
 	
 	bool							mCursorVisible;
 	types::vec2						mMousePos;
