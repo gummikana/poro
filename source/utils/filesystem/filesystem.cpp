@@ -327,7 +327,8 @@ std::string GetFilename( const std::string& filename )
 	if( p < filename.size() )
 		return filename.substr( p + 1 );
 
-	return "";
+	// right, this should return just filename if it doesn't have any separators?
+	return filename; 
 }
 
 // path /foo/bar
