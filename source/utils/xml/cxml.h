@@ -179,12 +179,12 @@ namespace ceng {
 	if you don't want get fancy on you ass.
 */
 	template< class T >
-	void XmlSaveToFile( T& mesh, const std::string& file, const std::string& rootnodename = "rootelement" );
+	void XmlSaveToFile( T& mesh, const std::string& file, const std::string& rootnodename = "rootelement", bool parse_on_multiple_lines = false );
 	//void XmlSaveToFile( CPegManager& mesh, const std::string& file, const std::string& rootnodename = "rootelement" );
 
 #ifndef PORO_XCODE_ERROR_HACK_TOGGLE
 	template< class T >
-	inline void XmlSaveToFile( T& mesh, const std::string& file, const std::string& rootnodename  )
+	inline void XmlSaveToFile( T& mesh, const std::string& file, const std::string& rootnodename, bool parse_on_multiple_lines  )
 	//void XmlSaveToFile( CPegManager& mesh, const std::string& file, const std::string& rootnodename  )
 	{
 		CXmlNode* node;
@@ -193,6 +193,13 @@ namespace ceng {
 		std::ofstream file_output( file.c_str(), std::ios::out );
 
 		CXmlStreamHandler handler;
+		if( parse_on_multiple_lines )
+		{
+			handler.SetPackThight( false );
+			handler.SetWriteAttributesOnLines( true );
+			handler.SetExtraLineBetweenTags( true );
+		}
+
 		handler.ParseOpen( node, file_output );
 
 		file_output.close();

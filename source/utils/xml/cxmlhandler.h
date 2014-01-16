@@ -97,7 +97,14 @@ class CXmlStreamHandler : public CXmlHandlerInterface
 {
 public:
 
-	CXmlStreamHandler() : myCount(0), myPackThight( false ) { }
+	CXmlStreamHandler() : 
+		myCount(0), 
+		myPackThight( false ),
+		myWriteAttributesOnLines( false ),
+		myExtraLineBetweenTags( false )
+		{ 
+		}
+
 	virtual ~CXmlStreamHandler() { }
 
 	virtual void StartDocument() { }
@@ -111,10 +118,23 @@ public:
 
 		if ( !attr.empty() )
 		{
+			std::string extra_space = "";
+
+			// parse attributes into multiple lines
+			if( myWriteAttributesOnLines ) 
+			{
+				for( int i = 0; i < myCount + 1; ++i )
+					extra_space += "  ";
+			}
+
 			ss << " ";
+			
 			attributes::const_iterator i;
 			for ( i = attr.begin(); i != attr.end(); ++i )
 			{
+				if( myWriteAttributesOnLines )
+					ss << std::endl << extra_space;
+
 				ss << i->first << "=\"" << CAnyContainerCast< std::string >( i->second ) << "\" ";
 			}
 		}
@@ -128,7 +148,8 @@ public:
 	{
 		myCount--;
 		PrintText( "</" + name + ">", stream );
-
+		if( myExtraLineBetweenTags ) 
+			stream << std::endl;
 	}
 
 	//! Just for printing the text
@@ -152,7 +173,6 @@ public:
 		Characters( rootnode->GetContent() , stream );
 		for( int i = 0; i < rootnode->GetChildCount(); i++ )
 		{
-
 			ParseOpen( rootnode->GetChild( i ), stream );
 		}
 		EndElement( rootnode->GetName(), stream );
@@ -171,10 +191,14 @@ public:
 		return tmp_map;
 	}
 
-	void SetPackThight( bool value ) { myPackThight = value; }
+	void SetPackThight( bool value )				{ myPackThight = value; }
+	void SetWriteAttributesOnLines( bool value )	{ myWriteAttributesOnLines = value; }
+	void SetExtraLineBetweenTags( bool value )		{ myExtraLineBetweenTags = value; }
 
 	int				myCount;
 	bool			myPackThight;
+	bool			myWriteAttributesOnLines;
+	bool			myExtraLineBetweenTags;
 };
 
 //-----------------------------------------------------------------------------
