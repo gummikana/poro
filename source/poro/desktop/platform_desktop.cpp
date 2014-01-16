@@ -269,6 +269,13 @@ void PlatformDesktop::Sleep( types::Double32 seconds )
 
 void PlatformDesktop::HandleEvents() 
 {
+	// Reset mouse state
+	mMouse->OnFrameStart();
+	mKeyboard->OnFrameStart();
+
+	// -- event recorder might fire or simulate events of the SDL_EventPoll
+	poro_assert( mEventRecorder );
+
 	if( mEventRecorder ) 
 		mEventRecorder->DoPlaybacksForFrame();
 
@@ -278,12 +285,6 @@ void PlatformDesktop::HandleEvents()
 	}
 
 	//---------
-
-	poro_assert( mEventRecorder );
-
-	// Reset mouse state
-	mMouse->OnFrameStart();
-	mKeyboard->OnFrameStart();
 
 	// Handle events
 	SDL_Event event;
