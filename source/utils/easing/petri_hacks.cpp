@@ -25,9 +25,9 @@ float PetriHacks:: BooleanRandom::f( float x ) { return (float)ceng::Random( 0, 
 
 
 PetriHacks::SinGoTo2AndBack		PetriHacks::sinGoTo2AndBack;
-PetriHacks::DimishingShakeBack	dimishingShakeBack;
-PetriHacks::DimishingShakeBack	dimishingShake;
-PetriHacks::LittleBackAndForth	littleBackAndForth;
+PetriHacks::DimishingShakeBack	PetriHacks::dimishingShakeBack;
+PetriHacks::DimishingShakeBack	PetriHacks::dimishingShake;
+PetriHacks::LittleBackAndForth	PetriHacks::littleBackAndForth;
 PetriHacks::Randomf				PetriHacks::randomf;
 PetriHacks::BooleanRandom		PetriHacks::booleanRandom;
 
