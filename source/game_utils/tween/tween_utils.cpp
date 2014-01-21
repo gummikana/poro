@@ -48,6 +48,29 @@ void GTweenClearSpriteOfTweens( as::Sprite* sprite )
 	GTweenClearPointerOfTweens( (void*)sprite );
 }
 
+bool GTweenIsSpriteInUse( as::Sprite* sprite )
+{
+	return GTweenIsPointerInUse( (void*)sprite );
+}
+
+bool GTweenIsPointerInUse( void* pointer )
+{
+	std::list< GTween* >& list_of_gtweens = ceng::CAutoList< GTween >::GetList();
+
+	for( std::list< GTween* >::iterator i = list_of_gtweens.begin();
+		i != list_of_gtweens.end(); ++i )
+	{
+		GTween* tween = *i;
+		cassert( tween );
+		bool value = tween->HasPointer( pointer );
+		if( value ) 
+			return true;
+	}
+
+	return false;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 GTween* GTweenSpriteTo( as::Sprite* sprite, const types::vector2& pos, float time, ceng::easing::IEasingFunc& math_func, bool autokill )

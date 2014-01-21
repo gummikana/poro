@@ -32,6 +32,8 @@ namespace as { class Sprite; }
 
 void GTweenClearSpriteOfTweens( as::Sprite* sprite );
 void GTweenClearPointerOfTweens( void* pointer );
+bool GTweenIsSpriteInUse( as::Sprite* sprite );
+bool GTweenIsPointerInUse( void* pointer );
 
 GTween* GTweenSpriteTo( as::Sprite* sprite, const types::vector2& position, float time = 1.f, ceng::easing::IEasingFunc& math_func = ceng::easing::Linear::easeNone, bool autokill = true );
 GTween* GTweenSpriteRotationTo( as::Sprite* sprite, float rotation, float time = 1.f, ceng::easing::IEasingFunc& math_func = ceng::easing::Linear::easeNone, bool autokill = true );

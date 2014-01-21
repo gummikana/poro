@@ -126,6 +126,9 @@ public:
 	// returns true if there were any that used it, return false if there weren't
 	bool ClearPointer( void* pointer );
 
+	// returns true if the pointer is used - non const because of function pointers
+	bool HasPointer( void* pointer );
+
 private:
 	void RemoveDuplicateInterpolators( const std::string& name );
 	

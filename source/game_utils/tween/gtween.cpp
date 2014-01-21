@@ -26,14 +26,17 @@
 // updates all gtweens and removes the dead gtweens from the list as well
 void UpdateGTweens( float dt )
 {
-	std::list< GTween* > release_us;
 	std::list< GTween* >& update_list = ceng::CAutoList< GTween >::GetList();
 
+	if( update_list.empty() ) 
+		return;
 
-	for( std::list< GTween* >::iterator i = update_list.begin();
-		i != update_list.end();  )
+	std::list< GTween* > release_us;
+
+	GTween* tween = NULL;
+	for( std::list< GTween* >::iterator i = update_list.begin(); i != update_list.end();  )
 	{
-		GTween* tween = *i;
+		tween = *i;
 		++i;
 		cassert( tween );
 		tween->Update( dt );
@@ -45,7 +48,7 @@ void UpdateGTweens( float dt )
 	for( std::list< GTween* >::iterator i = release_us.begin();
 		i != release_us.end(); ++i )
 	{
-		GTween* tween = *i;
+		tween = *i;
 		delete tween;
 	}
 }
@@ -325,6 +328,20 @@ bool GTween::ClearPointer( void* pointer )
 	}
 
 	return result;
+}
+
+//-----------------------------------------------------------------------------
+// returns true if the pointer is used
+
+bool GTween::HasPointer( void* pointer )
+{
+	for( std::size_t i = 0; i < mInterpolators.size(); ++i )
+	{
+		if( mInterpolators[ i ]->UsesPointer( pointer ) )
+			return true;
+	}
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------
