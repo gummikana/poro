@@ -26,6 +26,7 @@
 #include "../libraries.h"
 #include "../poro_macros.h"
 #include "texture_opengl.h"
+#include "texture3d_opengl.h"
 
 
 #include "../external/stb_image.h"
@@ -46,6 +47,8 @@
 
 //=============================================================================
 namespace poro {
+
+	class Texture3dOpenGL;
 
 namespace {
 
@@ -836,6 +839,93 @@ void GraphicsOpenGL::ReleaseTexture( ITexture* itexture )
 	if( texture )
 		glDeleteTextures(1, &texture->mTexture);
 }
+//=============================================================================
+
+ITexture3d* GraphicsOpenGL::LoadTexture3d( const types::string& filename )
+{
+	int x, y, z, bpp;
+	unsigned char *data = stbi_load( filename.c_str(), &x, &y, &bpp, 4 );
+
+	if ( data == NULL )
+	{
+		poro_logger << "Error: 3d texture image loading failed. Loaded data is NULL: " << filename << std::endl;
+		return NULL;
+	}
+
+	// Validate the data
+	if ( x != y )
+	{
+		free(data);
+		poro_logger << "Error: 3d texture image is not square: " << filename << std::endl;
+		return NULL;
+	}
+
+	for( z = 1; z * z * z < x; z++ );
+	if ( z * z * z > x )
+	{
+		free(data);
+		poro_logger << "Error: 3d texture image has invalid size: " << filename << std::endl;
+		return NULL;
+	}
+	
+	// ... process data if not NULL ... 
+	// ... x = width, y = height, n = # 8-bit components per pixel ...
+	// ... replace '0' with '1'..'4' to force that many components per pixel
+	
+	if( OPENGL_SETTINGS.textures_fix_alpha_channel && bpp == 4 ) 
+	{
+		GetSimpleFixAlphaChannel( data, x, y, bpp );
+		
+#ifdef PORO_SAVE_ALPHA_FIXED_PNG_FILES
+		if( false && GetFileExtension( filename ) == "png" )
+		{
+			int result = stbi_write_png( filename.c_str(), x, y, 4, data, x * 4 );
+			if( result == 0 ) std::cout << "problems saving: " << filename << std::endl;
+		}
+#endif
+	}
+
+	int oTexture;
+	glEnable( GL_TEXTURE_3D );
+	glGenTextures( 1, (GLuint*)&oTexture );
+	glBindTexture( GL_TEXTURE_3D, oTexture );
+
+	glTexParameteri( GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
+
+	// Guess it can be currently assumed that we always want GL_LINEAR for 3d textures?
+	glTexParameteri( GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+
+	z *= z;
+	glTexImage3D( GL_TEXTURE_3D, 0, GL_RGBA, z, z, z, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
+	glBindTexture( GL_TEXTURE_3D, 0 );
+	glDisable( GL_TEXTURE_3D );
+	
+	Texture3dOpenGL* result = new Texture3dOpenGL;
+	if ( result )
+	{
+		result->mTexture = oTexture;
+		result->mWidth = z;
+		result->mHeight = z;
+		result->mDepth = z;
+		result->SetFilename( filename );
+	}
+	else
+		poro_logger << "Couldn't load image: " << filename << std::endl;
+		
+	return result;
+}
+
+void GraphicsOpenGL::ReleaseTexture3d( ITexture3d* itexture )
+{
+	Texture3dOpenGL* texture = dynamic_cast< Texture3dOpenGL* >( itexture );
+
+	if( texture )
+		glDeleteTextures(1, &texture->mTexture);
+}
+
 //=============================================================================
 
 void GraphicsOpenGL::DrawTexture( ITexture* itexture, float x, float y, float w, float h, const types::fcolor& color, float rotation )

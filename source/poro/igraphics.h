@@ -27,6 +27,7 @@
 #include "poro_types.h"
 #include "poro_macros.h"
 #include "itexture.h"
+#include "itexture3d.h"
 
 //Number of vertices that can be stored in the DrawTextureBuffer.
 //6000 = 2000 triangles = 1000 quads, since we use GL_TRIANGLES.
@@ -39,6 +40,7 @@ namespace poro {
 class IGraphicsBuffer;
 class IRenderTexture;
 class IShader;
+
 //-----------------------------
 
 struct GraphicsSettings
@@ -102,6 +104,11 @@ public:
 	virtual ITexture*	LoadTexture( const types::string& filename ) = 0;
 	virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data ) = 0;
 	virtual void		ReleaseTexture( ITexture* texture )  = 0;
+
+	//-------------------------------------------------------------------------
+	
+	virtual ITexture3d*	LoadTexture3d( const types::string& filename );
+	virtual void		ReleaseTexture3d( ITexture3d* texture );
 
 	//-------------------------------------------------------------------------
 
@@ -283,6 +290,16 @@ inline void IGraphics::SetTextureData(ITexture* texture, void* data ) {
 	poro_assert( false );
 }
 
+inline ITexture3d* IGraphics::LoadTexture3d( const types::string& filename ) {
+	// If this fails, it means you should implement 3d texture on your end of things
+	poro_assert( false );
+	return NULL;
+}
+inline void IGraphics::ReleaseTexture3d( ITexture3d* texture ) {
+	// If this fails, it means you should implement 3d texture on your end of things
+	poro_assert( false );
+}
+
 inline IGraphicsBuffer* IGraphics::CreateGraphicsBuffer(int width, int height) {
 	// If this fails, it means you should implement grafics buffer on your end of things
 	poro_assert( false );
@@ -302,6 +319,8 @@ inline void IGraphics::DestroyRenderTexture(IRenderTexture* buffer){
 	// If this fails, it means you should implement render texture on your end of things
 	poro_assert( false );
 }
+
+
 
 inline void	IGraphics::SetFillColor( const poro::types::fcolor& c ) { 
 	mFillColor = c; 

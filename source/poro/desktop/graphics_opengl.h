@@ -29,6 +29,7 @@ namespace poro {
 //-----------------------------------------------------------------------------
 
 class ITexture;
+class ITexture3d;
 class IGraphicsBuffer;
 
 //-----------------------------------------------------------------------------
@@ -62,6 +63,11 @@ public:
 	virtual ITexture*	LoadTexture( const types::string& filename );
 	virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data );
 	virtual void		ReleaseTexture( ITexture* texture );
+
+	//-------------------------------------------------------------------------
+
+	virtual ITexture3d*	LoadTexture3d( const types::string& filename );
+	virtual void		ReleaseTexture3d( ITexture3d* texture );
 
 	//-------------------------------------------------------------------------
 

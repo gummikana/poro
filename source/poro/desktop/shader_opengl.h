@@ -24,6 +24,7 @@
 #include "../poro_types.h"
 #include "graphics_opengl.h"
 #include "texture_opengl.h"
+#include "texture3d_opengl.h"
 #include "../ishader.h"
 
 #include <vector>
@@ -43,6 +44,7 @@ public:
 	virtual bool HasParameter( const std::string& name );
 	virtual void SetParameter( const std::string& name, float value );
 	virtual void SetParameter( const std::string& name, ITexture* texture );
+	virtual void SetParameter( const std::string& name, ITexture3d* texture );
 	virtual bool GetIsCompiledAndLinked();
 
 private:

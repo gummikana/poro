@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- * Copyright (c) 2010 Petri Purho, Dennis Belfrage, Olli Harjola
+ * Copyright (c) 2010 Petri Purho, Dennis Belfrage
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,35 +18,48 @@
  *
  ***************************************************************************/
 
-#ifndef INC_ÍSHADER_H
-#define INC_ISHADER_H
+#ifndef INC_TEXTURE3D_SDL_H
+#define INC_TEXTURE3D_SDL_H
 
+#include "../itexture3d.h"
+#include "../libraries.h"
+#include "../poro_types.h"
 
-#include <vector>
 
 namespace poro {
 
-class ITexture;
-class ITexture3d;
-
-class IShader
+class Texture3dOpenGL : public ITexture3d
 {
 public:
-	virtual ~IShader() { }
+	Texture3dOpenGL() : 
+		mTexture( 0 ), 
+		mWidth( 0 ), 
+		mHeight( 0 )
+	{
+	}
 
-	virtual void Init( const std::string& vertex_source_filename, const std::string& fragment_source_filename ) { }	
-	virtual void Release() { }
-	virtual void Enable() { }
-	virtual void Disable() { }
-	virtual bool HasParameter( const std::string& name ) = 0;
-	virtual void SetParameter( const std::string& name, float value ) { }
-	virtual void SetParameter( const std::string& name, ITexture* texture ) { }
-	virtual void SetParameter( const std::string& name, ITexture3d* texture ) { }
-	
-	virtual bool GetIsCompiledAndLinked() = 0;
+	Texture3dOpenGL( Texture3dOpenGL* other ) : 
+		mTexture( other->mTexture ), 
+		mWidth( other->mWidth ), 
+		mHeight( other->mHeight ),
+		mDepth( other->mDepth )
+	{ 
+	}
 
+	virtual int GetWidth() const	{ return mWidth; } 
+	virtual int GetHeight() const	{ return mHeight; }
+	virtual int GetDepth() const	{ return mDepth; }
+
+	virtual std::string GetFilename() const								{ return mFilename; }
+	void				SetFilename( const types::string& filename )	{ mFilename = filename; }
+
+	types::Uint32	mTexture;
+	int				mWidth;
+	int				mHeight;
+	int				mDepth;
+
+	types::string	mFilename;
 };
 
 } // end o namespace poro
-
 #endif

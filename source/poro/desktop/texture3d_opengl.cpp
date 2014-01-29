@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- * Copyright (c) 2010 Petri Purho, Dennis Belfrage, Olli Harjola
+ * Copyright (c) 2010 Petri Purho, Dennis Belfrage
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,35 +18,5 @@
  *
  ***************************************************************************/
 
-#ifndef INC_ÍSHADER_H
-#define INC_ISHADER_H
+#include "texture3d_opengl.h"
 
-
-#include <vector>
-
-namespace poro {
-
-class ITexture;
-class ITexture3d;
-
-class IShader
-{
-public:
-	virtual ~IShader() { }
-
-	virtual void Init( const std::string& vertex_source_filename, const std::string& fragment_source_filename ) { }	
-	virtual void Release() { }
-	virtual void Enable() { }
-	virtual void Disable() { }
-	virtual bool HasParameter( const std::string& name ) = 0;
-	virtual void SetParameter( const std::string& name, float value ) { }
-	virtual void SetParameter( const std::string& name, ITexture* texture ) { }
-	virtual void SetParameter( const std::string& name, ITexture3d* texture ) { }
-	
-	virtual bool GetIsCompiledAndLinked() = 0;
-
-};
-
-} // end o namespace poro
-
-#endif

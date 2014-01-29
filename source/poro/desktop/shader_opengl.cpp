@@ -92,14 +92,14 @@ void ShaderOpenGL::Release()
 void ShaderOpenGL::Enable()
 {
     glUseProgram( program );
-	glActiveTexture( GL_TEXTURE0 );
-	glEnable( GL_TEXTURE_2D );
 }
 
 void ShaderOpenGL::Disable()
 {
     glUseProgram( 0 );
 	glActiveTexture(GL_TEXTURE0);
+	glDisable( GL_TEXTURE_2D );
+	glDisable( GL_TEXTURE_3D );
 }
 
 bool ShaderOpenGL::HasParameter(const std::string& name)
@@ -124,12 +124,28 @@ void ShaderOpenGL::SetParameter( const std::string& name, ITexture* texture )
 	const char *c_str = name.c_str();
 	int location = glGetUniformLocation( program, name.c_str() );
 
+	glEnable( GL_TEXTURE_2D );
 	glUniform1i( location, 0 );
 	glActiveTexture( GL_TEXTURE0 );
 	
 	TextureOpenGL* texture_gl = (TextureOpenGL*)texture;
 	glBindTexture( GL_TEXTURE_2D, texture_gl->mTexture );
 }
+
+void ShaderOpenGL::SetParameter( const std::string& name, ITexture3d* texture )
+{
+	// TODO: cache parameter locations!
+	const char *c_str = name.c_str();
+	int location = glGetUniformLocation( program, name.c_str() );
+
+	glEnable( GL_TEXTURE_3D );
+	glUniform1i( location, 1 );
+	glActiveTexture( GL_TEXTURE0 + 1 );
+	
+	Texture3dOpenGL* texture_gl = (Texture3dOpenGL*)texture;
+	glBindTexture( GL_TEXTURE_3D, texture_gl->mTexture );
+}
+
 bool ShaderOpenGL::GetIsCompiledAndLinked()
 {
 	return isCompiledAndLinked;
