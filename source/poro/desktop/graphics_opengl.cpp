@@ -32,6 +32,7 @@
 
 #ifndef PORO_DONT_USE_GLEW
 #	include "graphics_buffer_opengl.h"
+#	include "render_texture_opengl.h"
 #endif
 
 #define PORO_ERROR "ERROR: "
@@ -1253,6 +1254,29 @@ IGraphicsBuffer* GraphicsOpenGL::CreateGraphicsBuffer(int width, int height)
 }
 
 void GraphicsOpenGL::DestroyGraphicsBuffer(IGraphicsBuffer* buffer)
+{
+#ifdef PORO_DONT_USE_GLEW
+	poro_assert(false); //Buffer implementation needs glew.
+#else
+	delete buffer;
+#endif
+}
+
+//=============================================================================
+
+IRenderTexture* GraphicsOpenGL::CreateRenderTexture(int width, int height)
+{
+#ifdef PORO_DONT_USE_GLEW
+	poro_assert(false); //Buffer implementation needs glew.
+	return NULL;
+#else
+	RenderTextureOpenGL* buffer = new RenderTextureOpenGL;
+	buffer->Init(width, height);
+	return buffer;
+#endif
+}
+
+void GraphicsOpenGL::DestroyRenderTexture(IRenderTexture* buffer)
 {
 #ifdef PORO_DONT_USE_GLEW
 	poro_assert(false); //Buffer implementation needs glew.

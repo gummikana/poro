@@ -109,6 +109,11 @@ public:
 
 	//-------------------------------------------------------------------------
 
+	virtual IRenderTexture* CreateRenderTexture(int width, int height);
+	virtual void DestroyRenderTexture(IRenderTexture* buffer);
+
+	//-------------------------------------------------------------------------
+
 	types::vec2 ConvertToInternalPos( int x, int y );
 
 	void ResetWindow();

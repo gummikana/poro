@@ -37,6 +37,7 @@
 namespace poro {
 
 class IGraphicsBuffer;
+class IRenderTexture;
 //-----------------------------
 
 struct GraphicsSettings
@@ -212,6 +213,11 @@ public:
 	virtual void DestroyGraphicsBuffer(IGraphicsBuffer* buffer);
 
 	//-------------------------------------------------------------------------
+
+	virtual IRenderTexture* CreateRenderTexture(int width, int height);
+	virtual void DestroyRenderTexture(IRenderTexture* buffer);
+
+	//-------------------------------------------------------------------------
 	// Save screen (only supports .png format)
 	virtual void SaveScreenshot( const std::string& filename )								{ poro_assert( false && "IMPLEMENTATION NEEDED" ); }
 	virtual void SaveScreenshot( const std::string& filename, int x, int y, int w, int h )	{ poro_assert( false && "IMPLEMENTATION NEEDED" ); }
@@ -278,6 +284,16 @@ inline IGraphicsBuffer* IGraphics::CreateGraphicsBuffer(int width, int height) {
 }
 inline void IGraphics::DestroyGraphicsBuffer(IGraphicsBuffer* buffer){
 	// If this fails, it means you should implement grafics buffer on your end of things
+	poro_assert( false );
+}
+
+inline IRenderTexture* IGraphics::CreateRenderTexture(int width, int height) {
+	// If this fails, it means you should implement render texture on your end of things
+	poro_assert( false );
+	return NULL;
+}
+inline void IGraphics::DestroyRenderTexture(IRenderTexture* buffer){
+	// If this fails, it means you should implement render texture on your end of things
 	poro_assert( false );
 }
 
