@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- * Copyright (c) 2010 Petri Purho, Dennis Belfrage
+ * Copyright (c) 2010 Petri Purho, Dennis Belfrage, Olli Harjola
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,391 +18,164 @@
  *
  ***************************************************************************/
 
+#include <fstream>
+#include <string>
+
 #include "../libraries.h"
 #include "../iplatform.h"
-#include "graphics_buffer_opengl.h"
-#include "texture_opengl.h"
+#include "shader_opengl.h"
+#include "../itexture.h"
+#include "../../utils/filesystem/filesystem.h"
+//#include "../../utils/safearray/csafearray.h"
 
 namespace poro {
-namespace {
-Uint32 GetNextPowerOfTwo(Uint32 input)
+
+void ShaderOpenGL::Init( const std::string& vertex_source_filename, const std::string& fragment_source_filename )
 {
-	--input;
-	input |= input >> 16;
-	input |= input >> 8;
-	input |= input >> 4;
-	input |= input >> 2;
-	input |= input >> 1;
-	return input + 1;
-}
-} // end of anonymous namespace
+	Release();
 
-    public class OpenGL_GLSL_LinkedShader : ILinkedShader
+    program = glCreateProgram();
+
+	vertexShader = LoadShader( vertex_source_filename, true );
+    fragmentShader = LoadShader( fragment_source_filename, false );
+
+	if (vertexShader == 0 || fragmentShader == 0)
+	{
+		Release();
+		return;
+	}
+
+    glAttachShader( program, vertexShader );
+    glAttachShader( program, fragmentShader );
+    glLinkProgram( program);
+
+    //DEBUG
+	GLint status;
+    glGetProgramiv (program, GL_LINK_STATUS, &status);
+    if (status == GL_FALSE)
     {
-        const int MAX_PARAMETER_COUNT = 100;
-
-
-        bool compiledSuccesfully = true;
-        bool isInitialized;
-
-        int programHandle;
-
-        string name;
-        internal int vertShader;
-        internal int fragShader;
-
-        int lastSetParameterId = -1;
-        int[] parameterHandles = new int[MAX_PARAMETER_COUNT];
-        int[] bindedTextures = new int[MAX_PARAMETER_COUNT];
-        float[] bindedFloats = new float[MAX_PARAMETER_COUNT];
-        Vector2D[] bindedVectors2D = new Vector2D[MAX_PARAMETER_COUNT];
-        Vector3D[] bindedVectors3D = new Vector3D[MAX_PARAMETER_COUNT];
-        ColorF[] bindedColors = new ColorF[MAX_PARAMETER_COUNT];
-
-        Dictionary<int, int> allocatedTextureUnits;
-        int nextAllocatedTextureUnit;
-
-
-        internal OpenGL_GLSL_LinkedShader(OpenGL_GLSL_VertexShader vertShader, OpenGL_GLSL_FragmentShader fragShader) : this(vertShader, fragShader, null)
-        {
-
-        }
-
-        internal OpenGL_GLSL_LinkedShader(OpenGL_GLSL_VertexShader vertShader, OpenGL_GLSL_FragmentShader fragShader, string metadata)
-        {
-            programHandle = GL.CreateProgram();
-
-            this.vertShader = vertShader.ShaderHandle;
-            this.fragShader = fragShader.ShaderHandle;
-
-            GL.AttachShader(programHandle, this.vertShader);
-            GL.AttachShader(programHandle, this.fragShader);
-
-            GL.LinkProgram(programHandle);
-
-            name = vertShader.Name + " - " + fragShader.Name + " - " + Matf.Random.Next();
-            Metadata = metadata;
-
-            for (int i = 0; i < MAX_PARAMETER_COUNT; i++)
-                parameterHandles[i] = -1;
-
-            //DEBUG
-            int debugLinkStatus;
-            GL.GetProgram(programHandle, ProgramParameter.LinkStatus, out debugLinkStatus);
-
-            string infoLog = GL.GetProgramInfoLog(programHandle);
-            if (debugLinkStatus < 1)
-                Log.Write("Error linking shader '" + name + "':\n" + infoLog, DebugLevel.Warning);
-        }
-
-
-        public string Metadata;
-
-
-        /// <summary>
-        /// Finds out if a shader does have a certain parameter available.
-        /// </summary>
-        public bool HasParameter(string parameter)
-        {
-            int handle = GL.GetUniformLocation(programHandle, parameter);
-            return handle != 0;
-        }
-
-        /// <summary>
-        /// Gets pointer to a shader parameter and stores it to internal array at index.
-        /// Index must be in the range 0 to 99.
-        /// </summary>
-        public void StoreParameterHandle(uint index, string parameter)
-        {
-            int handle = GL.GetUniformLocation(programHandle, parameter);
-
-            parameterHandles[index] = handle;
-            if (handle < 0)
-                Log.Write("Shader " + name + " doesn't have parameter " + parameter + ".", DebugLevel.Warning);
-            else
-                Log.Write("Shader " + name + " has parameter '" + parameter + "' at " + handle + " - Stored to index " + index);
-
-            ShaderManager.Core.CheckForErrors(name, "StoreParameterHandle " + index.ToString());
-            lastSetParameterId = (int)index;
-        }
-
-        /// <summary>
-        /// Sets internal parameter (which is stored to index) to texture.
-        /// Index must be in the range 0 to 99.
-        /// </summary>
-        public void SetParameter(int index, ITexture texture)
-        {
-            int parameterHandle = parameterHandles[index];
-            if (parameterHandle < 0)
-                return;
-
-
-            if (allocatedTextureUnits == null)
-                allocatedTextureUnits = new Dictionary<int, int>();
-
-            int allocatedTextureUnit;
-            bool found = allocatedTextureUnits.TryGetValue(parameterHandle, out allocatedTextureUnit);
-
-            if (!found)
-            {
-                //ALLOCATE A TEXTURE UNIT FOR THIS PARAMETER
-                allocatedTextureUnit = nextAllocatedTextureUnit;
-                nextAllocatedTextureUnit++;
-                allocatedTextureUnits.Add(parameterHandle, allocatedTextureUnit);
-            }
-
-            GL_StateMachine.Texture2DEnabled = true;
-            GL.Uniform1(parameterHandle, allocatedTextureUnit);
-#if DEBUGSHADERS && DEBUG
-            ShaderManager.Core.CheckForErrors(name, "SetParameter(ITexture) GL.Uniform1 " + index.ToString());
-#endif
-
-            var texUnit = (TextureUnit)(allocatedTextureUnit + 33984);
-            GL.ActiveTexture(texUnit);
-#if DEBUGSHADERS && DEBUG
-            ShaderManager.Core.CheckForErrors(name, "SetParameter(ITexture) GL.ActiveTexture " + index.ToString());
-#endif
-
-            GL.BindTexture(TextureTarget.Texture2D, texture.GLTextureHandle);
-            GL_StateMachine._texture = texture.GLTextureHandle;
-#if DEBUGSHADERS && DEBUG
-            ShaderManager.Core.CheckForErrors(name, "SetParameter(ITexture) GL_StateMachine.BindTexture " + index.ToString());
-#endif
-            GL.ActiveTexture(TextureUnit.Texture0);
-        }
-
-        /// <summary>
-        /// Sets internal parameter (which is stored to index) to texture.
-        /// Index must be in the range 0 to 99.
-        /// </summary>
-        public void SetParameter(int index, ITextureDepth texture)
-        {
-            int parameterHandle = parameterHandles[index];
-            if (parameterHandle < 0)
-                return;
-
-            int textureHandle = texture.GLTextureHandle;
-
-            if (allocatedTextureUnits == null)
-                allocatedTextureUnits = new Dictionary<int, int>();
-
-            int allocatedTextureUnit;
-            bool found = allocatedTextureUnits.TryGetValue(parameterHandle, out allocatedTextureUnit);
-
-            if (!found)
-            {
-                //ALLOCATE A TEXTURE UNIT FOR THIS PARAMETER
-                allocatedTextureUnit = nextAllocatedTextureUnit;
-                nextAllocatedTextureUnit++;
-                allocatedTextureUnits.Add(parameterHandle, allocatedTextureUnit);
-            }
-            
-            GL_StateMachine.Texture2DEnabled = true;
-            GL.Uniform1(parameterHandle, allocatedTextureUnit);
-#if DEBUGSHADERS && DEBUG
-            ShaderManager.Core.CheckForErrors(name, "SetParameter(ITexture) GL.Uniform1 " + index.ToString());
-#endif
-
-            var texUnit = (TextureUnit)(allocatedTextureUnit + 33984);
-            GL.ActiveTexture(texUnit);
-#if DEBUGSHADERS && DEBUG
-            ShaderManager.Core.CheckForErrors(name, "SetParameter(ITexture) GL.ActiveTexture " + index.ToString());
-#endif
-
-            GL_StateMachine.BindTexture(textureHandle);
-#if DEBUGSHADERS && DEBUG
-            ShaderManager.Core.CheckForErrors(name, "SetParameter(ITexture) GL_StateMachine.BindTexture " + index.ToString());
-#endif
-            GL.ActiveTexture(TextureUnit.Texture0);
-        }
-
-        /// <summary>
-        /// Sets internal parameter (which is stored to index) to Color.
-        /// Index must be in the range 0 to 99.
-        /// </summary>
-        public void SetParameter(int index, ref ColorF color)
-        {
-            var parameterHandle = parameterHandles[index];
-            if (parameterHandle < 0)
-                return;
-
-            if (!bindedColors[index].Equals(color))
-            {
-                GL.Uniform4(parameterHandle, color.R, color.G, color.B, color.A);
-                bindedColors[index] = color;
-            }
-#if DEBUGSHADERS && DEBUG
-            ShaderManager.Core.CheckForErrors(name, "SetParameter " + index.ToString());
-#endif
-        }
-
-        /// <summary>
-        /// Sets internal parameter (for which a handle is stored to index) to a value.
-        /// Index must be in the range 0 to 99.
-        /// </summary>
-        public void SetParameter(int index, float value)
-        {
-            var parameterHandle = parameterHandles[index];
-            if (parameterHandle < 0)
-                return;
-
-            if (bindedFloats[index] != value)
-            {
-                GL.Uniform1(parameterHandle, value);
-                bindedFloats[index] = value;
-            }
-#if DEBUGSHADERS && DEBUG
-            ShaderManager.Core.CheckForErrors(name, "SetParameter " + index.ToString());
-#endif
-        }
-
-        /// <summary>
-        /// Sets internal parameter (for which a handle is stored to index) to a value.
-        /// Index must be in the range 0 to 99.
-        /// </summary>
-        public void SetParameter(int index, ref Vector2D value)
-        {
-            var parameterHandle = parameterHandles[index];
-            if (parameterHandle < 0)
-                return;
-
-            if (bindedVectors2D[index] != value)
-            {
-                GL.Uniform2(parameterHandle, value.X, value.Y);
-                bindedVectors2D[index] = value;
-            }
-#if DEBUGSHADERS && DEBUG
-            ShaderManager.Core.CheckForErrors(name, "SetParameter " + index.ToString());
-#endif
-        }
-
-        /// <summary>
-        /// Sets internal parameter (for which a handle is stored to index) to a value.
-        /// Index must be in the range 0 to 99.
-        /// </summary>
-        public void SetParameter(int index, float x, float y)
-        {
-            var parameterHandle = parameterHandles[index];
-            if (parameterHandle < 0)
-                return;
-
-            var value = new Vector2D(x, y);
-            if (bindedVectors2D[index] != value)
-            {
-                GL.Uniform2(parameterHandle, x, y);
-                bindedVectors2D[index] = value;
-            }
-#if DEBUGSHADERS && DEBUG
-            ShaderManager.Core.CheckForErrors(name, "SetParameter " + index.ToString());
-#endif
-        }
-
-        /// <summary>
-        /// Sets internal parameter (for which a handle is stored to index) to a value.
-        /// Index must be in the range 0 to 99.
-        /// </summary>
-        public void SetParameter(int index, ref Vector3D value)
-        {
-            var parameterHandle = parameterHandles[index];
-            if (parameterHandle < 0)
-                return;
-
-            if (bindedVectors3D[index] != value)
-            {
-                GL.Uniform3(parameterHandle, value.X, value.Y, value.Z);
-                bindedVectors3D[index] = value;
-            }
-#if DEBUGSHADERS && DEBUG
-            ShaderManager.Core.CheckForErrors(name, "SetParameter " + index.ToString());
-#endif
-        }
-
-        /// <summary>
-        /// Sets internal parameter (for which a handle is stored to index) to a value.
-        /// Index must be in the range 0 to 99.
-        /// </summary>
-        public void SetParameter(int index, float x, float y, float z)
-        {
-            var parameterHandle = parameterHandles[index];
-            if (parameterHandle < 0)
-                return;
-
-            var value = new Vector3D(x, y, z);
-            if (bindedVectors3D[index] != value)
-            {
-                GL.Uniform3(parameterHandle, x, y, z);
-                bindedVectors3D[index] = value;
-            }
-#if DEBUGSHADERS && DEBUG
-            ShaderManager.Core.CheckForErrors(name, "SetParameter " + index.ToString());
-#endif
-        }
-
-        /// <summary>
-        /// Sets internal parameter (for which a handle is stored to index) to a value.
-        /// Index must be in the range 0 to 99.
-        /// </summary>
-        public void SetParameter(int index, ref Vector4D value)
-        {
-            var parameterHandle = parameterHandles[index];
-            if (parameterHandle < 0)
-                return;
-
-            GL.Uniform4(parameterHandle, value.X, value.Y, value.Z, value.W);
-#if DEBUGSHADERS && DEBUG
-            ShaderManager.Core.CheckForErrors(name, "SetParameter " + index.ToString());
-#endif
-        }
-
-        /// <summary>
-        /// Sets internal parameter (for which a handle is stored to index) to a value.
-        /// Index must be in the range 0 to 99.
-        /// </summary>
-        public void SetParameter(int index, float x, float y, float z, float w)
-        {
-            var parameterHandle = parameterHandles[index];
-            if (parameterHandle < 0)
-                return;
-
-            GL.Uniform4(parameterHandle, x, y, z, w);
-#if DEBUGSHADERS && DEBUG
-            ShaderManager.Core.CheckForErrors(name, "SetParameter " + index.ToString());
-#endif
-        }
-
-        /// <summary>
-        /// Deletes the shader object from the memory.
-        /// </summary>
-        public void Dispose()
-        {
-            if (programHandle != 0)
-                GL.DeleteProgram(programHandle);
-
-            programHandle = 0;
-            GC.SuppressFinalize(this);
-        }
-
-
-        public override string ToString()
-        {
-            return name;
-        }
-
-
-        #region ILinkedShader Members
-
-        public void Enable()
-        {
-            GL.UseProgram(programHandle);
-        }
-
-        public void Disable()
-        {
-            GL.UseProgram(0);
-            GL.ActiveTexture(TextureUnit.Texture0);
-        }
-
-        #endregion
+        GLint infoLogLength;
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
+        
+        GLchar *strInfoLog = new GLchar[infoLogLength + 1];
+        glGetProgramInfoLog(program, infoLogLength, NULL, strInfoLog);
+        fprintf(stderr, "GLSL Linker failure: %s\n", strInfoLog);
+        delete[] strInfoLog;
+
+		Release();
     }
+}
+
+void ShaderOpenGL::Release()
+{
+	isCompiledAndLinked = false;
+
+	if ( program != 0 )
+	{
+		glDeleteProgram( program );
+		program = 0;
+	}
+
+	if ( vertexShader != 0 )
+	{
+		glDeleteShader( vertexShader );
+		vertexShader = 0;
+	}
+
+	if ( fragmentShader != 0 )
+	{
+		glDeleteShader( fragmentShader );
+		fragmentShader = 0;
+	}
+}
+
+void ShaderOpenGL::Enable()
+{
+    glUseProgram( program );
+	glActiveTexture( GL_TEXTURE0 );
+	glEnable( GL_TEXTURE_2D );
+}
+
+void ShaderOpenGL::Disable()
+{
+    glUseProgram( 0 );
+	glActiveTexture(GL_TEXTURE0);
+}
+
+bool ShaderOpenGL::HasParameter(const std::string& name)
+{
+	const char *c_str = name.c_str();
+    int handle = glGetUniformLocation( program, name.c_str() );
+    return handle > -1;
+}
+
+void ShaderOpenGL::SetParameter( const std::string& name, float value )
+{
+	// TODO: cache parameter locations!
+	const char *c_str = name.c_str();
+	int location = glGetUniformLocation( program, name.c_str() );
+
+	glUniform1f( location, value );
+}
+
+void ShaderOpenGL::SetParameter( const std::string& name, ITexture* texture )
+{
+	// TODO: cache parameter locations!
+	const char *c_str = name.c_str();
+	int location = glGetUniformLocation( program, name.c_str() );
+
+	glUniform1i( location, 0 );
+	glActiveTexture( GL_TEXTURE0 );
+	
+	TextureOpenGL* texture_gl = (TextureOpenGL*)texture;
+	glBindTexture( GL_TEXTURE_2D, texture_gl->mTexture );
+}
+bool ShaderOpenGL::GetIsCompiledAndLinked()
+{
+	return isCompiledAndLinked;
+}
+
+//===================================================================================
+
+int ShaderOpenGL::LoadShader( const std::string& filename, bool is_vertex_shader )
+{
+	//ceng::CSafeArray< char, long > source_code;
+	//ceng::ReadFileToBuffer( filename, source_code); // end of string contains garbage for some reason if these two lines are used.
+
+	std::ifstream ifile(filename.c_str());
+    std::string filetext;
+
+    while( ifile.good() ) {
+        std::string line;
+        std::getline(ifile, line);
+        filetext.append(line + "\n");
+    }
+
+	const char* filetext_ptr = filetext.c_str();
+
+	int shader_handle = glCreateShader( is_vertex_shader ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER );
+	glShaderSource( shader_handle, 1, &filetext_ptr, NULL );
+	glCompileShader( shader_handle );
+
+	//DEBUG
+	GLint status;
+    glGetShaderiv(shader_handle, GL_COMPILE_STATUS, &status);
+    if (status == GL_FALSE)
+    {
+        GLint infoLogLength;
+        glGetShaderiv(shader_handle, GL_INFO_LOG_LENGTH, &infoLogLength);
+        
+        GLchar *strInfoLog = new GLchar[infoLogLength + 1];
+        glGetShaderInfoLog(shader_handle, infoLogLength, NULL, strInfoLog);
+        
+        
+        fprintf(stderr, "GLSL compile failure:\n%s\n", strInfoLog);
+        delete[] strInfoLog;
+
+		isCompiledAndLinked = false;
+    }
+
+	return shader_handle;
+}
 
 }

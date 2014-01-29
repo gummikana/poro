@@ -38,6 +38,7 @@ namespace poro {
 
 class IGraphicsBuffer;
 class IRenderTexture;
+class IShader;
 //-----------------------------
 
 struct GraphicsSettings
@@ -218,6 +219,11 @@ public:
 	virtual void DestroyRenderTexture(IRenderTexture* buffer);
 
 	//-------------------------------------------------------------------------
+
+	virtual IShader* CreateShader() { return NULL; }
+
+	//-------------------------------------------------------------------------
+
 	// Save screen (only supports .png format)
 	virtual void SaveScreenshot( const std::string& filename )								{ poro_assert( false && "IMPLEMENTATION NEEDED" ); }
 	virtual void SaveScreenshot( const std::string& filename, int x, int y, int w, int h )	{ poro_assert( false && "IMPLEMENTATION NEEDED" ); }

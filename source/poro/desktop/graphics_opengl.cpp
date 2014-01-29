@@ -33,6 +33,7 @@
 #ifndef PORO_DONT_USE_GLEW
 #	include "graphics_buffer_opengl.h"
 #	include "render_texture_opengl.h"
+#	include "shader_opengl.h"
 #endif
 
 #define PORO_ERROR "ERROR: "
@@ -1283,6 +1284,13 @@ void GraphicsOpenGL::DestroyRenderTexture(IRenderTexture* buffer)
 #else
 	delete buffer;
 #endif
+}
+
+//=============================================================================
+
+IShader* GraphicsOpenGL::CreateShader()
+{
+	return new ShaderOpenGL();
 }
 
 //=============================================================================

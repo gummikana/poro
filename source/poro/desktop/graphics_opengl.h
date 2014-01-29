@@ -114,6 +114,10 @@ public:
 
 	//-------------------------------------------------------------------------
 
+	virtual IShader* CreateShader();
+
+	//-------------------------------------------------------------------------
+
 	types::vec2 ConvertToInternalPos( int x, int y );
 
 	void ResetWindow();
