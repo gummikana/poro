@@ -91,11 +91,13 @@ void ShaderOpenGL::Release()
 
 void ShaderOpenGL::Enable()
 {
+	lastAllocatedTextureUnit = 0;
     glUseProgram( program );
 }
 
 void ShaderOpenGL::Disable()
 {
+	lastAllocatedTextureUnit = 0;
     glUseProgram( 0 );
 	glActiveTexture(GL_TEXTURE0);
 	glDisable( GL_TEXTURE_2D );
@@ -125,9 +127,10 @@ void ShaderOpenGL::SetParameter( const std::string& name, ITexture* texture )
 	int location = glGetUniformLocation( program, name.c_str() );
 
 	glEnable( GL_TEXTURE_2D );
-	glUniform1i( location, 0 );
-	glActiveTexture( GL_TEXTURE0 );
-	
+	glUniform1i( location, lastAllocatedTextureUnit );
+	glActiveTexture( GL_TEXTURE0 + lastAllocatedTextureUnit );
+	lastAllocatedTextureUnit ++;
+
 	TextureOpenGL* texture_gl = (TextureOpenGL*)texture;
 	glBindTexture( GL_TEXTURE_2D, texture_gl->mTexture );
 }
@@ -139,8 +142,9 @@ void ShaderOpenGL::SetParameter( const std::string& name, ITexture3d* texture )
 	int location = glGetUniformLocation( program, name.c_str() );
 
 	glEnable( GL_TEXTURE_3D );
-	glUniform1i( location, 1 );
-	glActiveTexture( GL_TEXTURE0 + 1 );
+	glUniform1i( location, lastAllocatedTextureUnit );
+	glActiveTexture( GL_TEXTURE0 + lastAllocatedTextureUnit );
+	lastAllocatedTextureUnit ++;
 	
 	Texture3dOpenGL* texture_gl = (Texture3dOpenGL*)texture;
 	glBindTexture( GL_TEXTURE_3D, texture_gl->mTexture );

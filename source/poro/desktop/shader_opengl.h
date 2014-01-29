@@ -27,14 +27,20 @@
 #include "texture3d_opengl.h"
 #include "../ishader.h"
 
-#include <vector>
-
 namespace poro {
 	
 class ShaderOpenGL :  public IShader
 {
 public:
-	ShaderOpenGL() : IShader(), isCompiledAndLinked(false), program(0), vertexShader(0), fragmentShader(0) { }
+	ShaderOpenGL() : IShader(), 
+		isCompiledAndLinked(false), 
+		program(0), 
+		vertexShader(0), 
+		fragmentShader(0),
+		lastAllocatedTextureUnit(0) 
+	{
+
+	}
 	virtual ~ShaderOpenGL(){ Release(); }
 
 	virtual void Init( const std::string& vertex_source_filename, const std::string& fragment_source_filename );	
@@ -52,6 +58,7 @@ private:
     int program;
     int vertexShader;
     int fragmentShader;
+	int lastAllocatedTextureUnit;
 	
 	int LoadShader( const std::string& filename, bool is_vertex_shader );
 
