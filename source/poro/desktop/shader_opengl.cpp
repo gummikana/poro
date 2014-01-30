@@ -133,6 +133,7 @@ void ShaderOpenGL::SetParameter( const std::string& name, ITexture* texture )
 
 	TextureOpenGL* texture_gl = (TextureOpenGL*)texture;
 	glBindTexture( GL_TEXTURE_2D, texture_gl->mTexture );
+	glActiveTexture( GL_TEXTURE0 );
 }
 
 void ShaderOpenGL::SetParameter( const std::string& name, ITexture3d* texture )
@@ -148,6 +149,7 @@ void ShaderOpenGL::SetParameter( const std::string& name, ITexture3d* texture )
 	
 	Texture3dOpenGL* texture_gl = (Texture3dOpenGL*)texture;
 	glBindTexture( GL_TEXTURE_3D, texture_gl->mTexture );
+	glActiveTexture( GL_TEXTURE0 );
 }
 
 bool ShaderOpenGL::GetIsCompiledAndLinked()
