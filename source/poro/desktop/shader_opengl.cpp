@@ -25,8 +25,7 @@
 #include "../iplatform.h"
 #include "shader_opengl.h"
 #include "../itexture.h"
-#include "../../utils/filesystem/filesystem.h"
-//#include "../../utils/safearray/csafearray.h"
+
 
 namespace poro {
 
@@ -59,7 +58,7 @@ void ShaderOpenGL::Init( const std::string& vertex_source_filename, const std::s
         
         GLchar *strInfoLog = new GLchar[infoLogLength + 1];
         glGetProgramInfoLog(program, infoLogLength, NULL, strInfoLog);
-        fprintf(stderr, "GLSL Linker failure: %s\n", strInfoLog);
+        fprintf(stderr, "GLSL inker failure: %s\n", strInfoLog);
         delete[] strInfoLog;
 
 		Release();
@@ -161,9 +160,6 @@ bool ShaderOpenGL::GetIsCompiledAndLinked()
 
 int ShaderOpenGL::LoadShader( const std::string& filename, bool is_vertex_shader )
 {
-	//ceng::CSafeArray< char, long > source_code;
-	//ceng::ReadFileToBuffer( filename, source_code); // end of string contains garbage for some reason if these two lines are used.
-
 	std::ifstream ifile(filename.c_str());
     std::string filetext;
 
