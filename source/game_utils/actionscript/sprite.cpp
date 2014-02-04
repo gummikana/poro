@@ -285,7 +285,10 @@ Sprite* LoadSprite( const std::string& filename )
 		result->SetCenterOffset( sprite_data.offset );
 		result->SetScale( sprite_data.scale.x, sprite_data.scale.y );
 		if( sprite_data.default_animation.empty() == false ) 
+		{
 			result->PlayAnimation( sprite_data.default_animation );
+			result->Update( 0 );
+		}
 
 		TextureBuffer* buffer = GetTextureBuffer( sprite_data.filename );
 		if ( buffer == NULL ) return result;
