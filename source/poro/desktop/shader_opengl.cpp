@@ -98,7 +98,6 @@ void ShaderOpenGL::Disable()
 {
 	lastAllocatedTextureUnit = 0;
     glUseProgram( 0 );
-	glActiveTexture(GL_TEXTURE0);
 	glDisable( GL_TEXTURE_2D );
 	glDisable( GL_TEXTURE_3D );
 }
