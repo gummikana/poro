@@ -68,6 +68,10 @@ std::vector< types::color > GenerateRandomColorPalette( int how_many, const type
 
 // ----------------------------------------------------------------------------
 
+types::uint32 Blend2Colors( types::uint32 c1, types::uint32 c2, float how_much_of_1, bool ignore_alpha = true );
+
+// ----------------------------------------------------------------------------
+
 }
 
 #endif

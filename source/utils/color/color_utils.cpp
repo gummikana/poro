@@ -258,4 +258,25 @@ std::vector< types::color > GenerateRandomColorPalette( int how_many, const type
 	return result;
 }
 
+//-----------------------------------------------------------------------------
+
+types::uint32 Blend2Colors( types::uint32 c1, types::uint32 c2, float how_much_of_1, bool ignore_alpha )
+{
+	if( c1 == c2 ) return c1;
+
+	types::fcolor color1( c1 );
+	types::fcolor color2( c2 );
+
+	types::fcolor result = how_much_of_1 * color1 + ( 1.f - how_much_of_1 ) * color2;
+	// alpha?
+	// we set the alpha (R channel for twiched reasons) to be the highest alpha
+	if( ignore_alpha )
+		result.SetA( color2.GetA() );
+
+	// result.SetR( ( color1.GetR() > color2.GetR() )? color1.GetR() : color2.GetR() );
+	return result.Get32();
+}
+
+//-----------------------------------------------------------------------------
+
 } // end o namespace ceng
