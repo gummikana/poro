@@ -3,7 +3,6 @@
 
 #include <vector>
 
-#include "../../types.h"
 #include "../actionscript/sprite.h"
 
 typedef as::Sprite CSprite;

@@ -18,6 +18,7 @@ CParticle::CParticle( CSprite* sprite ) :
 {
 	for( int i = 0; i < 4; ++i )
 		myColorChanges[ i ] = 0;
+
 	Update( 0 );
 }
 
@@ -83,12 +84,13 @@ bool CParticle::Update( float dt )
 		myParticleHacks[ i ]->Update( this, dt );
 	}
 
-	return true;
-	
+	mySprite->Update( dt );
+
 	return true;
 }
 
 void CParticle::Draw( poro::IGraphics* graphics, as::Transform& t )
 {
-	if(!myDead && myDelay <= 0) as::DrawSprite( mySprite, graphics, NULL, t );
+	if( !myDead && myDelay <= 0 ) 
+		as::DrawSprite( mySprite, graphics, NULL, t );
 }
