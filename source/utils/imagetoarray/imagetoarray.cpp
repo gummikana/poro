@@ -16,7 +16,7 @@
 #include <poro/iplatform.h>
 #include <poro/igraphics.h>
 #include <utils/string/string.h>
-#include "../game_types.h"
+// #include "../game_types.h"
 
 
 using namespace imagetoarray;
