@@ -20,7 +20,10 @@ namespace ceng
 	long ReadFileSize( const std::string& file );
 
 	//format=0(or undefined) Don't format, format=1 Unix(NL), format=2 Windows(CR+NL)
-    void			ReadFileToBuffer( const std::string& filename, CSafeArray< char, long >& buffer, int format=0 ); 
+    void ReadFileToBuffer( const std::string& filename, CSafeArray< char, long >& buffer, int format=0 ); 
+	
+	// every line is a separate element in the vector
+	void ReadFileToVector( const std::string& filename, std::vector< std::string >& output );		
 
 	std::string GetFilename( const std::string& filename );
 	std::string GetFileExtension( const std::string& filename );

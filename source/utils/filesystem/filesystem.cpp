@@ -321,6 +321,22 @@ void ReadFileToBuffer( const std::string& filename, CSafeArray< char, long >& bu
     file.close();
 }
 
+// every line is a separate element in the vector
+void ReadFileToVector( const std::string& filename, std::vector< std::string >& output )
+{
+	std::ifstream ifile(filename.c_str());
+
+    while( ifile.good() ) 
+	{
+        std::string line;
+        std::getline(ifile, line);
+		output.push_back( line );
+    }
+
+	ifile.close();
+}
+
+
 std::string GetFilename( const std::string& filename )
 {
 	unsigned int p = filename.find_last_of( separator );
