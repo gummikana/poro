@@ -97,6 +97,14 @@ public:
 		mUv[ 3 ] = y2 * ( (float)mHeight / (float)mRealSizeY );
 	}
 
+	virtual void GetUVCoords( types::vec2& coord1, types::vec2& coord2 )
+	{
+		coord1.x = mUv[ 0 ];
+		coord1.y = mUv[ 1 ];
+		coord2.x = mUv[ 2 ];
+		coord2.y = mUv[ 3 ];
+	}
+
 	types::Uint32	mTexture;
 	int				mWidth;
 	int				mHeight;

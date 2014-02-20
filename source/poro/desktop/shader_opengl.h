@@ -37,7 +37,7 @@ public:
 		program(0), 
 		vertexShader(0), 
 		fragmentShader(0),
-		lastAllocatedTextureUnit(0) 
+		lastAllocatedTextureUnit(2) 
 	{
 
 	}
@@ -49,6 +49,8 @@ public:
 	virtual void Disable();
 	virtual bool HasParameter( const std::string& name );
 	virtual void SetParameter( const std::string& name, float value );
+	virtual void SetParameter( const std::string& name, types::vec2 value );
+	virtual void SetParameter( const std::string& name, types::vec3 value );
 	virtual void SetParameter( const std::string& name, ITexture* texture );
 	virtual void SetParameter( const std::string& name, ITexture3d* texture );
 	virtual bool GetIsCompiledAndLinked();

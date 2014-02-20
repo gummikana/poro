@@ -39,6 +39,8 @@ public:
 	// IRenderTexture
 	virtual ITexture*	GetTexture() { return &mTexture; }
 
+	void InitRenderTexture( int width, int height, bool linear_filtering = false );
+
 	// IGraphics
 	virtual bool		Init( int width, int height, bool fullscreen = false, const types::string& caption = "" );
 	virtual void		Release();
@@ -46,7 +48,7 @@ public:
 	virtual void		EndRendering();
 	
 private:
-	void InitTexture(int width, int height);
+	void InitTexture(int width, int height, bool linear_filtering = false);
 	
 	types::Uint32 mBufferId;
 	TextureOpenGL mTexture;

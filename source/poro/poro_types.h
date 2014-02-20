@@ -46,10 +46,18 @@ namespace types {
 		Vec2(Float32 _x, Float32 _y) : x(_x),y(_y){}
 	};
 
+	struct Vec3 {
+		Float32 x;
+		Float32 y;
+		Float32 z;
+		Vec3() : x(0),y(0),z(0){}
+		Vec3(Float32 _x, Float32 _y, Float32 _z) : x(_x),y(_y),z(_z){}
+	};
 	
 	typedef std::string							string;
 	typedef ceng::StaticArray< Float32, 4 >		fcolor;
 	typedef Vec2								vec2;
+	typedef Vec3								vec3;
 	
 
 } // end o types

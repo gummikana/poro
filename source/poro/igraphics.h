@@ -222,7 +222,7 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual IRenderTexture* CreateRenderTexture(int width, int height);
+	virtual IRenderTexture* CreateRenderTexture(int width, int height, bool linear_filtering = false);
 	virtual void DestroyRenderTexture(IRenderTexture* buffer);
 
 	//-------------------------------------------------------------------------
@@ -310,7 +310,7 @@ inline void IGraphics::DestroyGraphicsBuffer(IGraphicsBuffer* buffer){
 	poro_assert( false );
 }
 
-inline IRenderTexture* IGraphics::CreateRenderTexture(int width, int height) {
+inline IRenderTexture* IGraphics::CreateRenderTexture(int width, int height, bool linear_filtering) {
 	// If this fails, it means you should implement render texture on your end of things
 	poro_assert( false );
 	return NULL;

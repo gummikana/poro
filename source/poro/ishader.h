@@ -40,6 +40,8 @@ public:
 	virtual void Disable() { }
 	virtual bool HasParameter( const std::string& name ) = 0;
 	virtual void SetParameter( const std::string& name, float value ) { }
+	virtual void SetParameter( const std::string& name, types::vec2 value ) { }
+	virtual void SetParameter( const std::string& name, types::vec3 value ) { }
 	virtual void SetParameter( const std::string& name, ITexture* texture ) { }
 	virtual void SetParameter( const std::string& name, ITexture3d* texture ) { }
 	

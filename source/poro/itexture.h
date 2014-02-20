@@ -40,6 +40,12 @@ public:
 		// you should implement this
 	}
 
+	virtual void GetUVCoords( types::vec2& coord1, types::vec2& coord2 ) {
+		poro_assert( false );
+		// this is actually used, probably for a texture atlas,
+		// you should implement this
+	}
+
 	virtual void SetExternalSize( int width, int height ) {
 		poro_assert( false );
 		// Must be implemented if used

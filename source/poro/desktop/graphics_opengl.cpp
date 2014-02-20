@@ -1254,11 +1254,12 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 
 void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture, const poro::types::fcolor& color, types::vec2* tex_coords, int count )
 {
-	if( itexture == NULL )
-		return;
-	FlushDrawTextureBuffer();
-	
-	TextureOpenGL* texture = (TextureOpenGL*)itexture;
+	TextureOpenGL* texture;
+	if( itexture != NULL )
+	{
+		FlushDrawTextureBuffer();
+		texture = (TextureOpenGL*)itexture;
+	}
 
 	static types::vec2 vertices[ 4 ];
 	vertices[ 0 ].x = (float) position.x;
@@ -1270,12 +1271,16 @@ void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const 
 	vertices[ 3 ].x = (float) (position.x + size.x);
 	vertices[ 3 ].y = (float) (position.y + size.y);
 
-	Uint32 tex = texture->mTexture;
 
-	glBindTexture(GL_TEXTURE_2D, tex);
+	if( itexture != NULL )
+	{
+		Uint32 tex = texture->mTexture;
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glBindTexture(GL_TEXTURE_2D, tex);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	}
 
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);
@@ -1285,10 +1290,17 @@ void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const 
 
 	for( int i = 0; i < 4; i++)
 	{
-		if( tex_coords == NULL || i >= count )
-			glTexCoord2f( vertices[ i ].x / texture->GetWidth(), vertices[ i ].y / texture->GetHeight() );
+		if( itexture != NULL )
+		{ 
+			if ( tex_coords == NULL || i >= count )
+				glTexCoord2f( vertices[ i ].x / texture->GetWidth(), vertices[ i ].y / texture->GetHeight() );
+			else
+				glTexCoord2f( tex_coords[ i ].x / texture->GetWidth(), tex_coords[ i ].y / texture->GetHeight() );
+		}
 		else
-			glTexCoord2f( tex_coords[ i ].x / texture->GetWidth(), tex_coords[ i ].y / texture->GetHeight() );
+		{
+			glTexCoord2f( tex_coords[ i ].x, tex_coords[ i ].y );
+		}
 
 		glVertex2f(vertices[ i ].x, vertices[ i ].y );
 	}
@@ -1296,8 +1308,11 @@ void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const 
 	glEnd();
 	glDisable(GL_BLEND);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	if( itexture != NULL )
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	}
 
 	glDisable(GL_TEXTURE_2D);
 }
@@ -1355,14 +1370,14 @@ void GraphicsOpenGL::DestroyGraphicsBuffer(IGraphicsBuffer* buffer)
 
 //=============================================================================
 
-IRenderTexture* GraphicsOpenGL::CreateRenderTexture(int width, int height)
+IRenderTexture* GraphicsOpenGL::CreateRenderTexture(int width, int height, bool linear_filtering)
 {
 #ifdef PORO_DONT_USE_GLEW
 	poro_assert(false); //Buffer implementation needs glew.
 	return NULL;
 #else
 	RenderTextureOpenGL* buffer = new RenderTextureOpenGL;
-	buffer->Init(width, height);
+	buffer->InitRenderTexture(width, height, linear_filtering);
 	return buffer;
 #endif
 }

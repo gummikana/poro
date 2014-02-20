@@ -37,7 +37,7 @@ Uint32 GetNextPowerOfTwo(Uint32 input)
 }
 } // end of anonymous namespace
 
-void RenderTextureOpenGL::InitTexture(int width,int height){
+void RenderTextureOpenGL::InitTexture(int width,int height, bool linear_filtering ) {
 
 	GLsizei widthP2 = (GLsizei)GetNextPowerOfTwo(width);
 	GLsizei heightP2 = (GLsizei)GetNextPowerOfTwo(height);
@@ -50,26 +50,38 @@ void RenderTextureOpenGL::InitTexture(int width,int height){
 
 	glGenTextures(1, (GLuint *)&mTexture.mTexture);
 	glBindTexture(GL_TEXTURE_2D, mTexture.mTexture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	int filtering;
+	if (linear_filtering)
+		filtering = GL_LINEAR;
+	else
+		filtering = GL_NEAREST;
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtering);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filtering);
+	
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, widthP2, heightP2, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 }
 
-
-//IGraphics
-bool RenderTextureOpenGL::Init( int width, int height, bool fullscreen, const types::string& caption )
+void RenderTextureOpenGL::InitRenderTexture( int width, int height, bool linear_filtering )
 {
 	glGenFramebuffersEXT(1, &mBufferId);	// <- this line crashes on windows
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mBufferId);
 
-	InitTexture(width,height);
+	InitTexture( width, height, linear_filtering );
 
 	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, mTexture.mTexture, 0);
 	GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
 	poro_assert(status==GL_FRAMEBUFFER_COMPLETE_EXT);
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+}
+
+//IGraphics
+bool RenderTextureOpenGL::Init( int width, int height, bool fullscreen, const types::string& caption )
+{
+	InitRenderTexture( width, height, false );
 	return true;
 }
 

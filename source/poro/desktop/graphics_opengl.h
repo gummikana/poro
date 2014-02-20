@@ -115,7 +115,7 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual IRenderTexture* CreateRenderTexture(int width, int height);
+	virtual IRenderTexture* CreateRenderTexture(int width, int height, bool linear_filtering);
 	virtual void DestroyRenderTexture(IRenderTexture* buffer);
 
 	//-------------------------------------------------------------------------
