@@ -265,6 +265,7 @@ public:
 
 	std::vector< Sprite* >	FindSpritesAtPoint( const types::vector2& p );
 	types::vector2			GetScreenPosition() const;
+	types::vector2			TransformWithAllParents( const types::vector2& mouse_pos ) const;
 	
 	//-------------------------------------------------------------------------
 

@@ -1004,6 +1004,27 @@ types::vector2 Sprite::GetScreenPosition() const
 }
 //-----------------------------------------------------------------------------
 
+types::vector2 Sprite::TransformWithAllParents( const types::vector2& mouse_pos ) const
+{
+	types::vector2 result( 0, 0 );
+	std::vector< const DisplayObjectContainer* > parents;
+	getParentTree( parents );
+
+	types::xform xform;
+	for( int i = (int)parents.size() - 1; i > 0; --i )
+	{
+		cassert( parents[ i ] );
+		const Sprite* parent = dynamic_cast< const Sprite* >( parents[ i ] );
+		if( parent )
+			xform = ceng::math::Mul( xform, parent->GetXForm() );
+	}
+
+	return ceng::math::MulT( xform, mouse_pos );
+}
+
+
+//-----------------------------------------------------------------------------
+
 types::vector2 Sprite::MultiplyByParentXForm( const types::vector2& p ) const
 {
 	types::vector2 result = ceng::math::Mul( GetXForm(), p );
@@ -1015,6 +1036,7 @@ types::vector2 Sprite::MultiplyByParentXForm( const types::vector2& p ) const
 	else 
 		return parent->MultiplyByParentXForm( result );
 }
+
 //-----------------------------------------------------------------------------
 
 void Sprite::SetAlphaMask( Sprite* alpha_mask )	{ 
@@ -1049,19 +1071,22 @@ void Sprite::FindSpritesAtPointImpl( const types::vector2& pos, Transform& trans
 		dest_rect.w = mRect->w; dest_rect.h = mRect->h; 
 	}
 
-	std::vector< types::vector2 > polygon( 4 );
-	polygon[ 0 ].Set( -mCenterOffset.x,					-mCenterOffset.y );
-	polygon[ 1 ].Set( -mCenterOffset.x,					dest_rect.h - mCenterOffset.y );
-	polygon[ 2 ].Set( dest_rect.w - mCenterOffset.x,	dest_rect.h - mCenterOffset.y );
-	polygon[ 3 ].Set( dest_rect.w - mCenterOffset.x,	-mCenterOffset.y );
-	for( int i = 0; i < (int)polygon.size(); ++i )
+	if( mTexture )
 	{
-		polygon[ i ] = ceng::math::MulWithScale( mXForm, polygon[ i ] );
-		polygon[ i ] = ceng::math::MulWithScale( matrix, polygon[ i ] );
-	}
+		std::vector< types::vector2 > polygon( 4 );
+		polygon[ 0 ].Set( -mCenterOffset.x,					-mCenterOffset.y );
+		polygon[ 1 ].Set( -mCenterOffset.x,					dest_rect.h - mCenterOffset.y );
+		polygon[ 2 ].Set( dest_rect.w - mCenterOffset.x,	dest_rect.h - mCenterOffset.y );
+		polygon[ 3 ].Set( dest_rect.w - mCenterOffset.x,	-mCenterOffset.y );
+		for( int i = 0; i < (int)polygon.size(); ++i )
+		{
+			polygon[ i ] = ceng::math::MulWithScale( mXForm, polygon[ i ] );
+			polygon[ i ] = ceng::math::MulWithScale( matrix, polygon[ i ] );
+		}
 
-	if( ceng::math::IsPointInsidePolygon_Better( pos, polygon ) )
-		results.push_back( this );
+		if( ceng::math::IsPointInsidePolygon_Better( pos, polygon ) )
+			results.push_back( this );
+	}
 
 	if( mChildren.empty() ) 
 		return;
