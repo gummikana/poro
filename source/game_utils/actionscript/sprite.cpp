@@ -1044,9 +1044,10 @@ void Sprite::FindSpritesAtPointImpl( const types::vector2& pos, Transform& trans
 {
 	const types::xform& matrix = transform.GetXForm();
 	types::rect dest_rect( 0, 0, mSize.x, mSize.y );
-	if( mRect ) { dest_rect.w = mRect->w; dest_rect.h = mRect->h; }
-	
-
+	if( mRect ) 
+	{ 
+		dest_rect.w = mRect->w; dest_rect.h = mRect->h; 
+	}
 
 	std::vector< types::vector2 > polygon( 4 );
 	polygon[ 0 ].Set( -mCenterOffset.x,					-mCenterOffset.y );
@@ -1055,16 +1056,15 @@ void Sprite::FindSpritesAtPointImpl( const types::vector2& pos, Transform& trans
 	polygon[ 3 ].Set( dest_rect.w - mCenterOffset.x,	-mCenterOffset.y );
 	for( int i = 0; i < (int)polygon.size(); ++i )
 	{
-		polygon[ i ] = ceng::math::Mul( mXForm, polygon[ i ] );
-		polygon[ i ] = ceng::math::Mul( matrix, polygon[ i ] );
+		polygon[ i ] = ceng::math::MulWithScale( mXForm, polygon[ i ] );
+		polygon[ i ] = ceng::math::MulWithScale( matrix, polygon[ i ] );
 	}
 
-	if( ceng::math::IsPointInsidePolygon( pos, polygon ) )
-	{
+	if( ceng::math::IsPointInsidePolygon_Better( pos, polygon ) )
 		results.push_back( this );
-	}
 
-	if( mChildren.empty() ) return;
+	if( mChildren.empty() ) 
+		return;
 
 	transform.PushXForm( mXForm, mColor );
 
@@ -1077,7 +1077,7 @@ void Sprite::FindSpritesAtPointImpl( const types::vector2& pos, Transform& trans
 		{			
 			current = dynamic_cast< Sprite* >(*i);
 			cassert( current );
-			if( current->IsSpriteDead() )
+			if( current == NULL || current->IsSpriteDead() )
 				continue;
 		
 			current->FindSpritesAtPointImpl( pos, transform, results );

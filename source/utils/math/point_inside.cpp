@@ -110,8 +110,7 @@ bool IsPointInsidePolygon( const CVector2< int >& point, const std::vector< CVec
  * defined for this test.
  */
 // int CrossingsTest( const std::vector< types::vector2 >& pgon, numverts, point )
-#if 0 
-bool IsPointInsidePolygon( const CVector2< PointType >& point, const std::vector< CVector2< PointType > >& pgon )
+bool IsPointInsidePolygon_Better( const CVector2< PointType >& point, const std::vector< CVector2< PointType > >& pgon )
 {
 	int numverts = (int)pgon.size();
 	bool inside_flag = false;
@@ -166,7 +165,6 @@ bool IsPointInsidePolygon( const CVector2< PointType >& point, const std::vector
 
     return( inside_flag ) ;
 }
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 

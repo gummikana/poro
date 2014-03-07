@@ -172,6 +172,19 @@ Vector2 Mul( const CXForm< Type >& T, const Vector2& v )
 }
 
 
+template< class Type, class Vector2 >
+Vector2 MulWithScale( const CXForm< Type >& T, const Vector2& v )
+{
+	Vector2 result;
+	result.x = v.x * T.scale.x;
+	result.y = v.y * T.scale.y;
+	result = Mul( T.R, result );
+	result.x += T.position.x;
+	result.y += T.position.y;
+	return result;
+}
+
+
 template< class Type >
 CXForm< Type > Mul( const CXForm< Type >& T, const CXForm< Type >& v )
 {
