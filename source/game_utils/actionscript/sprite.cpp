@@ -899,6 +899,8 @@ void Sprite::PlayRectAnimation( const std::string& name )
 		{
 			mRectAnimations[ i ]->mKillMe = false;
 			SetRectAnimation( mRectAnimations[ i ] );
+			// add so that the rect animation doesn't flash for 1 frame
+			Update( 0 );
 			return;
 		}
 	}
