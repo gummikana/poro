@@ -411,7 +411,6 @@ void GTween::Reset()
 
 void GTween::Reverse()
 {
-	std::cout << "Reverse: " << mLooping << ", " << mTimer << std::endl;
 	if( mLooping == false)
 	{
 		if( mTimer == 0 )
