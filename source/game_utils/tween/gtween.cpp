@@ -65,6 +65,7 @@ GTween::GTween() :
 	mCompleted( false ),
 	mLooping( false ),
 	mOnLoop( false ),
+	mLoopCount( -1 ),
 	mClampValues( false ),
 	mKillMeAutomatically( false ),
 	mMathFunc( NULL )
@@ -83,6 +84,7 @@ GTween::GTween( float duration, bool auto_kill ) :
 	mCompleted( false ),
 	mLooping( false ),
 	mOnLoop( false ),
+	mLoopCount( -1 ),
 	mClampValues( false ),
 	mKillMeAutomatically( auto_kill ),
 	mMathFunc( NULL )
@@ -144,14 +146,25 @@ void GTween::RemoveDuplicateInterpolators( const std::string& name)
 
 //-----------------------------------------------------------------------------
 	
-bool GTween::IsDead() const							{ return mDead; }
-void GTween::Kill()									{ mDead = true; }
-void GTween::SetAutoKill( bool kill_me_when_done )	{ mKillMeAutomatically = kill_me_when_done; }
+bool GTween::IsDead() const	{ 
+	return mDead; 
+}
+
+void GTween::Kill()	{ 
+	mDead = true; 
+}
+
+void GTween::SetAutoKill( bool kill_me_when_done )	{ 
+	mKillMeAutomatically = kill_me_when_done; 
+}
+
+void GTween::SetLoopCount( int loop_count ) {
+	mLoopCount = loop_count;
+}
 
 //-----------------------------------------------------------------------------
 
-void GTween::SetFunction( ceng::easing::IEasingFunc& math_func )
-{
+void GTween::SetFunction( ceng::easing::IEasingFunc& math_func ) {
 	mMathFunc = &math_func;
 }
 
@@ -220,18 +233,22 @@ void GTween::Update( float dt )
 		OnStep();
 
 		mTimer += dt;
-		float t = mTimer / mDuration;
-
-		t = ceng::math::Clamp( t, 0.f, 1.f );
 		
-		if( mMathFunc )
-			t = mMathFunc->f( t );
-
-		if( mClampValues ) t = ceng::math::Clamp( t, 0.f, 1.f );
-
-		for( std::size_t i = 0; i < mInterpolators.size(); ++i )
+		if( mInterpolators.empty() == false )
 		{
-			mInterpolators[ i ]->Update( t );
+			float t = mTimer / mDuration;
+
+			t = ceng::math::Clamp( t, 0.f, 1.f );
+			
+			if( mMathFunc )
+				t = mMathFunc->f( t );
+
+			if( mClampValues ) t = ceng::math::Clamp( t, 0.f, 1.f );
+
+			for( std::size_t i = 0; i < mInterpolators.size(); ++i )
+			{
+				mInterpolators[ i ]->Update( t );
+			}
 		}
 	}
 	else if( mOnLoop && mTimer > mDuration && mTimer <= mDuration * 2.f ) 
@@ -273,6 +290,17 @@ void GTween::Update( float dt )
 	}
 	else if( mOnLoop == true && mTimer >= mDuration * 2.f )
 	{
+		if( mLoopCount > 0 ) 
+			mLoopCount--;
+
+		// kill me
+		if( mLoopCount == 0 )
+		{
+			mCompleted = true;
+			OnComplete();
+			if( mKillMeAutomatically ) mDead = true;
+		}
+
 		// OnStart();
 		mOnLoop = false;
 		mTimer = 0;
@@ -377,6 +405,40 @@ void GTween::Reset()
 
 	mTimer = 0.f;
 
+}
+
+//-----------------------------------------------------------------------------
+
+void GTween::Reverse()
+{
+	std::cout << "Reverse: " << mLooping << ", " << mTimer << std::endl;
+	if( mLooping == false)
+	{
+		if( mTimer == 0 )
+		{
+			mCompleted = true;
+			OnComplete();
+			if( mKillMeAutomatically ) mDead = true;
+
+		}
+		else
+		{
+			mLooping = true;
+			float timer = mTimer;
+			mTimer = mDuration + ( mDuration - mTimer);
+			mLoopCount = 1;
+		}
+	}
+	else if( mLooping && mTimer >= mDuration )
+	{
+		mLooping = false;
+		mOnLoop = false;
+		mTimer = mDuration - ( mTimer - mDuration );
+	}
+	else if( mLooping && mTimer < mDuration )
+	{
+		std::cout << "ERROROR" <<std::endl;
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -74,6 +74,7 @@ public:
 	void SetAutoKill( bool kill_me_when_done );
 
 	void SetLooping( bool looping );
+	void SetLoopCount( int loop_count );
 	void SetClampValues( bool clamp );
 
 
@@ -115,7 +116,7 @@ public:
 
 	bool GetIsCompleted() const;
 	bool GetIsRunning() const;
-	
+
 	void Update( float dt );
 
 	void AddListener( GTweenListener* l );
@@ -128,6 +129,11 @@ public:
 
 	// returns true if the pointer is used - non const because of function pointers
 	bool HasPointer( void* pointer );
+
+	// Plays the tween backwards from the point that is currently at. 
+	// Useful for UI animations in which mouse cursor is taken away from a button while the tween is being played
+	// uses Looping to reverse the direction of this animation
+	void Reverse();
 
 private:
 	void RemoveDuplicateInterpolators( const std::string& name );
@@ -153,6 +159,7 @@ private:
 
 	bool mLooping;
 	bool mOnLoop;
+	int mLoopCount;	// if -1 loop indefinetely
 
 	bool mClampValues;
 
