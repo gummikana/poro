@@ -260,7 +260,7 @@ float Sine::impl_easeInOut(float t,float b , float c, float d) {
 
 //-----------------------------------------------------------------------------
 
-float PetriHacks::SinGoTo2AndBack::f( float x ) { return sin(x*3.14f)*2.f; }
+float PetriHacks::SinGoTo2AndBack::f( float x ) { return sin(x*3.141596f)*2.f; }
 
 float PetriHacks::LittleBackAndForth::f( float x ) { return ((pow(x+0.17f, 1.3f) * sin(1.f/(x+0.17f))) * 1.043f) + 0.035f; }
 
