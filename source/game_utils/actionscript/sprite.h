@@ -183,6 +183,7 @@ public:
 		RectAnimation() :
 			mName( "unknown" ),
 			mKillMe( true ),
+			mPaused( false ),
 			mFrameCount( 0 ),
 			mCurrentFrame( 0 ),
 			mWidth( 0 ),
@@ -210,6 +211,7 @@ public:
 		std::string mName;
 		bool		mKillMe;
 
+		bool mPaused;
 		int mFrameCount;
 		int mCurrentFrame;
 		int mWidth;
@@ -246,6 +248,7 @@ public:
 	
 	// looks in mRectAnimations for a rect animation with the name
 	void PlayRectAnimation( const std::string& name );
+	void PauseRectAnimation();
 
 	bool IsRectAnimationPlaying() const;
 	bool HasRectAnimation( const std::string& name ) const;

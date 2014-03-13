@@ -268,9 +268,6 @@ ceng::CArray2D< Uint32 >* GetImageData( const std::string& filename, bool load_a
 
 //-----------------------------------------------------------------------------
 
-
-//-----------------------------------------------------------------------------
-
 Sprite* LoadSprite( const std::string& filename )
 {
 	if( filename.size() >= 3 && filename.substr( filename.size() - 3 ) == "xml" )
@@ -750,6 +747,9 @@ types::rect Sprite::RectAnimation::FigureOutRectPos()
 
 void Sprite::RectAnimation::Update( Sprite* sprite, float dt )
 {
+	if( mPaused ) 
+		dt = 0;
+
 	int frame = mCurrentFrame;
 	mCurrentTime += dt;
 	if( mWaitTime > 0 ) {
@@ -868,6 +868,7 @@ void Sprite::SetRectAnimation( RectAnimation* animation )
 		mRectAnimation->mCurrentFrame = 0;
 
 	mRectAnimation = animation;
+	mRectAnimation->mPaused = false;
 }
 //-------------------------------------------------------------------------
 
@@ -880,17 +881,21 @@ const Sprite::RectAnimation* Sprite::GetRectAnimation() const
 { 
 	return mRectAnimation;
 }
-//-------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 void Sprite::SetRectAnimations( const std::vector< RectAnimation* >& animations ) 
 {
 	mRectAnimations = animations;
 }
-//-------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 void Sprite::PlayRectAnimation( const std::string& name )
 {
-	if( mRectAnimation && mRectAnimation->mName == name ) return;
+	if( mRectAnimation && mRectAnimation->mName == name )
+	{
+		mRectAnimation->mPaused = false;
+		return;
+	}
 
 	for( std::size_t i = 0; i < mRectAnimations.size(); ++i ) 
 	{
@@ -905,7 +910,16 @@ void Sprite::PlayRectAnimation( const std::string& name )
 		}
 	}
 }
-//-------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+
+void Sprite::PauseRectAnimation()
+{
+	if( mRectAnimation ) 
+		mRectAnimation->mPaused = true;
+}
+
+//-----------------------------------------------------------------------------
 
 bool Sprite::IsRectAnimationPlaying() const
 {
@@ -916,7 +930,7 @@ bool Sprite::IsRectAnimationPlaying() const
 
 	return true;
 }
-//-------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 bool Sprite::HasRectAnimation( const std::string& name ) const
 {
@@ -931,7 +945,7 @@ bool Sprite::HasRectAnimation( const std::string& name ) const
 
 	return false;
 }
-//-------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 std::string Sprite::GetRectAnimationName() const
 {
@@ -939,7 +953,7 @@ std::string Sprite::GetRectAnimationName() const
 	return "";
 }
 
-//-------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 bool Sprite::IsAnimationPlaying() const
 {
 	if( mAnimationUpdater.get() == NULL ) return false;
