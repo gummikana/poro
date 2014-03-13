@@ -82,10 +82,11 @@ template < typename T >
 class CStaticSingleton
 {
 public:
-	virtual ~CStaticSingleton() { myInstance = 0; }
+	virtual ~CStaticSingleton() { }
 
 	static T* GetSingletonPtr()
 	{ 
+		static T* myInstance = 0;
 		if ( myInstance == 0 ) 
 			myInstance = new T; 
 		
@@ -94,21 +95,10 @@ public:
 
 
 	static T& GetSingleton() { return (*GetSingletonPtr() ); }
-	
-	static void Delete() 
-	{
-		delete myInstance;
-		myInstance = 0;
-	}
 
 protected:
-	CStaticSingleton() {	}
-
-	static T* myInstance;
-	
+	CStaticSingleton() { }
 };
-
-template< typename T >  T* CStaticSingleton< T >::myInstance = 0;
 
 
 } // end of namespace ceng
