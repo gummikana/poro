@@ -23,11 +23,6 @@
 #define INC_DISPLAYOBJECTCONTAINER_H
 
 #include <list>
-#include <vector>
-#include <algorithm>
-
-#include "../../utils/debug.h"
-
 #include "eventdispatcher.h"
 
 namespace as { 
@@ -40,104 +35,50 @@ class DisplayObjectContainer : public EventDispatcher
 {
 public:
 	typedef std::list< DisplayObjectContainer* > ChildList;
+	
+	//-------------------------------------------------------------------------
 
-	DisplayObjectContainer() : mFather( NULL ) { }
-	virtual ~DisplayObjectContainer() 
-	{ 
-		// this is the only case where we go up the ladder
-		if( mFather )
-			mFather->removeChild( this );
+	DisplayObjectContainer();
+	virtual ~DisplayObjectContainer();
 
-		mFather = NULL;
-
-		RemoveAllChildren();
-	}
+	//-------------------------------------------------------------------------
 
 	virtual int GetSpriteType() const = 0;
-	
-	int GetChildCount() const { return (int)mChildren.size(); }
+
+	//-------------------------------------------------------------------------
+	// children adding, removing, manipulation
+	int GetChildCount() const;
 	
 	ChildList& GetRawChildren();
 
 	// warning this is a super slow method of iterationg though 
 	// children and should not be used in time critical places
-	DisplayObjectContainer* GetChildAt( int index )
-	{
-		for( ChildList::iterator i = mChildren.begin(); i != mChildren.end(); ++i, --index )
-		{
-			if( index == 0 ) return *i;
-		}
-
-		// out of bound
-		return NULL;
-	}
-
-	virtual void addChild( DisplayObjectContainer* child )
-	{
-		cassert( child );
-		cassert( child != this );
-
-		mChildren.push_back( child );
-		child->SetFather( this );
-	}
-
+	DisplayObjectContainer* GetChildAt( int index );
+	virtual void addChild( DisplayObjectContainer* child );
 	virtual void addChildAt( DisplayObjectContainer* child, int index );
 
-	virtual void removeChild( DisplayObjectContainer* child )
-	{
-		if( child == NULL ) return;
+	virtual void removeChild( DisplayObjectContainer* child );
+	virtual void removeChildForReuse( DisplayObjectContainer* child );
 
-		cassert( child != this );
-
-		ChildList::iterator i = std::find( mChildren.begin(), mChildren.end(), child );
-		
-		cassert( i != mChildren.end() );
-		mChildren.erase( i );
-		
-		// this triggers RemoveAllChildren in the removed child
-		child->SetFather( NULL );
-	}
-
-	virtual void removeChildForReuse( DisplayObjectContainer* child )
-	{
-		cassert( child != this );
-
-		ChildList::iterator i = std::find( mChildren.begin(), mChildren.end(), child );
-		
-		cassert( i != mChildren.end() );
-		mChildren.erase( i );
-		
-		// this triggers RemoveAllChildren in the removed child
-		// child->SetFather( NULL );
-	}
-
-
-	virtual void SetFather( DisplayObjectContainer* father )
-	{
-		// cassert( mFather == NULL );
-		cassert( father != this );
-
-		if( mFather != father )
-		{
-			// the direction is always down the tree, to avoid loops
-			mFather = father;
-
-			// this means that father has been removed?
-			// remove all childs... 
-			if( mFather == NULL )
-			{
-				// RemoveAllChildren();
-			}
-		}
-	}
+	virtual void SetFather( DisplayObjectContainer* father );
 
 	DisplayObjectContainer* GetFather() const { return mFather; }
 	DisplayObjectContainer* getParent() const { return mFather; }
 
+	//-------------------------------------------------------------------------
 
-	bool dispatchEvent( const ceng::CSmartPtr< Event >& event );
+	// this element is rendered to be on the front
+	// in the actual list of things, it's actually the last, since mChildren is in render order
+	// @returns true if it was successful, returns false if it couldn't find the child
+	virtual bool BringChildToFront( DisplayObjectContainer* child );
 
-	 /* @returns	true if the child object is a child of the DisplayObjectContainer
+	// this element is rendered to be on the back
+	// in the actual list of things, it's actually the first, since mChildren is in render order
+	// @returns true if it was successful, returns false if it couldn't find the child
+	virtual bool SendChildToBack( DisplayObjectContainer* child );
+
+	//-------------------------------------------------------------------------
+	/* @returns	true if the child object is a child of the DisplayObjectContainer
 	 or the container itself; otherwise false.
 	*/
 	bool contains( DisplayObjectContainer* child );
@@ -147,18 +88,22 @@ public:
 	// so the highest parent is the last in the array
 	void getParentTree( std::vector< const DisplayObjectContainer* >& parents_tree ) const;
 
+	//-------------------------------------------------------------------------
+
+	bool dispatchEvent( const ceng::CSmartPtr< Event >& event );
+	
+	//-------------------------------------------------------------------------
+
 protected:
 
-	virtual void RemoveAllChildren()
-	{
-		while( mChildren.empty() == false )
-		{
-			DisplayObjectContainer* child = mChildren.front();
-			removeChild( child );
-		}
-	}
+	virtual void RemoveAllChildren();
 
 	DisplayObjectContainer* mFather;
+
+	// order of ChildList is in render order
+	// front is the first element to be drawn
+	// back is that last element to be drawn
+	// so back is the "front sprite", and front is the "back sprite"
 	ChildList mChildren;
 };
 
