@@ -35,6 +35,7 @@ namespace poro {
 		virtual ITexture*	LoadTexture( const types::string& filename ) { return NULL; }
 		virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data ) { return NULL; }
 		virtual void		ReleaseTexture( ITexture* texture )  {  }
+		virtual void		SetTextureSmoothFiltering( ITexture* itexture, bool enabled ) {  }
 
 		//IGraphics
 		virtual bool		Init( int width, int height, bool fullscreen = false, const types::string& caption = "" ) = 0;

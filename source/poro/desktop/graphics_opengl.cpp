@@ -839,6 +839,29 @@ void GraphicsOpenGL::ReleaseTexture( ITexture* itexture )
 	if( texture )
 		glDeleteTextures(1, &texture->mTexture);
 }
+
+void GraphicsOpenGL::SetTextureSmoothFiltering( ITexture* itexture, bool enabled )
+{
+	TextureOpenGL* texture = dynamic_cast< TextureOpenGL* >( itexture );
+
+	glEnable( GL_TEXTURE_2D );
+
+	if( texture )
+		glBindTexture( GL_TEXTURE_2D, texture->mTexture );
+	else
+		return;
+	
+	if( enabled ){
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	} else {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	}
+		
+	glBindTexture( GL_TEXTURE_2D, 0 );
+}
+
 //=============================================================================
 
 ITexture3d* GraphicsOpenGL::LoadTexture3d( const types::string& filename )
