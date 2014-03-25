@@ -93,13 +93,13 @@ public:
 		myFunc = impl::CreateFunctionPointer( object, func );
 	}
 
-#if 0
 	template< class Class, class Return, class Arg1, class Arg2 >
 	CFunctionPtr( Class* object, Return (Class::*func)(Arg1, Arg2) )
 	{
 		myFunc = new CGeneriCFunctionPtr2< Class, Return, Arg1, Arg2 >( object, func );
 	}
 
+#if 0
 	template< class Return > 
 	CFunctionPtr( Return (*func)() )
 	{
