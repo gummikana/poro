@@ -1035,7 +1035,7 @@ types::vector2 Sprite::TransformWithAllParents( const types::vector2& mouse_pos 
 			xform = ceng::math::Mul( xform, parent->GetXForm() );
 	}
 
-	return ceng::math::MulT( xform, mouse_pos );
+	return ceng::math::MulTWithScale( xform, mouse_pos );
 }
 
 
