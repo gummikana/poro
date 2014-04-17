@@ -206,6 +206,8 @@ void PlatformDesktop::StartMainLoop()
 		mProcessorRate += ( elapsed_time / mOneFrameShouldLast );
         mFrameCount++;
         mFrameRateUpdateCounter++;
+		mLastFrameExecutionTime = time_after - time_before;
+
         if( ( GetUpTime() - mFrameCountLastTime ) >= 1.0 )
         {
             mFrameCountLastTime = GetUpTime();
