@@ -123,6 +123,7 @@ protected:
 	int								mSleepingMode;
 	bool							mPrintFramerate;
 	poro::types::string				mWorkingDir;
+	int								mRandomSeed;
 
 private:
 };
