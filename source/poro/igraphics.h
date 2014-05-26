@@ -105,6 +105,7 @@ public:
 	virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data ) = 0;
 	virtual void		ReleaseTexture( ITexture* texture )  = 0;
 	virtual void		SetTextureSmoothFiltering( ITexture* itexture, bool enabled ) = 0;
+	virtual void		SetTextureWrappingMode( ITexture* itexture, int mode ) = 0;
 	//-------------------------------------------------------------------------
 	
 	virtual ITexture3d*	LoadTexture3d( const types::string& filename );

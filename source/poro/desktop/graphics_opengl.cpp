@@ -852,15 +852,36 @@ void GraphicsOpenGL::SetTextureSmoothFiltering( ITexture* itexture, bool enabled
 		return;
 	
 	if( enabled ){
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	} else {
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	}
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    } else {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    }
 		
 	glBindTexture( GL_TEXTURE_2D, 0 );
 }
+
+void GraphicsOpenGL::SetTextureWrappingMode( ITexture* itexture, int mode )
+{
+	TextureOpenGL* texture = dynamic_cast< TextureOpenGL* >( itexture );
+
+	glEnable( GL_TEXTURE_2D );
+
+	if( texture )
+		glBindTexture( GL_TEXTURE_2D, texture->mTexture );
+	else
+		return;
+
+	int mode_gl = mode; // TODO:
+
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mode_gl );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mode_gl );
+
+		
+	glBindTexture( GL_TEXTURE_2D, 0 );
+}
+
 
 //=============================================================================
 

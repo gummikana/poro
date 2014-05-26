@@ -64,6 +64,7 @@ public:
 	virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data );
 	virtual void		ReleaseTexture( ITexture* texture );
 	virtual void		SetTextureSmoothFiltering( ITexture* itexture, bool enabled );
+	virtual void		SetTextureWrappingMode( ITexture* itexture, int  mode );
 
 	//-------------------------------------------------------------------------
 
