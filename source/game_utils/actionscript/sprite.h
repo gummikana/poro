@@ -342,7 +342,7 @@ struct Transform
 	{
 		mQueue.push_front( mTop );
 		mTop.xform = ceng::math::Mul( mTop.xform, xform );
-		mTop.color = MulColor( mTop.color, color );
+		MulColor( mTop.color, color );
 	}
 
 	void PopXForm()
@@ -354,16 +354,17 @@ struct Transform
 		}
 	}
 
-	std::vector< float > MulColor( const std::vector< float >& c1, const std::vector< float >& c2 ) 
+	void MulColor( std::vector< float >& c1, const std::vector< float >& c2 )
 	{
-		std::vector< float > result( 4 );
 		cassert( c1.size() == 4 );
 		cassert( c2.size() == 4 );
-
-		for( std::size_t i = 0; i < result.size(); ++i )
-			result[ i ] = c1[ i ] * c2[ i ];
-
-		return result;
+		c1[ 0 ] *= c2[ 0 ];
+		c1[ 1 ] *= c2[ 1 ];
+		c1[ 2 ] *= c2[ 2 ];
+		c1[ 3 ] *= c2[ 3 ];
+		/* for( std::size_t i = 0; i < result.size(); ++i )
+			c1[ i ] *= c2[ i ];
+			*/
 	}
 
 	types::xform&					GetXForm()	{ return mTop.xform; }
