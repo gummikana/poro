@@ -232,7 +232,7 @@ public:
 
 		std::vector< ChildAnimation* > mChildAnimations;
 
-		types::rect Sprite::RectAnimation::FigureOutRectPos();
+		types::rect Sprite::RectAnimation::FigureOutRectPos( int frame );
 		void Update( Sprite* sprite, float dt );
 		void SetFrame( Sprite* sprite, int frame, bool update_anyhow );
 

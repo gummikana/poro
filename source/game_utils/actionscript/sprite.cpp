@@ -698,10 +698,10 @@ void Sprite::MoveCenterTo( const types::vector2& p ) {
 
 //=============================================================================
 
-types::rect Sprite::RectAnimation::FigureOutRectPos()
+types::rect Sprite::RectAnimation::FigureOutRectPos( int frame )
 {
-	int y_pos = (int)( mCurrentFrame / mFramesPerRow );
-	int x_pos = mCurrentFrame % mFramesPerRow;
+	int y_pos = (int)( frame / mFramesPerRow );
+	int x_pos = frame % mFramesPerRow;
 
 	return 
 		types::rect( 
@@ -762,7 +762,7 @@ void Sprite::RectAnimation::SetFrame( Sprite* sprite, int frame, bool update_any
 
 		cassert( sprite );
 		mCurrentFrame = frame;
-		sprite->SetRect( FigureOutRectPos() );
+		sprite->SetRect( FigureOutRectPos( mCurrentFrame ) );
 		
 		if( mHasNewCenterOffset ) sprite->SetCenterOffset( mCenterOffset );
 
