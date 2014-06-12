@@ -40,6 +40,29 @@ namespace as {
 typedef poro::types::Uint32 Uint32;
 
 ///////////////////////////////////////////////////////////////////////////////
+
+SpriteLoadHelper::SpriteLoadHelper() : 
+	filename(),
+	offset( 0, 0 ),
+	scale( 1, 1 ),
+	default_animation()
+{
+}
+
+void SpriteLoadHelper::Serialize( ceng::CXmlFileSys* filesys  )
+{
+	XML_BindAttributeAlias( filesys, filename, "filename" );
+	XML_BindAttributeAlias( filesys, offset.x, "offset_x" );
+	XML_BindAttributeAlias( filesys, offset.y, "offset_y" );
+	XML_BindAttributeAlias( filesys, scale.x, "scale_x" );
+	XML_BindAttributeAlias( filesys, scale.y, "scale_y" );
+	XML_BindAttributeAlias( filesys, default_animation, "default_animation" );
+	
+	ceng::VectorXmlSerializer< Sprite::RectAnimation > rect_serializer( rect_animations, "RectAnimation" );
+	rect_serializer.Serialize( filesys );
+}
+
+///////////////////////////////////////////////////////////////////////////////
 namespace {
 
 	struct TextureBuffer
@@ -75,36 +98,7 @@ namespace {
 	
 	//----------------------------------------------------------------------------
 
-	struct SpriteLoadHelper 
-	{
-		SpriteLoadHelper() : 
-			filename(),
-			offset( 0, 0 ),
-			scale( 1, 1 ),
-			default_animation()
-		{
-		}
-
-		std::string filename;
-		types::vector2 offset;
-		types::vector2 scale;
-		std::string default_animation;
-
-		std::vector< Sprite::RectAnimation* > rect_animations;
-
-		void Serialize( ceng::CXmlFileSys* filesys  )
-		{
-			XML_BindAttributeAlias( filesys, filename, "filename" );
-			XML_BindAttributeAlias( filesys, offset.x, "offset_x" );
-			XML_BindAttributeAlias( filesys, offset.y, "offset_y" );
-			XML_BindAttributeAlias( filesys, scale.x, "scale_x" );
-			XML_BindAttributeAlias( filesys, scale.y, "scale_y" );
-			XML_BindAttributeAlias( filesys, default_animation, "default_animation" );
-			
-			ceng::VectorXmlSerializer< Sprite::RectAnimation > rect_serializer( rect_animations, "RectAnimation" );
-			rect_serializer.Serialize( filesys );
-		}
-	};
+	
 
 	//----------------------------------------------------------------------------
 
@@ -418,34 +412,6 @@ void Sprite::Clear()
 }
 
 //-----------------------------------------------------------------------------
-} // end of namespace as
-namespace ceng {
-namespace math {
-
-template< class Type >
-CXForm< Type > MulT( const CXForm< Type >& T, const CXForm< Type >& v )
-{
-	
-	CXForm< Type > result;
-
-	result.scale.x = v.scale.x / T.scale.x;
-	result.scale.y = v.scale.y / T.scale.y;
-	result.R = Mul( T.R.Invert(), v.R );
-
-	result.position.x = ( v.position.x - T.position.x ) / T.scale.x;
-	result.position.y = ( v.position.y - T.position.y ) / T.scale.y;
-	// result.position = v.position - T.position;
-	result.position = MulT( T.R, result.position );
-	
-
-
-	return result;
-}
-
-} // end of namespace math
-} // end of namespace ceng
-
-namespace as {
 
 poro::IGraphicsBuffer* Sprite::GetAlphaBuffer( poro::IGraphics* graphics )
 {
@@ -505,10 +471,12 @@ bool Sprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& 
 		}
 	}
 
-	types::rect draw_rect( 0, 0, mSize.x, mSize.y );
-	if( mRect ) draw_rect = *mRect;
-
-	DrawRect( draw_rect, graphics, camera, transform ); 
+	
+	if( mRect ) 
+		DrawRect( *mRect, graphics, camera, transform );  
+	else 
+		DrawRect( types::rect( 0, 0, mSize.x, mSize.y ), graphics, camera, transform ); 
+	
 	
 	// draw all children
 	DrawChildren( graphics, camera, transform );
@@ -695,13 +663,11 @@ void DrawSprite( Sprite* sprite, poro::IGraphics* graphics, types::camera* camer
 
 void Sprite::Update( float dt )
 {
-	
 	if( mRectAnimation ) 
 		mRectAnimation->Update( this, dt );
 
 	if( mAnimationUpdater.get() ) 
 		mAnimationUpdater->Update( dt );
-
 
 	// update children as well
 	ChildList::iterator i;

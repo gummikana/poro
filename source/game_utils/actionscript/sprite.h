@@ -274,6 +274,10 @@ public:
 
 	virtual const std::string& GetFilename() const;
 	virtual void SetFilename( const std::string& filename );
+	
+	//-------------------------------------------------------------------------
+	
+	poro::IGraphicsBuffer*		GetAlphaBuffer( poro::IGraphics* graphics );
 
 protected:
 
@@ -281,8 +285,6 @@ protected:
 
 	types::vector2 MultiplyByParentXForm( const types::vector2& p ) const;
 	
-
-	poro::IGraphicsBuffer*		GetAlphaBuffer( poro::IGraphics* graphics );
 
 	bool						mClearTweens;
 	Sprite*						mAlphaMask;
@@ -385,6 +387,23 @@ struct Transform
 
 void DrawSprite( Sprite* sprite, poro::IGraphics* graphics, types::camera* camera = NULL );
 void DrawSprite( Sprite* sprite, poro::IGraphics* graphics, types::camera* camera, Transform& transform );
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+struct SpriteLoadHelper 
+{
+	SpriteLoadHelper();
+
+	std::string filename;
+	types::vector2 offset;
+	types::vector2 scale;
+	std::string default_animation;
+
+	std::vector< Sprite::RectAnimation* > rect_animations;
+
+	void Serialize( ceng::CXmlFileSys* filesys  );
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 
