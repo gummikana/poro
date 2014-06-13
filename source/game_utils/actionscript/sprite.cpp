@@ -262,15 +262,17 @@ ceng::CArray2D< Uint32 >* GetImageData( const std::string& filename, bool load_a
 
 //-----------------------------------------------------------------------------
 
-Sprite* LoadSprite( const std::string& filename )
+void LoadSpriteTo( const std::string& filename, as::Sprite* result )
 {
+	cassert( result );
+
 	if( filename.size() >= 3 && filename.substr( filename.size() - 3 ) == "xml" )
 	{
 		// if we're loading an xml file
 		SpriteLoadHelper sprite_data;
 		ceng::XmlLoadFromFile( sprite_data, filename, "Sprite" );
 
-		Sprite* result = new Sprite;
+		// Sprite* result = new Sprite;
 
 		result->SetRectAnimations( sprite_data.rect_animations );
 		result->SetCenterOffset( sprite_data.offset );
@@ -282,10 +284,10 @@ Sprite* LoadSprite( const std::string& filename )
 		}
 
 		TextureBuffer* buffer = GetTextureBuffer( sprite_data.filename );
-		if ( buffer == NULL ) return result;
+		if ( buffer == NULL ) return;
 
 		poro::ITexture* image = buffer->texture;
-		if( image == NULL ) return result;
+		if( image == NULL ) return;
 
 		result->SetTexture( image );
 		result->SetImageData( buffer->image_data );
@@ -293,19 +295,19 @@ Sprite* LoadSprite( const std::string& filename )
 
 		result->SetFilename( filename );
 
-		return result;
+		return;
 	}
 	else
 	{
 		// we're loading just a texture...
 
-		Sprite* result = new Sprite;
+		// Sprite* result = new Sprite;
 
 		TextureBuffer* buffer = GetTextureBuffer( filename );
-		if ( buffer == NULL ) return result;
+		if ( buffer == NULL ) return;
 
 		poro::ITexture* image = buffer->texture;
-		if( image == NULL ) return result;
+		if( image == NULL ) return;
 
 		result->SetTexture( image );
 		result->SetImageData( buffer->image_data );
@@ -313,8 +315,17 @@ Sprite* LoadSprite( const std::string& filename )
 
 		result->SetFilename( filename );
 
-		return result;
+		return;
 	}
+}
+
+//-----------------------------------------------------------------------------
+
+Sprite* LoadSprite( const std::string& filename )
+{
+	Sprite* result = new Sprite;
+	LoadSpriteTo( filename, result );
+	return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
