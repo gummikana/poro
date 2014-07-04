@@ -265,6 +265,10 @@ ceng::CArray2D< Uint32 >* GetImageData( const std::string& filename, bool load_a
 void LoadSpriteTo( const std::string& filename, as::Sprite* result )
 {
 	cassert( result );
+	if( ceng::DoesExist( filename ) == false ) 
+	{
+		std::cout << "ERROR - LoadSpriteTo()... file doesn't exist: " << filename << std::endl;
+	}
 
 	if( filename.size() >= 3 && filename.substr( filename.size() - 3 ) == "xml" )
 	{

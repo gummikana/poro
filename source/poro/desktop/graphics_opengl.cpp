@@ -957,7 +957,7 @@ ITexture3d* GraphicsOpenGL::LoadTexture3d( const types::string& filename )
 		result->SetFilename( filename );
 	}
 	else
-		poro_logger << "Couldn't load image: " << filename << std::endl;
+		poro_logger << "Couldn't load 3d texture: " << filename << std::endl;
 		
 	return result;
 }
