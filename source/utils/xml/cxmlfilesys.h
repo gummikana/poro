@@ -93,10 +93,8 @@ namespace ceng {
 
 class CXmlNode;
     
-template< class T >
-CXmlNode* TEMP_XmlConvertFrom( T& from, const std::string& name );
+//--------------------------------------------------------------------------------------
 
-                              
 class CXmlFileSys
 {
 public:
@@ -132,80 +130,48 @@ public:
 	{ }
 
 	//! Deconstructor which doesn't do a crap.
-	~CXmlFileSys() { }
+	virtual ~CXmlFileSys() { }
 
 
 	//! Returns the current status
-	FileSysStatus	GetStatus() const { return myStatus; }
+	virtual FileSysStatus	GetStatus() const { return myStatus; }
 
 	//! Returns true if we are reading from a file
-	bool			IsReading() const { return ( myStatus==reading ); }
+	virtual bool			IsReading() const { return ( myStatus==reading ); }
 
 	//! Returns true if we are writing a mesh
-	bool			IsWriting() const { return ( myStatus==writing ); }
+	virtual bool			IsWriting() const { return ( myStatus==writing ); }
 
 	//! Returns the current node
-	CXmlNode*		GetNode()			{ return myCurrentNode; }
+	virtual CXmlNode*		GetNode()			{ return myCurrentNode; }
 
 	//! Same thing but const, if there is need for that
-	const CXmlNode*	GetNode() const		{ return myCurrentNode; }
+	virtual const CXmlNode*	GetNode() const		{ return myCurrentNode; }
 
-	//! This here is used to convert bonafied xml to stl container
-	template< class T >
-	void ConvertToContainer( T& to, const std::string& name )
-	{ XmlSerializeToContainer( this, to, name ); }
-
-	//! This is here is used to convert xml to stl container
-	template< class T >
-	void ConvertFromContainer( T& from, const std::string& name )
-	{ XmlSerializeFromContainer( this, from, name );	}
-
-
-
-	//! For use of while reading. Converts the current node to mesh
-	// Reading
-	template< class T >
-	void ConvertTo( T& to, const std::string& name )
-	{ XmlConvertTo( FindChildByName( name ), to ); }
-
-	//! For use of while reading. Creates new pointer of the type
-	// Reading
-	template< class T >
-	void CreateNew( T*& pointer, const std::string& name )
-	{ XmlCreateNew( FindChildByName( name ), pointer ); }
-
-	//! To be used when writing things. Creates a new child node from the type
-	// Writing
-	template< class T >
-	void ConvertFrom( T& from, const std::string& name )
-	{
-        myCurrentNode->AddChild( TEMP_XmlConvertFrom( from, name ) );
-    }
     
 	//! Basicly to be used while writing, adds a new child to the current element
 	/*!
 		Note: Remember to call the EndElement( name ) after this.
 	*/
-	void AddElement( const std::string& name )
+	virtual void AddElement( const std::string& name )
 	{
 		CXmlNode* tmp = CXmlNode::CreateNewNode();
 		tmp->SetName( name );
 		myCurrentNode->AddChild( tmp );
 		myCurrentNode = tmp;
-
 	}
 
 	//! Adds a attribute to the current node in need
-	void AddAttribute( const std::string& attribute_name, const CAnyContainer& value )
+	virtual void AddAttribute( const std::string& attribute_name, const CAnyContainer& value )
 	{
 		myCurrentNode->AddAttribute( attribute_name, value );
 	}
 
 	//! Ends the element, call this after calling the AddElement
-	void EndElement( const std::string& name )
+	virtual void EndElement( const std::string& name )
 	{
-		if ( myCurrentNode->GetName() != name )
-			if ( myUseStrict ) logger << "Xml warning, trying to end a different node: " << name << " should end: " << myCurrentNode->GetName() << " in file: " << myFilename << " at line " << myLine << std::endl;
+		if( myUseStrict && myCurrentNode->GetName() != name )
+			logger << "Xml warning, trying to end a different node: " << name << " should end: " << myCurrentNode->GetName() << " in file: " << myFilename << " at line " << myLine << std::endl;
 
 		myCurrentNode = myCurrentNode->GetFather();
 
@@ -213,7 +179,7 @@ public:
 
 
 	//! Finds a child node by the name given.
-	CXmlNode* FindChildByName( const std::string& name )
+	virtual CXmlNode* FindChildByName( const std::string& name )
 	{
 		if ( myUseStrict && myChildPosition >= myCurrentNode->GetChildCount() )
 			logger << "Xml warning, ain't no childs left in the current node: " << myCurrentNode->GetName() << " in file: " << myFilename << " at line " << myLine << std::endl;
@@ -246,7 +212,7 @@ public:
 	}
 
 	//! Returns true if the child is found false if not
-	bool HasChildNamed( const std::string& name )
+	virtual bool HasChildNamed( const std::string& name )
 	{
 
 		if( myChildPosition >= 0 && myChildPosition < myCurrentNode->GetChildCount() &&
@@ -263,20 +229,20 @@ public:
 	}
 
 	//! Sets the line to myLine
-	void SetLineNumber( unsigned int line ) {  myLine = line; }
+	virtual void SetLineNumber( unsigned int line ) {  myLine = line; }
 
 	//! Sets the filename to myFilename
-	void SetFileName( const std::string& file ) { myFilename = file; }
+	virtual void SetFileName( const std::string& file ) { myFilename = file; }
 
 	//! Sets the strict, default true
 	/*!
 		This parameter decides does the CXmlFileSys biatch if it confronts
 		a warning or error.
 	*/
-	void SetStrict( bool strict ) { myUseStrict = strict; }
+	virtual void SetStrict( bool strict ) { myUseStrict = strict; }
 
 	//! Returns the strict
-	bool GetStrict() const { return myUseStrict; }
+	virtual bool GetStrict() const { return myUseStrict; }
 
 private:
 
@@ -293,24 +259,205 @@ private:
 
 };
 
+//----------------------------------------------------------------------------------
+
+
+// Some reason this forward declaration didn't worked with gcc,
+// so I added #include and commented followin line - Jani Hast/9.6.2009
+class CXmlFileSys;
+
+//! Used to convert cxmlfilesys to a stl container
+//! ( using the insert( to.end(), element ) conversion )
+/*!
+	This adds new elements by the of the name as many as there are in the stl
+	container.
+
+*/
+template< class T >
+void XmlSerializeToContainer( CXmlFileSys* from, std::vector< T >& to, const std::string& name )
+{
+	T tmp;
+
+	CXmlNode* node = from->GetNode();
+	int i = 0;
+	for( i = 0; i < node->GetChildCount(); i++ )
+	{
+		if( node->GetChild( i )->GetName() == name )
+		{
+			XmlConvertTo( node->GetChild( i ), tmp );
+
+			to.push_back( tmp );
+		}
+	}
+}
+
+template< class T >
+void XmlSerializeToContainer( CXmlFileSys* from, std::list< T >& to, const std::string& name )
+{
+	T tmp;
+
+	CXmlNode* node = from->GetNode();
+	int i = 0;
+	for( i = 0; i < node->GetChildCount(); i++ )
+	{
+		if( node->GetChild( i )->GetName() == name )
+		{
+			XmlConvertTo( node->GetChild( i ), tmp );
+
+			to.push_back( tmp );
+		}
+	}
+}
+
+//! Used to convert stl container to CXmlFileSys
+//! ( using the insert( to.end(), element ) conversion )
+template< class T >
+void XmlSerializeFromContainer( CXmlFileSys* to, T& from, const std::string& name )
+{
+	// Added typename to next line - Jani Hast/3.6.2009
+	typename T::iterator i = from.begin();
+	for ( i = from.begin(); i != from.end(); ++i )
+	{
+		to->GetNode()->AddChild( XmlConvertFrom( (*i), name ) );
+	}
+}
+
+
+//-----------------------------------------------------------------------------
+
+//! Prototypes for the serializations
+/*!
+	You can define your own if specialitation for these functions
+*/
+// Loading
+template< class T  >
+void XmlSerializeTo( CXmlFileSys* from, T& to )
+{
+	if( from ) to.Serialize( from );
+}
+
+// Saving
+template< class T >
+void XmlSerializeFrom( CXmlFileSys* to, T& from )
+{
+	if ( to ) from.Serialize( to );
+}
+
+//.............................................................................
+
+//! Converts a CXmlNode to a mesh
+template< class T >
+void XmlConvertTo( CXmlNode* from, T* to )
+{
+	if ( from == NULL ) return;
+
+	XmlConvertTo( from, *to );
+}
+
+//! Converts a CXmlNode to a mesh
+template< class T >
+void XmlConvertTo( CXmlNode* from, T& to )
+{
+	if ( from == NULL ) return;
+
+	CXmlFileSys tmp_filesys( from, CXmlFileSys::reading );
+	// to.Serialize( &tmp_filesys );
+	XmlSerializeTo( &tmp_filesys, to );
+
+}
+
+
+void XmlConvertTo( CXmlNode* from, bool& to );
+void XmlConvertTo( CXmlNode* from, short& to );
+void XmlConvertTo( CXmlNode* from, unsigned short& to );
+// void XmlConvertTo( CXmlNode* from, char& to )			{ if ( from == NULL ) return; stl::stringstream( from->GetContent() ) >> to; }
+// void XmlConvertTo( CXmlNode* from, unsigned char& to )	{ if ( from == NULL ) return; stl::stringstream( from->GetContent() ) >> to; }
+void XmlConvertTo( CXmlNode* from, int& to );
+void XmlConvertTo( CXmlNode* from, unsigned int& to );
+void XmlConvertTo( CXmlNode* from, long& to );
+void XmlConvertTo( CXmlNode* from, unsigned long& to );
+void XmlConvertTo( CXmlNode* from, float& to );
+void XmlConvertTo( CXmlNode* from, double& to );
+void XmlConvertTo( CXmlNode* from, long double& to );
+void XmlConvertTo( CXmlNode* from, void*& to );
+void XmlConvertTo( CXmlNode* from, std::string& to );
+
+
+//! Creates a new mesh of type T and puts it to your pointer.
+template< class T >
+void XmlCreateNew( CXmlNode* from, T*& pointer )
+{
+	if ( from == NULL ) return;
+
+	pointer = new T;
+
+	XmlConvertTo( from, *pointer );
+
+}
+
+
+//! Creates a CXmlNode from a mesh
+CXmlNode* XmlConvertFrom( bool& from, const std::string& name );
+CXmlNode* XmlConvertFrom( short& from, const std::string& name );
+CXmlNode* XmlConvertFrom( unsigned short& from, const std::string& name );
+// CXmlNode* XmlConvertFrom( char& from, const std::string& name )				{ std::stringstream ss; ss << from; CXmlNode* tmp = CXmlNode::CreateNewNode(); tmp->SetName( name ); tmp->SetContent( ss.str() ); return tmp; }
+// CXmlNode* XmlConvertFrom( unsigned char& from, const std::string& name )	{ std::stringstream ss; ss << from; CXmlNode* tmp = CXmlNode::CreateNewNode(); tmp->SetName( name ); tmp->SetContent( ss.str() ); return tmp; }
+CXmlNode* XmlConvertFrom( int& from, const std::string& name );
+CXmlNode* XmlConvertFrom( unsigned int& from, const std::string& name );
+CXmlNode* XmlConvertFrom( long& from, const std::string& name );
+CXmlNode* XmlConvertFrom( unsigned long& from, const std::string& name );
+CXmlNode* XmlConvertFrom( float& from, const std::string& name );
+CXmlNode* XmlConvertFrom( double& from, const std::string& name );
+CXmlNode* XmlConvertFrom( long double& from, const std::string& name );
+CXmlNode* XmlConvertFrom( void*& from, const std::string& name );
+CXmlNode* XmlConvertFrom( std::string& from, const std::string& name );
+
+
+//! Creates a CXmlNode from a mesh
+template< class T >
+CXmlNode* XmlConvertFrom( T& from, const std::string& name )
+{
+	CXmlNode* return_node = CXmlNode::CreateNewNode();
+	return_node->SetName( name );
+	CXmlFileSys tmp_filesys( return_node, CXmlFileSys::writing );
+
+	XmlSerializeFrom( &tmp_filesys, from );
+	// from.Serialize( &tmp_filesys );
+
+	return return_node;
+}
+
+//----------------------------------------------------------------------------------------
+
 template< class T >
 T XML_CAnyContainerCast( const CAnyContainer& any, const T& t )
 {
 	return CAnyContainerCast< T >( any );
 }
 
-#define XML_ConvertToAlias( x, y, a )	x->SetLineNumber( __LINE__ ); x->SetFileName( __FILE__ ); if( x->HasChildNamed( a ) ) { x->ConvertTo( y, a ); }
-#define XML_ConvertFromAlias( x, y, a ) x->SetLineNumber( __LINE__ ); x->SetFileName( __FILE__ ); x->ConvertFrom( y, a )
+// sets the linenumber and filename
+#ifdef _DEBUG
 
+#define XML_ConvertToAlias( x, y, a )	x->SetLineNumber( __LINE__ ); x->SetFileName( __FILE__ ); if( x->HasChildNamed( a ) ) { ::ceng::XmlConvertTo( x->FindChildByName( a ), y ); }
+#define XML_ConvertFromAlias( x, y, a ) x->SetLineNumber( __LINE__ ); x->SetFileName( __FILE__ ); x->GetNode()->AddChild( ::ceng::XmlConvertFrom( y, a ) )
+
+#else
+
+#define XML_ConvertToAlias( x, y, a )	if( x->HasChildNamed( a ) ) { ::ceng::XmlConvertTo( x->FindChildByName( a ), y ); }
+#define XML_ConvertFromAlias( x, y, a ) x->GetNode()->AddChild( ::ceng::XmlConvertFrom( y, a ) )
+
+#endif
 
 #define XML_ConvertTo( x, y )	XML_ConvertToAlias( x, y, #y )
 #define XML_ConvertFrom( x, y ) XML_ConvertFromAlias( x, y, #y )
 
+/*
 #define XML_ConvertToContainerAlias( x, y, a )		x->SetLineNumber( __LINE__ ); x->SetFileName( __FILE__ ); x->ConvertToContainer( y, a )
 #define XML_ConvertFromContainerAlias( x, y, a )	x->SetLineNumber( __LINE__ ); x->SetFileName( __FILE__ ); x->ConvertFromContainer( y, a )
 
 #define XML_ConvertToContainer( x, y )		x->SetLineNumber( __LINE__ ); x->SetFileName( __FILE__ ); x->ConvertToContainer( y, #y )
 #define XML_ConvertFromContainer( x, y )	x->SetLineNumber( __LINE__ ); x->SetFileName( __FILE__ ); x->ConvertFromContainer( y, #y )
+*/
 
 #define XML_BindAlias( x, y, a) if ( x->IsReading() ) { XML_ConvertToAlias( x, y, a ); } else if ( x->IsWriting() ) { XML_ConvertFromAlias( x, y, a ); }
 #define XML_Bind( x, y )		if ( x->IsReading() ) { XML_ConvertTo( x, y ); } else if ( x->IsWriting() ) { XML_ConvertFrom( x, y ); }

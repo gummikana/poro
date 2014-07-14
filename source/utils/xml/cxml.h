@@ -135,7 +135,6 @@
 #include <fstream>
 
 #include "cxmlhandler.h"
-#include "cxmlcast.h"
 #include "cxmlfilesys.h"
 #include "cxmlnode.h"
 #include "cxmlparser.h"

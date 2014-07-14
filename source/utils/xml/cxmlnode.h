@@ -80,47 +80,47 @@ public:
 	static CXmlNode*	CreateNewNode();
 	static void			FreeNode( CXmlNode* node );
 
-	void Clear();
+	virtual void Clear();
 
 	//-------------------------------------------------------------------------
 	// Child manipulation
 
-	bool			HasChilds()			const;
-	const CXmlNode*	GetChild( int i )	const;
-	CXmlNode*		GetChild( int i );
-	int				GetChildCount()		const;
+	virtual bool			HasChilds()			const;
+	virtual const CXmlNode*	GetChild( int i )	const;
+	virtual CXmlNode*		GetChild( int i );
+	virtual int				GetChildCount()		const;
 
-	void			AddChild( CXmlNode* child );
-	void			RemoveChild( int i );
-	void			RemoveChild( CXmlNode* child );
-
-	//-------------------------------------------------------------------------
-
-	bool					HasAttributes()									const;
-	bool					HasAttribute( const std::string& attribute )	const;
-	int						GetAttributeCount()								const;
-	std::string				GetAttributeName( int i )						const;
-	const CAnyContainer&	GetAttributeValue( int i )						const;
-	const CAnyContainer&	GetAttributeValue( const std::string& name )	const;
-
-	void					AddAttribute( const std::string& name, const CAnyContainer& value );
-	void					RemoveAttribute( int i );
-	void					RemoveAttribute( const std::string& name );
+	virtual void			AddChild( CXmlNode* child );
+	virtual void			RemoveChild( int i );
+	virtual void			RemoveChild( CXmlNode* child );
 
 	//-------------------------------------------------------------------------
 
-	std::string			GetName() const;
-	std::string			GetContent() const;
-	CXmlNode*			GetFather() const;
+	virtual bool					HasAttributes()									const;
+	virtual bool					HasAttribute( const std::string& attribute )	const;
+	virtual int						GetAttributeCount()								const;
+	virtual std::string				GetAttributeName( int i )						const;
+	virtual const CAnyContainer&	GetAttributeValue( int i )						const;
+	virtual const CAnyContainer&	GetAttributeValue( const std::string& name )	const;
 
-	void				SetName( const std::string& name );
-	void				SetContent( const std::string& content );
-	void				SetFather( CXmlNode* father );
+	virtual void					AddAttribute( const std::string& name, const CAnyContainer& value );
+	virtual void					RemoveAttribute( int i );
+	virtual void					RemoveAttribute( const std::string& name );
+
+	//-------------------------------------------------------------------------
+
+	virtual std::string			GetName() const;
+	virtual std::string			GetContent() const;
+	virtual CXmlNode*			GetFather() const;
+
+	virtual void				SetName( const std::string& name );
+	virtual void				SetContent( const std::string& content );
+	virtual void				SetFather( CXmlNode* father );
 
 	///////////////////////////////////////////////////////////////////////////
 
 	CXmlNode() : myFather( NULL ) { }
-	~CXmlNode();
+	virtual ~CXmlNode();
 
 private:
 

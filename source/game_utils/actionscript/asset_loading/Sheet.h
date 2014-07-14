@@ -159,8 +159,7 @@ namespace impl {
 					if( filesys->GetNode()->GetChild( i )->GetName() == "Texture" ) 
 					{
 						Texture texture;
-
-						filesys->ConvertTo( texture, "Texture" );
+						ceng::XmlConvertTo( filesys->GetNode()->GetChild( i ), texture );
 						
 						mTextures.push_back( texture );
 					}
@@ -229,7 +228,7 @@ public:
 				if( filesys->GetNode()->GetChild( i )->GetName() == "TextureSheet" ) 
 				{
 					impl::TextureSheet texture;
-					filesys->ConvertTo( texture, "TextureSheet" );
+					ceng::XmlConvertTo( filesys->GetNode()->GetChild( i ), texture );
 					mTextureSheets.push_back( texture );
 				}
 			}

@@ -19,7 +19,7 @@
  ***************************************************************************/
 
 
-#include "cxmlcast.h"
+#include "cxmlfilesys.h"
 
 namespace ceng {
 
