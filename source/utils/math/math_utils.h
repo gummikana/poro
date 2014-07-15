@@ -335,16 +335,16 @@ float DistanceFromAABB( const CVector2< PType >& point, const CVector2< PType >&
 	if( IsPointInsideAABB( point, aabb_min, aabb_max ) ) return 0;
 
 	float lowest = 0;
-	float temp = ceng::math::DistanceFromLineSquared( aabb_min, types::ivector2( aabb_max.x, aabb_min.y ), point );
+	float temp = ceng::math::DistanceFromLineSquared( aabb_min, CVector2< PType >( aabb_max.x, aabb_min.y ), point );
 	if( temp < lowest ) lowest = temp;
 
-	temp = ceng::math::DistanceFromLineSquared( types::ivector2( aabb_max.x, aabb_min.y ), types::ivector2( aabb_max.x, aabb_max.y ), point );
+	temp = ceng::math::DistanceFromLineSquared( CVector2< PType >( aabb_max.x, aabb_min.y ), CVector2< PType >( aabb_max.x, aabb_max.y ), point );
 	if( temp < lowest ) lowest = temp;
 
-	temp = ceng::math::DistanceFromLineSquared( types::ivector2( aabb_max.x, aabb_max.y ), types::ivector2( aabb_min.x, aabb_max.y ), point );
+	temp = ceng::math::DistanceFromLineSquared( CVector2< PType >( aabb_max.x, aabb_max.y ), CVector2< PType >( aabb_min.x, aabb_max.y ), point );
 	if( temp < lowest ) lowest = temp;
 
-	temp = ceng::math::DistanceFromLineSquared( types::ivector2( aabb_min.x, aabb_max.y ), types::ivector2( aabb_min.x, aabb_min.y ), point );
+	temp = ceng::math::DistanceFromLineSquared( CVector2< PType >( aabb_min.x, aabb_max.y ), CVector2< PType >( aabb_min.x, aabb_min.y ), point );
 	if( temp < lowest ) lowest = temp;
 
 	return sqrtf( lowest );
