@@ -41,8 +41,8 @@
 #pragma warning ( disable : 4355 )
 #endif
 
-#include <vector>
-#include <memory>
+// #include <vector>
+// #include <memory>
 
 #include "../safearray/csafearray.h"
 
@@ -350,8 +350,6 @@ private:
 
 	CSafeArray< _Ty > myDataArray;
 	// std::vector< _Ty > myDataArray;
-
-
 };
 
 }
