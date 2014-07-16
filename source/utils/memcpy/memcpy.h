@@ -38,8 +38,6 @@ collide with actual memcpy. Petri Purho - March 2012
  ** Includes for size_t definition
  *******************************************************************/
 
-#include <stddef.h>
-
 
 /********************************************************************
  **

@@ -1,8 +1,8 @@
 #ifndef INC_CSAFEARRAY_H
 #define INC_CSAFEARRAY_H
 
-#include <stdio.h>
-#include <string.h>
+// #include <stdio.h>
+// #include <string.h>
 
 #include "../debug.h"
 #include "../memcpy/memcpy.h"
@@ -40,10 +40,13 @@ public:
 
 	const CSafeArray& operator=( const CSafeArray& other )
 	{
-		Clear();
-		data =  new Type[ other._size ];
-		_size = other._size;
-		
+		if( other._size != _size )
+		{
+			Clear();
+			data =  new Type[ other._size ];
+			_size = other._size;
+		}
+
 		/*
 		for( SizeType i = 0; i < Size(); ++i ) 
 			data[ i ] = other.Rand( i );
@@ -84,14 +87,17 @@ public:
 
 	void Resize( SizeType s ) 
 	{
-		Clear();
-		data =  new Type[ s ];
-		_size = s;
-		
-		
-		/*for( SizeType i = 0; i < Size(); ++i ) 
-			data[ i ] = Type();*/
-		memset( data, (int)Type(), Size() * sizeof( Type ) );
+		if( _size != s )
+		{
+			Clear();
+			data =  new Type[ s ];
+			_size = s;
+			
+			
+			/*for( SizeType i = 0; i < Size(); ++i ) 
+				data[ i ] = Type();*/
+			memset( data, (int)Type(), Size() * sizeof( Type ) );
+		}
 	}
 
 	void resize( SizeType s ) { Resize( s ); }

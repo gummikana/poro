@@ -32,7 +32,10 @@ void ClearLogs();
 
 extern CLog logger_impl;
 
+#ifndef logger
 #define logger			ceng::logger_impl
+#endif
+
 #define logger_error	ceng::logger_impl.Error()
 #define logger_warning	ceng::logger_impl.Warning()
 #define logger_debug	ceng::logger_impl.Debug()
