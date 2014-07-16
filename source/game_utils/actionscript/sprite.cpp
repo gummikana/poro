@@ -949,7 +949,7 @@ void Sprite::PlayAnimation( const std::string& animation_name )
 
 	if( mAnimations == NULL )
 	{
-		logger << "Error trying to play animation before AnimationsSheet has been added: " << animation_name << std::endl;
+		// logger << "Error trying to play animation before AnimationsSheet has been added: " << animation_name << std::endl;
 		return;
 	}
 
