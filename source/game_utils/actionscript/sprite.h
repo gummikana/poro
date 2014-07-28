@@ -23,7 +23,6 @@
 #define INC_SPRITE_H
 
 #include <vector>
-#include <map>
 #include <list>
 #include <string>
 

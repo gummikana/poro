@@ -19,6 +19,8 @@
  ***************************************************************************/
 
 #include "sprite.h"
+#include <map>
+
 #include "../../utils/singleton/csingletonptr.h"
 #include "../../utils/math/cvector2_serializer.h"
 #include "../../utils/math/point_inside.h"
