@@ -118,7 +118,7 @@ void ShaderOpenGL::SetParameter( const std::string& name, float value )
 	glUniform1f( location, value );
 }
 
-void ShaderOpenGL::SetParameter( const std::string& name, const types::vec2 value )
+void ShaderOpenGL::SetParameter( const std::string& name, const types::vec2& value )
 {
 	// TODO: cache parameter locations!
 	const char *c_str = name.c_str();
@@ -127,7 +127,7 @@ void ShaderOpenGL::SetParameter( const std::string& name, const types::vec2 valu
 	glUniform2f( location, value.x, value.y );
 }
 
-void ShaderOpenGL::SetParameter( const std::string& name, const types::vec3 value )
+void ShaderOpenGL::SetParameter( const std::string& name, const types::vec3& value )
 {
 	// TODO: cache parameter locations!
 	const char *c_str = name.c_str();
