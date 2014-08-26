@@ -147,6 +147,44 @@ struct VectorXmlSerializer
 	std::vector< T* >& array;
 	std::string name;
 };
+
+//.............................................................................
+
+template< class T >
+struct VectorXmlSerializerObjects
+{
+	VectorXmlSerializerObjects( std::vector< T >& array, const std::string& name ) : array( array ), name( name ) { }
+
+	void Serialize( ceng::CXmlFileSys* filesys )
+	{
+		if( filesys->IsWriting() )
+		{
+			for( std::size_t i = 0; i < array.size(); ++i )
+			{
+				XML_BindAlias( filesys, array[i], name );
+			}
+		}
+		else if ( filesys->IsReading() )
+		{
+			// clears the pointers
+			array.clear();
+			int i = 0;
+			for( i = 0; i < filesys->GetNode()->GetChildCount(); i++ )
+			{
+				if( filesys->GetNode()->GetChild( i )->GetName() == name )
+				{
+					T temp;
+					ceng::XmlConvertTo( filesys->GetNode()->GetChild( i ), temp );
+					array.push_back( temp );
+				}
+			}
+		}
+	}
+
+	std::vector< T >& array;
+	std::string name;
+};
+
 //-----------------------------------------------------------------------------
 
 // load from a file, saves each element as a separate element
