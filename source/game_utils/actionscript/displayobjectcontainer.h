@@ -55,6 +55,7 @@ public:
 	// children and should not be used in time critical places
 	DisplayObjectContainer* GetChildAt( int index );
 	virtual void addChild( DisplayObjectContainer* child );
+	virtual void addChildAndRemoveFromPreviousFather( DisplayObjectContainer* child );
 	virtual void addChildAt( DisplayObjectContainer* child, int index );
 
 	virtual void removeChild( DisplayObjectContainer* child );

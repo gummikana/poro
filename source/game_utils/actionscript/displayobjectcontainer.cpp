@@ -70,6 +70,19 @@ void DisplayObjectContainer::addChild( DisplayObjectContainer* child )
 }
 //-----------------------------------------------------------------------------
 
+void DisplayObjectContainer::addChildAndRemoveFromPreviousFather( DisplayObjectContainer* child )
+{
+	cassert( child );
+	cassert( child != this );
+
+	if ( child->mFather != NULL )
+		child->mFather->removeChildForReuse( child );
+
+	mChildren.push_back( child );
+	child->SetFather( this );
+}
+//-----------------------------------------------------------------------------
+
 void DisplayObjectContainer::removeChild( DisplayObjectContainer* child )
 {
 	if( child == NULL ) return;
@@ -118,6 +131,7 @@ void DisplayObjectContainer::SetFather( DisplayObjectContainer* father )
 		}
 	}
 }
+
 //-----------------------------------------------------------------------------
 
 void DisplayObjectContainer::RemoveAllChildren()
