@@ -99,7 +99,9 @@ T TemplateRandom( T low, T high )
 	RandomFunc func;
 
 	// return ( rand()%(t+1) ) + low;
-	return (T)(func() * (double)t + 0.5 ) + low;
+	// return low+(int)((double)(high-low + 1)*(double)Next() );
+
+	return (T)(func() * (double)(t + 1) ) + low;
 }
 
 //-----------------------------------------------------------------------------
@@ -134,7 +136,7 @@ public:
 
 	static int Random( int low, int high )
 	{
-		return low+(int)((double)(high-low)*(double)Next() + 0.5);
+		return low+(int)((double)(high-low + 1)*(double)Next() );
 	}
 
 	static double seed;
@@ -167,7 +169,7 @@ public:
 
 	int Random( int low, int high )
 	{
-		return low+(int)((double)(high-low)*(double)Next() + 0.5);
+		return low+(int)((double)(high-low + 1)*(double)Next() );
 	}
 
 	double seed;
