@@ -30,6 +30,48 @@ bool VectorContains( const std::vector< T >& container, const T& element )
 	return ( std::find( container.begin(), container.end(), element ) != container.end() );
 }
 
+// returns true if vector is sorted in ascending order
+template< class T > 
+bool VectorIsSorted( const std::vector< T >& array )
+{
+	int count = ((int)array.size()) - 1;
+	for( int i = 0; i < count; ++i )
+	{
+		if( array[i] > array[i+1] )
+			return false;
+	}
+	return true;
+}
+
+// binary search in the sorted array... Maybe we should cassert( that it's sorted... )
+template< class T > 
+bool VectorContainsSorted( const std::vector< T >& array, const T& element )
+{
+	if( array.empty() ) return false;
+	if( array.size() == 1 ) return array[0] == element;
+
+	cassert( VectorIsSorted( array ) );
+
+	int first, last, middle;
+
+	first = 0;
+	last = (int)array.size() - 1;
+	middle = (first+last)/2;
+ 
+	while( first <= last )
+	{
+		if ( array[middle] < element )
+			first = middle + 1;    
+		else if ( array[middle] == element ) 
+			return true;
+		else
+			last = middle - 1;
+
+		middle = (first + last)/2;
+	}
+	return false;
+}
+
 
 // the standard way of removing an element by swapping it with the last and popping the last
 // stops at the first instance, use VectorRemoveAll to remove duplicates as well
