@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <sstream>
 #include <fstream>
+#include <assert.h>
 
 namespace ceng {
 
@@ -50,7 +51,7 @@ bool VectorContainsSorted( const std::vector< T >& array, const T& element )
 	if( array.empty() ) return false;
 	if( array.size() == 1 ) return array[0] == element;
 
-	cassert( VectorIsSorted( array ) );
+	assert( VectorIsSorted( array ) );
 
 	int first, last, middle;
 
