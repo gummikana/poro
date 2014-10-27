@@ -92,7 +92,7 @@ public:
 
 	CVector2< Type > operator * ( float t ) const
 	{
-		return CVector2< Type >( this->x * t, this->y * t );
+		return CVector2< Type >( (Type)( this->x * t ), (Type)( this->y * t ) );
 	}
 	
 	//=========================================================================
