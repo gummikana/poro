@@ -24,6 +24,9 @@
 #include <fstream>
 #include <iostream>
 
+#include "cxmlhandler.h"
+
+
 // #include "../basepath/basepath.h"
 
 #define ADD_BASE_PATH( x ) x

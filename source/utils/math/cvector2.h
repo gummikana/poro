@@ -77,6 +77,13 @@ public:
 
 		return *this;
 	}
+	
+	CVector2< Type >& operator /= ( float a )
+	{
+		x = (Type)(x / a); y = (Type)(y / a);
+
+		return *this;
+	}
 
 	//-------------------------------------------------------------------------
 	
@@ -93,6 +100,11 @@ public:
 	CVector2< Type > operator * ( float t ) const
 	{
 		return CVector2< Type >( (Type)( this->x * t ), (Type)( this->y * t ) );
+	}
+
+	CVector2< Type > operator / ( float t ) const
+	{
+		return CVector2< Type >( this->x / t, this->y / t );
 	}
 	
 	//=========================================================================

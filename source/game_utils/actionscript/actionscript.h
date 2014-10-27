@@ -64,6 +64,7 @@ public:
 poro::ITexture*				GetTexture( const std::string& filename );
 ceng::CArray2D< Uint32 >*	GetImageData( const std::string& filename, bool load_and_cache_if_needed = false);
 as::Sprite*					LoadSprite( const std::string& filename );
+void						LoadSpriteTo( const std::string& filename, as::Sprite* sprite );
 as::TextSprite*				LoadTextSprite( const std::string& font_file );
 
 } // end of namespace as

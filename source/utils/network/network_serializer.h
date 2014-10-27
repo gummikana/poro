@@ -148,6 +148,16 @@ namespace network_utils
 			mBytesUsed +=l;
 		}
 
+		void IO( const types::ustring& str )
+		{
+			uint32 l = str.length();
+			IO(l);
+			if( mHasOverflowed ) return;
+			
+			mBuffer += str;
+			mBytesUsed +=l;
+		}
+
 		bool HasOverflowed() const { return mHasOverflowed; }
 		bool IsSaving() const { return true; }
 

@@ -63,6 +63,8 @@ public:
 	virtual ITexture*	LoadTexture( const types::string& filename );
 	virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data );
 	virtual void		ReleaseTexture( ITexture* texture );
+	virtual void		SetTextureSmoothFiltering( ITexture* itexture, bool enabled );
+	virtual void		SetTextureWrappingMode( ITexture* itexture, int  mode );
 
 	//-------------------------------------------------------------------------
 
@@ -115,7 +117,7 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual IRenderTexture* CreateRenderTexture(int width, int height);
+	virtual IRenderTexture* CreateRenderTexture(int width, int height, bool linear_filtering);
 	virtual void DestroyRenderTexture(IRenderTexture* buffer);
 
 	//-------------------------------------------------------------------------

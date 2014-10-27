@@ -23,7 +23,6 @@
 #define INC_SPRITE_H
 
 #include <vector>
-#include <map>
 #include <list>
 #include <string>
 
@@ -183,6 +182,7 @@ public:
 		RectAnimation() :
 			mName( "unknown" ),
 			mKillMe( true ),
+			mPaused( false ),
 			mFrameCount( 0 ),
 			mCurrentFrame( 0 ),
 			mWidth( 0 ),
@@ -210,6 +210,7 @@ public:
 		std::string mName;
 		bool		mKillMe;
 
+		bool mPaused;
 		int mFrameCount;
 		int mCurrentFrame;
 		int mWidth;
@@ -230,7 +231,7 @@ public:
 
 		std::vector< ChildAnimation* > mChildAnimations;
 
-		types::rect Sprite::RectAnimation::FigureOutRectPos();
+		types::rect Sprite::RectAnimation::FigureOutRectPos( int frame );
 		void Update( Sprite* sprite, float dt );
 		void SetFrame( Sprite* sprite, int frame, bool update_anyhow );
 
@@ -246,6 +247,7 @@ public:
 	
 	// looks in mRectAnimations for a rect animation with the name
 	void PlayRectAnimation( const std::string& name );
+	void PauseRectAnimation();
 
 	bool IsRectAnimationPlaying() const;
 	bool HasRectAnimation( const std::string& name ) const;
@@ -265,11 +267,16 @@ public:
 
 	std::vector< Sprite* >	FindSpritesAtPoint( const types::vector2& p );
 	types::vector2			GetScreenPosition() const;
+	types::vector2			TransformWithAllParents( const types::vector2& mouse_pos ) const;
 	
 	//-------------------------------------------------------------------------
 
 	virtual const std::string& GetFilename() const;
 	virtual void SetFilename( const std::string& filename );
+	
+	//-------------------------------------------------------------------------
+	
+	poro::IGraphicsBuffer*		GetAlphaBuffer( poro::IGraphics* graphics );
 
 protected:
 
@@ -277,8 +284,6 @@ protected:
 
 	types::vector2 MultiplyByParentXForm( const types::vector2& p ) const;
 	
-
-	poro::IGraphicsBuffer*		GetAlphaBuffer( poro::IGraphics* graphics );
 
 	bool						mClearTweens;
 	Sprite*						mAlphaMask;
@@ -338,7 +343,7 @@ struct Transform
 	{
 		mQueue.push_front( mTop );
 		mTop.xform = ceng::math::Mul( mTop.xform, xform );
-		mTop.color = MulColor( mTop.color, color );
+		MulColor( mTop.color, color );
 	}
 
 	void PopXForm()
@@ -350,16 +355,17 @@ struct Transform
 		}
 	}
 
-	std::vector< float > MulColor( const std::vector< float >& c1, const std::vector< float >& c2 ) 
+	void MulColor( std::vector< float >& c1, const std::vector< float >& c2 )
 	{
-		std::vector< float > result( 4 );
 		cassert( c1.size() == 4 );
 		cassert( c2.size() == 4 );
-
-		for( std::size_t i = 0; i < result.size(); ++i )
-			result[ i ] = c1[ i ] * c2[ i ];
-
-		return result;
+		c1[ 0 ] *= c2[ 0 ];
+		c1[ 1 ] *= c2[ 1 ];
+		c1[ 2 ] *= c2[ 2 ];
+		c1[ 3 ] *= c2[ 3 ];
+		/* for( std::size_t i = 0; i < result.size(); ++i )
+			c1[ i ] *= c2[ i ];
+			*/
 	}
 
 	types::xform&					GetXForm()	{ return mTop.xform; }
@@ -380,6 +386,23 @@ struct Transform
 
 void DrawSprite( Sprite* sprite, poro::IGraphics* graphics, types::camera* camera = NULL );
 void DrawSprite( Sprite* sprite, poro::IGraphics* graphics, types::camera* camera, Transform& transform );
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+struct SpriteLoadHelper 
+{
+	SpriteLoadHelper();
+
+	std::string filename;
+	types::vector2 offset;
+	types::vector2 scale;
+	std::string default_animation;
+
+	std::vector< Sprite::RectAnimation* > rect_animations;
+
+	void Serialize( ceng::CXmlFileSys* filesys  );
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 

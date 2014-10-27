@@ -23,7 +23,7 @@
 #define INC_UTILS_DEBUG_H
 
 #include <iostream>
-#include <assert.h>
+// #include <assert.h>
 
 
 //----------------- TESTING ---------------------------------------------------
@@ -55,7 +55,8 @@
 #   define PORO_USE_LOGGER
 #endif
 
-#include "logger/logger.h"
+// #include "logger/logger.h"
+#define logger std::cout
 #define assert_logger std::cout
 
 

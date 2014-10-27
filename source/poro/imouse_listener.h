@@ -21,10 +21,9 @@
 #ifndef IMOUSELISTENER_H
 #define IMOUSELISTENER_H
 
-#include "poro_types.h"
-
 namespace poro
 {
+namespace types { struct Vec2; }
 
 class IMouseListener
 {
@@ -33,10 +32,10 @@ public:
 	IMouseListener() {}
 	virtual ~IMouseListener() {}
 	
-	virtual void MouseMove(const poro::types::vec2& pos) { }
-	virtual void MouseButtonDown(const poro::types::vec2& pos, int button) { }
-	virtual void MouseButtonUp(const poro::types::vec2& pos, int button) { }
-	
+	virtual void MouseMove(const poro::types::Vec2& pos) { }
+	virtual void MouseButtonDown(const poro::types::Vec2& pos, int button) { }
+	virtual void MouseButtonUp(const poro::types::Vec2& pos, int button) { }
+
 };
 
 } // end of namespace poro

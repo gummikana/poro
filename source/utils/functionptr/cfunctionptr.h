@@ -93,13 +93,19 @@ public:
 		myFunc = impl::CreateFunctionPointer( object, func );
 	}
 
-#if 0
 	template< class Class, class Return, class Arg1, class Arg2 >
 	CFunctionPtr( Class* object, Return (Class::*func)(Arg1, Arg2) )
 	{
-		myFunc = new CGeneriCFunctionPtr2< Class, Return, Arg1, Arg2 >( object, func );
+		myFunc = impl::CreateFunctionPointer( object, func );
 	}
 
+	template< class Class, class Return, class Arg1, class Arg2, class Arg3 >
+	CFunctionPtr( Class* object, Return (Class::*func)(Arg1, Arg2, Arg3) )
+	{
+		myFunc = impl::CreateFunctionPointer( object, func );
+	}
+
+#if 0
 	template< class Return > 
 	CFunctionPtr( Return (*func)() )
 	{
@@ -149,6 +155,9 @@ public:
 
 	template< class Arg1, class Arg2 >
 	CAnyContainer operator()( const Arg1& a1, const Arg2& a2 ) { return myFunc->Call( a1, a2 ); }
+
+	template< class Arg1, class Arg2, class Arg3 >
+	CAnyContainer operator()( const Arg1& a1, const Arg2& a2, const Arg3& a3 ) { return myFunc->Call( a1, a2, a3 ); }
 	
 
 	//-------------------------------------------------------------------------

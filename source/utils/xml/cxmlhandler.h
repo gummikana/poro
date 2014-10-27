@@ -220,7 +220,7 @@ class CXmlHandler : public CXmlHandlerInterface
 {
 public:
 
-	CXmlHandler() {  }
+	CXmlHandler() { StartDocument();  }
 	virtual ~CXmlHandler() { }
 
 	virtual void StartDocument()	{ myCurrentNode = NULL; myRootElement = NULL; }
@@ -250,7 +250,7 @@ public:
 				tmp_node->AddAttribute( i->first, i->second );
 			}
 		}
-
+		
 		// is this a bug? shouldn't this be
 		// myCurrentNode != NULL
 		// currently it's myRootElement != NULL

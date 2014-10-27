@@ -47,7 +47,7 @@ class CHotloader
 {
 public:
 
-	CHotloader() : mTime( 0 ) { }
+	CHotloader() : mTime( 0 ), mCheckFilesEveryTSeconds( 1.f ) { }
 	~CHotloader() { Clear(); }
 
 	void Clear();
@@ -61,8 +61,14 @@ public:
 	void AddListener( IHotloaderListener* hot_listener );
 	void RemoveListener( IHotloaderListener* hot_listener );
 
+	// 	add hot file, this is the best way to make sure the listener gets it's and we get it as well
+	void AddHotFile( const std::string& filename, IHotloaderListener* hot_listener );
+
+	void SetCheckFilesEveryTSeconds( float t );
+
 	// for checking every second or so
 	float mTime;
+	float mCheckFilesEveryTSeconds; // when time passes this we check files. Default check every 1 seconds
 
 	std::vector< IHotloaderListener* > mHotListeners;
 	std::map< std::string, std::string > mTimeStamps;
@@ -88,7 +94,7 @@ inline void CHotloader::Clear()
 inline void CHotloader::Update( float dt )
 {
 	mTime += dt;
-	if( mTime > 1.f ) { CheckFiles(); mTime = 0; }
+	if( mTime > mCheckFilesEveryTSeconds ) { CheckFiles(); mTime = 0; }
 }
 
 inline void CHotloader::CheckFiles()
@@ -136,11 +142,39 @@ inline void CHotloader::AddListener( IHotloaderListener* hot_listener )
 	}
 }
 
+inline void CHotloader::AddHotFile( const std::string& filename, IHotloaderListener* hot_listener )
+{
+	if( hot_listener == NULL ) return;
+
+	// add it to our listeners
+	VectorAddUnique( mHotListeners, hot_listener );
+
+	bool unique = VectorAddUnique( hot_listener->mHotloadingFilenames, filename );
+	if( unique ) 
+	{
+		for( std::size_t i = 0; i < hot_listener->mHotloadingFilenames.size(); ++i ) 
+		{
+			std::string filename = hot_listener->mHotloadingFilenames[ i ];
+			if( mTimeStamps.find( filename ) == mTimeStamps.end() ) 
+			{
+				std::string timestamp = GetDateForFile( hot_listener->mHotloadingFilenames[ i ] );
+				mTimeStamps[ hot_listener->mHotloadingFilenames[ i ] ] = timestamp;
+			}
+		}
+
+	}
+}
+
+
 inline void CHotloader::RemoveListener( IHotloaderListener* hot_listener )
 {
 	VectorRemove( mHotListeners, hot_listener );
 }
 
+inline void CHotloader::SetCheckFilesEveryTSeconds( float t )
+{
+	mCheckFilesEveryTSeconds = t;
+}
 
 } // end of namespace ceng
 

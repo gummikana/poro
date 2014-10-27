@@ -58,7 +58,7 @@ void ShaderOpenGL::Init( const std::string& vertex_source_filename, const std::s
         
         GLchar *strInfoLog = new GLchar[infoLogLength + 1];
         glGetProgramInfoLog(program, infoLogLength, NULL, strInfoLog);
-        fprintf(stderr, "GLSL inker failure: %s\n", strInfoLog);
+        fprintf(stderr, "GLSL link failure: %s\n", strInfoLog);
         delete[] strInfoLog;
 
 		Release();
@@ -90,19 +90,19 @@ void ShaderOpenGL::Release()
 
 void ShaderOpenGL::Enable()
 {
-	lastAllocatedTextureUnit = 0;
+	lastAllocatedTextureUnit = 2;
     glUseProgram( program );
 }
 
 void ShaderOpenGL::Disable()
 {
-	lastAllocatedTextureUnit = 0;
+	lastAllocatedTextureUnit = 2;
     glUseProgram( 0 );
 	glDisable( GL_TEXTURE_2D );
 	glDisable( GL_TEXTURE_3D );
 }
 
-bool ShaderOpenGL::HasParameter(const std::string& name)
+bool ShaderOpenGL::HasParameter( const std::string& name)
 {
 	const char *c_str = name.c_str();
     int handle = glGetUniformLocation( program, name.c_str() );
@@ -118,7 +118,25 @@ void ShaderOpenGL::SetParameter( const std::string& name, float value )
 	glUniform1f( location, value );
 }
 
-void ShaderOpenGL::SetParameter( const std::string& name, ITexture* texture )
+void ShaderOpenGL::SetParameter( const std::string& name, const types::vec2& value )
+{
+	// TODO: cache parameter locations!
+	const char *c_str = name.c_str();
+	int location = glGetUniformLocation( program, name.c_str() );
+
+	glUniform2f( location, value.x, value.y );
+}
+
+void ShaderOpenGL::SetParameter( const std::string& name, const types::vec3& value )
+{
+	// TODO: cache parameter locations!
+	const char *c_str = name.c_str();
+	int location = glGetUniformLocation( program, name.c_str() );
+
+	glUniform3f( location, value.x, value.y, value.z );
+}
+
+void ShaderOpenGL::SetParameter( const std::string& name, const ITexture* texture )
 {
 	// TODO: cache parameter locations!
 	const char *c_str = name.c_str();
@@ -134,7 +152,7 @@ void ShaderOpenGL::SetParameter( const std::string& name, ITexture* texture )
 	glActiveTexture( GL_TEXTURE0 );
 }
 
-void ShaderOpenGL::SetParameter( const std::string& name, ITexture3d* texture )
+void ShaderOpenGL::SetParameter( const std::string& name, const ITexture3d* texture )
 {
 	// TODO: cache parameter locations!
 	const char *c_str = name.c_str();
@@ -150,7 +168,7 @@ void ShaderOpenGL::SetParameter( const std::string& name, ITexture3d* texture )
 	glActiveTexture( GL_TEXTURE0 );
 }
 
-bool ShaderOpenGL::GetIsCompiledAndLinked()
+bool ShaderOpenGL::GetIsCompiledAndLinked() const
 {
 	return isCompiledAndLinked;
 }

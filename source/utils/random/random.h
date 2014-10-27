@@ -99,7 +99,9 @@ T TemplateRandom( T low, T high )
 	RandomFunc func;
 
 	// return ( rand()%(t+1) ) + low;
-	return (T)(func() * (double)t + 0.5 ) + low;
+	// return low+(int)((double)(high-low + 1)*(double)Next() );
+
+	return (T)(func() * (double)(t + 1) ) + low;
 }
 
 //-----------------------------------------------------------------------------
@@ -134,7 +136,7 @@ public:
 
 	static int Random( int low, int high )
 	{
-		return low+(int)((double)(high-low)*(double)Next() + 0.5);
+		return low+(int)((double)(high-low + 1)*(double)Next() );
 	}
 
 	static double seed;
@@ -167,11 +169,53 @@ public:
 
 	int Random( int low, int high )
 	{
-		return low+(int)((double)(high-low)*(double)Next() + 0.5);
+		return low+(int)((double)(high-low + 1)*(double)Next() );
 	}
 
 	double seed;
 	double iseed;
+};
+
+//-----------------------------------------------------------------------------
+
+class CFastRandom
+{
+public:
+	CFastRandom() : mSeed( 0 )  { }
+
+	void SetSeed( int in_seed ) {
+		mSeed = in_seed ^ 13 - 1;
+	}
+
+	inline int fastrand() { 
+		mSeed = (214013*mSeed+2531011); 
+		return (mSeed>>16)&0x7FFF; 
+	} 
+
+	inline int Random( int low, int high ) {
+		mSeed = (214013*mSeed+2531011); 
+		return ( ((mSeed>>16)&0x7FFF)%((high - low)+1) ) + low;
+	}
+
+	// returns a value between ]0 and 100[
+	// should be faster than using Random( int low, int high )
+	inline int Random100() {
+		mSeed = (214013*mSeed+2531011); 
+		return ((mSeed>>16)&0x7FFF)%101;
+	}
+
+	// low = 0, high
+	inline int Random0To( int high ) {
+		mSeed = (214013*mSeed+2531011); 
+		return ((mSeed>>16)&0x7FFF)%(high+1);
+	}
+
+	inline float Randomf( float low, float high ) {
+		mSeed = (214013*mSeed+2531011); 
+		return low+((high-low)*((float)((mSeed>>16)&0x7FFF) / (float)RAND_MAX) );
+	}
+
+	int mSeed;
 };
 
 //-----------------------------------------------------------------------------

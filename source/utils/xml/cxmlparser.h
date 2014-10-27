@@ -51,10 +51,11 @@
 #ifndef INC_CXMLTESTPARSER_H
 #define INC_CXMLTESTPARSER_H
 
-#include "cxmlhandler.h"
-#include "xml_libraries.h"
+#include "canycontainer.h"
 
 namespace ceng {
+
+class CXmlHandler;
 
 //! Parses open a xml file
 class CXmlParser

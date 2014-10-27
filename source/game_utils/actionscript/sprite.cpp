@@ -19,6 +19,8 @@
  ***************************************************************************/
 
 #include "sprite.h"
+#include <map>
+
 #include "../../utils/singleton/csingletonptr.h"
 #include "../../utils/math/cvector2_serializer.h"
 #include "../../utils/math/point_inside.h"
@@ -38,6 +40,29 @@
 namespace as { 
 
 typedef poro::types::Uint32 Uint32;
+
+///////////////////////////////////////////////////////////////////////////////
+
+SpriteLoadHelper::SpriteLoadHelper() : 
+	filename(),
+	offset( 0, 0 ),
+	scale( 1, 1 ),
+	default_animation()
+{
+}
+
+void SpriteLoadHelper::Serialize( ceng::CXmlFileSys* filesys  )
+{
+	XML_BindAttributeAlias( filesys, filename, "filename" );
+	XML_BindAttributeAlias( filesys, offset.x, "offset_x" );
+	XML_BindAttributeAlias( filesys, offset.y, "offset_y" );
+	XML_BindAttributeAlias( filesys, scale.x, "scale_x" );
+	XML_BindAttributeAlias( filesys, scale.y, "scale_y" );
+	XML_BindAttributeAlias( filesys, default_animation, "default_animation" );
+	
+	ceng::VectorXmlSerializer< Sprite::RectAnimation > rect_serializer( rect_animations, "RectAnimation" );
+	rect_serializer.Serialize( filesys );
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace {
@@ -75,36 +100,7 @@ namespace {
 	
 	//----------------------------------------------------------------------------
 
-	struct SpriteLoadHelper 
-	{
-		SpriteLoadHelper() : 
-			filename(),
-			offset( 0, 0 ),
-			scale( 1, 1 ),
-			default_animation()
-		{
-		}
-
-		std::string filename;
-		types::vector2 offset;
-		types::vector2 scale;
-		std::string default_animation;
-
-		std::vector< Sprite::RectAnimation* > rect_animations;
-
-		void Serialize( ceng::CXmlFileSys* filesys  )
-		{
-			XML_BindAttributeAlias( filesys, filename, "filename" );
-			XML_BindAttributeAlias( filesys, offset.x, "offset_x" );
-			XML_BindAttributeAlias( filesys, offset.y, "offset_y" );
-			XML_BindAttributeAlias( filesys, scale.x, "scale_x" );
-			XML_BindAttributeAlias( filesys, scale.y, "scale_y" );
-			XML_BindAttributeAlias( filesys, default_animation, "default_animation" );
-			
-			ceng::VectorXmlSerializer< Sprite::RectAnimation > rect_serializer( rect_animations, "RectAnimation" );
-			rect_serializer.Serialize( filesys );
-		}
-	};
+	
 
 	//----------------------------------------------------------------------------
 
@@ -268,18 +264,21 @@ ceng::CArray2D< Uint32 >* GetImageData( const std::string& filename, bool load_a
 
 //-----------------------------------------------------------------------------
 
-
-//-----------------------------------------------------------------------------
-
-Sprite* LoadSprite( const std::string& filename )
+void LoadSpriteTo( const std::string& filename, as::Sprite* result )
 {
+	cassert( result );
+	if( ceng::DoesExist( filename ) == false ) 
+	{
+		std::cout << "ERROR - LoadSpriteTo()... file doesn't exist: " << filename << std::endl;
+	}
+
 	if( filename.size() >= 3 && filename.substr( filename.size() - 3 ) == "xml" )
 	{
 		// if we're loading an xml file
 		SpriteLoadHelper sprite_data;
 		ceng::XmlLoadFromFile( sprite_data, filename, "Sprite" );
 
-		Sprite* result = new Sprite;
+		// Sprite* result = new Sprite;
 
 		result->SetRectAnimations( sprite_data.rect_animations );
 		result->SetCenterOffset( sprite_data.offset );
@@ -291,10 +290,10 @@ Sprite* LoadSprite( const std::string& filename )
 		}
 
 		TextureBuffer* buffer = GetTextureBuffer( sprite_data.filename );
-		if ( buffer == NULL ) return result;
+		if ( buffer == NULL ) return;
 
 		poro::ITexture* image = buffer->texture;
-		if( image == NULL ) return result;
+		if( image == NULL ) return;
 
 		result->SetTexture( image );
 		result->SetImageData( buffer->image_data );
@@ -302,19 +301,19 @@ Sprite* LoadSprite( const std::string& filename )
 
 		result->SetFilename( filename );
 
-		return result;
+		return;
 	}
 	else
 	{
 		// we're loading just a texture...
 
-		Sprite* result = new Sprite;
+		// Sprite* result = new Sprite;
 
 		TextureBuffer* buffer = GetTextureBuffer( filename );
-		if ( buffer == NULL ) return result;
+		if ( buffer == NULL ) return;
 
 		poro::ITexture* image = buffer->texture;
-		if( image == NULL ) return result;
+		if( image == NULL ) return;
 
 		result->SetTexture( image );
 		result->SetImageData( buffer->image_data );
@@ -322,8 +321,17 @@ Sprite* LoadSprite( const std::string& filename )
 
 		result->SetFilename( filename );
 
-		return result;
+		return;
 	}
+}
+
+//-----------------------------------------------------------------------------
+
+Sprite* LoadSprite( const std::string& filename )
+{
+	Sprite* result = new Sprite;
+	LoadSpriteTo( filename, result );
+	return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -421,34 +429,6 @@ void Sprite::Clear()
 }
 
 //-----------------------------------------------------------------------------
-} // end of namespace as
-namespace ceng {
-namespace math {
-
-template< class Type >
-CXForm< Type > MulT( const CXForm< Type >& T, const CXForm< Type >& v )
-{
-	
-	CXForm< Type > result;
-
-	result.scale.x = v.scale.x / T.scale.x;
-	result.scale.y = v.scale.y / T.scale.y;
-	result.R = Mul( T.R.Invert(), v.R );
-
-	result.position.x = ( v.position.x - T.position.x ) / T.scale.x;
-	result.position.y = ( v.position.y - T.position.y ) / T.scale.y;
-	// result.position = v.position - T.position;
-	result.position = MulT( T.R, result.position );
-	
-
-
-	return result;
-}
-
-} // end of namespace math
-} // end of namespace ceng
-
-namespace as {
 
 poro::IGraphicsBuffer* Sprite::GetAlphaBuffer( poro::IGraphics* graphics )
 {
@@ -508,10 +488,12 @@ bool Sprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& 
 		}
 	}
 
-	types::rect draw_rect( 0, 0, mSize.x, mSize.y );
-	if( mRect ) draw_rect = *mRect;
-
-	DrawRect( draw_rect, graphics, camera, transform ); 
+	
+	if( mRect ) 
+		DrawRect( *mRect, graphics, camera, transform );  
+	else 
+		DrawRect( types::rect( 0, 0, mSize.x, mSize.y ), graphics, camera, transform ); 
+	
 	
 	// draw all children
 	DrawChildren( graphics, camera, transform );
@@ -698,13 +680,11 @@ void DrawSprite( Sprite* sprite, poro::IGraphics* graphics, types::camera* camer
 
 void Sprite::Update( float dt )
 {
-	
 	if( mRectAnimation ) 
 		mRectAnimation->Update( this, dt );
 
 	if( mAnimationUpdater.get() ) 
 		mAnimationUpdater->Update( dt );
-
 
 	// update children as well
 	ChildList::iterator i;
@@ -735,10 +715,10 @@ void Sprite::MoveCenterTo( const types::vector2& p ) {
 
 //=============================================================================
 
-types::rect Sprite::RectAnimation::FigureOutRectPos()
+types::rect Sprite::RectAnimation::FigureOutRectPos( int frame )
 {
-	int y_pos = (int)( mCurrentFrame / mFramesPerRow );
-	int x_pos = mCurrentFrame % mFramesPerRow;
+	int y_pos = (int)( frame / mFramesPerRow );
+	int x_pos = frame % mFramesPerRow;
 
 	return 
 		types::rect( 
@@ -750,6 +730,9 @@ types::rect Sprite::RectAnimation::FigureOutRectPos()
 
 void Sprite::RectAnimation::Update( Sprite* sprite, float dt )
 {
+	if( mPaused ) 
+		dt = 0;
+
 	int frame = mCurrentFrame;
 	mCurrentTime += dt;
 	if( mWaitTime > 0 ) {
@@ -796,7 +779,7 @@ void Sprite::RectAnimation::SetFrame( Sprite* sprite, int frame, bool update_any
 
 		cassert( sprite );
 		mCurrentFrame = frame;
-		sprite->SetRect( FigureOutRectPos() );
+		sprite->SetRect( FigureOutRectPos( mCurrentFrame ) );
 		
 		if( mHasNewCenterOffset ) sprite->SetCenterOffset( mCenterOffset );
 
@@ -868,6 +851,7 @@ void Sprite::SetRectAnimation( RectAnimation* animation )
 		mRectAnimation->mCurrentFrame = 0;
 
 	mRectAnimation = animation;
+	mRectAnimation->mPaused = false;
 }
 //-------------------------------------------------------------------------
 
@@ -880,17 +864,21 @@ const Sprite::RectAnimation* Sprite::GetRectAnimation() const
 { 
 	return mRectAnimation;
 }
-//-------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 void Sprite::SetRectAnimations( const std::vector< RectAnimation* >& animations ) 
 {
 	mRectAnimations = animations;
 }
-//-------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 void Sprite::PlayRectAnimation( const std::string& name )
 {
-	if( mRectAnimation && mRectAnimation->mName == name ) return;
+	if( mRectAnimation && mRectAnimation->mName == name )
+	{
+		mRectAnimation->mPaused = false;
+		return;
+	}
 
 	for( std::size_t i = 0; i < mRectAnimations.size(); ++i ) 
 	{
@@ -899,11 +887,22 @@ void Sprite::PlayRectAnimation( const std::string& name )
 		{
 			mRectAnimations[ i ]->mKillMe = false;
 			SetRectAnimation( mRectAnimations[ i ] );
+			// add so that the rect animation doesn't flash for 1 frame
+			Update( 0 );
 			return;
 		}
 	}
 }
-//-------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+
+void Sprite::PauseRectAnimation()
+{
+	if( mRectAnimation ) 
+		mRectAnimation->mPaused = true;
+}
+
+//-----------------------------------------------------------------------------
 
 bool Sprite::IsRectAnimationPlaying() const
 {
@@ -914,7 +913,7 @@ bool Sprite::IsRectAnimationPlaying() const
 
 	return true;
 }
-//-------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 bool Sprite::HasRectAnimation( const std::string& name ) const
 {
@@ -929,7 +928,7 @@ bool Sprite::HasRectAnimation( const std::string& name ) const
 
 	return false;
 }
-//-------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 std::string Sprite::GetRectAnimationName() const
 {
@@ -937,7 +936,7 @@ std::string Sprite::GetRectAnimationName() const
 	return "";
 }
 
-//-------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 bool Sprite::IsAnimationPlaying() const
 {
 	if( mAnimationUpdater.get() == NULL ) return false;
@@ -952,7 +951,7 @@ void Sprite::PlayAnimation( const std::string& animation_name )
 
 	if( mAnimations == NULL )
 	{
-		logger << "Error trying to play animation before AnimationsSheet has been added: " << animation_name << std::endl;
+		// logger << "Error trying to play animation before AnimationsSheet has been added: " << animation_name << std::endl;
 		return;
 	}
 
@@ -1004,6 +1003,27 @@ types::vector2 Sprite::GetScreenPosition() const
 }
 //-----------------------------------------------------------------------------
 
+types::vector2 Sprite::TransformWithAllParents( const types::vector2& mouse_pos ) const
+{
+	types::vector2 result( 0, 0 );
+	std::vector< const DisplayObjectContainer* > parents;
+	getParentTree( parents );
+
+	types::xform xform;
+	for( int i = (int)parents.size() - 1; i > 0; --i )
+	{
+		cassert( parents[ i ] );
+		const Sprite* parent = dynamic_cast< const Sprite* >( parents[ i ] );
+		if( parent )
+			xform = ceng::math::Mul( xform, parent->GetXForm() );
+	}
+
+	return ceng::math::MulTWithScale( xform, mouse_pos );
+}
+
+
+//-----------------------------------------------------------------------------
+
 types::vector2 Sprite::MultiplyByParentXForm( const types::vector2& p ) const
 {
 	types::vector2 result = ceng::math::Mul( GetXForm(), p );
@@ -1015,6 +1035,7 @@ types::vector2 Sprite::MultiplyByParentXForm( const types::vector2& p ) const
 	else 
 		return parent->MultiplyByParentXForm( result );
 }
+
 //-----------------------------------------------------------------------------
 
 void Sprite::SetAlphaMask( Sprite* alpha_mask )	{ 
@@ -1044,27 +1065,30 @@ void Sprite::FindSpritesAtPointImpl( const types::vector2& pos, Transform& trans
 {
 	const types::xform& matrix = transform.GetXForm();
 	types::rect dest_rect( 0, 0, mSize.x, mSize.y );
-	if( mRect ) { dest_rect.w = mRect->w; dest_rect.h = mRect->h; }
-	
-
-
-	std::vector< types::vector2 > polygon( 4 );
-	polygon[ 0 ].Set( -mCenterOffset.x,					-mCenterOffset.y );
-	polygon[ 1 ].Set( -mCenterOffset.x,					dest_rect.h - mCenterOffset.y );
-	polygon[ 2 ].Set( dest_rect.w - mCenterOffset.x,	dest_rect.h - mCenterOffset.y );
-	polygon[ 3 ].Set( dest_rect.w - mCenterOffset.x,	-mCenterOffset.y );
-	for( int i = 0; i < (int)polygon.size(); ++i )
-	{
-		polygon[ i ] = ceng::math::Mul( mXForm, polygon[ i ] );
-		polygon[ i ] = ceng::math::Mul( matrix, polygon[ i ] );
+	if( mRect ) 
+	{ 
+		dest_rect.w = mRect->w; dest_rect.h = mRect->h; 
 	}
 
-	if( ceng::math::IsPointInsidePolygon( pos, polygon ) )
+	if( mTexture )
 	{
-		results.push_back( this );
+		std::vector< types::vector2 > polygon( 4 );
+		polygon[ 0 ].Set( -mCenterOffset.x,					-mCenterOffset.y );
+		polygon[ 1 ].Set( -mCenterOffset.x,					dest_rect.h - mCenterOffset.y );
+		polygon[ 2 ].Set( dest_rect.w - mCenterOffset.x,	dest_rect.h - mCenterOffset.y );
+		polygon[ 3 ].Set( dest_rect.w - mCenterOffset.x,	-mCenterOffset.y );
+		for( int i = 0; i < (int)polygon.size(); ++i )
+		{
+			polygon[ i ] = ceng::math::MulWithScale( mXForm, polygon[ i ] );
+			polygon[ i ] = ceng::math::MulWithScale( matrix, polygon[ i ] );
+		}
+
+		if( ceng::math::IsPointInsidePolygon_Better( pos, polygon ) )
+			results.push_back( this );
 	}
 
-	if( mChildren.empty() ) return;
+	if( mChildren.empty() ) 
+		return;
 
 	transform.PushXForm( mXForm, mColor );
 
@@ -1077,7 +1101,7 @@ void Sprite::FindSpritesAtPointImpl( const types::vector2& pos, Transform& trans
 		{			
 			current = dynamic_cast< Sprite* >(*i);
 			cassert( current );
-			if( current->IsSpriteDead() )
+			if( current == NULL || current->IsSpriteDead() )
 				continue;
 		
 			current->FindSpritesAtPointImpl( pos, transform, results );

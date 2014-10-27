@@ -80,6 +80,7 @@ public:
 	virtual void			SetSleepingMode( int sleep_mode );
 	virtual types::Double32 GetUpTime();
 	virtual void			SetPrintFramerate( bool fps );
+	virtual types::Double32 GetLastFrameExecutionTime() const;
 
 	// event recordings
 	virtual void SetEventRecording( bool record_events );
@@ -107,6 +108,7 @@ protected:
 	bool							mFixedTimeStep;
 	int								mFrameCount;
 	int								mFrameRate;
+	types::Double32					mLastFrameExecutionTime;
 	types::Double32					mOneFrameShouldLast;
 	int								mWidth;
 	int								mHeight;
@@ -121,6 +123,7 @@ protected:
 	int								mSleepingMode;
 	bool							mPrintFramerate;
 	poro::types::string				mWorkingDir;
+	int								mRandomSeed;
 
 private:
 };
@@ -193,6 +196,11 @@ inline poro::types::string	PlatformDesktop::GetWorkingDir() const {
 inline void PlatformDesktop::SetPrintFramerate( bool framerate ) {
 	mPrintFramerate = framerate;
 }
+
+inline types::Double32 PlatformDesktop::GetLastFrameExecutionTime() const {
+	return mLastFrameExecutionTime;
+}
+
 
 //-----------------------------------------------------------------------------
 } // end o namespace poro

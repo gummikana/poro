@@ -236,7 +236,7 @@ public:
 	    myPointer( object ),
 		myFunction( func ) 
 	{ 
-		myNumberOfParameters = 0;
+		myNumberOfParameters = 1;
 	}
 
 	CAnyContainer Call( const CAnyContainer& arg1 ) 
@@ -278,12 +278,13 @@ public:
 	CObjectFuncReturn1( Class* object, Return (Class::*func)(Arg1) ) :
 	    CObjectFunc1< Class, Return, Arg1 >( object, func )
 	{ 
+		myNumberOfParameters = 1;
 	}
 
 	CAnyContainer Call( const CAnyContainer& arg1 ) 
 	{ 
 		return CAnyContainer( 
-			(parent::myPointer->*parent::myFunction)( CAnyContainerCast< Arg1 >( arg1 ) ) ); 
+			(parent::myPointer->*parent::myFunction)( CAnyContainerCast< remove_const_ref< Arg1 >::type >( arg1 ) ) ); 
 			//((parent::myPointer->*parent::myFunction)( CAnyContainerCast< Arg1 >( arg1 ) ) ) ); 
 	}
 
@@ -292,6 +293,148 @@ public:
 
 
 //-----------------------------------------------------------------------------
+
+//! Generic Event class with two arguments
+template< class Class, class Return, class Arg1, class Arg2 > 
+class CObjectFunc2 : public IGenericFunctionPtr
+{
+public:
+
+	typedef CObjectFunc2< Class, Return, Arg1, Arg2 > self_type;
+
+	CObjectFunc2( Class* object, Return (Class::*func)(Arg1, Arg2) ) :
+	    myPointer( object ),
+		myFunction( func ) 
+	{ 
+		myNumberOfParameters = 2;
+	}
+
+	CAnyContainer Call( const CAnyContainer& arg1, const CAnyContainer& arg2 ) 
+	{ 
+		(myPointer->*myFunction)( CAnyContainerCast< remove_const_ref< Arg1 >::type >( arg1 ), CAnyContainerCast< remove_const_ref< Arg2 >::type >( arg2 ) ); 
+		return CAnyContainer();
+	}
+
+	IGenericFunctionPtr* Clone() const { return new self_type( myPointer, myFunction ); }
+
+	void* GetPointer() const { return myPointer; }
+	void SetPointer( void* p ) { myPointer = static_cast< Class* >( p ); }
+
+	const std::type_info& GetTypeInfo() const { return typeid( this ); }
+	
+	bool Compare( IGenericFunctionPtr* event ) const
+	{
+		if( !( GetTypeInfo() == event->GetTypeInfo() ) )
+			return false;
+
+		self_type* tevent = static_cast< self_type* >( event );
+
+		return ( tevent->myFunction == this->myFunction && myPointer == tevent->myPointer );
+	}
+
+protected:
+
+	Return	(Class::*myFunction)(Arg1, Arg2);
+	Class*	myPointer;
+};
+
+//! Generic Event class with zero arguments
+template< class Class, class Return, class Arg1, class Arg2 > 
+class CObjectFuncReturn2 : public CObjectFunc2< Class, Return, Arg1, Arg2 >
+{
+public:
+	typedef CObjectFunc2< Class, Return, Arg1, Arg2 > parent;
+	typedef CObjectFuncReturn2< Class, Return, Arg1, Arg2 > self_type;
+
+	CObjectFuncReturn2( Class* object, Return (Class::*func)(Arg1, Arg2) ) :
+	    CObjectFunc2< Class, Return, Arg1, Arg2 >( object, func )
+	{ 
+	}
+
+	CAnyContainer Call( const CAnyContainer& arg1, const CAnyContainer& arg2 ) 
+	{ 
+		return CAnyContainer( 
+			(parent::myPointer->*parent::myFunction)( CAnyContainerCast< remove_const_ref< Arg1 >::type >( arg1 ), CAnyContainerCast< remove_const_ref< Arg2 >::type >( arg2 ) ) ); 
+			//((parent::myPointer->*parent::myFunction)( CAnyContainerCast< Arg1 >( arg1 ) ) ) ); 
+	}
+
+	IGenericFunctionPtr* Clone() const { return new self_type( parent::myPointer, parent::myFunction ); }
+};
+
+//-----------------------------------------------------------------------------
+
+//! Generic Event class with two arguments
+template< class Class, class Return, class Arg1, class Arg2, class Arg3 > 
+class CObjectFunc3 : public IGenericFunctionPtr
+{
+public:
+
+	typedef CObjectFunc3< Class, Return, Arg1, Arg2, Arg3 > self_type;
+
+	CObjectFunc3( Class* object, Return (Class::*func)(Arg1, Arg2, Arg3) ) :
+	    myPointer( object ),
+		myFunction( func ) 
+	{ 
+		myNumberOfParameters = 3;
+	}
+
+	CAnyContainer Call( const CAnyContainer& arg1, const CAnyContainer& arg2, const CAnyContainer& arg3 ) 
+	{ 
+		(myPointer->*myFunction)( 
+			CAnyContainerCast< remove_const_ref< Arg1 >::type >( arg1 ), 
+			CAnyContainerCast< remove_const_ref< Arg2 >::type >( arg2 ),
+			CAnyContainerCast< remove_const_ref< Arg3 >::type >( arg3 ) ); 
+		return CAnyContainer();
+	}
+
+	IGenericFunctionPtr* Clone() const { return new self_type( myPointer, myFunction ); }
+
+	void* GetPointer() const { return myPointer; }
+	void SetPointer( void* p ) { myPointer = static_cast< Class* >( p ); }
+
+	const std::type_info& GetTypeInfo() const { return typeid( this ); }
+	
+	bool Compare( IGenericFunctionPtr* event ) const
+	{
+		if( !( GetTypeInfo() == event->GetTypeInfo() ) )
+			return false;
+
+		self_type* tevent = static_cast< self_type* >( event );
+
+		return ( tevent->myFunction == this->myFunction && myPointer == tevent->myPointer );
+	}
+
+protected:
+
+	Return	(Class::*myFunction)(Arg1, Arg2, Arg3 );
+	Class*	myPointer;
+};
+
+//! Generic Event class with 3 arguments
+template< class Class, class Return, class Arg1, class Arg2, class Arg3 > 
+class CObjectFuncReturn3 : public CObjectFunc3< Class, Return, Arg1, Arg2, Arg3 >
+{
+public:
+	typedef CObjectFunc3< Class, Return, Arg1, Arg2, Arg3 > parent;
+	typedef CObjectFuncReturn3< Class, Return, Arg1, Arg2, Arg3 > self_type;
+
+	CObjectFuncReturn3( Class* object, Return (Class::*func)(Arg1, Arg2, Arg3) ) :
+	    CObjectFunc3< Class, Return, Arg1, Arg2, Arg3 >( object, func )
+	{ 
+	}
+
+	CAnyContainer Call( const CAnyContainer& arg1, const CAnyContainer& arg2, const CAnyContainer& arg3 ) 
+	{ 
+		return CAnyContainer( 
+			(parent::myPointer->*parent::myFunction)( 
+				CAnyContainerCast< remove_const_ref< Arg1 >::type >( arg1 ), 
+				CAnyContainerCast< remove_const_ref< Arg2 >::type >( arg2 ),
+				CAnyContainerCast< remove_const_ref< Arg3 >::type >( arg3 ) ) ); 
+			//((parent::myPointer->*parent::myFunction)( CAnyContainerCast< Arg1 >( arg1 ) ) ) ); 
+	}
+
+	IGenericFunctionPtr* Clone() const { return new self_type( parent::myPointer, parent::myFunction ); }
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 template< class ReturnValue >
@@ -325,6 +468,12 @@ struct func_factory< Return, 1>
 	template< class Class, class Arg1 > 
 	IGenericFunctionPtr* operator()( Class* object, Return (Class::*func)(Arg1) ) { return new CObjectFunc1< Class, Return, Arg1 >( object, func ); }
 
+	template< class Class, class Arg1, class Arg2 > 
+	IGenericFunctionPtr* operator()( Class* object, Return (Class::*func)(Arg1, Arg2) ) { return new CObjectFunc2< Class, Return, Arg1, Arg2 >( object, func ); }
+
+	template< class Class, class Arg1, class Arg2, class Arg3 > 
+	IGenericFunctionPtr* operator()( Class* object, Return (Class::*func)(Arg1, Arg2, Arg3) ) { return new CObjectFunc3< Class, Return, Arg1, Arg2, Arg3 >( object, func ); }
+
 };
 
 // we can return the return value of the function as a CAnyContainer
@@ -339,6 +488,12 @@ struct func_factory< Return, 0>
 
 	template< class Class, class Arg1 > 
 	IGenericFunctionPtr* operator()( Class* object, Return (Class::*func)(Arg1) ) { return new CObjectFuncReturn1< Class, Return, Arg1 >( object, func ); }
+
+	template< class Class, class Arg1, class Arg2 > 
+	IGenericFunctionPtr* operator()( Class* object, Return (Class::*func)(Arg1, Arg2) ) { return new CObjectFuncReturn2< Class, Return, Arg1, Arg2 >( object, func ); }
+
+	template< class Class, class Arg1, class Arg2, class Arg3 > 
+	IGenericFunctionPtr* operator()( Class* object, Return (Class::*func)(Arg1, Arg2, Arg3) ) { return new CObjectFuncReturn3< Class, Return, Arg1, Arg2, Arg3 >( object, func ); }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -365,6 +520,19 @@ IGenericFunctionPtr* CreateFunctionPointer( Class* object, Return (Class::*func)
 	return factory( object, func );
 }
 
+template< class Class, class Return, class Arg1, class Arg2 >
+IGenericFunctionPtr* CreateFunctionPointer( Class* object, Return (Class::*func)(Arg1, Arg2) )
+{
+	func_factory< Return, is_void< Return >::v > factory;
+	return factory( object, func );
+}
+
+template< class Class, class Return, class Arg1, class Arg2, class Arg3 >
+IGenericFunctionPtr* CreateFunctionPointer( Class* object, Return (Class::*func)(Arg1, Arg2, Arg3) )
+{
+	func_factory< Return, is_void< Return >::v > factory;
+	return factory( object, func );
+}
 
 
 } // end of namespace impl

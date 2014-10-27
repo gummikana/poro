@@ -19,8 +19,6 @@
  ***************************************************************************/
 
 #include "mouse.h"
-#include "poro_macros.h"
-#include <iostream>
 #include <algorithm>
 
 namespace poro {

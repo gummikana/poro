@@ -107,6 +107,8 @@ public:
 	virtual types::Double32	GetUpTime()							{ poro_assert( false ); return 0; }
 	virtual types::Float32	GetTime()							{ return (types::Float32)GetUpTime(); }
 	virtual void			SetPrintFramerate( bool fps )		{ }
+	virtual types::Double32 GetLastFrameExecutionTime() const	{ return 0; }
+
 
 	// event recording
 	virtual void SetEventRecording( bool record_events )		{ }

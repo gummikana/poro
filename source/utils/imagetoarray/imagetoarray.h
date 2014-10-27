@@ -1,9 +1,7 @@
 #ifndef INC_IMAGE_TO_ARRAY_H
 #define INC_IMAGE_TO_ARRAY_H
 
-#include <map>
 #include <poro/poro_types.h>
-#include <utils/color/ccolor.h>
 #include <utils/array2d/carray2d.h>
 
 //-----------------------------------------------------------------------------

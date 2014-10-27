@@ -172,6 +172,19 @@ Vector2 Mul( const CXForm< Type >& T, const Vector2& v )
 }
 
 
+template< class Type, class Vector2 >
+Vector2 MulWithScale( const CXForm< Type >& T, const Vector2& v )
+{
+	Vector2 result;
+	result.x = v.x * T.scale.x;
+	result.y = v.y * T.scale.y;
+	result = Mul( T.R, result );
+	result.x += T.position.x;
+	result.y += T.position.y;
+	return result;
+}
+
+
 template< class Type >
 CXForm< Type > Mul( const CXForm< Type >& T, const CXForm< Type >& v )
 {
@@ -195,6 +208,34 @@ template< class Type >
 CVector2< Type > MulT( const CXForm< Type >& T, const CVector2< Type >& v )
 {
 	return MulT( T.R, v - T.position );
+}
+
+
+template< class Type >
+CXForm< Type > MulT( const CXForm< Type >& T, const CXForm< Type >& v )
+{
+	
+	CXForm< Type > result;
+
+	result.scale.x = v.scale.x / T.scale.x;
+	result.scale.y = v.scale.y / T.scale.y;
+	result.R = Mul( T.R.Invert(), v.R );
+
+	result.position.x = ( v.position.x - T.position.x ) / T.scale.x;
+	result.position.y = ( v.position.y - T.position.y ) / T.scale.y;
+	// result.position = v.position - T.position;
+	result.position = MulT( T.R, result.position );
+
+	return result;
+}
+
+template< class Type >
+CVector2< Type > MulTWithScale( const CXForm< Type >& T, const CVector2< Type >& v )
+{
+	CVector2< Type > result( v );
+	if( T.scale.x != 0 ) result.x /= T.scale.x;
+	if( T.scale.y != 0 ) result.y /= T.scale.y;
+	return MulT( T.R, result - T.position );
 }
 
 
@@ -294,16 +335,16 @@ float DistanceFromAABB( const CVector2< PType >& point, const CVector2< PType >&
 	if( IsPointInsideAABB( point, aabb_min, aabb_max ) ) return 0;
 
 	float lowest = 0;
-	float temp = ceng::math::DistanceFromLineSquared( aabb_min, types::ivector2( aabb_max.x, aabb_min.y ), point );
+	float temp = ceng::math::DistanceFromLineSquared( aabb_min, CVector2< PType >( aabb_max.x, aabb_min.y ), point );
 	if( temp < lowest ) lowest = temp;
 
-	temp = ceng::math::DistanceFromLineSquared( types::ivector2( aabb_max.x, aabb_min.y ), types::ivector2( aabb_max.x, aabb_max.y ), point );
+	temp = ceng::math::DistanceFromLineSquared( CVector2< PType >( aabb_max.x, aabb_min.y ), CVector2< PType >( aabb_max.x, aabb_max.y ), point );
 	if( temp < lowest ) lowest = temp;
 
-	temp = ceng::math::DistanceFromLineSquared( types::ivector2( aabb_max.x, aabb_max.y ), types::ivector2( aabb_min.x, aabb_max.y ), point );
+	temp = ceng::math::DistanceFromLineSquared( CVector2< PType >( aabb_max.x, aabb_max.y ), CVector2< PType >( aabb_min.x, aabb_max.y ), point );
 	if( temp < lowest ) lowest = temp;
 
-	temp = ceng::math::DistanceFromLineSquared( types::ivector2( aabb_min.x, aabb_max.y ), types::ivector2( aabb_min.x, aabb_min.y ), point );
+	temp = ceng::math::DistanceFromLineSquared( CVector2< PType >( aabb_min.x, aabb_max.y ), CVector2< PType >( aabb_min.x, aabb_min.y ), point );
 	if( temp < lowest ) lowest = temp;
 
 	return sqrtf( lowest );

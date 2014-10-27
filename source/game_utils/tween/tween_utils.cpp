@@ -25,6 +25,10 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+void GTweenClearSpriteOfTweens( as::Sprite* sprite ) {
+	GTweenClearPointerOfTweens( (void*)sprite );
+}
+
 void GTweenClearPointerOfTweens( void* pointer )
 {
 	std::list< GTween* >& list_of_gtweens = ceng::CAutoList< GTween >::GetList();
@@ -43,13 +47,9 @@ void GTweenClearPointerOfTweens( void* pointer )
 	}
 }
 
-void GTweenClearSpriteOfTweens( as::Sprite* sprite )
-{
-	GTweenClearPointerOfTweens( (void*)sprite );
-}
+//.............................................................................
 
-bool GTweenIsSpriteInUse( as::Sprite* sprite )
-{
+bool GTweenIsSpriteInUse( as::Sprite* sprite ) {
 	return GTweenIsPointerInUse( (void*)sprite );
 }
 
@@ -70,6 +70,28 @@ bool GTweenIsPointerInUse( void* pointer )
 	return false;
 }
 
+//.............................................................................
+
+int GTweenReverseTweens( void* pointer )
+{
+	int result = 0;
+	std::list< GTween* >& list_of_gtweens = ceng::CAutoList< GTween >::GetList();
+
+	for( std::list< GTween* >::iterator i = list_of_gtweens.begin();
+		i != list_of_gtweens.end(); ++i )
+	{
+		GTween* tween = *i;
+		cassert( tween );
+		bool value = tween->HasPointer( pointer );
+		if( value ) 
+		{
+			result++;
+			tween->Reverse();
+		}
+	}
+
+	return result;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 

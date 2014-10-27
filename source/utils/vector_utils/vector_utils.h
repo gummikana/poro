@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <sstream>
 #include <fstream>
+#include <assert.h>
 
 namespace ceng {
 
@@ -28,6 +29,48 @@ bool VectorContains( const std::vector< T >& container, const T& element )
 {
 	// std::vector< T >::iterator i = std::find( container.begin(), container.end(), element );
 	return ( std::find( container.begin(), container.end(), element ) != container.end() );
+}
+
+// returns true if vector is sorted in ascending order
+template< class T > 
+bool VectorIsSorted( const std::vector< T >& array )
+{
+	int count = ((int)array.size()) - 1;
+	for( int i = 0; i < count; ++i )
+	{
+		if( array[i] > array[i+1] )
+			return false;
+	}
+	return true;
+}
+
+// binary search in the sorted array... Maybe we should cassert( that it's sorted... )
+template< class T > 
+bool VectorContainsSorted( const std::vector< T >& array, const T& element )
+{
+	if( array.empty() ) return false;
+	if( array.size() == 1 ) return array[0] == element;
+
+	assert( VectorIsSorted( array ) );
+
+	int first, last, middle;
+
+	first = 0;
+	last = (int)array.size() - 1;
+	middle = (first+last)/2;
+ 
+	while( first <= last )
+	{
+		if ( array[middle] < element )
+			first = middle + 1;    
+		else if ( array[middle] == element ) 
+			return true;
+		else
+			last = middle - 1;
+
+		middle = (first + last)/2;
+	}
+	return false;
 }
 
 
@@ -147,6 +190,44 @@ struct VectorXmlSerializer
 	std::vector< T* >& array;
 	std::string name;
 };
+
+//.............................................................................
+
+template< class T >
+struct VectorXmlSerializerObjects
+{
+	VectorXmlSerializerObjects( std::vector< T >& array, const std::string& name ) : array( array ), name( name ) { }
+
+	void Serialize( ceng::CXmlFileSys* filesys )
+	{
+		if( filesys->IsWriting() )
+		{
+			for( std::size_t i = 0; i < array.size(); ++i )
+			{
+				XML_BindAlias( filesys, array[i], name );
+			}
+		}
+		else if ( filesys->IsReading() )
+		{
+			// clears the pointers
+			array.clear();
+			int i = 0;
+			for( i = 0; i < filesys->GetNode()->GetChildCount(); i++ )
+			{
+				if( filesys->GetNode()->GetChild( i )->GetName() == name )
+				{
+					T temp;
+					ceng::XmlConvertTo( filesys->GetNode()->GetChild( i ), temp );
+					array.push_back( temp );
+				}
+			}
+		}
+	}
+
+	std::vector< T >& array;
+	std::string name;
+};
+
 //-----------------------------------------------------------------------------
 
 // load from a file, saves each element as a separate element

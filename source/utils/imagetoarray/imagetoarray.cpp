@@ -4,26 +4,16 @@
 #define STBI_HEADER_FILE_ONLY
 #include <poro/external/stb_image.h>
 #undef STBI_HEADER_FILE_ONLY
-#include <sdl.h>
 
-#include <algorithm>
-#include <iostream>
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iomanip>
-
-#include <poro/iplatform.h>
-#include <poro/igraphics.h>
-#include <utils/string/string.h>
-// #include "../game_types.h"
+#include <poro/external/stb_image_write.h>
+#include <utils/color/ccolor.h>
 
 
 using namespace imagetoarray;
 
 
 //-----------------------------------------------------------------------------
-void LoadImage( const std::string& filename, ceng::CArray2D< Uint32 >& out_array2d, bool include_alpha )
+void LoadImage( const std::string& filename, ceng::CArray2D< poro::types::Uint32 >& out_array2d, bool include_alpha )
 {
 	TempTexture* surface = GetTexture( filename );
 
@@ -50,7 +40,7 @@ void LoadImage( const std::string& filename, ceng::CArray2D< Uint32 >& out_array
 }
 
 //-----------------------------------------------------------------------------
-void SaveImage( const std::string& filename, const ceng::CArray2D< uint32 >& image_data )
+void SaveImage( const std::string& filename, const ceng::CArray2D< poro::types::Uint32 >& image_data )
 {
 	// do the file and save it
 	const int w = image_data.GetWidth();
@@ -74,7 +64,8 @@ void SaveImage( const std::string& filename, const ceng::CArray2D< uint32 >& ima
 		}
 	}
 
-	poro::IPlatform::Instance()->GetGraphics()->ImageSave( filename.c_str(), w, h, 4, pixels, w * 4 );
+	stbi_write_png( filename.c_str(), w, h, 4, pixels, w * 4 );
+	// poro::IPlatform::Instance()->GetGraphics()->ImageSave( filename.c_str(), w, h, 4, pixels, w * 4 );
 
 	delete [] pixels;
 	pixels = NULL;
@@ -82,32 +73,6 @@ void SaveImage( const std::string& filename, const ceng::CArray2D< uint32 >& ima
 
 
 namespace imagetoarray {
-uint32 GetPixel(SDL_Surface *surface, int x, int y)
-{
-	int bpp = surface->format->BytesPerPixel;
-	/* Here p is the address to the pixel we want to retrieve */
-	Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
-
-	switch(bpp) {
-	case 1:
-		return *p;
-
-	case 2:
-		return *(Uint16 *)p;
-
-	case 3:
-		if(SDL_BYTEORDER == SDL_BIG_ENDIAN)
-			return p[0] << 16 | p[1] << 8 | p[2];
-		else
-			return p[0] | p[1] << 8 | p[2] << 16;
-
-	case 4:
-		return *(uint32 *)p;
-
-	default:
-		return 0;       /* shouldn't happen, but avoids warnings */
-	}
-}
 
 
 TempTexture* GetTexture( const std::string& filename )
@@ -126,6 +91,4 @@ uint32 GetPixel(TempTexture* surface, int x, int y, bool include_alpha )
 }
 
 
-
-
-} // End of namespace
+} // End of namespace imagetoarray

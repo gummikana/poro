@@ -98,7 +98,8 @@ PlatformDesktop::PlatformDesktop() :
 	mRunning( 0 ),
 	mMousePos(),
 	mSleepingMode( PORO_MAXIMIZE_SLEEP ),
-	mPrintFramerate( false )
+	mPrintFramerate( false ),
+	mRandomSeed( 1234567 )
 {
 	StartCounter();
 }
@@ -111,6 +112,7 @@ PlatformDesktop::~PlatformDesktop()
 void PlatformDesktop::Init( IApplication* application, int w, int h, bool fullscreen, std::string title ) 
 {
 	IPlatform::Init( application, w, h, fullscreen, title );
+	mRandomSeed = (int)time(NULL);
 	mRunning = true;
 	mFrameCount = 1;
 	mFrameRate = -1;
@@ -206,6 +208,8 @@ void PlatformDesktop::StartMainLoop()
 		mProcessorRate += ( elapsed_time / mOneFrameShouldLast );
         mFrameCount++;
         mFrameRateUpdateCounter++;
+		mLastFrameExecutionTime = time_after - time_before;
+
         if( ( GetUpTime() - mFrameCountLastTime ) >= 1.0 )
         {
             mFrameCountLastTime = GetUpTime();
@@ -408,6 +412,7 @@ void PlatformDesktop::SetEventRecording( bool record_events )
 		{
 			delete mEventRecorder;
 			mEventRecorder = new EventRecorderImpl( mKeyboard, mMouse, mTouch );
+			mRandomSeed = mEventRecorder->GetRandomSeed();
 		}
 	}
 	else
@@ -433,6 +438,7 @@ void PlatformDesktop::DoEventPlayback( const std::string& filename )
 	EventPlaybackImpl* temp = new EventPlaybackImpl( mKeyboard, mMouse, mTouch );
 	temp->LoadFromFile( filename );
 	mEventRecorder = temp;
+	mRandomSeed = mEventRecorder->GetRandomSeed();
 }
 
 bool PlatformDesktop::IsBreakpointFrame()
@@ -446,10 +452,13 @@ bool PlatformDesktop::IsBreakpointFrame()
 
 int PlatformDesktop::GetRandomSeed()
 {
-	if( mEventRecorder ) 
-		return mEventRecorder->GetRandomSeed();
-
-	return (int)time(NULL);
+	int result = mRandomSeed;
+	// use a simple randomizer to randomize the random seed 
+	// random func from https://code.google.com/p/nvidia-mesh-tools/source/browse/trunk/src/nvmath/Random.h
+	unsigned int t = ((unsigned int)(mRandomSeed)) * 1103515245 + 12345;
+	mRandomSeed = (int)t;
+	
+	return result;
 }
 
 //-----------------------------------------------------------------------------
