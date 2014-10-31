@@ -1457,6 +1457,7 @@ void GraphicsOpenGL::SaveScreenshot( const std::string& filename, int pos_x, int
 	int height = (int)mViewportSize.y;
 
 	static unsigned char* pixels = new unsigned char[ 3 * (int)mViewportSize.x * (int)mViewportSize.y ];
+	const int pixels_size = 3 * (int)mViewportSize.x * (int)mViewportSize.y;
 
 	// read the whole image into a buffer, since this crashes with unspecified sizes
 	glReadPixels( (int)mViewportOffset.x, (int)mViewportOffset.y, (int)mViewportSize.x, (int)mViewportSize.y, GL_RGB, GL_UNSIGNED_BYTE, pixels);
@@ -1490,7 +1491,10 @@ void GraphicsOpenGL::SaveScreenshot( const std::string& filename, int pos_x, int
 			{
 				int p1 = (x + 3 * w * y);
 				int p2 = (x + (pos_x * 3)) + ( 3 * width * ( y + pos_y));
-				other_pixels[ p1 ] = pixels[ p2 ];
+				if( p2 < pixels_size )
+					other_pixels[ p1 ] = pixels[ p2 ];
+				else 
+					other_pixels[ p1 ] = 0;
 			}
 		}
 	}
