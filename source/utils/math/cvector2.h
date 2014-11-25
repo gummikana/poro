@@ -174,19 +174,19 @@ public:
 		return angle;
 	}
 
-	CVector2< Type >& Rotate( Type angle ) 
+	CVector2< Type >& Rotate( Type angle_rad ) 
 	{
 		Type tx = x;
-		x = (Type)x * (Type)cos(angle) - y * (Type)sin(angle);
-		y = (Type)tx * (Type)sin(angle) + y * (Type)cos(angle);
+		x = (Type)x * (Type)cos(angle_rad) - y * (Type)sin(angle_rad);
+		y = (Type)tx * (Type)sin(angle_rad) + y * (Type)cos(angle_rad);
 
 		return *this;
 	}
 
-	CVector2< Type >& Rotate( const CVector2< Type >& centre, Type angle )
+	CVector2< Type >& Rotate( const CVector2< Type >& centre, Type angle_rad )
 	{
 		CVector2< Type > D = *this - centre;
-		D.Rotate( angle );
+		D.Rotate( angle_rad );
 
 		// *this = xCentre + D;
 		D += centre;
