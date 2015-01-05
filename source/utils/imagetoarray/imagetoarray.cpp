@@ -1,11 +1,8 @@
 #include "imagetoarray.h"
 
-
-#define STBI_HEADER_FILE_ONLY
 #include <poro/external/stb_image.h>
-#undef STBI_HEADER_FILE_ONLY
-
 #include <poro/external/stb_image_write.h>
+
 #include <utils/color/ccolor.h>
 
 

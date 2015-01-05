@@ -28,8 +28,9 @@
 #include "texture_opengl.h"
 #include "texture3d_opengl.h"
 
-
+#define STB_IMAGE_IMPLEMENTATION
 #include "../external/stb_image.h"
+#undef STB_IMAGE_IMPLEMENTATION
 
 #ifndef PORO_DONT_USE_GLEW
 #	include "graphics_buffer_opengl.h"
