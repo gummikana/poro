@@ -29,6 +29,9 @@
 #include "../keyboard.h"
 #include "../touch.h"
 
+#include <emscripten.h>
+
+
 /*#include "graphics_opengl.h"
 #include "soundplayer_sdl.h"
 #include "mouse_impl.h"
@@ -36,6 +39,9 @@
 
 namespace poro {
 
+void emscripten_step() {
+	((PlatformEmscripten*)IPlatform::Instance())->SingleLoop();
+}
 
 //-----------------------------------------------------------------------------
 
@@ -89,6 +95,10 @@ void PlatformEmscripten::Init( IApplication* application, int w, int h, bool ful
 
 
 	SDL_EnableUNICODE(1);
+
+	// start the main loop
+	int frame_rate = (int)( 1.f / mOneFrameShouldLast);
+	emscripten_set_main_loop(emscripten_step, frame_rate, true);
 }
 //-----------------------------------------------------------------------------
 
@@ -131,7 +141,6 @@ void PlatformEmscripten::StartMainLoop()
 void PlatformEmscripten::SingleLoop() 
 {
 	poro_assert( GetApplication() );
-	poro_assert( mGraphics );
 
 	types::Double32 dt = mOneFrameShouldLast;
 
