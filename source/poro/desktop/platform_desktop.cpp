@@ -22,7 +22,6 @@
 
 #include <ctime>
 
-#include "../poro.h"
 #include "../libraries.h"
 
 #include "../mouse.h"
