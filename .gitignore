@@ -20,6 +20,12 @@ examples/HelloWorld/build/VC9/*.user
 examples/HelloWorld/build/VC9/Debug/*
 examples/HelloWorld/build/VC9/Release/*
 
+examples/EmTest/build/VC9/*.ncb
+examples/EmTest/build/VC9/*.suo
+examples/EmTest/build/VC9/*.user
+examples/EmTest/build/VC9/Debug/*
+examples/EmTest/build/VC9/Release/*
+
 
 # log txt
 examples/AlphaMasking/workdir/log.txt
