@@ -166,7 +166,7 @@ inline void IPlatform::SetInternalSize( types::Float32 width, types::Float32 hei
 	mInternalHeight = height;
 
 	IGraphics* graphics = GetGraphics();
-	poro_assert( graphics );
+	// poro_assert( graphics );
 
 	if( graphics )
 		graphics->SetInternalSize( width, height );

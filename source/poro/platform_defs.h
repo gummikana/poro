@@ -37,6 +37,10 @@
 	#ifndef PORO_PLAT_WINDOWS
 		#define PORO_PLAT_WINDOWS
 	#endif
+#elif defined(EMSCRIPTEN)
+	#ifndef PORO_PLAT_EMSCRIPTEN
+		#define PORO_PLAT_EMSCRIPTENS
+	#endif
 #endif
 
 

@@ -38,6 +38,10 @@
 #include "desktop/linux/platform_linux.h"
 #endif
 
+#ifdef PORO_PLAT_EMSCRIPTEN
+#include "emscripten/platform_emscripten.h"
+#endif
+
 #include <stdlib.h>
 
 
@@ -52,6 +56,8 @@ namespace poro {
 	static PlatformMac platform;
 #elif defined(PORO_PLAT_LINUX)
 	static PlatformLinux platform;
+#elif defined(PORO_PLAT_EMSCRIPTEN)
+	static PlatformEmscripten platform;
 #else
 	#error "unknown platform"
 #endif

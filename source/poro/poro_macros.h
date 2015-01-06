@@ -27,19 +27,19 @@
 #include <assert.h>
 #include <iostream>
 
-#ifdef PORO_PLAT_WINDOWS
+/*#ifdef PORO_PLAT_WINDOWS
 
 #include "../utils/pow2assert/pow2assert.h"
 
 #  define poro_logger std::cout
 #  define poro_assert POW2_ASSERT
 
-#else
+#else*/
 
 #  define poro_logger std::cout
 #  define poro_assert assert
 
-#endif
+// #endif
 
 namespace poro {
 	inline types::fcolor GetFColor( float r, float g, float b, float a = 1.f );
