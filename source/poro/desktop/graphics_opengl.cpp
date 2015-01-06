@@ -48,17 +48,6 @@
 
 //=============================================================================
 namespace poro {
-	
-	types::Uint32 GetNextPowerOfTwo(types::Uint32 input)
-	{
-		--input;
-		input |= input >> 16;
-		input |= input >> 8;
-		input |= input >> 4;
-		input |= input >> 2;
-		input |= input >> 1;
-		return input + 1;
-	}
 
 	class Texture3dOpenGL;
 

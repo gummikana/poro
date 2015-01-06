@@ -260,6 +260,22 @@ protected:
 
 ///////////////////////////////////////////////////////////////////////////////
 
+types::Uint32 GetNextPowerOfTwo(types::Uint32 input);
+
+inline 	types::Uint32 GetNextPowerOfTwo(types::Uint32 input)
+{
+	--input;
+	input |= input >> 16;
+	input |= input >> 8;
+	input |= input >> 4;
+	input |= input >> 2;
+	input |= input >> 1;
+	return input + 1;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 inline void	IGraphics::PushBlendMode(int blend_mode) {
 	mBlendModes.push(mBlendMode);
 	mBlendMode=blend_mode;
