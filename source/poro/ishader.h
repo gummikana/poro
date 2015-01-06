@@ -18,7 +18,7 @@
  *
  ***************************************************************************/
 
-#ifndef INC_ÍSHADER_H
+#ifndef INC_ISHADER_H
 #define INC_ISHADER_H
 
 
