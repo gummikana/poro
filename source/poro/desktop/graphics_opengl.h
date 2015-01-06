@@ -160,6 +160,8 @@ private:
 
 };
 
+types::Uint32 GetNextPowerOfTwo(types::Uint32 input);
+
 //-----------------------------------------------------------------------------
 
 // ImageLoad is just a wrapper for stbi_load and stbi_write_png

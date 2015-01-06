@@ -24,18 +24,7 @@
 #include "texture_opengl.h"
 
 namespace poro {
-namespace {
-Uint32 GetNextPowerOfTwo(Uint32 input)
-{
-	--input;
-	input |= input >> 16;
-	input |= input >> 8;
-	input |= input >> 4;
-	input |= input >> 2;
-	input |= input >> 1;
-	return input + 1;
-}
-} // end of anonymous namespace
+
 
 void GraphicsBufferOpenGL::InitTexture(int width,int height){
 
