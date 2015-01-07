@@ -40,7 +40,10 @@ public:
 	virtual ITexture*	CloneTexture( ITexture* other );
 	
 	virtual ITexture*	LoadTexture( const types::string& filename );
+	virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data ) { return LoadTexture( filename ); }
 	virtual void		ReleaseTexture( ITexture* texture );
+	virtual void		SetTextureSmoothFiltering( ITexture* itexture, bool enabled );
+	virtual void		SetTextureWrappingMode( ITexture* itexture, int mode );
 
 	virtual void        SetDrawTextureBuffering( bool buffering );
 	virtual void		DrawTexture( ITexture* texture, float x, float y, float w, float h, const types::fcolor& color, float rotation = 0.0f );
@@ -59,7 +62,9 @@ public:
 	virtual IGraphicsBuffer* CreateGraphicsBuffer(int width, int height);
 	virtual void DestroyGraphicsBuffer(IGraphicsBuffer* buffer);
 	
-
+	bool	mFullscreen;
+	int		mWindowWidth;
+	int		mWindowHeight;
     
 };
 

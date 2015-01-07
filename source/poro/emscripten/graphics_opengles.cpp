@@ -38,11 +38,133 @@ using namespace poro::types;
 
 //=============================================================================
 namespace poro {
-	
+
+#ifndef PORO_ERROR 
+#define PORO_ERROR "Poro error: "
+#endif
+
 namespace {
 
 	GraphicsSettings OPENGL_SETTINGS;
+	GLuint programObject;
+
 	
+	//========================================================================
+
+	
+GLuint loadShader (GLenum type, const char *source) 
+{
+	using namespace std;
+	
+	GLuint shader;
+	GLint compiled;
+	
+	shader = glCreateShader (type);
+	
+	if (shader == 0) {
+		
+		poro_logger << "Error creating shader" << endl;
+		return 0;
+		
+	}
+	
+	glShaderSource (shader, 1, &source, NULL);
+	glCompileShader (shader);
+	
+	glGetShaderiv (shader, GL_COMPILE_STATUS, &compiled);
+	
+	if (!compiled) {
+		
+		GLint infoLen = 0;
+		glGetShaderiv (shader, GL_INFO_LOG_LENGTH, &infoLen);
+		
+		if (infoLen > 1) {
+			
+			char* infoLog = (char*) malloc (sizeof (char) * infoLen);
+			glGetShaderInfoLog (shader, infoLen, NULL, infoLog);
+			poro_logger << "Error compiling shader: " << infoLog << endl;
+			free (infoLog);
+			
+		}
+		
+		glDeleteShader (shader);
+		return 0;
+		
+	}
+	
+	return shader;
+
+}
+
+
+int initOpenGL () 
+{
+	using namespace std;
+
+	const char vertexShaderString[] =  
+      "attribute vec4 vPosition;    \n"
+      "void main()                  \n"
+      "{                            \n"
+      "   gl_Position = vPosition;  \n"
+      "}                            \n";
+   
+   const char fragmentShaderString[] =  
+      "precision mediump float;\n"\
+      "void main()                                  \n"
+      "{                                            \n"
+      "  gl_FragColor = vec4 ( 1.0, 0.0, 0.0, 1.0 );\n"
+      "}                                            \n";
+	
+	GLuint vertexShader;
+	GLuint fragmentShader;
+	GLint linked;
+	
+	vertexShader = loadShader (GL_VERTEX_SHADER, vertexShaderString);
+	fragmentShader = loadShader (GL_FRAGMENT_SHADER, fragmentShaderString);
+	
+	programObject = glCreateProgram ();
+	
+	if (programObject == 0) {
+		
+		poro_logger << "Could not create OpenGL program" << endl;
+		return 0;
+		
+	}
+	
+	glAttachShader (programObject, vertexShader);
+	glAttachShader (programObject, fragmentShader);
+	glBindAttribLocation (programObject, 0, "vPosition");
+	glLinkProgram (programObject);
+	
+	glGetProgramiv (programObject, GL_LINK_STATUS, &linked);
+	
+	if (!linked) {
+		
+		GLint infoLen = 0;
+		
+		glGetProgramiv (programObject, GL_INFO_LOG_LENGTH, &infoLen);
+		
+		if (infoLen > 1) {
+			
+			char* infoLog = (char*) malloc (sizeof (char) * infoLen);
+			glGetProgramInfoLog (programObject, infoLen, NULL, infoLog);
+			poro_logger << "Error linking program: " << infoLog << endl;
+			free (infoLog);
+			
+		}
+		
+		glDeleteProgram (programObject);
+		return 0;
+		
+	}
+	
+	glClearColor (0.0f, 0.0f, 0.0f, 1.0f);
+	return 1;
+	
+}
+
+//=================================================================
+
     struct Vertex
 	{
 		float x;
@@ -339,8 +461,47 @@ void GraphicsOpenGLES::SetSettings( const GraphicsSettings& settings )
 
 bool GraphicsOpenGLES::Init( int width, int height, bool fullscreen, const types::string& caption )
 {
+	mFullscreen = fullscreen;
+	mWindowWidth = width;
+	mWindowHeight = height;
+
 	//Initialization is done by the AppDelegate and EAGLView
 	//Which sets p the open gl es context and starts the main loop
+
+	if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER ) == 0 ) 
+	{
+		SDL_Surface* screen = SDL_SetVideoMode( width, height, 0, SDL_OPENGL );
+		if( screen == NULL )  
+		{
+			poro_logger << PORO_ERROR << "Video query failed: "<< SDL_GetError() << std::endl;
+			SDL_Quit();
+			exit(0);
+			return 0;
+		}
+	} 
+	else 
+	{
+		poro_logger << PORO_ERROR << "Video initialization failed:  " << SDL_GetError() << std::endl;
+		SDL_Quit();
+		exit(0);
+		return 0;
+	}
+
+	IPlatform::Instance()->SetInternalSize( (types::Float32)width, (types::Float32)height );
+
+	// title of the window
+	SDL_WM_SetCaption( caption.c_str(), NULL);
+
+
+	// init opengl
+	if( !initOpenGL() )
+	{
+		poro_logger << PORO_ERROR << "Video initialization failed:  " << SDL_GetError() << std::endl;
+		SDL_Quit();
+		exit(0);
+		return 0;
+	}
+
 	return 1;
 }
 
@@ -362,6 +523,16 @@ void GraphicsOpenGLES::ReleaseTexture( ITexture* itexture )
 	TextureOpenGLES* texture = (TextureOpenGLES*)itexture;
 	glDeleteTextures(1,&texture->mTextureId);
 	delete texture;
+}
+
+void GraphicsOpenGLES::SetTextureSmoothFiltering( ITexture* itexture, bool enabled )
+{
+	poro_assert( false && "TODO" );
+}
+
+void GraphicsOpenGLES::SetTextureWrappingMode( ITexture* itexture, int mode )
+{
+	poro_assert( false && "TODO" );
 }
 
 //=============================================================================

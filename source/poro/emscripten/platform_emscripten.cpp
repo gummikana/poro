@@ -29,6 +29,8 @@
 #include "../keyboard.h"
 #include "../touch.h"
 
+#include "graphics_opengles.h"
+
 #include <emscripten.h>
 
 
@@ -83,8 +85,8 @@ void PlatformEmscripten::Init( IApplication* application, int w, int h, bool ful
 	mHeight = h;
 	mApplication = application;
 
-	/*mGraphics = new GraphicsOpenGL;
-	mGraphics->Init(w, h, fullscreen, title);*/
+	mGraphics = new GraphicsOpenGLES;
+	mGraphics->Init(w, h, fullscreen, title);
 
 	/*mSoundPlayer = new SoundPlayerSDL;
 	mSoundPlayer->Init();*/
