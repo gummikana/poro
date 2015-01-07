@@ -720,18 +720,49 @@ void GraphicsOpenGLES::DrawTextureWithAlpha( ITexture* itexture, types::vec2* ve
 void GraphicsOpenGLES::BeginRendering()
 {
 	//clear screen
+	mFillColor[ 0 ] += 0.01f;
 	glClearColor( mFillColor[ 0 ],
 				 mFillColor[ 1 ],
 				 mFillColor[ 2 ],
 				 mFillColor[ 3 ] );
 	
+
+	/*
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	*/
+
 	
+	GLfloat vVertices[] = { 
+		1200.0f, 1200.5f, 0.0f,
+		-1100.5f, -1100.f, 0.0f,
+		1200.f, -1100.f, 0.0f
+	};
+
+	/*
+	GLfloat vVertices[] = { 
+		0.0f, 0.5f, 0.0f,
+		-0.5f, -0.5f, 0.0f,
+		0.5f, -0.5f, 0.0f
+	};*/
+	
+	
+	glViewport( 0, 0, mWindowWidth, mWindowHeight );
+	
+	glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE );
+	glClear( GL_COLOR_BUFFER_BIT );
+	
+	glUseProgram( programObject );
+	
+	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, vVertices );
+	
+	glEnableVertexAttribArray( 0 );
+	glDrawArrays( GL_TRIANGLES, 0, 3 );
 }
 
 void GraphicsOpenGLES::EndRendering()
 {
-    FlushDrawSpriteBuffer();
+	SDL_GL_SwapBuffers ();
+    // FlushDrawSpriteBuffer();
     
     //std::cout << "DrawCalls:" << drawcalls << std::endl;
     //drawcalls=0;
