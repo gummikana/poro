@@ -276,8 +276,8 @@ int initOpenGL ()
 			for (int x = 0; x < width; x++)
 			{
 				unsigned int color = 0xFF000000; // ABGR
-				color |= x; // set R
-				//color |= y << 8; // set G
+				color |= 255 - x; // set R 
+				color |= y << 8; // set G
 
 				data[x + y * width] = color;
 			}
@@ -776,9 +776,9 @@ void GraphicsOpenGLES::BeginRendering()
 	};
 
 	GLfloat vTexCoords[] = {
-		0.0f, 0.0f, // bottom left
-		0.0f, 0.0f, // top left
-		1.0f, 0.0f, // top right
+		1.0f, 0.0f, // bottom left
+		1.0f, 1.0f, // top left
+		0.0f, 1.0f, // top right
 	};
 
 	/*
