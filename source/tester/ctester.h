@@ -150,7 +150,7 @@ private:
 #define TESTER_DO_JOIN( X, Y ) TESTER_DO_JOIN2(X,Y)
 #define TESTER_DO_JOIN2( X, Y ) X##Y
 
-#define TEST_REGISTER( x ) static ::poro::tester::CTester TESTER_JOIN( test, __LINE__ ) ( x, #x, __FILE__ )
+#define TEST_REGISTER( x ) static ::poro::tester::CTester TESTER_JOIN( test, TESTER_JOIN( x, __LINE__ ) ) ( x, #x, __FILE__ )
 
 ///////////////////////////////////////////////////////////////////////////////
 } // end of namespace tester
