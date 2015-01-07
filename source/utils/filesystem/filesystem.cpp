@@ -241,13 +241,13 @@ long ReadFileSize( std::fstream& file )
 	long size;
 	long current;
 
-	current = file.tellg();
+	current = (long)file.tellg();
 
 	file.seekg(0, std::ios::beg );
-	begin	= file.tellg();
+	begin	= (long)file.tellg();
 
 	file.seekg(0, std::ios::end );
-	end		= file.tellg();
+	end		= (long)file.tellg();
 
 	size	= end - begin;
 

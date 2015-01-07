@@ -120,11 +120,11 @@ bool IsPointInsidePolygon_Better( const CVector2< PointType >& point, const std:
     PointType tx = point.x ;
     PointType ty = point.y ;
 
-	types::vector2 vtx0 = pgon[numverts-1];
+	CVector2< PointType > vtx0 = pgon[numverts - 1];
 	
 /* get test bit for above/below X axis */
     yflag0 = ( vtx0.y >= ty ) ;
-	types::vector2 vtx1 = pgon[0];
+	CVector2< PointType > vtx1 = pgon[0];
 
 	for( int j = 1; j < numverts + 1; ++j ) 
 	{

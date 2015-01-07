@@ -22,11 +22,11 @@
 #include "ctester.h"
 #include "tester_macros.h"
 
-using namespace poro;
-using namespace poro::tester;
-
 int RunTests()
 {
+	using namespace poro;
+	using namespace poro::tester;
+
 	test_logger << "Ceng tester..." << std::endl;
 	test_logger << "------------------------------------------------------------------ " << std::endl;
 	bool passed = true;

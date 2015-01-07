@@ -37,7 +37,7 @@ namespace ceng {
 
 #define CENG_CFG_COMPILER_STR "Unknown"
 #define CENG_CFG_BUILDTIME_STR  __DATE__ " " __TIME__
-#define CENG_CFG_HEADER_STR "Poro 1.0.0"
+#define CENG_CFG_HEADER_STR_2 "Poro 1.0.0"
 
 // for use of the error logging / reportting
 const static char* warning_prefix = "[WARNING]";
@@ -219,7 +219,7 @@ public:
 		myLog.open( myFilename.c_str(), std::ios::app );
 
 		myLog << std::endl;
-		myLog << "------------------------" << CENG_CFG_HEADER_STR << "------------------------" << std::endl;
+		myLog << "------------------------" << CENG_CFG_HEADER_STR_2 << "------------------------" << std::endl;
 		myLog << std::endl;
 		for ( i = 0; i < myErrors.size(); i++ )
 		{
@@ -229,7 +229,7 @@ public:
 		}
 
 		myLog << std::endl;
-		myLog << CENG_CFG_HEADER_STR << " - " << Errors << " error(s), " << Warnings << " warning(s)" << std::endl;
+		myLog << CENG_CFG_HEADER_STR_2 << " - " << Errors << " error(s), " << Warnings << " warning(s)" << std::endl;
 
 		myLog.close();
 	}

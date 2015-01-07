@@ -52,7 +52,7 @@
 // the terminal window
 
 #ifdef PORO_PLAT_WINDOWS
-#   define PORO_USE_LOGGER
+// #   define PORO_USE_LOGGER
 #endif
 
 // #include "logger/logger.h"
