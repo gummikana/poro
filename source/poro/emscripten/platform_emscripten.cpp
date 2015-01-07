@@ -191,6 +191,17 @@ void PlatformEmscripten::HandleEvents()
 			}
 			break;
 
+			case SDL_VIDEOEXPOSE:
+			{
+				if( mGraphics )
+				{
+					mGraphics->BeginRendering();
+					GetApplication()->Draw(mGraphics);
+					mGraphics->EndRendering();
+				}
+			}
+			break;
+
 			case SDL_QUIT:
 				mRunning = 0;
 			break;
