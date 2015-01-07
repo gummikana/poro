@@ -38,9 +38,9 @@ public:
 
     void Draw( poro::IGraphics* graphics )
     {
-		std::cout << "draw" << std::endl;
+		/*std::cout << "draw" << std::endl;
 		graphics->DrawTexture( mOtherImage, 256, 256, 512, 512, poro::GetFColor( 1, 1, 1, 1 ), 0 );
-        graphics->DrawTexture( mImage, 0, 0, 1024, 288, poro::GetFColor( 1, 1, 1, 1 ), 0 );
+        graphics->DrawTexture( mImage, 0, 0, 1024, 288, poro::GetFColor( 1, 1, 1, 1 ), 0 );*/
     }
 
     void Update( float dt )

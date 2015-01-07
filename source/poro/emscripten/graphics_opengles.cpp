@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  * Copyright (c) 2010 Petri Purho, Dennis Belfrage
  *
@@ -37,6 +37,7 @@
 using namespace poro::types;
 
 //=============================================================================
+
 namespace poro {
 
 #ifndef PORO_ERROR 
@@ -46,10 +47,10 @@ namespace poro {
 namespace {
 
 	GraphicsSettings OPENGL_SETTINGS;
-	GLuint programObject;
-
+	GLuint programTextured;
+	TextureOpenGLES* texture;
 	
-	//========================================================================
+//========================================================================
 
 	
 GLuint loadShader (GLenum type, const char *source) 
@@ -101,19 +102,26 @@ int initOpenGL ()
 {
 	using namespace std;
 
+	// load a simple textured shader
 	const char vertexShaderString[] =  
-      "attribute vec4 vPosition;    \n"
-      "void main()                  \n"
-      "{                            \n"
-      "   gl_Position = vPosition;  \n"
-      "}                            \n";
+		"attribute vec4 vPosition;    \n"
+		"attribute vec2 vTexCoord;	  \n"
+		"varying vec2 texCoordOut;    \n"
+		"void main()                  \n"
+		"{                            \n"
+		"   gl_Position = vPosition;  \n"
+		"	texCoordOut = vTexCoord;  \n"
+		"}                            \n";
    
-   const char fragmentShaderString[] =  
-      "precision mediump float;\n"\
-      "void main()                                  \n"
-      "{                                            \n"
-      "  gl_FragColor = vec4 ( 1.0, 0.0, 0.0, 1.0 );\n"
-      "}                                            \n";
+	const char fragmentShaderString[] =
+		"precision mediump float;											\n"
+		"uniform sampler2D tex;												\n"
+		"varying vec2 texCoordOut;											\n"
+		"void main()														\n"
+		"{																	\n"
+		"  vec4 texcolor = texture2D( tex, texCoordOut );					\n"
+		"  gl_FragColor = texcolor;											\n"
+		"}																	\n";
 	
 	GLuint vertexShader;
 	GLuint fragmentShader;
@@ -122,42 +130,47 @@ int initOpenGL ()
 	vertexShader = loadShader (GL_VERTEX_SHADER, vertexShaderString);
 	fragmentShader = loadShader (GL_FRAGMENT_SHADER, fragmentShaderString);
 	
-	programObject = glCreateProgram ();
+	programTextured = glCreateProgram ();
 	
-	if (programObject == 0) {
+	if (programTextured == 0) {
 		
 		poro_logger << "Could not create OpenGL program" << endl;
 		return 0;
 		
 	}
 	
-	glAttachShader (programObject, vertexShader);
-	glAttachShader (programObject, fragmentShader);
-	glBindAttribLocation (programObject, 0, "vPosition");
-	glLinkProgram (programObject);
+	glAttachShader (programTextured, vertexShader);
+	glAttachShader (programTextured, fragmentShader);
+	glBindAttribLocation (programTextured, 0, "vPosition");
+	glBindAttribLocation (programTextured, 1, "vTexCoord");
+	glLinkProgram (programTextured);
 	
-	glGetProgramiv (programObject, GL_LINK_STATUS, &linked);
+	glGetProgramiv (programTextured, GL_LINK_STATUS, &linked);
 	
 	if (!linked) {
 		
 		GLint infoLen = 0;
 		
-		glGetProgramiv (programObject, GL_INFO_LOG_LENGTH, &infoLen);
+		glGetProgramiv (programTextured, GL_INFO_LOG_LENGTH, &infoLen);
 		
 		if (infoLen > 1) {
 			
 			char* infoLog = (char*) malloc (sizeof (char) * infoLen);
-			glGetProgramInfoLog (programObject, infoLen, NULL, infoLog);
+			glGetProgramInfoLog (programTextured, infoLen, NULL, infoLog);
 			poro_logger << "Error linking program: " << infoLog << endl;
 			free (infoLog);
 			
 		}
 		
-		glDeleteProgram (programObject);
+		glDeleteProgram (programTextured);
 		return 0;
 		
 	}
 	
+	// load texture
+	texture = (TextureOpenGLES*)Poro()->GetGraphics()->LoadTexture("test_alpha.png");
+
+	// init clear
 	glClearColor (0.0f, 0.0f, 0.0f, 1.0f);
 	return 1;
 	
@@ -207,30 +220,30 @@ int initOpenGL ()
 		texture->mUv[3] = ((GLfloat)height)/(GLfloat)heightPow2;
 		
 		// allocate a texture name
-		glGenTextures( 1, &texture->mTextureId );
-		
 		glEnable(GL_TEXTURE_2D);
-		
+
+		glGenTextures( 1, &texture->mTextureId );
+		assert(texture->mTextureId != 0);
 		glBindTexture(GL_TEXTURE_2D, texture->mTextureId);
 		
-		glTexImage2D(GL_TEXTURE_2D, 0, pixelFormat, widthPow2,heightPow2, 0, pixelFormat, GL_UNSIGNED_BYTE, data);
-		
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		/*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         if(IPlatform::Instance()->GetGraphics()->GetMipmapMode()==IGraphics::MIPMAP_MODE_NEAREST){
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         } else {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        }
-		// glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+        }*/
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, widthPow2, heightPow2, 0, pixelFormat, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
         
 		glDisable(GL_TEXTURE_2D);
 
 		
 		//Get subimage
-		GLint prevAlignment;
+		/*GLint prevAlignment;
 		glGetIntegerv(GL_UNPACK_ALIGNMENT, &prevAlignment);
 		
 		glEnable(GL_TEXTURE_2D);
@@ -240,7 +253,7 @@ int initOpenGL ()
 		
 		glDisable(GL_TEXTURE_2D);
 		
-		glPixelStorei(GL_UNPACK_ALIGNMENT, prevAlignment);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, prevAlignment);*/
 		
 		return texture;
 	}
@@ -248,13 +261,31 @@ int initOpenGL ()
 	
 	TextureOpenGLES* LoadImageFile( const types::string& filename )
 	{		
-		unsigned char* data = NULL;
+		unsigned int* data = NULL;
 		int width, height, bpp;
-		GLint pixelFormat = 0;
-		
+		GLint pixelFormat = GL_RGBA;
+
+		// load the image from the file
+
+		// TODO: this is just a placeholder
+		width = 255; height = 255; bpp = 4;
+		data = new unsigned int[width * height];
+
+		for (int y = 0; y < width; y++)
+		{
+			for (int x = 0; x < width; x++)
+			{
+				unsigned int color = 0xFF000000; // ABGR
+				color |= x; // set R
+				//color |= y << 8; // set G
+
+				data[x + y * width] = color;
+			}
+		}
+
 		//Once the image data has been loaded succesfully, create the open gl es Texture; 
 		TextureOpenGLES * texture = NULL;
-		texture = CreateTexture(data, width, height, pixelFormat);
+		texture = CreateTexture((unsigned char*)data, width, height, pixelFormat);
 		
 		//The data buffer is not needed anymore
 		delete [] data;
@@ -265,6 +296,7 @@ int initOpenGL ()
     //static int drawcalls=0;
     void DrawSprite( TextureOpenGLES* texture, Vertex* vertices, const types::fcolor& color, int count, Uint32 vertex_mode )
 	{
+		//TODO: implement
         //drawcalls++;
         
         poro_assert(count<=PORO_DRAW_TEXTURE_BUFFER_SIZE);
@@ -314,8 +346,9 @@ int initOpenGL ()
     static int prev_vertex_mode = 0;
     bool draw_array_buffering=false;
 
-    bool CanDrawSpriteToBuffer( TextureOpenGLES* texture, const types::fcolor& color, int count, Uint32 vertex_mode ) {
-        
+    bool CanDrawSpriteToBuffer( TextureOpenGLES* texture, const types::fcolor& color, int count, Uint32 vertex_mode )
+	{
+		//TODO: implement
         if( vertex_buffer_count==0 )
             return true;
         
@@ -331,8 +364,9 @@ int initOpenGL ()
         return true;
     }
     
-    void DrawSpriteToBuffer( TextureOpenGLES* texture, Vertex* vertices, const types::fcolor& color, int count, Uint32 vertex_mode ){
-        
+    void DrawSpriteToBuffer( TextureOpenGLES* texture, Vertex* vertices, const types::fcolor& color, int count, Uint32 vertex_mode )
+	{
+		//TODO: implement
         prev_color = color;
         prev_texture = texture;
         prev_vertex_mode = vertex_mode;
@@ -384,6 +418,7 @@ int initOpenGL ()
     void DrawSpriteWithAlpha( TextureOpenGLES* texture,  GLfloat* glTexCoords, GLfloat* glVertices, const types::fcolor& color, int count,
 							  TextureOpenGLES* alpha_texture, GLfloat* alpha_glTexCoords, GLfloat* alpha_glVertices, const types::fcolor& alpha_color, Uint32 vertex_mode )
 	{
+		//TODO: implement
         FlushDrawSpriteBuffer();
         
         // std::cout << "CAlling drawsprite_withalpha" << std::endl;
@@ -527,11 +562,13 @@ void GraphicsOpenGLES::ReleaseTexture( ITexture* itexture )
 
 void GraphicsOpenGLES::SetTextureSmoothFiltering( ITexture* itexture, bool enabled )
 {
+	//TODO: implement
 	poro_assert( false && "TODO" );
 }
 
 void GraphicsOpenGLES::SetTextureWrappingMode( ITexture* itexture, int mode )
 {
+	//TODO: implement
 	poro_assert( false && "TODO" );
 }
 
@@ -719,23 +756,29 @@ void GraphicsOpenGLES::DrawTextureWithAlpha( ITexture* itexture, types::vec2* ve
 
 void GraphicsOpenGLES::BeginRendering()
 {
+	glViewport(0, 0, mWindowWidth, mWindowHeight);
+
 	//clear screen
-	mFillColor[ 0 ] += 0.01f;
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	mFillColor[ 2 ] += 0.01f;
 	glClearColor( mFillColor[ 0 ],
 				 mFillColor[ 1 ],
 				 mFillColor[ 2 ],
 				 mFillColor[ 3 ] );
 	
-
-	/*
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-	*/
-
 	
 	GLfloat vVertices[] = { 
-		1200.0f, 1200.5f, 0.0f,
-		-1100.5f, -1100.f, 0.0f,
-		1200.f, -1100.f, 0.0f
+		0.0f, 0.0f, 0.f, // bottom left
+		0.0f, 0.5f, 0.f, // top left
+		0.5f, 0.5f, 0.f  // top right
+	};
+
+	GLfloat vTexCoords[] = {
+		0.0f, 0.0f, // bottom left
+		0.0f, 0.0f, // top left
+		1.0f, 0.0f, // top right
 	};
 
 	/*
@@ -745,17 +788,27 @@ void GraphicsOpenGLES::BeginRendering()
 		0.5f, -0.5f, 0.0f
 	};*/
 	
+
+	int vextex_loc = glGetAttribLocation(programTextured, "vPosition");
+	int texcoord_loc = glGetAttribLocation(programTextured, "vTexCoord");
+
+	glUseProgram( programTextured );
+
+	// set vertex data pointers
+	glEnableVertexAttribArray( vextex_loc);
+	glVertexAttribPointer( vextex_loc, 3, GL_FLOAT, GL_FALSE, 0, vVertices );
+
+	glEnableVertexAttribArray( texcoord_loc );
+	glVertexAttribPointer( texcoord_loc, 2, GL_FLOAT, GL_FALSE, 0, vTexCoords );
 	
-	glViewport( 0, 0, mWindowWidth, mWindowHeight );
-	
-	glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE );
-	glClear( GL_COLOR_BUFFER_BIT );
-	
-	glUseProgram( programObject );
-	
-	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, vVertices );
-	
-	glEnableVertexAttribArray( 0 );
+	// set shader parameters
+	glEnable( GL_TEXTURE_2D );
+	glActiveTexture( GL_TEXTURE0 );
+	glBindTexture( GL_TEXTURE_2D, texture->mTextureId );
+	int param_id = glGetUniformLocation( programTextured, "tex" );
+	glUniform1i( param_id, 0 );
+
+	// and draw
 	glDrawArrays( GL_TRIANGLES, 0, 3 );
 }
 
@@ -772,6 +825,7 @@ void GraphicsOpenGLES::EndRendering()
 
 void GraphicsOpenGLES::DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color )
 {
+	//TODO: implement
 	FlushDrawSpriteBuffer();
     
 	//poro_logger << "DrawLines" << std::endl;
@@ -817,6 +871,7 @@ void GraphicsOpenGLES::DrawLines( const std::vector< poro::types::vec2 >& vertic
 	
 void GraphicsOpenGLES::DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color )
 {
+	//TODO: implement
 	FlushDrawSpriteBuffer();
     
     int vertCount = vertices.size();
@@ -856,6 +911,7 @@ void GraphicsOpenGLES::DrawFill( const std::vector< poro::types::vec2 >& vertice
 
 IGraphicsBuffer* GraphicsOpenGLES::CreateGraphicsBuffer(int width, int height)
 {
+	//TODO: implement
 	poro_assert( false && "TODO" );
 	return NULL;
 	/*GraphicsBufferOpenGLES* buffer = new GraphicsBufferOpenGLES;
@@ -865,6 +921,7 @@ IGraphicsBuffer* GraphicsOpenGLES::CreateGraphicsBuffer(int width, int height)
 
 void GraphicsOpenGLES::DestroyGraphicsBuffer(IGraphicsBuffer* buffer)
 {
+	//TODO: implement
 	poro_assert( false && "TODO" );
 	// delete buffer;
 }
