@@ -76,10 +76,11 @@
 
 #	define WIN32_LEAN_AND_MEAN
 
+/*
 #	ifdef _MSC_VER
 #		include <windows.h>	// needed to get GL stuff to work
 #	endif
-
+*/
 #	include <SDL.h>
 // #	include <SDL_image.h>
 #	include <sdl_mixer.h>

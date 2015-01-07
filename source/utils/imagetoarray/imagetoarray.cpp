@@ -5,14 +5,12 @@
 
 #include <utils/color/ccolor.h>
 
-
-using namespace imagetoarray;
-
-
 //-----------------------------------------------------------------------------
 void LoadImage( const std::string& filename, ceng::CArray2D< poro::types::Uint32 >& out_array2d, bool include_alpha )
 {
-	TempTexture* surface = GetTexture( filename );
+	using namespace imagetoarray;
+
+	TempTexture* surface = GetTexture(filename);
 
 	if( surface == NULL || surface->data == NULL )
 	{
@@ -39,6 +37,8 @@ void LoadImage( const std::string& filename, ceng::CArray2D< poro::types::Uint32
 //-----------------------------------------------------------------------------
 void SaveImage( const std::string& filename, const ceng::CArray2D< poro::types::Uint32 >& image_data )
 {
+	using namespace imagetoarray;
+
 	// do the file and save it
 	const int w = image_data.GetWidth();
 	const int h = image_data.GetHeight();

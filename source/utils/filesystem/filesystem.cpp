@@ -18,7 +18,7 @@
 
 #ifdef CENG_PLATFORM_WINDOWS
 #include <io.h>
-#include <windows.h>
+#include "../../poro/external/poro_windows.h"
 #include <shlobj.h>
 #endif
 #ifdef CENG_PLATFORM_MACOSX
