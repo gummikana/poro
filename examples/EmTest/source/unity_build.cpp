@@ -11,6 +11,8 @@
 #include "../../../source/poro/touch.cpp"
 
 #include "../../../source/poro/emscripten/platform_emscripten.cpp"
+#include "../../../source/poro/emscripten/graphics_opengles.cpp"
+#include "../../../source/poro/emscripten/texture_opengles.cpp"
 
 #if 0
 #include "../../../source/poro/desktop/joystick_impl.cpp"

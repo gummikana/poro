@@ -227,7 +227,23 @@
 				Name="poro"
 				>
 				<File
+					RelativePath="..\..\..\..\source\poro\emscripten\graphics_opengles.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\source\poro\emscripten\graphics_opengles.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\..\source\poro\emscripten\platform_emscripten.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\source\poro\emscripten\texture_opengles.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\source\poro\emscripten\texture_opengles.h"
 					>
 				</File>
 			</Filter>
