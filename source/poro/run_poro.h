@@ -85,7 +85,6 @@ int RunPoro( const AppConfig& conf = AppConfig()  )
 	    
 		poro_assert( poro );
 	    
-		std::cout << "this gets called" << std::endl;
         // recording things
         poro->SetEventRecording( conf.record_events );
 	
@@ -111,7 +110,7 @@ int RunPoro( const AppConfig& conf = AppConfig()  )
 		poro->SetFrameRate( conf.framerate );
 
 		// internal size stuff
-			poro->SetInternalSize( (float)conf.internal_size_w, (float)conf.internal_size_h );
+		poro->SetInternalSize( (float)conf.internal_size_w, (float)conf.internal_size_h );
 		
 		if( poro->GetGraphics() )
 			poro->GetGraphics()->SetSettings( conf.graphics_settings );
