@@ -26,6 +26,19 @@
 
 namespace poro {
 
+//-----------------------------------------------------------------------------
+
+// 323 = SDLK_LAST,
+// this is here so that we don't have to resize the array during runtime
+Keyboard::Keyboard() :
+	mKeysDown( 323 ),
+	mKeysJustDown( 323 ),
+	mKeysJustUp( 323 )
+{
+}
+
+//-----------------------------------------------------------------------------
+
 void Keyboard::AddKeyboardListener( IKeyboardListener* listener )
 {
 	poro_assert( listener );

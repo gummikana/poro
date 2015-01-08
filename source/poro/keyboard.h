@@ -31,7 +31,7 @@ class Keyboard
 {
 public:
 
-	Keyboard() { }
+	Keyboard();
 	~Keyboard() { }
 	
 	void AddKeyboardListener( IKeyboardListener* listener );
