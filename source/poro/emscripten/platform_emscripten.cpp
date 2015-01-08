@@ -99,6 +99,9 @@ void PlatformEmscripten::Init( IApplication* application, int w, int h, bool ful
 	SDL_EnableUNICODE(1);
 
 	// start the main loop
+	StartMainLoop();
+
+	// start the emscripten loop
 	int frame_rate = (int)( 1.f / mOneFrameShouldLast);
 	emscripten_set_main_loop(emscripten_step, frame_rate, true);
 }
@@ -134,10 +137,8 @@ void PlatformEmscripten::StartMainLoop()
 
 	if( mApplication )
 		mApplication->Init();
-
-	if( mApplication )
-		mApplication->Exit();
 }
+
 //-----------------------------------------------------------------------------
 
 void PlatformEmscripten::SingleLoop() 
