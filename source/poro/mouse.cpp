@@ -76,6 +76,10 @@ void Mouse::OnFrameStart()
 
 void Mouse::FireMouseMoveEvent( const types::vec2& pos )
 {
+	// repeat mouse moves disabled
+	if( pos.x == mMousePos.x && pos.y == mMousePos.y ) 
+		return;
+
 	mMousePos = pos;
 	for( std::size_t i = 0; i < mMouseListeners.size(); i++ )
 		mMouseListeners[i]->MouseMove( pos );
