@@ -143,6 +143,8 @@ void PlatformEmscripten::StartMainLoop()
 
 void PlatformEmscripten::SingleLoop() 
 {
+	HandleEvents();
+
 	poro_assert( GetApplication() );
 
 	types::Double32 dt = mOneFrameShouldLast;
