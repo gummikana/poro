@@ -33,7 +33,7 @@ public:
 
 	Keyboard();
 	~Keyboard() { }
-	
+
 	void AddKeyboardListener( IKeyboardListener* listener );
 	void RemoveKeyboardListener( IKeyboardListener* listener );
 
@@ -50,6 +50,10 @@ public:
 	bool IsAltDown() const;
 	bool IsCtrlDown() const;
 
+	// this disables key repeats (key repeats can't be guaranteed on every platform)
+	// key repeats are disabled by default
+	void SetDisableRepeats( bool disable_repeats );
+
 private:
 	void SetKeyDown( int button, bool down );
 
@@ -59,8 +63,13 @@ private:
 	std::vector< bool > mKeysJustDown;
 	std::vector< bool > mKeysJustUp;
 
+	bool mDisableRepeats;
 
 };
+
+inline void Keyboard::SetDisableRepeats( bool disable_repeats ) {
+	mDisableRepeats = disable_repeats; 
+}
 
 } // end of namespace poro
 

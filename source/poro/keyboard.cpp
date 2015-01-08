@@ -33,7 +33,8 @@ namespace poro {
 Keyboard::Keyboard() :
 	mKeysDown( 323 ),
 	mKeysJustDown( 323 ),
-	mKeysJustUp( 323 )
+	mKeysJustUp( 323 ),
+	mDisableRepeats( true )
 {
 }
 
@@ -76,6 +77,9 @@ void Keyboard::OnFrameStart()
 
 void Keyboard::FireKeyDownEvent( int button, types::charset unicode )
 {
+	if( mDisableRepeats && IsKeyDown( button ) )
+		return;
+
 	// this is here so we don't fire up the same down event if a listener is added on a down event
 	// example of this is menus, that get created when a button is pressed and are added to the end of the array
 	// this causes that the newly added menu also gets the 
@@ -91,6 +95,10 @@ void Keyboard::FireKeyDownEvent( int button, types::charset unicode )
 
 void Keyboard::FireKeyUpEvent( int button, types::charset unicode )
 {
+	// this is probably not needed... since repeat key up events shouldn't happen
+	// if( mDisableRepeats && IsKeyDown( button ) == false )
+	//	return;
+
 	std::size_t listeners_size = mListeners.size();
 	for( std::size_t i = 0; i < mListeners.size() && i < listeners_size; ++i )
 	{
@@ -100,6 +108,8 @@ void Keyboard::FireKeyUpEvent( int button, types::charset unicode )
 
 	SetKeyDown( button, false );
 }
+
+//-----------------------------------------------------------------------------
 
 bool Keyboard::IsKeyDown( int button ) const
 {
@@ -148,6 +158,8 @@ void Keyboard::SetKeyDown( int key, bool down )
 		mKeysJustUp[ key ] = true;
 }
 
+//-----------------------------------------------------------------------------
+
 namespace {
 
 // these are ripped from SDL
@@ -179,5 +191,5 @@ bool Keyboard::IsCtrlDown() const
 	return ( IsKeyDown( POROK_LCTRL ) || IsKeyDown( POROK_RCTRL ) );
 }
 
-
+//-----------------------------------------------------------------------------
 } // end of namespace poro
