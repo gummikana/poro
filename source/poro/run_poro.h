@@ -81,14 +81,11 @@ int RunPoro( const AppConfig& conf = AppConfig()  )
 #endif
 
     {
-        std::auto_ptr< AppType > app( new AppType );
         poro::IPlatform* poro = poro::IPlatform::Instance();
 	    
 		poro_assert( poro );
 	    
-        // initialize the platform:
-        poro->Init( app.get(), conf.window_w, conf.window_h, conf.fullscreen, conf.title );
-
+		std::cout << "this gets called" << std::endl;
         // recording things
         poro->SetEventRecording( conf.record_events );
 	
@@ -119,9 +116,13 @@ int RunPoro( const AppConfig& conf = AppConfig()  )
 		if( poro->GetGraphics() )
 			poro->GetGraphics()->SetSettings( conf.graphics_settings );
 
-	
+        std::auto_ptr< AppType > app( new AppType );
+
 		// now start the actual app
         poro->SetApplication( app.get() );
+
+        // initialize the platform:
+        poro->Init( app.get(), conf.window_w, conf.window_h, conf.fullscreen, conf.title );
 
         // start the main loop for title screen
         poro->StartMainLoop();
