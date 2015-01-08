@@ -28,6 +28,9 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "../external/stb_image.h"
+#undef STB_IMAGE_IMPLEMENTATION
 
 #include "../iplatform.h"
 #include "../libraries.h"
@@ -48,7 +51,7 @@ namespace {
 
 	GraphicsSettings OPENGL_SETTINGS;
 	GLuint programTextured;
-	TextureOpenGLES* texture;
+	TextureOpenGLES* test_texture;
 	
 //========================================================================
 
@@ -168,7 +171,7 @@ int initOpenGL ()
 	}
 	
 	// load texture
-	texture = (TextureOpenGLES*)Poro()->GetGraphics()->LoadTexture("test_alpha.png");
+	test_texture = (TextureOpenGLES*)Poro()->GetGraphics()->LoadTexture("test_png.png");
 
 	// init clear
 	glClearColor (0.0f, 0.0f, 0.0f, 1.0f);
@@ -261,12 +264,13 @@ int initOpenGL ()
 	
 	TextureOpenGLES* LoadImageFile( const types::string& filename )
 	{		
-		unsigned int* data = NULL;
+		unsigned char* data = NULL;
 		int width, height, bpp;
 		GLint pixelFormat = GL_RGBA;
 
 		// load the image from the file
 
+#if 0 
 		// TODO: this is just a placeholder
 		width = 255; height = 255; bpp = 4;
 		data = new unsigned int[width * height];
@@ -282,13 +286,19 @@ int initOpenGL ()
 				data[x + y * width] = color;
 			}
 		}
+#endif
+		std::cout << "loading file: " << filename << std::endl;
+		data = stbi_load( filename.c_str(), &width, &height, &bpp, 4 );
+		if( data )
+			std::cout << "file load success: " << filename << " - " << width << ", " << height << " " << bpp << std::endl;
 
 		//Once the image data has been loaded succesfully, create the open gl es Texture; 
 		TextureOpenGLES * texture = NULL;
 		texture = CreateTexture((unsigned char*)data, width, height, pixelFormat);
 		
 		//The data buffer is not needed anymore
-		delete [] data;
+		stbi_image_free( data );
+		// delete [] data;
 
 		return texture;
 	}
@@ -762,7 +772,6 @@ void GraphicsOpenGLES::BeginRendering()
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	mFillColor[ 2 ] += 0.01f;
 	glClearColor( mFillColor[ 0 ],
 				 mFillColor[ 1 ],
 				 mFillColor[ 2 ],
@@ -770,15 +779,16 @@ void GraphicsOpenGLES::BeginRendering()
 	
 	
 	GLfloat vVertices[] = { 
-		0.0f, 0.0f, 0.f, // bottom left
-		0.0f, 0.5f, 0.f, // top left
-		0.5f, 0.5f, 0.f  // top right
+		0.0f, 0.0f, 0.f, // left bottom
+		0.0f, 0.5f, 0.f, // left top 
+		0.5f, 0.5f, 0.f  // right top 
 	};
 
 	GLfloat vTexCoords[] = {
-		1.0f, 0.0f, // bottom left
-		1.0f, 1.0f, // top left
-		0.0f, 1.0f, // top right
+		
+		0.0f, 1.0f, // left bottom
+		0.0f, 0.0f, // left top 
+		1.0f, 0.0f, // right top 
 	};
 
 	/*
@@ -804,7 +814,7 @@ void GraphicsOpenGLES::BeginRendering()
 	// set shader parameters
 	glEnable( GL_TEXTURE_2D );
 	glActiveTexture( GL_TEXTURE0 );
-	glBindTexture( GL_TEXTURE_2D, texture->mTextureId );
+	glBindTexture( GL_TEXTURE_2D, test_texture->mTextureId );
 	int param_id = glGetUniformLocation( programTextured, "tex" );
 	glUniform1i( param_id, 0 );
 

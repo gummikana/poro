@@ -807,9 +807,7 @@ void GraphicsOpenGL::SetTextureData( ITexture* texture, void* data )
 
 ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename )
 {
-	ITexture* result = LoadTexture( filename, false );
-
-	return result;
+	return LoadTexture( filename, false );
 }
 
 ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename, bool store_raw_pixel_data )
