@@ -638,6 +638,7 @@ bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::
 		poro_logger << PORO_ERROR << "Video initialization failed:  " << SDL_GetError() << std::endl;
 		SDL_Quit();
 		exit(0);
+		return 0;
 	}
 
 	info = SDL_GetVideoInfo();
@@ -646,6 +647,7 @@ bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::
 		poro_logger << PORO_ERROR << "Video query failed: "<< SDL_GetError() << std::endl;
 		SDL_Quit();
 		exit(0);
+		return 0;
 	}
 	mDesktopWidth = (float)info->current_w;
 	mDesktopHeight = (float)info->current_h;
@@ -658,10 +660,11 @@ bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::
 	// no glew for mac? this might cause some problems
 #ifndef PORO_DONT_USE_GLEW
 	GLenum glew_err = glewInit();
-	if (GLEW_OK != glew_err)
+	if( glew_err != GLEW_OK )
 	{
 		/* Problem: glewInit failed, something is seriously wrong. */
 		poro_logger << "Error: " << glewGetErrorString(glew_err) << std::endl;
+		return 0;
 	}
 #endif
 	return 1;
