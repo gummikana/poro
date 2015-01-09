@@ -130,6 +130,9 @@ public:
 	// returns true if the pointer is used - non const because of function pointers
 	bool HasPointer( void* pointer );
 
+	// add a pointer to help identify some objects that might get killed otherwise
+	void AddPointer( void * pointer );
+
 	// Plays the tween backwards from the point that is currently at. 
 	// Useful for UI animations in which mouse cursor is taken away from a button while the tween is being played
 	// uses Looping to reverse the direction of this animation
@@ -148,6 +151,7 @@ private:
 
 	std::vector< ceng::IInterpolator* > mInterpolators;
 	std::vector< GTweenListener* > mListeners;
+	std::vector< void* > mExtraPointers;
 	
 	bool mDirty;
 	float mDelay;

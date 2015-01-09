@@ -39,7 +39,9 @@ void UpdateGTweens( float dt )
 		tween = *i;
 		++i;
 		cassert( tween );
-		tween->Update( dt );
+		if( tween->IsDead() == false )
+			tween->Update( dt );
+
 		if( tween->IsDead() )
 			release_us.push_back( tween );
 	}
@@ -369,8 +371,17 @@ bool GTween::HasPointer( void* pointer )
 			return true;
 	}
 
+	if( std::find( mExtraPointers.begin(), mExtraPointers.end(), pointer ) != mExtraPointers.end() )
+		return true;
+
 	return false;
 }
+
+void GTween::AddPointer( void* pointer )
+{
+	mExtraPointers.push_back( pointer );
+}
+
 
 //-----------------------------------------------------------------------------
 
