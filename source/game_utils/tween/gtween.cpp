@@ -70,7 +70,9 @@ GTween::GTween() :
 	mLoopCount( -1 ),
 	mClampValues( false ),
 	mKillMeAutomatically( false ),
-	mMathFunc( NULL )
+	mMathFunc( NULL ),
+	mName(),
+	mUserData()
 {
 }
 
@@ -89,7 +91,9 @@ GTween::GTween( float duration, bool auto_kill ) :
 	mLoopCount( -1 ),
 	mClampValues( false ),
 	mKillMeAutomatically( auto_kill ),
-	mMathFunc( NULL )
+	mMathFunc( NULL ),
+	mName(),
+	mUserData()
 {
 }
 //-----------------------------------------------------------------------------
@@ -450,5 +454,29 @@ void GTween::Reverse()
 		std::cout << "ERROROR" <<std::endl;
 	}
 }
+
+//-----------------------------------------------------------------------------
+
+void GTween::SetName( const std::string& name )
+{
+	mName = name;
+}
+
+std::string GTween::GetName() const
+{
+	return mName;
+}
+
+void GTween::SetUserData( const types::vector2& user_data )
+{
+	mUserData = user_data;
+}
+
+types::vector2 GTween::GetUserData() const
+{
+	return mUserData;
+}
+
+
 
 ///////////////////////////////////////////////////////////////////////////////

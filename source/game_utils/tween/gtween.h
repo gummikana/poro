@@ -138,6 +138,13 @@ public:
 	// uses Looping to reverse the direction of this animation
 	void Reverse();
 
+	// --- userdata & name
+	void			SetUserData( const types::vector2& user_data );
+	types::vector2	GetUserData() const;
+
+	void SetName( const std::string& name );
+	std::string GetName() const;
+
 private:
 	void RemoveDuplicateInterpolators( const std::string& name );
 	
@@ -169,6 +176,8 @@ private:
 
 	ceng::easing::IEasingFunc* mMathFunc;
 
+	std::string mName;
+	types::vector2 mUserData;
 };
 
 //-----------------------------------------------------------------------------
