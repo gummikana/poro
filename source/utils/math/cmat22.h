@@ -94,6 +94,8 @@ struct CMat22
 		return static_cast< float >( atan2(col1.y, col1.x) );
 	}
 
+	void SetAngle( float angle ) { Set( angle ); }
+
 	CMat22< Type > Invert() const
 	{
 		Type a = col1.x, b = col2.x, c = col1.y, d = col2.y;
