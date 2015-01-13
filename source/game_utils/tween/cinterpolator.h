@@ -167,6 +167,19 @@ public:
 		myDead( false ),
 		myGetter( getter ),
 		mySetter( setter ),
+		myTarget( NULL ),
+		myStartValue( start_value ),
+		myEndValue( end_value ),
+		myMathFunc( math_func )
+	{
+		SetAngleValues( myStartValue, myEndValue );
+	}
+
+	CInterpolatorGetterSetterWithAngle( T* target, T start_value, T end_value, ceng::easing::IEasingFunc* math_func = NULL ) :
+		myDead( false ),
+		myGetter(),
+		mySetter(),
+		myTarget( target ),
 		myStartValue( start_value ),
 		myEndValue( end_value ),
 		myMathFunc( math_func )
@@ -183,7 +196,11 @@ public:
 			t = myMathFunc->f( t );
 		
 		ceng::math::CAngle< T > value( myStartValue + (T)( t * ( myEndValue - myStartValue ) ) );
-		mySetter( value.GetValue() );
+
+		if( myTarget )
+			*myTarget = value.GetValue();
+		else
+			mySetter( value.GetValue() );
 	}
 
 	void Kill() { myDead = true;  }
@@ -192,7 +209,10 @@ public:
 	
 	virtual void Reset() 
 	{
-		myStartValue = ( ceng::AnyCast< T >( myGetter() ) );
+		if( myTarget ) 
+			myStartValue = *myTarget;
+		else
+			myStartValue = ( ceng::AnyCast< T >( myGetter() ) );
 		SetAngleValues( myStartValue, myEndValue );
 	}
 
@@ -213,6 +233,7 @@ public:
 	{ 
 		if( myGetter == pointer ) return true;
 		if( mySetter == pointer ) return true;
+		if( myTarget == pointer ) return true;
 
 		return false;
 	}
@@ -221,6 +242,7 @@ public:
 	bool myDead;
 	ceng::CFunctionPtr<> myGetter;
 	ceng::CFunctionPtr<> mySetter;
+	T* myTarget;
 	T myStartValue;
 	T myEndValue;
 	ceng::easing::IEasingFunc* myMathFunc;
@@ -271,6 +293,18 @@ IInterpolator* CreateInterpolatorForAngles(
 	return result;
 }
 
+
+template< typename T >
+IInterpolator* CreateInterpolatorForAngles( 
+								  T& rotation,
+								  const T& to_what, 
+								  ceng::easing::IEasingFunc* math_func = NULL )
+{	
+	ceng::CFunctionPtr<> value_getter = getter;
+	IInterpolator* result = new CInterpolatorGetterSetterWithAngle< T >( &rotation, rotation, to_what, math_func );
+
+	return result;
+}
 //-----------------------------------------------------------------------------
 
 } // end o namespace ceng
