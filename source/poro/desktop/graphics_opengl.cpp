@@ -124,7 +124,7 @@ namespace {
 		// glEnable(GL_BLEND);
 
 		glEnable(GL_BLEND);
-		if( blend_mode == 0 ) {
+		if( blend_mode == poro::IGraphics::BLEND_MODE_NORMAL ) {
 			glColor4f(color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		} else if( blend_mode == 1 ) {
@@ -137,7 +137,11 @@ namespace {
 				color[ 2 ] / color[ 3 ], color[ 3 ] );
 
 			glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+		} else if ( blend_mode == poro::IGraphics::BLEND_MODE_SCREEN ) {
+			glColor4f(color[0], color[1], color[2], color[3]);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		}
+
 
 		glColor4f(color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
 
