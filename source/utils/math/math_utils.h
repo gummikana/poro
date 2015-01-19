@@ -158,7 +158,7 @@ CVector2< Type > Mul( const CXForm< Type >& T, const CVector2< Type >& v )
 	return T.position + Mul( T.R, v );
 }
 
-
+#if 0
 template< class Type, class Vector2 >
 Vector2 Mul( const CXForm< Type >& T, const Vector2& v )
 {
@@ -170,7 +170,7 @@ Vector2 Mul( const CXForm< Type >& T, const Vector2& v )
 	result.y += T.position.y;
 	return result;
 }
-
+#endif
 
 template< class Type, class Vector2 >
 Vector2 MulWithScale( const CXForm< Type >& T, const Vector2& v )

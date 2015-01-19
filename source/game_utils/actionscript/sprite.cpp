@@ -630,8 +630,8 @@ bool Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 			{
 				for( int i = 0; i < 4; ++i )
 				{
-					temp_verts[ i ] = ceng::math::Mul( mXForm,  temp_verts[ i ] );
-					temp_verts[ i ] = ceng::math::Mul( matrix, temp_verts[ i ] );
+					temp_verts[ i ] = ceng::math::MulWithScale( mXForm,  temp_verts[ i ] );
+					temp_verts[ i ] = ceng::math::MulWithScale( matrix, temp_verts[ i ] );
 					
 					if( camera )
 						temp_verts[ i ] = camera->Transform( temp_verts[ i ] );
@@ -997,7 +997,7 @@ types::vector2 Sprite::GetScreenPosition() const
 	}
 
 	poro::types::vec2 temp( GetPos().x, GetPos().y );
-	temp = ceng::math::Mul( xform, temp );
+	temp = ceng::math::MulWithScale( xform, temp );
 
 	return types::vector2( temp.x, temp.y );
 }
