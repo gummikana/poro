@@ -199,6 +199,31 @@ public:
 		{
 		}
 
+		RectAnimation(const RectAnimation& other) :
+			mName(other.mName),
+			mKillMe(other.mKillMe),
+			mPaused(other.mPaused),
+			mFrameCount(other.mFrameCount),
+			mCurrentFrame(other.mCurrentFrame),
+			mWidth(other.mWidth),
+			mHeight(other.mHeight),
+			mFramesPerRow(other.mFramesPerRow),
+			mPositionX(other.mPositionX),
+			mPositionY(other.mPositionY),
+			mWaitTime(other.mWaitTime),
+			mCurrentTime(other.mCurrentTime),
+			mHasNewCenterOffset(other.mHasNewCenterOffset),
+			mCenterOffset(other.mCenterOffset),
+			mLoop(other.mLoop),
+			mNextAnimation(other.mNextAnimation)
+		{
+			mChildAnimations.resize(other.mChildAnimations.size());
+			for (std::size_t i = 0; i < mChildAnimations.size(); ++i)
+			{
+				mChildAnimations[i] = new ChildAnimation(*(other.mChildAnimations[i]));
+			}
+		}
+
 		~RectAnimation()
 		{
 			for( std::size_t i = 0; i < mChildAnimations.size(); ++i ) 

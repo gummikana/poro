@@ -69,22 +69,30 @@ namespace impl {
 
 struct SpriteLoadHelper
 {
-	SpriteLoadHelper() :
-		/*is_text(false),
-		text(),*/
-		name(),
-		color(4, 1.f),
-		filename(),
-		offset(0, 0),
-		scale(1, 1),
-		position(0,0),
-		angle(0),
-		default_animation()
+	SpriteLoadHelper() 
 	{
+		Init();
 	}
 
 	~SpriteLoadHelper()
 	{
+		ceng::VectorClearPointers(rect_animations);
+		ceng::VectorClearPointers(child_sprites);
+	}
+
+	void Init()
+	{
+		name = "";
+		color.resize(4);
+		for (std::size_t i = 0; i < color.size(); ++i) 
+			color[i] = 1.f;
+		filename = "";
+		offset.Set(0, 0);
+		scale.Set(1, 1);
+		position.Set(0, 0);
+		angle = 0;
+		default_animation = "";
+
 		ceng::VectorClearPointers(rect_animations);
 		ceng::VectorClearPointers(child_sprites);
 	}
@@ -97,15 +105,18 @@ struct SpriteLoadHelper
 	std::string name;
 	std::vector< float > color;
 
-	std::string filename;
-	types::vector2 offset;
+	std::string		filename;
+	types::vector2	offset;
 	types::vector2	scale;
 	types::vector2	position;
 	float			angle;
-	std::string default_animation;
-
+	std::string		default_animation;
+	
 	std::vector< Sprite::RectAnimation* > rect_animations;
 	std::vector< SpriteLoadHelper* > child_sprites;
+
+	// impl time_stamp
+	std::string		time_stamp;
 
 	void SpriteLoadHelper::Serialize(ceng::CXmlFileSys* filesys)
 	{
@@ -138,21 +149,28 @@ struct SpriteLoadHelper
 
 //-----------------------------------------------------------------------------
 
-static void ApplySpriteLoadHelperToSprite(as::Sprite* result, impl::SpriteLoadHelper& sprite_data)
+static void ApplySpriteLoadHelperToSprite(as::Sprite* result, impl::SpriteLoadHelper* sprite_data)
 {
-	result->SetRectAnimations(sprite_data.rect_animations);
-	result->SetCenterOffset(sprite_data.offset);
-	result->SetScale(sprite_data.scale.x, sprite_data.scale.y);
-	result->SetName(sprite_data.name);
-	result->SetColor(sprite_data.color);
-
-	if (sprite_data.default_animation.empty() == false)
+	// we need to duplicate rect_animations
+	std::vector< as::Sprite::RectAnimation* > rect_animations(sprite_data->rect_animations.size());
+	for (std::size_t i = 0; i < rect_animations.size(); ++i)
 	{
-		result->PlayAnimation(sprite_data.default_animation);
+		rect_animations[i] = new as::Sprite::RectAnimation(*(sprite_data->rect_animations[i]));
+	}
+
+	result->SetRectAnimations(rect_animations);
+	result->SetCenterOffset(sprite_data->offset);
+	result->SetScale(sprite_data->scale.x, sprite_data->scale.y);
+	result->SetName(sprite_data->name);
+	result->SetColor(sprite_data->color);
+
+	if (sprite_data->default_animation.empty() == false)
+	{
+		result->PlayAnimation(sprite_data->default_animation);
 		result->Update(0);
 	}
 
-	TextureBuffer* buffer = GetTextureBuffer(sprite_data.filename);
+	TextureBuffer* buffer = GetTextureBuffer(sprite_data->filename);
 	if (buffer == NULL) return;
 
 	poro::ITexture* image = buffer->texture;
@@ -164,17 +182,17 @@ static void ApplySpriteLoadHelperToSprite(as::Sprite* result, impl::SpriteLoadHe
 
 	// this is overwritten in LoadSpriteTo(...)
 	result->SetFilename(image->GetFilename());
-	result->MoveTo(sprite_data.position);
-	result->SetRotation(sprite_data.angle);
+	result->MoveTo(sprite_data->position);
+	result->SetRotation(sprite_data->angle);
 
-	for (std::size_t i = 0; i < sprite_data.child_sprites.size(); ++i)
+	for (std::size_t i = 0; i < sprite_data->child_sprites.size(); ++i)
 	{
 		Sprite* child = new Sprite;
-		ApplySpriteLoadHelperToSprite(child, *(sprite_data.child_sprites[i]));
+		ApplySpriteLoadHelperToSprite(child, sprite_data->child_sprites[i]);
 		result->addChild(child);
 	}
 
-	sprite_data.rect_animations.clear();
+	// sprite_data->rect_animations.clear();
 	// sprite_data.child_sprites.clear();
 }
 
@@ -189,6 +207,9 @@ namespace {
 	typedef std::map< std::string, TextureBuffer* > TTextureBuffer;
 	TTextureBuffer mTextureBuffer;
 
+	typedef std::map< std::string, impl::SpriteLoadHelper* > TTSpriteBuffer;
+	TTSpriteBuffer mSpriteBuffer;
+
 	// ---------
 
 	std::string GetTimeStampForFile( const std::string& filename )
@@ -196,6 +217,35 @@ namespace {
 		// place holder
 		// return "0";
 		return ceng::GetDateForFile( filename );
+	}
+
+	impl::SpriteLoadHelper* GetSpriteLoadHelper(const std::string& filename)
+	{
+		TTSpriteBuffer::iterator i = mSpriteBuffer.find(filename);
+
+		impl::SpriteLoadHelper* data = NULL;
+		if (i != mSpriteBuffer.end()) {
+			data = i->second;
+		} else {
+			data = new impl::SpriteLoadHelper;
+			mSpriteBuffer[filename] = data;
+		}
+
+		// this shouldn't be null
+		cassert(data);
+
+		// check if we should reload
+		std::string time_stamp = GetTimeStampForFile(filename);
+
+		// reload (or load for the first time)
+		if (data->time_stamp != time_stamp)
+		{
+			std::cout << "reloading sprite: " << filename << std::endl;
+			ceng::XmlLoadFromFile((*data), filename, "Sprite");
+			data->time_stamp = time_stamp;
+		}
+
+		return data;
 	}
 
 	//----------------------------------------------------------------------------
@@ -372,8 +422,9 @@ void LoadSpriteTo( const std::string& filename, as::Sprite* result )
 	{
 		// if we're loading an xml file
 		using namespace impl;
-		SpriteLoadHelper sprite_data;
-		ceng::XmlLoadFromFile( sprite_data, filename, "Sprite" );
+		SpriteLoadHelper* sprite_data = GetSpriteLoadHelper(filename);
+
+		// ceng::XmlLoadFromFile( sprite_data, filename, "Sprite" );
 
 		// Sprite* result = new Sprite;
 		impl::ApplySpriteLoadHelperToSprite(result, sprite_data);
