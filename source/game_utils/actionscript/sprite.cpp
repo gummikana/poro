@@ -41,28 +41,70 @@ namespace as {
 
 typedef poro::types::Uint32 Uint32;
 
+namespace impl {
+
+struct SpriteLoadHelper
+{
+	SpriteLoadHelper() :
+		/*is_text(false),
+		text(),*/
+		name(),
+		color(4, 1.f),
+		filename(),
+		offset(0, 0),
+		scale(1, 1),
+		default_animation()
+	{
+	}
+
+	~SpriteLoadHelper()
+	{
+		ceng::VectorClearPointers(rect_animations);
+		ceng::VectorClearPointers(child_sprites);
+	}
+
+
+	/*bool is_text;
+	std::string text;*/
+	// position,?
+	// angle?
+	std::string name;
+	std::vector< float > color;
+
+	std::string filename;
+	types::vector2 offset;
+	types::vector2 scale;
+	std::string default_animation;
+
+	std::vector< Sprite::RectAnimation* > rect_animations;
+	std::vector< SpriteLoadHelper* > child_sprites;
+
+	void SpriteLoadHelper::Serialize(ceng::CXmlFileSys* filesys)
+	{
+		// XML_BindAttributeAlias(filesys, is_text, "is_text");
+		XML_BindAttributeAlias(filesys, filename, "filename");
+		XML_BindAttributeAlias(filesys, offset.x, "offset_x");
+		XML_BindAttributeAlias(filesys, offset.y, "offset_y");
+		XML_BindAttributeAlias(filesys, scale.x, "scale_x");
+		XML_BindAttributeAlias(filesys, scale.y, "scale_y");
+		XML_BindAttributeAlias(filesys, default_animation, "default_animation");
+
+		XML_BindAttributeAlias(filesys, color[0], "color_r");
+		XML_BindAttributeAlias(filesys, color[1], "color_g");
+		XML_BindAttributeAlias(filesys, color[2], "color_b");
+		XML_BindAttributeAlias(filesys, color[3], "color_a");
+
+		ceng::VectorXmlSerializer< Sprite::RectAnimation > rect_serializer(rect_animations, "RectAnimation");
+		rect_serializer.Serialize(filesys);
+
+		ceng::VectorXmlSerializer< as::impl::SpriteLoadHelper > child_sprite_serializer(child_sprites, "Sprite");
+		child_sprite_serializer.Serialize(filesys);
+	}
+};
+
+} // end of namespace impl
+
 ///////////////////////////////////////////////////////////////////////////////
-
-SpriteLoadHelper::SpriteLoadHelper() : 
-	filename(),
-	offset( 0, 0 ),
-	scale( 1, 1 ),
-	default_animation()
-{
-}
-
-void SpriteLoadHelper::Serialize( ceng::CXmlFileSys* filesys  )
-{
-	XML_BindAttributeAlias( filesys, filename, "filename" );
-	XML_BindAttributeAlias( filesys, offset.x, "offset_x" );
-	XML_BindAttributeAlias( filesys, offset.y, "offset_y" );
-	XML_BindAttributeAlias( filesys, scale.x, "scale_x" );
-	XML_BindAttributeAlias( filesys, scale.y, "scale_y" );
-	XML_BindAttributeAlias( filesys, default_animation, "default_animation" );
-	
-	ceng::VectorXmlSerializer< Sprite::RectAnimation > rect_serializer( rect_animations, "RectAnimation" );
-	rect_serializer.Serialize( filesys );
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace {
@@ -264,6 +306,51 @@ ceng::CArray2D< Uint32 >* GetImageData( const std::string& filename, bool load_a
 
 //-----------------------------------------------------------------------------
 
+namespace impl
+{
+
+	static void ApplySpriteLoadHelperToSprite(as::Sprite* result, impl::SpriteLoadHelper& sprite_data)
+	{
+		result->SetRectAnimations(sprite_data.rect_animations);
+		result->SetCenterOffset(sprite_data.offset);
+		result->SetScale(sprite_data.scale.x, sprite_data.scale.y);
+		result->SetName(sprite_data.name);
+		result->SetColor(sprite_data.color);
+
+		if (sprite_data.default_animation.empty() == false)
+		{
+			result->PlayAnimation(sprite_data.default_animation);
+			result->Update(0);
+		}
+
+		TextureBuffer* buffer = GetTextureBuffer(sprite_data.filename);
+		if (buffer == NULL) return;
+
+		poro::ITexture* image = buffer->texture;
+		if (image == NULL) return;
+
+		result->SetTexture(image);
+		result->SetImageData(buffer->image_data);
+		result->SetSize((int)image->GetWidth(), (int)image->GetHeight());
+
+		// this is overwritten in LoadSpriteTo(...)
+		result->SetFilename(image->GetFilename());
+
+		for (std::size_t i = 0; i < sprite_data.child_sprites.size(); ++i)
+		{
+			Sprite* child = new Sprite;
+			ApplySpriteLoadHelperToSprite(child, *(sprite_data.child_sprites[i]));
+			result->addChild(child);
+		}
+
+		sprite_data.rect_animations.clear();
+		// sprite_data.child_sprites.clear();
+	}
+
+} // end of namespace impl
+
+//-----------------------------------------------------------------------------
+
 void LoadSpriteTo( const std::string& filename, as::Sprite* result )
 {
 	cassert( result );
@@ -275,32 +362,14 @@ void LoadSpriteTo( const std::string& filename, as::Sprite* result )
 	if( filename.size() >= 3 && filename.substr( filename.size() - 3 ) == "xml" )
 	{
 		// if we're loading an xml file
+		using namespace impl;
 		SpriteLoadHelper sprite_data;
 		ceng::XmlLoadFromFile( sprite_data, filename, "Sprite" );
 
 		// Sprite* result = new Sprite;
+		impl::ApplySpriteLoadHelperToSprite(result, sprite_data);
 
-		result->SetRectAnimations( sprite_data.rect_animations );
-		result->SetCenterOffset( sprite_data.offset );
-		result->SetScale( sprite_data.scale.x, sprite_data.scale.y );
-		if( sprite_data.default_animation.empty() == false ) 
-		{
-			result->PlayAnimation( sprite_data.default_animation );
-			result->Update( 0 );
-		}
-
-		TextureBuffer* buffer = GetTextureBuffer( sprite_data.filename );
-		if ( buffer == NULL ) return;
-
-		poro::ITexture* image = buffer->texture;
-		if( image == NULL ) return;
-
-		result->SetTexture( image );
-		result->SetImageData( buffer->image_data );
-		result->SetSize( (int)image->GetWidth(), (int)image->GetHeight() );
-
-		result->SetFilename( filename );
-
+		result->SetFilename(filename);
 		return;
 	}
 	else
