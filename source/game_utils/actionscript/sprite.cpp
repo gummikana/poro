@@ -21,18 +21,17 @@
 #include "sprite.h"
 #include <map>
 
+// LoadSprite requires these
+#include "../../poro/iplatform.h"
+#include "../../poro/igraphics.h"
+#include "../../poro/igraphics_buffer.h"
+
 #include "../../utils/singleton/csingletonptr.h"
-#include "../../utils/math/cvector2_serializer.h"
 #include "../../utils/math/point_inside.h"
 #include "../../utils/filesystem/filesystem.h"
 #include "../../utils/imagetoarray/imagetoarray.h"
 
 #include "../tween/tween_utils.h"
-
-// LoadSprite requires these
-#include "../../poro/iplatform.h"
-#include "../../poro/igraphics.h"
-#include "../../poro/igraphics_buffer.h"
 
 #include "asset_loading/Animations.h"
 #include "asset_loading/AnimationUpdater.h"
@@ -212,13 +211,6 @@ namespace {
 
 	// ---------
 
-	std::string GetTimeStampForFile( const std::string& filename )
-	{
-		// place holder
-		// return "0";
-		return ceng::GetDateForFile( filename );
-	}
-
 	impl::SpriteLoadHelper* GetSpriteLoadHelper(const std::string& filename)
 	{
 		TTSpriteBuffer::iterator i = mSpriteBuffer.find(filename);
@@ -235,7 +227,7 @@ namespace {
 		cassert(data);
 
 		// check if we should reload
-		std::string time_stamp = GetTimeStampForFile(filename);
+		std::string time_stamp = ceng::GetDateForFile(filename);
 
 		// reload (or load for the first time)
 		if (data->time_stamp != time_stamp)
@@ -295,7 +287,7 @@ namespace {
 
 			if ( image == NULL ) return NULL;
 
-			std::string time_stamp = GetTimeStampForFile( filename );
+			std::string time_stamp = ceng::GetDateForFile(filename);
 
 			TextureBuffer* data = new TextureBuffer( image, NULL, time_stamp );
 			mTextureBuffer[ filename ] = data;
@@ -305,7 +297,7 @@ namespace {
 		{
 			// if check the timestamp
 
-			std::string time_stamp = GetTimeStampForFile( filename );
+			std::string time_stamp = ceng::GetDateForFile(filename);
 			if( i->second->time_stamp != time_stamp ) 
 			{
 				// debug reasons
@@ -355,7 +347,7 @@ void PreloadTexture( const std::string& filename )
 	{
 		poro::IGraphics* graphics = poro::IPlatform::Instance()->GetGraphics();
 		poro::ITexture* image = graphics->LoadTexture( filename );
-		std::string time_stamp = GetTimeStampForFile( filename );
+		std::string time_stamp = ceng::GetDateForFile(filename);
 
 		TextureBuffer* data = new TextureBuffer( image, NULL, time_stamp );
 		mTextureBuffer[ filename ] = data;
