@@ -47,7 +47,7 @@ namespace poro
 	{
 		for( std::size_t i = 0; i < mTouchListeners.size() ; i++)
 		{
-			mTouchListeners[i]->TouchMove(pos, touchId);;
+			mTouchListeners[i]->TouchMove(pos, touchId);
 		}
 	}
 
