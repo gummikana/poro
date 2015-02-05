@@ -147,6 +147,25 @@ float Randomf( float low, float high )
 #endif
 }
 
+// Does a check,  that low is low, and high is high
+int RandomSafe(int low, int high)
+{
+	if (high < low)
+		return Random(high, low);
+	else
+		return Random(low, high);
+}
+
+// Does a check,  that low is low, and high is high
+float RandomfSafe(float low, float high)
+{
+	if (high < low)
+		return Randomf(high, low);
+	else
+		return Randomf(low, high);
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 int CreateWeightedRandom( int low, int high, const std::vector< int >& data, float constant )

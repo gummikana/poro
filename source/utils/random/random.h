@@ -50,8 +50,14 @@ void SetRandomSeeds( int random_seed );
 //! result: ] low, high [
 int Random( int low, int high );
 
+// Does a check,  that low is low, and high is high
+int RandomSafe(int low, int high);
+
 //! Returns a number in float
 float Randomf( float low, float high );
+
+// Does a check,  that low is low, and high is high
+float RandomfSafe(float low, float high);
 
 //-----------------------------------------------------------------------------
 // Here's some stats that produced by a quick testing of the speed of the 
