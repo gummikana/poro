@@ -32,7 +32,11 @@
 
 #include "event_recorder_impl.h"
 #include "event_playback_impl.h"
-#include "graphics_opengl.h"
+#ifdef PORO_BGFX
+	#include "graphics_bgfx.h"
+#else
+	#include "graphics_opengl.h"
+#endif
 #include "soundplayer_sdl.h"
 #include "joystick_impl.h"
 #include "mouse_impl.h"
@@ -120,8 +124,13 @@ void PlatformDesktop::Init( IApplication* application, int w, int h, bool fullsc
 	mHeight = h;
 	mApplication = application;
 
+#ifdef PORO_BGFX
+	mGraphics = new GraphicsBgfx;
+	mGraphics->Init(w, h, fullscreen, title);
+#else
 	mGraphics = new GraphicsOpenGL;
 	mGraphics->Init(w, h, fullscreen, title);
+#endif
 
 	mSoundPlayer = new SoundPlayerSDL;
 	mSoundPlayer->Init();

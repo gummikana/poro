@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- * Copyright (c) 2010 Petri Purho, Dennis Belfrage
+ * Copyright (c) 2010 Petri Purho, Dennis Belfrage, Olli Harjola
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,17 +18,18 @@
  *
  ***************************************************************************/
 
-#ifndef PORO_BGFX
+#ifdef PORO_BGFX
+
 
 #include "../libraries.h"
 #include "../iplatform.h"
-#include "graphics_buffer_opengl.h"
-#include "texture_opengl.h"
+#include "graphics_buffer_bgfx.h"
+#include "texture_bgfx.h"
 
 namespace poro {
 
 
-void GraphicsBufferOpenGL::InitTexture(int width,int height){
+void GraphicsBufferBgfx::InitTexture(int width,int height){
 
 	GLsizei widthP2 = (GLsizei)GetNextPowerOfTwo(width);
 	GLsizei heightP2 = (GLsizei)GetNextPowerOfTwo(height);
@@ -50,7 +51,7 @@ void GraphicsBufferOpenGL::InitTexture(int width,int height){
 
 
 //IGraphics
-bool GraphicsBufferOpenGL::Init( int width, int height, bool fullscreen, const types::string& caption )
+bool GraphicsBufferBgfx::Init( int width, int height, bool fullscreen, const types::string& caption )
 {
 	glGenFramebuffersEXT(1, &mBufferId);	// <- this line crashes on windows
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mBufferId);
@@ -64,7 +65,7 @@ bool GraphicsBufferOpenGL::Init( int width, int height, bool fullscreen, const t
 	return true;
 }
 
-void GraphicsBufferOpenGL::Release()
+void GraphicsBufferBgfx::Release()
 {
 	//Delete texture
 	glDeleteTextures(1, &mTexture.mTexture);
@@ -73,7 +74,7 @@ void GraphicsBufferOpenGL::Release()
 	glDeleteFramebuffersEXT(1, &mBufferId);
 }
 
-void GraphicsBufferOpenGL::DrawTexture( ITexture* texture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color )
+void GraphicsBufferBgfx::DrawTexture( ITexture* texture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color )
 {
 	//Flip cords for buffer
 	for (int i=0; i<count; ++i) {
@@ -82,15 +83,15 @@ void GraphicsBufferOpenGL::DrawTexture( ITexture* texture, types::vec2* vertices
 		vertices[i].y = poro::IPlatform::Instance()->GetInternalHeight() - vertices[i].y;
 	}
 
-	// bool buffered_calls = GraphicsOpenGL::GetDrawTextureBuffering();
-	// GraphicsOpenGL::SetDrawTextureBuffering( false );
+	// bool buffered_calls = GraphicsBgfx::GetDrawTextureBuffering();
+	// GraphicsBgfx::SetDrawTextureBuffering( false );
 
-	GraphicsOpenGL::DrawTexture( texture, vertices, tex_coords, count, color );
+	GraphicsBgfx::DrawTexture( texture, vertices, tex_coords, count, color );
 
-	// GraphicsOpenGL::SetDrawTextureBuffering( buffered_calls );
+	// GraphicsBgfx::SetDrawTextureBuffering( buffered_calls );
 }
 
-void GraphicsBufferOpenGL::BeginRendering()
+void GraphicsBufferBgfx::BeginRendering()
 {
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mBufferId);
 	glPushAttrib(GL_VIEWPORT_BIT);
@@ -101,12 +102,13 @@ void GraphicsBufferOpenGL::BeginRendering()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void GraphicsBufferOpenGL::EndRendering()
+void GraphicsBufferBgfx::EndRendering()
 {
 	glPopAttrib();
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 }
 
 }
+
 
 #endif

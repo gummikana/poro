@@ -1,7 +1,10 @@
 #include "imagetoarray.h"
 
 #include <poro/external/stb_image.h>
+
+//#define  STB_IMAGE_WRITE_IMPLEMENTATION
 #include <poro/external/stb_image_write.h>
+//#undef STB_IMAGE_WRITE_IMPLEMENTATION
 
 #include <utils/color/ccolor.h>
 

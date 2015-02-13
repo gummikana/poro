@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- * Copyright (c) 2010 Petri Purho, Dennis Belfrage
+ * Copyright (c) 2010 Petri Purho, Dennis Belfrage, Olli Harjola
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,8 +18,42 @@
  *
  ***************************************************************************/
 
-#ifndef PORO_BGFX
+#ifndef INC_RENDERTEXTURE_BGFX_H
+#define INC_RENDERTEXTURE_BGFX_H
 
-#include "texture3d_opengl.h"
+#include "../irender_texture.h"
+#include "../poro_types.h"
+#include "graphics_bgfx.h"
+#include "texture_bgfx.h"
+
+#include <vector>
+
+namespace poro {
+	
+class RenderTextureBgfx :  public IRenderTexture
+{
+public:
+	RenderTextureBgfx() : IRenderTexture(), mBufferId( 0 ), mTexture() { }
+	virtual ~RenderTextureBgfx(){ Release(); }
+
+	// IRenderTexture
+	virtual ITexture*	GetTexture() { return &mTexture; }
+
+	void InitRenderTexture( int width, int height, bool linear_filtering = false );
+
+	// IGraphics
+	virtual bool		Init( int width, int height, bool fullscreen = false, const types::string& caption = "" );
+	virtual void		Release();
+	virtual void		BeginRendering();
+	virtual void		EndRendering();
+	
+private:
+	void InitTexture(int width, int height, bool linear_filtering = false);
+	
+	types::Uint32 mBufferId;
+	TextureBgfx mTexture;
+};
+	
+} // end o namespace poro
 
 #endif

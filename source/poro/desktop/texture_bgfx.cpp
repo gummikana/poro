@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- * Copyright (c) 2010 Petri Purho, Dennis Belfrage
+ * Copyright (c) 2010 Petri Purho, Dennis Belfrage, Olli Harjola
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,8 +18,8 @@
  *
  ***************************************************************************/
 
-#ifndef PORO_BGFX
+#ifdef PORO_BGFX
 
-#include "texture3d_opengl.h"
+#include "texture_bgfx.h"
 
 #endif

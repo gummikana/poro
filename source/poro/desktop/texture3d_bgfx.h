@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- * Copyright (c) 2010 Petri Purho, Dennis Belfrage
+ * Copyright (c) 2010 Petri Purho, Dennis Belfrage, Olli Harjola
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,8 +18,48 @@
  *
  ***************************************************************************/
 
-#ifndef PORO_BGFX
+#ifndef INC_TEXTURE3D_BGFX_H
+#define INC_TEXTURE3D_BGFX_H
 
-#include "texture3d_opengl.h"
+#include "../itexture3d.h"
+#include "../libraries.h"
+#include "../poro_types.h"
 
+
+namespace poro {
+
+class Texture3dBgfx : public ITexture3d
+{
+public:
+	Texture3dBgfx() : 
+		mTexture( 0 ), 
+		mWidth( 0 ), 
+		mHeight( 0 )
+	{
+	}
+
+	Texture3dBgfx( Texture3dBgfx* other ) : 
+		mTexture( other->mTexture ), 
+		mWidth( other->mWidth ), 
+		mHeight( other->mHeight ),
+		mDepth( other->mDepth )
+	{ 
+	}
+
+	virtual int GetWidth() const	{ return mWidth; } 
+	virtual int GetHeight() const	{ return mHeight; }
+	virtual int GetDepth() const	{ return mDepth; }
+
+	virtual std::string GetFilename() const								{ return mFilename; }
+	void				SetFilename( const types::string& filename )	{ mFilename = filename; }
+
+	types::Uint32	mTexture;
+	int				mWidth;
+	int				mHeight;
+	int				mDepth;
+
+	types::string	mFilename;
+};
+
+} // end o namespace poro
 #endif

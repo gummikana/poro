@@ -18,6 +18,8 @@
  *
  ***************************************************************************/
 
+#ifndef PORO_BGFX
+
 #include "../libraries.h"
 #include "../iplatform.h"
 #include "render_texture_opengl.h"
@@ -101,3 +103,5 @@ void RenderTextureOpenGL::EndRendering()
 }
 
 }
+
+#endif

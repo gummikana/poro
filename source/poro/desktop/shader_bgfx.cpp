@@ -18,20 +18,21 @@
  *
  ***************************************************************************/
 
-#ifndef PORO_BGFX
+#ifdef PORO_BGFX
+
 
 #include <fstream>
 #include <string>
 
 #include "../libraries.h"
 #include "../iplatform.h"
-#include "shader_opengl.h"
+#include "shader_bgfx.h"
 #include "../itexture.h"
 
 
 namespace poro {
 
-void ShaderOpenGL::Init( const std::string& vertex_source_filename, const std::string& fragment_source_filename )
+void ShaderBgfx::Init( const std::string& vertex_source_filename, const std::string& fragment_source_filename )
 {
 	Release();
 
@@ -67,7 +68,7 @@ void ShaderOpenGL::Init( const std::string& vertex_source_filename, const std::s
     }
 }
 
-void ShaderOpenGL::Release()
+void ShaderBgfx::Release()
 {
 	isCompiledAndLinked = false;
 
@@ -90,13 +91,13 @@ void ShaderOpenGL::Release()
 	}
 }
 
-void ShaderOpenGL::Enable()
+void ShaderBgfx::Enable()
 {
 	lastAllocatedTextureUnit = 2;
     glUseProgram( program );
 }
 
-void ShaderOpenGL::Disable()
+void ShaderBgfx::Disable()
 {
 	lastAllocatedTextureUnit = 2;
     glUseProgram( 0 );
@@ -104,14 +105,14 @@ void ShaderOpenGL::Disable()
 	glDisable( GL_TEXTURE_3D );
 }
 
-bool ShaderOpenGL::HasParameter( const std::string& name)
+bool ShaderBgfx::HasParameter( const std::string& name)
 {
 	const char *c_str = name.c_str();
     int handle = glGetUniformLocation( program, name.c_str() );
     return handle > -1;
 }
 
-void ShaderOpenGL::SetParameter( const std::string& name, float value )
+void ShaderBgfx::SetParameter( const std::string& name, float value )
 {
 	// TODO: cache parameter locations!
 	const char *c_str = name.c_str();
@@ -120,7 +121,7 @@ void ShaderOpenGL::SetParameter( const std::string& name, float value )
 	glUniform1f( location, value );
 }
 
-void ShaderOpenGL::SetParameter( const std::string& name, const types::vec2& value )
+void ShaderBgfx::SetParameter( const std::string& name, const types::vec2& value )
 {
 	// TODO: cache parameter locations!
 	const char *c_str = name.c_str();
@@ -129,7 +130,7 @@ void ShaderOpenGL::SetParameter( const std::string& name, const types::vec2& val
 	glUniform2f( location, value.x, value.y );
 }
 
-void ShaderOpenGL::SetParameter( const std::string& name, const types::vec3& value )
+void ShaderBgfx::SetParameter( const std::string& name, const types::vec3& value )
 {
 	// TODO: cache parameter locations!
 	const char *c_str = name.c_str();
@@ -138,7 +139,7 @@ void ShaderOpenGL::SetParameter( const std::string& name, const types::vec3& val
 	glUniform3f( location, value.x, value.y, value.z );
 }
 
-void ShaderOpenGL::SetParameter( const std::string& name, const ITexture* texture )
+void ShaderBgfx::SetParameter( const std::string& name, const ITexture* texture )
 {
 	// TODO: cache parameter locations!
 	const char *c_str = name.c_str();
@@ -149,12 +150,12 @@ void ShaderOpenGL::SetParameter( const std::string& name, const ITexture* textur
 	glActiveTexture( GL_TEXTURE0 + lastAllocatedTextureUnit );
 	lastAllocatedTextureUnit ++;
 
-	TextureOpenGL* texture_gl = (TextureOpenGL*)texture;
+	TextureBgfx* texture_gl = (TextureBgfx*)texture;
 	glBindTexture( GL_TEXTURE_2D, texture_gl->mTexture );
 	glActiveTexture( GL_TEXTURE0 );
 }
 
-void ShaderOpenGL::SetParameter( const std::string& name, const ITexture3d* texture )
+void ShaderBgfx::SetParameter( const std::string& name, const ITexture3d* texture )
 {
 	// TODO: cache parameter locations!
 	const char *c_str = name.c_str();
@@ -165,19 +166,19 @@ void ShaderOpenGL::SetParameter( const std::string& name, const ITexture3d* text
 	glActiveTexture( GL_TEXTURE0 + lastAllocatedTextureUnit );
 	lastAllocatedTextureUnit ++;
 	
-	Texture3dOpenGL* texture_gl = (Texture3dOpenGL*)texture;
+	Texture3dBgfx* texture_gl = (Texture3dBgfx*)texture;
 	glBindTexture( GL_TEXTURE_3D, texture_gl->mTexture );
 	glActiveTexture( GL_TEXTURE0 );
 }
 
-bool ShaderOpenGL::GetIsCompiledAndLinked() const
+bool ShaderBgfx::GetIsCompiledAndLinked() const
 {
 	return isCompiledAndLinked;
 }
 
 //===================================================================================
 
-int ShaderOpenGL::LoadShader( const std::string& filename, bool is_vertex_shader )
+int ShaderBgfx::LoadShader( const std::string& filename, bool is_vertex_shader )
 {
 	std::ifstream ifile(filename.c_str());
     std::string filetext;
@@ -216,5 +217,6 @@ int ShaderOpenGL::LoadShader( const std::string& filename, bool is_vertex_shader
 }
 
 }
+
 
 #endif

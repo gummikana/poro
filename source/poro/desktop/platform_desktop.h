@@ -23,6 +23,7 @@
 
 #include <vector>
 
+#include "../platform_defs.h"
 #include "../iplatform.h"
 
 namespace poro {
@@ -31,7 +32,11 @@ class JoystickImpl;
 class MouseImpl;
 class EventRecorder;
 class EventRecorderImpl;
-class GraphicsOpenGL;
+#ifdef PORO_BGFX
+	class GraphicsBgfx;
+#else
+	class GraphicsOpenGL;
+#endif
 class Keyboard;
 class Touch;
 class SoundPlayerSDL;
@@ -104,7 +109,11 @@ protected:
 
 	types::vec2		ConvertMouseToInternalSize( int x, int y );
 
+#ifdef PORO_BGFX
+	GraphicsBgfx*					mGraphics;
+#else
 	GraphicsOpenGL*					mGraphics;
+#endif
 	bool							mFixedTimeStep;
 	int								mFrameCount;
 	int								mFrameRate;
