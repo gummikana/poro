@@ -24,11 +24,8 @@
 
 #include <cmath>
 #include <SDL_syswm.h>
-
 #include <bgfxplatform.h>
 #include <bgfx.h>
-
- // integration code path.
 
 #include "../iplatform.h"
 #include "../libraries.h"
@@ -74,7 +71,8 @@ namespace {
 	GraphicsSettings OPENGL_SETTINGS;
 
 	Uint32 GetGLVertexMode(int vertex_mode){
-		switch (vertex_mode) {
+		throw std::exception( "Not supported!" );
+		/*switch (vertex_mode) {
 			case IGraphics::VERTEX_MODE_TRIANGLE_FAN:
 				return GL_TRIANGLE_FAN;
 			case IGraphics::VERTEX_MODE_TRIANGLE_STRIP:
@@ -87,7 +85,7 @@ namespace {
 		}
 
 		// as a default
-		return GL_TRIANGLE_FAN;
+		return GL_TRIANGLE_FAN;*/
 	}
 
 	types::vec2 Vec2Rotate( const types::vec2& point, const types::vec2& center, float angle )
@@ -256,7 +254,7 @@ namespace {
 
 	TextureBgfx* CreateImage( unsigned char* pixels, int w, int h, int bpp, bool store_raw_pixel_data )
 	{
-		Uint32 oTexture = 0;
+		bgfx::TextureHandle oTexture = bgfx::TextureHandle();
 		float uv[4];
 		int real_size[2];
 		
@@ -296,9 +294,14 @@ namespace {
 			}
 		}
 		// --- /power of 2 
+		const bgfx::Memory* mem = bgfx::makeRef((void*)pixels, nw*nh*4);
+		oTexture = bgfx::createTexture2D( nw, nh, 1, bgfx::TextureFormat::BGRA8, 0U, mem );
 
-		glGenTextures(1, (GLuint*)&oTexture);
-		glBindTexture(GL_TEXTURE_2D, oTexture);
+		// TODO: implement for bgfx
+		// Using makeRef to pass texture memory without copying.
+
+
+		/*glBindTexture(GL_TEXTURE_2D, oTexture);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, nw, nh, 0,
 			 GL_RGBA, GL_UNSIGNED_BYTE, new_pixels);
 	
@@ -311,7 +314,7 @@ namespace {
 		} else {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		}
+		}*/
 		
 		TextureBgfx* result = new TextureBgfx;
 		result->mTexture = oTexture;
@@ -320,7 +323,8 @@ namespace {
 		result->mRealSizeX = real_size[ 0 ];
 		result->mRealSizeY = real_size[ 1 ];
 
-		if ( !store_raw_pixel_data )
+		// TODO: implement for bgfx
+		/*if ( !store_raw_pixel_data )
 		{
 			delete [] new_pixels;
 			new_pixels = NULL;
@@ -332,7 +336,7 @@ namespace {
 		{
 			stbi_image_free( pixels );
 			pixels = NULL;
-		}
+		}*/
 
 		for( int i = 0; i < 4; ++i )
 			result->mUv[ i ] = uv[ i ];
@@ -348,7 +352,6 @@ namespace {
 	// 
 	void GetSimpleFixAlphaChannel( unsigned char* pixels, int w, int h, int bpp )
 	{
-
 		using namespace types;
 		if( w < 2 || h < 2)
 			return;
@@ -466,10 +469,8 @@ namespace {
 	void SetTextureDataForReal(TextureBgfx* texture, void* data)
 	{
 		// update the texture image:
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, (GLuint)texture->mTexture);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, texture->mWidth, texture->mHeight, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		glDisable(GL_TEXTURE_2D);
+		const bgfx::Memory* mem = bgfx::makeRef( data, texture->mWidth * texture->mHeight * 4 );
+		bgfx::updateTexture2D( texture->mTexture, 0, 0, 0, texture->mWidth, texture->mHeight, mem );
 	}
 
 } // end o namespace anon
@@ -492,7 +493,7 @@ public:
 	Vertex				vertex_buffer[PORO_DRAW_TEXTURE_BUFFER_SIZE];
 	int					vertex_buffer_count;
 	TextureBgfx*		prev_texture;
-	Uint32				prev_texture_id;
+	bgfx::TextureHandle	prev_texture_id;
 	types::fcolor		prev_color;
 	int					prev_vertex_mode;
 	int					prev_blend_mode;
@@ -515,7 +516,7 @@ public:
 		if( vertex_buffer_count == 0 )
 			return true;
 		
-		if( prev_texture_id != texture->mTexture )
+		if( prev_texture_id.idx != texture->mTexture.idx )
 			return false;
 		
 		if( vertex_buffer_count+(count-2)*3 >= PORO_DRAW_TEXTURE_BUFFER_SIZE )
@@ -697,9 +698,10 @@ void GraphicsBgfx::SetInternalSize( types::Float32 width, types::Float32 height 
 {
 	if( mContextInitialized )
 	{
-		glMatrixMode( GL_PROJECTION );
-		glLoadIdentity();
-		gluOrtho2D(0, (GLdouble)width, (GLdouble)height, 0);
+		bgfx::setViewRect( 0, 0, 0, (uint16_t)width, (uint16_t)height );
+
+		// TODO: set the matrix?
+		//gluOrtho2D(0, (GLdouble)width, (GLdouble)height, 0);
 	}
 }
 //-----------------------------------------------------------------------------
@@ -808,17 +810,21 @@ void GraphicsBgfx::ResetWindow()
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 
-		glViewport((GLint)mViewportOffset.x, (GLint)mViewportOffset.y, (GLint)mViewportSize.x, (GLint)mViewportSize.y);
+
+		bgfx::setViewRect( 0, (uint16_t)mViewportOffset.x, (uint16_t)mViewportOffset.y, (uint16_t)mViewportSize.x, (uint16_t)mViewportSize.y );
+		bgfx::setClearColor( 0, 0, 0, 0, 1.0f );
 		
-		glClearColor(0,0,0,1.0f);
-		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+		// TODO:
+		//glClearColor(0,0,0,1.0f);
+		//glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 		
 		//(Bgfx actually wants the x offset from the bottom, but since we are centering the view the direction does not matter.)
 		// glEnable(GL_SCISSOR_TEST);
 		// glScissor((GLint)mViewportOffset.x, (GLint)mViewportOffset.y, (GLint)mViewportSize.x, (GLint)mViewportSize.y);
 
-		glScalef(1,-1,1); //Flip y axis
-		gluOrtho2D(0, internal_width, 0, internal_height);
+		// TODO:
+		//glScalef(1,-1,1); //Flip y axis
+		//gluOrtho2D(0, internal_width, 0, internal_height);
 	}
 }
 //-----------------------------------------------------------------------------
@@ -865,50 +871,20 @@ void GraphicsBgfx::ReleaseTexture( ITexture* itexture )
 {
 	TextureBgfx* texture = dynamic_cast< TextureBgfx* >( itexture );
 
-	if( texture )
-		glDeleteTextures(1, &texture->mTexture);
+	if ( texture )
+		bgfx::destroyTexture( texture->mTexture );
 }
 
 void GraphicsBgfx::SetTextureSmoothFiltering( ITexture* itexture, bool enabled )
 {
 	TextureBgfx* texture = dynamic_cast< TextureBgfx* >( itexture );
-
-	glEnable( GL_TEXTURE_2D );
-
-	if( texture )
-		glBindTexture( GL_TEXTURE_2D, texture->mTexture );
-	else
-		return;
-	
-	if( enabled ){
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    } else {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    }
-		
-	glBindTexture( GL_TEXTURE_2D, 0 );
+	texture->mSmoothFilteringEnabled = enabled;
 }
 
 void GraphicsBgfx::SetTextureWrappingMode( ITexture* itexture, int mode )
 {
 	TextureBgfx* texture = dynamic_cast< TextureBgfx* >( itexture );
-
-	glEnable( GL_TEXTURE_2D );
-
-	if( texture )
-		glBindTexture( GL_TEXTURE_2D, texture->mTexture );
-	else
-		return;
-
-	int mode_gl = mode; // TODO:
-
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mode_gl );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mode_gl );
-
-		
-	glBindTexture( GL_TEXTURE_2D, 0 );
+	texture->mWrappingMode = mode;
 }
 
 //=============================================================================
@@ -957,24 +933,20 @@ ITexture3d* GraphicsBgfx::LoadTexture3d( const types::string& filename )
 #endif
 	}
 
-	int oTexture;
-	glEnable( GL_TEXTURE_3D );
-	glGenTextures( 1, (GLuint*)&oTexture );
-	glBindTexture( GL_TEXTURE_3D, oTexture );
+	z *= z;
 
-	glTexParameteri( GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	const bgfx::Memory* mem = bgfx::makeRef( data, z * z * z );
+	bgfx::TextureHandle oTexture = bgfx::createTexture3D( z, z, z, 1, bgfx::TextureFormat::BGRA8, 0U, mem );
+
+	// TODO:
+	/*glTexParameteri( GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
 	glTexParameteri( GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 	glTexParameteri( GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
 
 	// Guess it can be currently assumed that we always want GL_LINEAR for 3d textures?
 	glTexParameteri( GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	glTexParameteri( GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );*/
 
-	z *= z;
-	glTexImage3D( GL_TEXTURE_3D, 0, GL_RGBA, z, z, z, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
-	glBindTexture( GL_TEXTURE_3D, 0 );
-	glDisable( GL_TEXTURE_3D );
-	
 	Texture3dBgfx* result = new Texture3dBgfx;
 	if ( result )
 	{
@@ -994,8 +966,8 @@ void GraphicsBgfx::ReleaseTexture3d( ITexture3d* itexture )
 {
 	Texture3dBgfx* texture = dynamic_cast< Texture3dBgfx* >( itexture );
 
-	if( texture )
-		glDeleteTextures(1, &texture->mTexture);
+	if ( texture )
+		bgfx::destroyTexture( texture->mTexture );
 }
 
 //=============================================================================
@@ -1054,7 +1026,6 @@ void GraphicsBgfx::DrawTexture( ITexture* itexture, float x, float y, float w, f
 	PushVertexMode(poro::IGraphics::VERTEX_MODE_TRIANGLE_STRIP);
 	DrawTexture( texture,  temp_verts, tex_coords, 4, color );
 	PopVertexMode();
-
 }
 //=============================================================================
 
@@ -1094,7 +1065,6 @@ void GraphicsBgfx::DrawTexture( ITexture* itexture, types::vec2* vertices, types
 		mDrawTextureBuffered->BufferedDrawSprite( texture, vert, color, count, GetGLVertexMode(mVertexMode), mBlendMode );
 	else
 		drawsprite( texture, vert, color, count, GetGLVertexMode(mVertexMode), mBlendMode );
-
 }
 
 //-----------------------------------------------------------------------------

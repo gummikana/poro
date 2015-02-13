@@ -21,6 +21,8 @@
 #ifndef INC_TEXTURE3D_BGFX_H
 #define INC_TEXTURE3D_BGFX_H
 
+#include <bgfx.h>
+
 #include "../itexture3d.h"
 #include "../libraries.h"
 #include "../poro_types.h"
@@ -53,12 +55,12 @@ public:
 	virtual std::string GetFilename() const								{ return mFilename; }
 	void				SetFilename( const types::string& filename )	{ mFilename = filename; }
 
-	types::Uint32	mTexture;
-	int				mWidth;
-	int				mHeight;
-	int				mDepth;
-
-	types::string	mFilename;
+	bgfx::TextureHandle	mTexture;
+	int					mWidth;
+	int					mHeight;
+	int					mDepth;
+		
+	types::string		mFilename;
 };
 
 } // end o namespace poro

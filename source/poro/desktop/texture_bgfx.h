@@ -21,6 +21,8 @@
 #ifndef INC_TEXTURE_BGFX_H
 #define INC_TEXTURE_BGFX_H
 
+#include <bgfx.h>
+
 #include "../itexture.h"
 #include "../libraries.h"
 #include "../poro_types.h"
@@ -32,14 +34,16 @@ class TextureBgfx : public ITexture
 {
 public:
 	TextureBgfx() : 
-		mTexture( 0 ), 
+		mTexture( bgfx::TextureHandle() ), 
 		mWidth( 0 ), 
 		mHeight( 0 ), 
 		mExternalSizeX( 1.f ), 
 		mExternalSizeY( 1.f ),
 		mRealSizeX( 0 ),
 		mRealSizeY( 0 ),
-		mPixelData( NULL )
+		mPixelData( NULL ),
+		mSmoothFilteringEnabled( 0 ),
+		mWrappingMode( 0)
 	{ 
 		mUv[ 0 ] = 0; 
 		mUv[ 1 ] = 0; 
@@ -55,7 +59,9 @@ public:
 		mExternalSizeY( other->mExternalSizeY ),
 		mRealSizeX( other->mRealSizeX ),
 		mRealSizeY( other->mRealSizeY ),
-		mPixelData( other->mPixelData )
+		mPixelData( other->mPixelData ),
+		mSmoothFilteringEnabled( other->mSmoothFilteringEnabled ),
+		mWrappingMode( other->mWrappingMode )
 	{ 
 		mUv[ 0 ] = other->mUv[0]; 
 		mUv[ 1 ] = other->mUv[1]; 
@@ -105,19 +111,21 @@ public:
 		coord2.y = mUv[ 3 ];
 	}
 
-	types::Uint32	mTexture;
-	int				mWidth;
-	int				mHeight;
-	float			mUv[4];
+	bgfx::TextureHandle	mTexture;
+	int					mWidth;
+	int					mHeight;
+	float				mUv[4];
 
-	float			mExternalSizeX;
-	float			mExternalSizeY;
+	float				mExternalSizeX;
+	float				mExternalSizeY;
 
-	int				mRealSizeX;
-	int				mRealSizeY;
+	int					mRealSizeX;
+	int					mRealSizeY;
 
-	unsigned char*	mPixelData;
-	types::string	mFilename;
+	unsigned char*		mPixelData;
+	types::string		mFilename;
+	bool				mSmoothFilteringEnabled;
+	int					mWrappingMode;
 };
 
 } // end o namespace poro
