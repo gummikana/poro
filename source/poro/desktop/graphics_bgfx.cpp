@@ -23,6 +23,12 @@
 #include "graphics_bgfx.h"
 
 #include <cmath>
+#include <SDL_syswm.h>
+
+#include <bgfxplatform.h>
+#include <bgfx.h>
+
+ // integration code path.
 
 #include "../iplatform.h"
 #include "../libraries.h"
@@ -583,7 +589,6 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-
 GraphicsBgfx::GraphicsBgfx() :
 	IGraphics(),
 
@@ -618,11 +623,11 @@ void GraphicsBgfx::SetDrawTextureBuffering( bool buffering ) {
 	if( mUseDrawTextureBuffering && mDrawTextureBuffered == NULL ) 
 		mDrawTextureBuffered = new DrawTextureBuffered;
 }
+//-----------------------------------------------------------------------------
 
 bool GraphicsBgfx::GetDrawTextureBuffering() const {
 	return mUseDrawTextureBuffering;
 }
-
 //-----------------------------------------------------------------------------
 
 bool GraphicsBgfx::Init( int width, int height, bool fullscreen, const types::string& caption )
@@ -654,12 +659,27 @@ bool GraphicsBgfx::Init( int width, int height, bool fullscreen, const types::st
 	}
 	mDesktopWidth = (float)info->current_w;
 	mDesktopHeight = (float)info->current_h;
+
+
+	// init bgfx 
+	SDL_SysWMinfo wm_info;
+	SDL_GetWMInfo( &wm_info );
 	
+#if BX_PLATFORM_LINUX || BX_PLATFORM_FREEBSD
+	x11SetDisplayWindow(wmi.info.x11.display, wmi.info.x11.window);
+#elif BX_PLATFORM_OSX
+	osxSetNSWindow(wmi.info.cocoa.window);
+#elif BX_PLATFORM_WINDOWS
+	bgfx::winSetHwnd(wm_info.window);
+#endif // BX_PLATFORM_
+
+
+	// init etc
 	IPlatform::Instance()->SetInternalSize( (types::Float32)width, (types::Float32)height );
 	ResetWindow();
 
 	SDL_WM_SetCaption( caption.c_str(), NULL);
-	
+
 	// no glew for mac? this might cause some problems
 #ifndef PORO_DONT_USE_GLEW
 	GLenum glew_err = glewInit();
@@ -682,12 +702,12 @@ void GraphicsBgfx::SetInternalSize( types::Float32 width, types::Float32 height 
 		gluOrtho2D(0, (GLdouble)width, (GLdouble)height, 0);
 	}
 }
+//-----------------------------------------------------------------------------
 
 poro::types::vec2 GraphicsBgfx::GetInternalSize() const
 {
 	return poro::types::vec2( IPlatform::Instance()->GetInternalWidth(), IPlatform::Instance()->GetInternalHeight() );
 }
-
 //-----------------------------------------------------------------------------
 
 void GraphicsBgfx::SetWindowSize(int window_width, int window_height)
@@ -699,6 +719,7 @@ void GraphicsBgfx::SetWindowSize(int window_width, int window_height)
 		ResetWindow();
 	}
 }
+//-----------------------------------------------------------------------------
 
 poro::types::vec2	GraphicsBgfx::GetWindowSize() const 
 {
@@ -714,6 +735,7 @@ void GraphicsBgfx::SetFullscreen(bool fullscreen)
 		ResetWindow();
 	}
 }
+//-----------------------------------------------------------------------------
 
 void GraphicsBgfx::ResetWindow()
 {
@@ -765,7 +787,7 @@ void GraphicsBgfx::ResetWindow()
 	mContextInitialized = true;
 	
 	
-	{ //Bgfx view setup
+	{   //Bgfx view setup
 		float internal_width = IPlatform::Instance()->GetInternalWidth();
 		float internal_height = IPlatform::Instance()->GetInternalHeight();
 		float screen_aspect = (float)window_width/(float)window_height;
@@ -799,7 +821,7 @@ void GraphicsBgfx::ResetWindow()
 		gluOrtho2D(0, internal_width, 0, internal_height);
 	}
 }
-
+//-----------------------------------------------------------------------------
 
 //=============================================================================
 
@@ -888,7 +910,6 @@ void GraphicsBgfx::SetTextureWrappingMode( ITexture* itexture, int mode )
 		
 	glBindTexture( GL_TEXTURE_2D, 0 );
 }
-
 
 //=============================================================================
 
@@ -1302,7 +1323,6 @@ void GraphicsBgfx::DrawFill( const std::vector< poro::types::vec2 >& vertices, c
 	}
 }
 
-
 void GraphicsBgfx::DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture, const poro::types::fcolor& color, types::vec2* tex_coords, int count )
 {
 	TextureBgfx* texture;
@@ -1456,6 +1476,7 @@ void GraphicsBgfx::FlushDrawTextureBuffer()
 	if( mDrawTextureBuffered ) 
 		mDrawTextureBuffered->FlushDrawSpriteBuffer();
 }
+
 //=============================================================================
 
 void GraphicsBgfx::SaveScreenshot( const std::string& filename, int pos_x, int pos_y, int w, int h )
