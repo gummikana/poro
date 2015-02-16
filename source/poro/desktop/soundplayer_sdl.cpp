@@ -37,12 +37,13 @@ bool SoundPlayerSDL::Init()
 		return false;
 	}
 
-	if( false )
+	// TODO: remove me?
+	/*if( false )
 	{
 		char s[ 256 ];
 		SDL_AudioDriverName( s, 256 );
 		poro_logger << s << std::endl;
-	}
+	}*/
 
 	// allocate 16 mixing channels
 	Mix_AllocateChannels(16);

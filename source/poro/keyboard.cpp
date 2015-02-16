@@ -19,6 +19,7 @@
  ***************************************************************************/
 
 #include "keyboard.h"
+#include "libraries.h"
 #include "poro_macros.h"
 #include <iostream>
 #include <algorithm>
@@ -135,35 +136,21 @@ void Keyboard::SetKeyDown( int key, bool down )
 		mKeysJustUp[ key ] = true;
 }
 
-namespace {
-
-// these are ripped from SDL
-enum SDL_RIPOFF
-{
-	POROK_RSHIFT		= 303,
-	POROK_LSHIFT		= 304,
-	POROK_RCTRL			= 305,
-	POROK_LCTRL			= 306,
-	POROK_RALT			= 307,
-	POROK_LALT			= 308,
-};	
-} // end of anonymous namespace
-
 bool Keyboard::IsShiftDown() const
 {
-	return ( IsKeyDown( POROK_LSHIFT ) || IsKeyDown( POROK_RSHIFT ) );
+	return ( IsKeyDown( SDLK_LSHIFT ) || IsKeyDown( SDLK_RSHIFT ) );
 }
 
 
 bool Keyboard::IsAltDown() const
 {
-	return ( IsKeyDown( POROK_LALT ) || IsKeyDown( POROK_RALT ) );
+	return ( IsKeyDown( SDLK_LALT ) || IsKeyDown( SDLK_RALT ) );
 }
 
 
 bool Keyboard::IsCtrlDown() const
 {
-	return ( IsKeyDown( POROK_LCTRL ) || IsKeyDown( POROK_RCTRL ) );
+	return ( IsKeyDown( SDLK_LCTRL ) || IsKeyDown( SDLK_RCTRL ) );
 }
 
 

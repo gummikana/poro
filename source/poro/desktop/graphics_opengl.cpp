@@ -635,7 +635,7 @@ bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::
 	mDrawTextureBuffered = NULL;	
 	mUseDrawTextureBuffering = false;
 
-	const SDL_VideoInfo *info = NULL;
+	//const SDL_VideoInfo *info = NULL;
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE) < 0)
 	{
@@ -644,20 +644,47 @@ bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::
 		exit(0);
 	}
 
-	info = SDL_GetVideoInfo();
+	/*info = SDL_GetVideoInfo();
 	if (!info)
 	{
 		poro_logger << PORO_ERROR << "Video query failed: "<< SDL_GetError() << std::endl;
 		SDL_Quit();
 		exit(0);
+	}*/
+
+	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+
+	mSDLWindow = SDL_CreateWindow( caption.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL );
+	if ( mSDLWindow == NULL )
+	{
+		poro_logger << PORO_ERROR << "Window creation failed:  " << SDL_GetError() << std::endl;
+		SDL_Quit();
+		exit(0);
 	}
-	mDesktopWidth = (float)info->current_w;
-	mDesktopHeight = (float)info->current_h;
+
+	SDL_GLContext sdl_gl_context = SDL_GL_CreateContext(mSDLWindow);
+	if ( sdl_gl_context == NULL )
+	{
+		poro_logger << PORO_ERROR << "GL context creation failed:  " << SDL_GetError() << std::endl;
+		SDL_Quit();
+		exit(0);
+	}
+
+	SDL_DisplayMode display_mode;
+	SDL_GetWindowDisplayMode(mSDLWindow, &display_mode);
+
+	mDesktopWidth = (float)display_mode.w;
+	mDesktopHeight = (float)display_mode.h;
+
+	SDL_GL_SetSwapInterval( 1 );
 	
 	IPlatform::Instance()->SetInternalSize( (types::Float32)width, (types::Float32)height );
 	ResetWindow();
-
-	SDL_WM_SetCaption( caption.c_str(), NULL);
 	
 	// no glew for mac? this might cause some problems
 #ifndef PORO_DONT_USE_GLEW
@@ -716,54 +743,30 @@ void GraphicsOpenGL::SetFullscreen(bool fullscreen)
 
 void GraphicsOpenGL::ResetWindow()
 {
-	const SDL_VideoInfo *info = NULL;
-	int bpp = 0;
 	int flags = 0;
 	int window_width;
 	int window_height;
 	
-	info = SDL_GetVideoInfo();
-	if (!info)
-	{
-		poro_logger << PORO_ERROR << "Video query failed: "<< SDL_GetError() << std::endl;
-		SDL_Quit();
-		exit(0);
-	}
-	
-	{
-		bpp = info->vfmt->BitsPerPixel;
-		flags = SDL_OPENGL;
+	//flags = SDL_WINDOW_OPENGL;
 		
-		if( mFullscreen ){
-			flags |= SDL_FULLSCREEN;
-			window_width = (int)mDesktopWidth;
-			window_height = (int)mDesktopHeight;
-		} else {
-			window_width = mWindowWidth;
-			window_height = mWindowHeight;
+	if( mFullscreen ){
+		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+		window_width = (int)mDesktopWidth;
+		window_height = (int)mDesktopHeight;
+	} else {
+		window_width = mWindowWidth;
+		window_height = mWindowHeight;
 			
-		#ifdef _DEBUG
-			flags |= SDL_RESIZABLE;
-		#endif
-		}
+	#ifdef _DEBUG
+		flags |= SDL_WINDOW_RESIZABLE;
+	#endif
 	}
 
-	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
-	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
-	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-
-	if (SDL_SetVideoMode((int)window_width, (int)window_height, bpp, flags) == 0)
-	{
-		fprintf( stderr, "Video mode set failed: %s\n", SDL_GetError());
-		SDL_Quit();
-		return;
-	}
 	mGlContextInitialized = true;
 	
-	
+	SDL_SetWindowSize( mSDLWindow, window_width, window_height );
+	SDL_SetWindowFullscreen( mSDLWindow, flags );
+
 	{ //OpenGL view setup
 		float internal_width = IPlatform::Instance()->GetInternalWidth();
 		float internal_height = IPlatform::Instance()->GetInternalHeight();
@@ -1149,7 +1152,7 @@ void GraphicsOpenGL::EndRendering()
 	FlushDrawTextureBuffer();
 	// std::cout << "DrawCalls:" << drawcalls << std::endl;
 	// drawcalls=0;
-	SDL_GL_SwapBuffers();
+	SDL_GL_SwapWindow(mSDLWindow);
 }
 
 //=============================================================================

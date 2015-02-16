@@ -25,6 +25,8 @@
 #include "../igraphics.h"
 
 
+struct SDL_Window;
+
 namespace poro {
 //-----------------------------------------------------------------------------
 
@@ -141,6 +143,7 @@ public:
 
 private:
 
+	SDL_Window* mSDLWindow;
 	bool	mFullscreen;
 	int		mWindowWidth;
 	int		mWindowHeight;

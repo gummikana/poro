@@ -138,8 +138,6 @@ void PlatformDesktop::Init( IApplication* application, int w, int h, bool fullsc
 	mEventRecorder = new EventRecorder( mKeyboard, mMouse, mTouch );
 	// mEventRecorder = new EventRecorderImpl( mKeyboard, mMouse, mTouch );
 	// mEventRecorder->SetFilename( );
-
-	SDL_EnableUNICODE(1);
 }
 //-----------------------------------------------------------------------------
 
@@ -300,7 +298,7 @@ void PlatformDesktop::HandleEvents()
 			{
 				mEventRecorder->FireKeyDownEvent(
 					static_cast< int >( event.key.keysym.sym ),
-					static_cast< types::charset >( event.key.keysym.unicode ) );
+					static_cast< types::charset >( event.key.keysym.sym ) );
 			}
 			break;
 
@@ -308,12 +306,23 @@ void PlatformDesktop::HandleEvents()
 			{
 				mEventRecorder->FireKeyUpEvent(
 					static_cast< int >( event.key.keysym.sym ),
-					static_cast< types::charset >( event.key.keysym.unicode )  );
+					static_cast< types::charset >( event.key.keysym.sym )  );
 			}
 			break;
 
 			case SDL_QUIT:
 				mRunning = 0;
+			break;
+
+			case SDL_MOUSEWHEEL:
+				if( event.wheel.y > 0)
+				{
+					mEventRecorder->FireMouseDownEvent( mMousePos, Mouse::MOUSE_BUTTON_WHEEL_UP );
+				}
+				else if( event.wheel.y < 0)
+				{
+					mEventRecorder->FireMouseDownEvent( mMousePos, Mouse::MOUSE_BUTTON_WHEEL_DOWN );
+				}
 			break;
 
 			case SDL_MOUSEBUTTONDOWN:
@@ -329,14 +338,6 @@ void PlatformDesktop::HandleEvents()
 				else if( event.button.button == SDL_BUTTON_MIDDLE )
 				{
 					mEventRecorder->FireMouseDownEvent( mMousePos, Mouse::MOUSE_BUTTON_MIDDLE );
-				}
-				else if( event.button.button == SDL_BUTTON_WHEELUP )
-				{
-					mEventRecorder->FireMouseDownEvent( mMousePos, Mouse::MOUSE_BUTTON_WHEEL_UP );
-				}
-				else if( event.button.button == SDL_BUTTON_WHEELDOWN )
-				{
-					mEventRecorder->FireMouseDownEvent( mMousePos, Mouse::MOUSE_BUTTON_WHEEL_DOWN );
 				}
 				break;
 
