@@ -9,6 +9,7 @@ namespace poro {
 class Keyboard;
 class Mouse;
 class Touch;
+class Joystick;
 
 
 class EventRecorder
@@ -18,14 +19,16 @@ public:
 		mKeyboard( NULL ), 
 		mMouse( NULL ), 
 		mTouch( NULL ),
+		mJoystick( NULL ),
 		mRandomSeed( 0 )
 	{ 
 	}
 	
-	EventRecorder( Keyboard* keyboard, Mouse* mouse, Touch* touch ) : 
+	EventRecorder( Keyboard* keyboard, Mouse* mouse, Touch* touch, Joystick* joystick ) : 
 		mKeyboard( keyboard ), 
 		mMouse( mouse ), 
 		mTouch( touch ),
+		mJoystick( joystick ),
 		mRandomSeed( 0 )
 	{ 
 	}
@@ -46,6 +49,7 @@ public:
 	void SetKeyboard( Keyboard* keyboard )	{ mKeyboard = keyboard; }
 	void SetMouse( Mouse* mouse )			{ mMouse = mouse; }
 	void SetTouch( Touch* touch )			{ mTouch = touch; }
+	void SetJoystick( Joystick* joystick )  { mJoystick = joystick; }
 	
 	//-------------------------------------------------------------------------
 	
@@ -63,6 +67,10 @@ public:
 	virtual void FireTouchDownEvent(const types::vec2& pos, int touchId);
 	virtual void FireTouchUpEvent(const types::vec2& pos, int touchId);
 
+	// gamepad events
+	virtual void FireGamepadDownEvent( int button );
+	virtual void FireGamepadUpEvent( int button );
+
 	//-------------------------------------------------------------------------
 	
 	virtual void SetFilename( const std::string& filename ) { }
@@ -78,6 +86,7 @@ protected:
 	Keyboard* mKeyboard;
 	Mouse* mMouse;
 	Touch* mTouch;
+	Joystick* mJoystick;
 
 	int mRandomSeed;
 };

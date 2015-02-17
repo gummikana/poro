@@ -135,7 +135,7 @@ void PlatformDesktop::Init( IApplication* application, int w, int h, bool fullsc
 		mJoysticks[ i ] = new JoystickImpl( i );
 	}
 
-	mEventRecorder = new EventRecorder( mKeyboard, mMouse, mTouch );
+	mEventRecorder = new EventRecorder( mKeyboard, mMouse, mTouch, NULL );
 	// mEventRecorder = new EventRecorderImpl( mKeyboard, mMouse, mTouch );
 	// mEventRecorder->SetFilename( );
 }
@@ -357,6 +357,7 @@ void PlatformDesktop::HandleEvents()
 				}
 				break;
 
+#ifndef PORO_USE_XINPUT
 			case SDL_MOUSEMOTION:
 				{
 				    mMousePos = mGraphics->ConvertToInternalPos( event.motion.x, event.motion.y );
@@ -365,6 +366,29 @@ void PlatformDesktop::HandleEvents()
 						mEventRecorder->FireTouchMoveEvent( mMousePos, 0 );
 				}
 				break;
+
+			case SDL_CONTROLLERAXISMOTION:
+				{
+					// handle axis motion
+				}
+				break;
+			case SDL_CONTROLLERBUTTONDOWN:
+			case SDL_CONTROLLERBUTTONUP: 
+				{
+					// handle button up/down
+				}
+				break;
+			case SDL_CONTROLLERDEVICEADDED: 
+				{
+					// TODO:
+				}
+				break;
+			case SDL_CONTROLLERDEVICEREMOVED: 
+				{
+					// TODO:
+				}
+				break;
+#endif
 		}
 	}
 }

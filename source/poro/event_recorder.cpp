@@ -5,6 +5,7 @@
 #include "keyboard.h"
 #include "mouse.h"
 #include "touch.h"
+#include "joystick.h"
 
 namespace poro {
 
@@ -49,6 +50,15 @@ void EventRecorder::FireTouchDownEvent(const types::vec2& pos, int touchId) {
 
 void EventRecorder::FireTouchUpEvent(const types::vec2& pos, int touchId) {
 	if( mTouch ) mTouch->FireTouchUpEvent( pos, touchId );
+}
+
+// gamepad events
+void EventRecorder::FireGamepadDownEvent( int button ) {
+	if ( mJoystick ) mJoystick->SetButtonState( button, true );
+}
+
+void EventRecorder::FireGamepadUpEvent( int button ) {
+	if ( mJoystick ) mJoystick->SetButtonState( button, false );
 }
 
 
