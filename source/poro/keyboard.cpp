@@ -32,9 +32,9 @@ namespace poro {
 // up to 30^2?
 
 Keyboard::Keyboard() :
-	mKeysDown(POROK_SPECIAL_COUNT),
-	mKeysJustDown(POROK_SPECIAL_COUNT),
-	mKeysJustUp(POROK_SPECIAL_COUNT),
+	mKeysDown(poro::Key_SPECIAL_COUNT),
+	mKeysJustDown(poro::Key_SPECIAL_COUNT),
+	mKeysJustUp(poro::Key_SPECIAL_COUNT),
 	mDisableRepeats(true)
 {
 }
@@ -139,7 +139,7 @@ bool Keyboard::IsKeyJustUp( int button ) const
 void Keyboard::SetKeyDown( int key, bool down )
 {
 	if( key < 0 ) return;
-	if( key >= POROK_SPECIAL_COUNT ) return;
+	if( key >= poro::Key_SPECIAL_COUNT ) return;
 
 	if( key >= (int)mKeysDown.size() ) 
 	{
@@ -158,19 +158,19 @@ void Keyboard::SetKeyDown( int key, bool down )
 
 bool Keyboard::IsShiftDown() const
 {
-	return ( IsKeyDown( POROK_LSHIFT ) || IsKeyDown( POROK_RSHIFT ) );
+	return ( IsKeyDown( poro::Key_LSHIFT ) || IsKeyDown( poro::Key_RSHIFT ) );
 }
 
 
 bool Keyboard::IsAltDown() const
 {
-	return ( IsKeyDown( POROK_LALT ) || IsKeyDown( POROK_RALT ) );
+	return ( IsKeyDown( poro::Key_LALT ) || IsKeyDown( poro::Key_RALT ) );
 }
 
 
 bool Keyboard::IsCtrlDown() const
 {
-	return ( IsKeyDown( POROK_LCTRL ) || IsKeyDown( POROK_RCTRL ) );
+	return ( IsKeyDown( poro::Key_LCTRL ) || IsKeyDown( poro::Key_RCTRL ) );
 }
 
 

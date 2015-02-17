@@ -36,7 +36,7 @@ EventRecorderImpl::EventRecorderImpl() :
 }
 
 EventRecorderImpl::EventRecorderImpl( Keyboard* keyboard, Mouse* mouse, Touch* touch ) : 
-	EventRecorder( keyboard, mouse, touch ), 
+	EventRecorder( keyboard, mouse, touch, NULL ), 
 	mFrameCount( 0 ),
 	mFilename(),
 	mFrameStartTime( 0 )

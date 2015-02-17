@@ -27,6 +27,8 @@ namespace poro {
 
 class JoystickImpl : public Joystick 
 {
+	friend class PlatformDesktop;
+
 public:
 	JoystickImpl( int id );
 	
@@ -34,9 +36,16 @@ public:
 	// values are between [0 and 1]
 	// can be implemented on the platform is available
 	void Vibrate( const types::vec2& motor_forces );
+
+private:
+	void Update();
+
+	void Impl_Init_SDL2();
+
+
+	bool mInitialized;
 };
 
-void HandleJoystickImpl( JoystickImpl* joystick );
 
 } // end o namespace poro
 

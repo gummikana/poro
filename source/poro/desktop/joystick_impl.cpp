@@ -36,7 +36,8 @@ namespace {
 }
 
 JoystickImpl::JoystickImpl( int id ) :
-	Joystick( id )
+	Joystick( id ),
+	mInitialized( false )
 {
 }
 
@@ -84,11 +85,12 @@ void JoystickImpl::Vibrate( const types::vec2& motor_forces )
 // Thanks to this tutorial for proper handling
 // http://www.codeproject.com/KB/directx/xbox360_cont_xinput.aspx
 //
-void HandleJoystickImpl( JoystickImpl* joystick )
+void JoystickImpl::Update()
 {
 #ifdef PORO_USE_XINPUT
-	poro_assert( joystick );
-	int id = joystick->GetId();
+
+	// old implementation using xinput
+	int id = GetId();
 
 	{
 		XINPUT_STATE state;
@@ -101,36 +103,36 @@ void HandleJoystickImpl( JoystickImpl* joystick )
 
 		if(result == ERROR_SUCCESS)
 		{
-			joystick->SetConnected( true );
+			SetConnected( true );
 		}
 		else
 		{
-			joystick->SetConnected( false );
+			SetConnected( false );
 		}
 
-		joystick->SetButtonState( Joystick::JOY_BUTTON_DPAD_UP,			( state.Gamepad.wButtons&XINPUT_GAMEPAD_DPAD_UP )		!= 0 );
-		joystick->SetButtonState( Joystick::JOY_BUTTON_DPAD_DOWN,		( state.Gamepad.wButtons&XINPUT_GAMEPAD_DPAD_DOWN )		!= 0 );
-		joystick->SetButtonState( Joystick::JOY_BUTTON_DPAD_LEFT,		( state.Gamepad.wButtons&XINPUT_GAMEPAD_DPAD_LEFT )		!= 0 );
-		joystick->SetButtonState( Joystick::JOY_BUTTON_DPAD_RIGHT,		( state.Gamepad.wButtons&XINPUT_GAMEPAD_DPAD_RIGHT )	!= 0 );
+		SetButtonState( Joystick::JOY_BUTTON_DPAD_UP,			( state.Gamepad.wButtons&XINPUT_GAMEPAD_DPAD_UP )		!= 0 );
+		SetButtonState( Joystick::JOY_BUTTON_DPAD_DOWN,		( state.Gamepad.wButtons&XINPUT_GAMEPAD_DPAD_DOWN )		!= 0 );
+		SetButtonState( Joystick::JOY_BUTTON_DPAD_LEFT,		( state.Gamepad.wButtons&XINPUT_GAMEPAD_DPAD_LEFT )		!= 0 );
+		SetButtonState( Joystick::JOY_BUTTON_DPAD_RIGHT,		( state.Gamepad.wButtons&XINPUT_GAMEPAD_DPAD_RIGHT )	!= 0 );
 
-		joystick->SetButtonState( Joystick::JOY_BUTTON_START,			( state.Gamepad.wButtons&XINPUT_GAMEPAD_START )			!= 0 );
-		joystick->SetButtonState( Joystick::JOY_BUTTON_BACK,			( state.Gamepad.wButtons&XINPUT_GAMEPAD_BACK )			!= 0 );
-		joystick->SetButtonState( Joystick::JOY_BUTTON_LEFT_THUMB,		( state.Gamepad.wButtons&XINPUT_GAMEPAD_LEFT_THUMB )	!= 0 );
-		joystick->SetButtonState( Joystick::JOY_BUTTON_RIGHT_THUMB,		( state.Gamepad.wButtons&XINPUT_GAMEPAD_RIGHT_THUMB )	!= 0 );
+		SetButtonState( Joystick::JOY_BUTTON_START,			( state.Gamepad.wButtons&XINPUT_GAMEPAD_START )			!= 0 );
+		SetButtonState( Joystick::JOY_BUTTON_BACK,			( state.Gamepad.wButtons&XINPUT_GAMEPAD_BACK )			!= 0 );
+		SetButtonState( Joystick::JOY_BUTTON_LEFT_THUMB,		( state.Gamepad.wButtons&XINPUT_GAMEPAD_LEFT_THUMB )	!= 0 );
+		SetButtonState( Joystick::JOY_BUTTON_RIGHT_THUMB,		( state.Gamepad.wButtons&XINPUT_GAMEPAD_RIGHT_THUMB )	!= 0 );
 
-		joystick->SetButtonState( Joystick::JOY_BUTTON_LEFT_SHOULDER,	( state.Gamepad.wButtons&XINPUT_GAMEPAD_LEFT_SHOULDER )		!= 0 );
-		joystick->SetButtonState( Joystick::JOY_BUTTON_RIGHT_SHOULDER,	( state.Gamepad.wButtons&XINPUT_GAMEPAD_RIGHT_SHOULDER )	!= 0 );
+		SetButtonState( Joystick::JOY_BUTTON_LEFT_SHOULDER,	( state.Gamepad.wButtons&XINPUT_GAMEPAD_LEFT_SHOULDER )		!= 0 );
+		SetButtonState( Joystick::JOY_BUTTON_RIGHT_SHOULDER,	( state.Gamepad.wButtons&XINPUT_GAMEPAD_RIGHT_SHOULDER )	!= 0 );
 
-		joystick->SetButtonState( Joystick::JOY_BUTTON_0,				( state.Gamepad.wButtons&XINPUT_GAMEPAD_A )			!= 0 );
-		joystick->SetButtonState( Joystick::JOY_BUTTON_1,				( state.Gamepad.wButtons&XINPUT_GAMEPAD_B )			!= 0 );
-		joystick->SetButtonState( Joystick::JOY_BUTTON_2,				( state.Gamepad.wButtons&XINPUT_GAMEPAD_X )			!= 0 );
-		joystick->SetButtonState( Joystick::JOY_BUTTON_3,				( state.Gamepad.wButtons&XINPUT_GAMEPAD_Y )			!= 0 );
+		SetButtonState( Joystick::JOY_BUTTON_0,				( state.Gamepad.wButtons&XINPUT_GAMEPAD_A )			!= 0 );
+		SetButtonState( Joystick::JOY_BUTTON_1,				( state.Gamepad.wButtons&XINPUT_GAMEPAD_B )			!= 0 );
+		SetButtonState( Joystick::JOY_BUTTON_2,				( state.Gamepad.wButtons&XINPUT_GAMEPAD_X )			!= 0 );
+		SetButtonState( Joystick::JOY_BUTTON_3,				( state.Gamepad.wButtons&XINPUT_GAMEPAD_Y )			!= 0 );
 
 		float left_trigger = (float)state.Gamepad.bLeftTrigger / (float)MAXBYTE;
 		float right_trigger = (float)state.Gamepad.bRightTrigger / (float)MAXBYTE;
 
-		joystick->SetAnalogButton( 0, left_trigger );
-		joystick->SetAnalogButton( 1, right_trigger );
+		SetAnalogButton( 0, left_trigger );
+		SetAnalogButton( 1, right_trigger );
 
 		types::vec2 left_stick;
 		types::vec2 right_stick;
@@ -140,10 +142,39 @@ void HandleJoystickImpl( JoystickImpl* joystick )
 		right_stick.x = (float)state.Gamepad.sThumbRX / (float)MAXSHORT;
 		right_stick.y = -1.f * ( (float)state.Gamepad.sThumbRY / (float)MAXSHORT );
 
-		joystick->SetLeftStick( left_stick );
-		joystick->SetRightStick( right_stick );
+		SetLeftStick( left_stick );
+		SetRightStick( right_stick );
 	}
+#else
+
+	// SDL2 ..
+	Impl_Init_SDL2();
+
 #endif
+}
+
+
+void JoystickImpl::Impl_Init_SDL2()
+{
+	if ( mInitialized )
+		return;
+
+	int success = SDL_Init( SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC );
+
+	/// find the joysticks
+	int num_joysticks = SDL_NumJoysticks();
+	for ( int i = 0; i < num_joysticks; i++ )
+	{
+		std::cout << "SDL - Found a joystick." << std::endl;
+		SDL_bool is_game_controller = SDL_IsGameController( i );
+
+		if ( is_game_controller == false )
+			continue;
+
+	}
+
+
+	mInitialized = true;
 }
 
 //=============================================================================

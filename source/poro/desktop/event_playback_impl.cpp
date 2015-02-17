@@ -123,7 +123,7 @@ EventPlaybackImpl::EventPlaybackImpl() :
 }
 
 EventPlaybackImpl::EventPlaybackImpl( Keyboard* keyboard, Mouse* mouse, Touch* touch ) : 
-	EventRecorder( keyboard, mouse, touch ), 
+	EventRecorder( keyboard, mouse, touch, NULL ), 
 	mEventsEnabled( false ),
 	mFrameCount( 0 ),
 	mPlaybacks(),
