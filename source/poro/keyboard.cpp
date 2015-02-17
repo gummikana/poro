@@ -19,6 +19,7 @@
  ***************************************************************************/
 
 #include "keyboard.h"
+#include <algorithm>
 #include "poro_macros.h"
 
 
@@ -48,7 +49,6 @@ void Keyboard::AddKeyboardListener( IKeyboardListener* listener )
 void Keyboard::RemoveKeyboardListener( IKeyboardListener* listener )
 {
 	// poro_logger << "Remove keyboard listener" << std::endl;
-	
 	std::vector< IKeyboardListener* >::iterator i = 
 		std::find( mListeners.begin(), mListeners.end(), listener );
 
