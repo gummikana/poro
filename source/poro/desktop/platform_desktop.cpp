@@ -73,6 +73,16 @@ void StartCounter() { }
 
 
 
+int ConvertSDLKeySymToPoroKey(int sdl_key)
+{
+	// #define PORO_CONVERT_SDLKEYSYM(X) ((X) & ~(1 << 30)) + 100;
+
+	if (sdl_key > 122)
+		return ((sdl_key)& ~(1 << 30)) + 100;
+
+	return sdl_key;
+}
+
 } // end of anonymous time
 
 namespace poro {
@@ -269,6 +279,7 @@ void PlatformDesktop::Sleep( types::Double32 seconds )
 }
 //-----------------------------------------------------------------------------
 
+
 void PlatformDesktop::HandleEvents() 
 {
 	// Reset mouse state
@@ -297,7 +308,7 @@ void PlatformDesktop::HandleEvents()
 			case SDL_KEYDOWN:
 			{
 				mEventRecorder->FireKeyDownEvent(
-					static_cast< int >( event.key.keysym.sym ),
+					ConvertSDLKeySymToPoroKey( static_cast< int >(event.key.keysym.sym) ),
 					static_cast< types::charset >( event.key.keysym.sym ) );
 			}
 			break;
@@ -305,7 +316,7 @@ void PlatformDesktop::HandleEvents()
 			case SDL_KEYUP:
 			{
 				mEventRecorder->FireKeyUpEvent(
-					static_cast< int >( event.key.keysym.sym ),
+					ConvertSDLKeySymToPoroKey( static_cast< int >(event.key.keysym.sym) ),
 					static_cast< types::charset >( event.key.keysym.sym )  );
 			}
 			break;

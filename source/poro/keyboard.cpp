@@ -19,13 +19,10 @@
  ***************************************************************************/
 
 #include "keyboard.h"
-#include "libraries.h"
 #include "poro_macros.h"
-#include <iostream>
-#include <algorithm>
 
 
-#define PORO_CONVERT_SDLKEYSYM(X) ((X) & ~(1 << 30)) + 100;
+// #define PORO_CONVERT_SDLKEYSYM(X) ((X) & ~(1 << 30)) + 100;
 
 
 namespace poro {
@@ -83,9 +80,6 @@ void Keyboard::FireKeyDownEvent( int button, types::charset unicode )
 	//if ( unicode != button )
 	//	button = unicode;
 
-	if (button > 122 )
-		button = PORO_CONVERT_SDLKEYSYM( button );
-
 	if (mDisableRepeats && IsKeyDown(button))
 		return;
 
@@ -101,9 +95,6 @@ void Keyboard::FireKeyDownEvent( int button, types::charset unicode )
 
 void Keyboard::FireKeyUpEvent( int button, types::charset unicode )
 {
-	if (button > 122 )
-		button = PORO_CONVERT_SDLKEYSYM( button );
-
 	// this is probably not needed... since repeat key up events shouldn't happen
 	// if( mDisableRepeats && IsKeyDown( button ) == false )
 	//	return;
