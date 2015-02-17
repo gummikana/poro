@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- * Copyright (c) 2010 Petri Purho, Dennis Belfrage
+ * Copyright (c) 2010-2015 Petri Purho, Dennis Belfrage, Olli Harjola
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -19,16 +19,25 @@
  ***************************************************************************/
 
 #include "keyboard.h"
-#include "libraries.h"
-#include "poro_macros.h"
-#include <iostream>
 #include <algorithm>
+#include "poro_macros.h"
 
 
-#define PORO_CONVERT_SDLKEYSYM(X) ((X) & ~(1 << 30)) + 100;
+// #define PORO_CONVERT_SDLKEYSYM(X) ((X) & ~(1 << 30)) + 100;
 
 
 namespace poro {
+
+// I have no idea how big the converts are going to be?
+// up to 30^2?
+
+Keyboard::Keyboard() :
+	mKeysDown(POROK_SPECIAL_COUNT),
+	mKeysJustDown(POROK_SPECIAL_COUNT),
+	mKeysJustUp(POROK_SPECIAL_COUNT),
+	mDisableRepeats(true)
+{
+}
 
 void Keyboard::AddKeyboardListener( IKeyboardListener* listener )
 {
@@ -40,7 +49,6 @@ void Keyboard::AddKeyboardListener( IKeyboardListener* listener )
 void Keyboard::RemoveKeyboardListener( IKeyboardListener* listener )
 {
 	// poro_logger << "Remove keyboard listener" << std::endl;
-	
 	std::vector< IKeyboardListener* >::iterator i = 
 		std::find( mListeners.begin(), mListeners.end(), listener );
 
@@ -72,8 +80,8 @@ void Keyboard::FireKeyDownEvent( int button, types::charset unicode )
 	//if ( unicode != button )
 	//	button = unicode;
 
-	if (button > 122 )
-		button = PORO_CONVERT_SDLKEYSYM( button );
+	if (mDisableRepeats && IsKeyDown(button))
+		return;
 
 	std::size_t listeners_size = mListeners.size();
 	for( std::size_t i = 0; i < mListeners.size() && i < listeners_size; ++i )
@@ -87,8 +95,9 @@ void Keyboard::FireKeyDownEvent( int button, types::charset unicode )
 
 void Keyboard::FireKeyUpEvent( int button, types::charset unicode )
 {
-	if (button > 122 )
-		button = PORO_CONVERT_SDLKEYSYM( button );
+	// this is probably not needed... since repeat key up events shouldn't happen
+	// if( mDisableRepeats && IsKeyDown( button ) == false )
+	//	return;
 
 	std::size_t listeners_size = mListeners.size();
 	for( std::size_t i = 0; i < mListeners.size() && i < listeners_size; ++i )
@@ -130,7 +139,7 @@ bool Keyboard::IsKeyJustUp( int button ) const
 void Keyboard::SetKeyDown( int key, bool down )
 {
 	if( key < 0 ) return;
-	if( key > POROK_SPECIAL_COUNT ) return;
+	if( key >= POROK_SPECIAL_COUNT ) return;
 
 	if( key >= (int)mKeysDown.size() ) 
 	{
