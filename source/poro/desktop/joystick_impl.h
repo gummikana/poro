@@ -23,6 +23,11 @@
 
 #include "../joystick.h"
 
+
+struct SDL_ControllerAxisEvent;
+struct SDL_ControllerButtonEvent;
+struct _SDL_GameController;
+
 namespace poro {
 
 class JoystickImpl : public Joystick 
@@ -40,9 +45,14 @@ public:
 private:
 	void Update();
 
+#ifndef PORO_USE_XINPUT
+	void Impl_SDL2_OnAdded();
+	void Impl_SDL2_OnRemoved();
 	void Impl_Init_SDL2();
+#endif
 
 
+	_SDL_GameController* mSDLGameController;
 	bool mInitialized;
 };
 

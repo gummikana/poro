@@ -625,7 +625,6 @@ void PlatformDesktop::HandleEvents()
 				}
 				break;
 
-#ifndef PORO_USE_XINPUT
 			case SDL_MOUSEMOTION:
 				{
 				    mMousePos = mGraphics->ConvertToInternalPos( event.motion.x, event.motion.y );
@@ -635,25 +634,21 @@ void PlatformDesktop::HandleEvents()
 				}
 				break;
 
-			case SDL_CONTROLLERAXISMOTION:
-				{
-					// handle axis motion
-				}
-				break;
-			case SDL_CONTROLLERBUTTONDOWN:
-			case SDL_CONTROLLERBUTTONUP: 
-				{
-					// handle button up/down
-				}
-				break;
+#ifndef PORO_USE_XINPUT
 			case SDL_CONTROLLERDEVICEADDED: 
 				{
-					// TODO:
+					std::cout << "PlatformDesktop - SDL2 gamepad added " << event.jdevice.which << std::endl;
+					JoystickImpl* device = (JoystickImpl*)GetJoystick( event.jdevice.which );
+					if ( device )
+						device->Impl_SDL2_OnAdded();
 				}
 				break;
 			case SDL_CONTROLLERDEVICEREMOVED: 
 				{
-					// TODO:
+					std::cout << "PlatformDesktop - SDL2 gamepad removed " << event.jdevice.which << std::endl;
+					JoystickImpl* device = (JoystickImpl*)GetJoystick( event.jdevice.which );
+					if ( device )
+						device->Impl_SDL2_OnRemoved();
 				}
 				break;
 #endif
