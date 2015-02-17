@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- * Copyright (c) 2010 Petri Purho, Dennis Belfrage
+ * Copyright (c) 2010-2015 Petri Purho, Dennis Belfrage, Olli Harjola
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -26,6 +26,55 @@
 #include "poro_types.h"
 #include "ikeyboard_listener.h"
 
+namespace poro {
+
+class Keyboard
+{
+public:
+	Keyboard();
+	~Keyboard() { }
+
+	void AddKeyboardListener(IKeyboardListener* listener);
+	void RemoveKeyboardListener(IKeyboardListener* listener);
+
+	void OnFrameStart();
+
+	void FireKeyDownEvent(int button, types::charset unicode);
+	void FireKeyUpEvent(int button, types::charset unicode);
+
+	bool IsKeyDown(int button) const;
+	bool IsKeyJustDown(int button) const;
+	bool IsKeyJustUp(int button) const;
+
+	bool IsShiftDown() const;
+	bool IsAltDown() const;
+	bool IsCtrlDown() const;
+
+	void SetDisableRepeats(bool disable_repeats);
+
+private:
+	void SetKeyDown(int button, bool down);
+
+	std::vector< IKeyboardListener* > mListeners;
+
+	std::vector< bool > mKeysDown;
+	std::vector< bool > mKeysJustDown;
+	std::vector< bool > mKeysJustUp;
+
+	bool mDisableRepeats;
+};
+
+//-----------------------------------------------------------------------------
+
+inline void Keyboard::SetDisableRepeats(bool disable_repeats) {
+	mDisableRepeats = disable_repeats;
+}
+
+} // end of namespace poro
+
+//-----------------------------------------------------------------------------
+
+// #ifdef PORO_USE_SDL2
 	#define PORO_SCANCODE_TO_KEYCODE(X)  (X + 100)
 
 	enum
@@ -293,48 +342,13 @@
 	POROK_KBDILLUMUP = PORO_SCANCODE_TO_KEYCODE( SDL_SCANCODE_KBDILLUMUP ),
 	POROK_EJECT = PORO_SCANCODE_TO_KEYCODE( SDL_SCANCODE_EJECT ),
 	POROK_SLEEP = PORO_SCANCODE_TO_KEYCODE( SDL_SCANCODE_SLEEP ),
-	POROK_SPECIAL_COUNT = POROK_SLEEP,
+	POROK_SPECIAL_COUNT = POROK_SLEEP + 1,
 	};
 
+#undef PORO_SCANCODE_TO_KEYCODE
 
-namespace poro {
+	// #endif
 
-
-class Keyboard
-{
-public:
-
-	Keyboard() { }
-	~Keyboard() { }
-	
-	void AddKeyboardListener( IKeyboardListener* listener );
-	void RemoveKeyboardListener( IKeyboardListener* listener );
-
-	void OnFrameStart();
-
-	void FireKeyDownEvent( int button, types::charset unicode  );
-	void FireKeyUpEvent( int button, types::charset unicode );
-
-	bool IsKeyDown( int button ) const;
-	bool IsKeyJustDown( int button ) const;
-	bool IsKeyJustUp( int button ) const; 
-
-	bool IsShiftDown() const;
-	bool IsAltDown() const;
-	bool IsCtrlDown() const;
-
-private:
-	void SetKeyDown( int button, bool down );
-
-	std::vector< IKeyboardListener* > mListeners;
-	
-	std::vector< bool > mKeysDown;
-	std::vector< bool > mKeysJustDown;
-	std::vector< bool >  mKeysJustUp;
-
-
-};
-
-} // end of namespace poro
+//-----------------------------------------------------------------------------
 
 #endif
