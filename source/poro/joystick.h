@@ -104,7 +104,7 @@ public:
 
 	// values are between [0 and 1]
 	// can be implemented on the platform is available
-	virtual void Vibrate( const types::vec2& motor_forces ) { }
+	virtual void Vibrate( const types::vec2& motor_forces, float time_in_seconds = 0.2f ) { }
 
 	int GetId() const;
 

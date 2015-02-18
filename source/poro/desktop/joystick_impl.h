@@ -23,10 +23,12 @@
 
 #include "../joystick.h"
 
-
-struct SDL_ControllerAxisEvent;
-struct SDL_ControllerButtonEvent;
+// struct SDL_ControllerAxisEvent;
+// struct SDL_ControllerButtonEvent;
+// weird SDL typedef
+// typedef struct _SDL_GameController SDL_GameController;
 struct _SDL_GameController;
+struct _SDL_Haptic;
 
 namespace poro {
 
@@ -36,11 +38,13 @@ class JoystickImpl : public Joystick
 
 public:
 	JoystickImpl( int id );
-	
+	~JoystickImpl();
 
 	// values are between [0 and 1]
 	// can be implemented on the platform is available
-	void Vibrate( const types::vec2& motor_forces );
+	// SDL2 uses the time given, but it's motor force is 1D (so it takes the length of the vector2)
+	// XInput doesn't support time, so it rumbles based on the forces given
+	void Vibrate( const types::vec2& motor_forces, float time_in_seconds = 0.2f );
 
 private:
 	void Update();
@@ -53,6 +57,7 @@ private:
 
 
 	_SDL_GameController* mSDLGameController;
+	_SDL_Haptic*			mSDLHaptic;
 	bool mInitialized;
 };
 

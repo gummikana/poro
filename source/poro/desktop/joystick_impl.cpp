@@ -44,23 +44,55 @@ JoystickImpl::JoystickImpl( int id ) :
 	// SDL2 ..
 	Impl_Init_SDL2();
 
-
 	/// find the joystick
-	int num_joysticks = SDL_NumJoysticks();
-	int my_poro_id = GetId();
-	if ( my_poro_id < num_joysticks )
+	const int num_joysticks = SDL_NumJoysticks();
+	const int my_poro_id = GetId();
+	
+	if (my_poro_id < num_joysticks)
 	{
-		std::cout << "SDL - Found a joystick - " << my_poro_id << std::endl;
-		if ( SDL_IsGameController( my_poro_id ))
+		const char* joystick_name = SDL_GameControllerNameForIndex(my_poro_id);
+		std::cout << "SDL - Found a joystick - " << my_poro_id << " with name: " << (joystick_name ? joystick_name : "") << std::endl;
+		if (SDL_IsGameController(my_poro_id))
 		{
 			std::cout << "   Joystick is game controller - " << my_poro_id << std::endl;
-			SDL_GameController* controller = SDL_GameControllerOpen( my_poro_id );
-			if ( controller )
+			mSDLGameController = SDL_GameControllerOpen(my_poro_id);
+			if (mSDLGameController)
 			{
 				std::cout << "   Game controller opened succesfully - " << my_poro_id << std::endl;
-				mSDLGameController = controller;
+				// mSDLGameController = controller;
 			}
 		}
+		else
+		{
+			std::cout << "SDL - joystick( " << my_poro_id << " ) is not a supported Game Controller" << std::endl;
+		}
+
+		// open haptic
+		mSDLHaptic = SDL_HapticOpen(my_poro_id);
+		if (mSDLHaptic)
+		{
+			std::cout << "   Joystick( " << my_poro_id << " ) - opened haptic" << std::endl;
+			if (SDL_HapticRumbleInit(mSDLHaptic) != 0)
+			{
+				std::cout << "   Joystick( " << my_poro_id << " ) - doesn't support haptic" << std::endl;
+			}
+		}
+
+	}
+}
+
+JoystickImpl::~JoystickImpl()
+{
+	if (mSDLGameController)
+	{
+		SDL_GameControllerClose(mSDLGameController);
+		mSDLGameController = NULL;
+	}
+
+	if (mSDLHaptic)
+	{
+		SDL_HapticClose(mSDLHaptic);
+		mSDLHaptic = NULL;
 	}
 }
 
@@ -68,7 +100,7 @@ JoystickImpl::JoystickImpl( int id ) :
 // controller_n is number of controller
 // left_value is the force (max 65535)
 // right_value is the force (max 65535)
-void JoystickImpl::Vibrate( const types::vec2& motor_forces )
+void JoystickImpl::Vibrate(const types::vec2& motor_forces, float time_in_seconds )
 {
 #ifdef PORO_USE_XINPUT
 	int controller_n = this->GetId();
@@ -100,7 +132,16 @@ void JoystickImpl::Vibrate( const types::vec2& motor_forces )
 
     // Vibrate the controller
     XInputSetState(controller_n, &vibration);
+#else
+	// SDL rumble 
+	if (mSDLHaptic)
+	{
+		const float length = ClampValue(sqrtf(motor_forces.x * motor_forces.x + motor_forces.y * motor_forces.y), 0.f, 1.f);
+		SDL_HapticRumblePlay(mSDLHaptic, length, (Uint32)( time_in_seconds * 1000.f ));
+	}
 #endif
+
+
 }
 
 //=============================================================================
@@ -168,7 +209,7 @@ void JoystickImpl::Update()
 	SetRightStick( right_stick );
 #else
 
-	const int MAXBYTE = 32768;
+	const float MAXBYTE = (float)32768;
 
 	SetButtonState( Joystick::JOY_BUTTON_DPAD_UP,		SDL_GameControllerGetButton( mSDLGameController, SDL_CONTROLLER_BUTTON_DPAD_UP )		!= 0 );
 	SetButtonState( Joystick::JOY_BUTTON_DPAD_DOWN,		SDL_GameControllerGetButton( mSDLGameController, SDL_CONTROLLER_BUTTON_DPAD_DOWN )		!= 0 );
