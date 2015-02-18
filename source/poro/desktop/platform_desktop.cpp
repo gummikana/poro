@@ -646,9 +646,20 @@ void PlatformDesktop::HandleEvents()
 			case SDL_CONTROLLERDEVICEREMOVED: 
 				{
 					std::cout << "PlatformDesktop - SDL2 gamepad removed " << event.jdevice.which << std::endl;
-					JoystickImpl* device = (JoystickImpl*)GetJoystick( event.jdevice.which );
-					if ( device )
-						device->Impl_SDL2_OnRemoved();
+					int instance_id = event.jdevice.which;
+					JoystickImpl* unplugged_device = NULL;
+					for (int i = 0; i < GetJoystickCount(); ++i)
+					{
+						JoystickImpl* device = (JoystickImpl*)GetJoystick(i);
+						if (device && device->Impl_GetSDLInstanceID() == instance_id)
+						{
+							unplugged_device = device;
+							break;
+						}
+					}
+					
+					if (unplugged_device)
+						unplugged_device->Impl_SDL2_OnRemoved();
 				}
 				break;
 #endif

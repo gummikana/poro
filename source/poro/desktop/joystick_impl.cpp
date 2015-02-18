@@ -41,13 +41,29 @@ JoystickImpl::JoystickImpl( int id ) :
 	mInitialized( false ),
 	mSDLGameController( NULL )
 {
+	Impl_SDL2_OnAdded();
+}
+
+JoystickImpl::~JoystickImpl()
+{
+	
+}
+
+void JoystickImpl::Init()
+{
+	mSDLGameController = NULL;
+	mSDLHaptic = NULL;
+	mSDLInstanceID = 0;
+
 	// SDL2 ..
 	Impl_Init_SDL2();
 
 	/// find the joystick
 	const int num_joysticks = SDL_NumJoysticks();
 	const int my_poro_id = GetId();
+
 	
+
 	if (my_poro_id < num_joysticks)
 	{
 		const char* joystick_name = SDL_GameControllerNameForIndex(my_poro_id);
@@ -60,6 +76,11 @@ JoystickImpl::JoystickImpl( int id ) :
 			{
 				std::cout << "   Game controller opened succesfully - " << my_poro_id << std::endl;
 				// mSDLGameController = controller;
+				SDL_Joystick* joystick = SDL_GameControllerGetJoystick(mSDLGameController);
+				if (joystick)
+				{
+					mSDLInstanceID = SDL_JoystickInstanceID(joystick);
+				}
 			}
 		}
 		else
@@ -81,7 +102,7 @@ JoystickImpl::JoystickImpl( int id ) :
 	}
 }
 
-JoystickImpl::~JoystickImpl()
+void JoystickImpl::Exit()
 {
 	if (mSDLGameController)
 	{
@@ -256,12 +277,16 @@ void JoystickImpl::Update()
 void JoystickImpl::Impl_SDL2_OnAdded()
 {
 	std::cout << "SDL2 gamepad added " <<  std::endl;
+	Init();
+	SetConnected(true);
 }
 
 
 void JoystickImpl::Impl_SDL2_OnRemoved()
 {
 	std::cout << "SDL2 gamepad removed " <<  std::endl;
+	Exit();
+	SetConnected(false);
 }
 
 void JoystickImpl::Impl_Init_SDL2()
