@@ -50,6 +50,7 @@ JoystickImpl::~JoystickImpl()
 
 void JoystickImpl::Init()
 {
+	mSDLJoystick = NULL;
 	mSDLGameController = NULL;
 	mSDLHaptic = NULL;
 	mSDLInstanceID = 0;
@@ -61,7 +62,7 @@ void JoystickImpl::Init()
 
 	if (my_poro_id < num_joysticks)
 	{
-		const char* joystick_name = SDL_GameControllerNameForIndex(my_poro_id);
+		const char* joystick_name = SDL_JoystickNameForIndex(my_poro_id);
 		std::cout << "SDL - Found a joystick - " << my_poro_id << " with name: " << (joystick_name ? joystick_name : "") << std::endl;
 		if (SDL_IsGameController(my_poro_id))
 		{
@@ -77,11 +78,24 @@ void JoystickImpl::Init()
 					mSDLInstanceID = SDL_JoystickInstanceID(joystick);
 				}
 				connected = true;
+				SetGamePad(true);
 			}
 		}
 		else
 		{
-			std::cout << "SDL - joystick( " << my_poro_id << " ) is not a supported Game Controller" << std::endl;
+			SetGamePad(false);
+
+			mSDLJoystick = SDL_JoystickOpen(my_poro_id);
+			if (mSDLJoystick)
+			{
+				std::cout << "SDL - found a joystick " << std::endl;
+				mSDLInstanceID = SDL_JoystickInstanceID(mSDLJoystick);
+				connected = true;
+			}
+			else
+			{
+				std::cout << "SDL - joystick( " << my_poro_id << " ) is not a supported Game Controller" << std::endl;
+			}
 		}
 
 		// open haptic
@@ -105,6 +119,12 @@ void JoystickImpl::Exit()
 	{
 		SDL_GameControllerClose(mSDLGameController);
 		mSDLGameController = NULL;
+	}
+
+	if (mSDLJoystick)
+	{
+		SDL_JoystickClose(mSDLJoystick);
+		mSDLJoystick = NULL;
 	}
 
 	if (mSDLHaptic)
@@ -227,45 +247,85 @@ void JoystickImpl::Update()
 	SetRightStick( right_stick );
 #else
 	
-	if( GetConnected() == false || mSDLGameController == NULL )
+	if( GetConnected() == false )
 		return;
 
 	const float MAXBYTE = (float)32768;
 
-	SetButtonState( Joystick::JOY_BUTTON_DPAD_UP,		SDL_GameControllerGetButton( mSDLGameController, SDL_CONTROLLER_BUTTON_DPAD_UP )		!= 0 );
-	SetButtonState( Joystick::JOY_BUTTON_DPAD_DOWN,		SDL_GameControllerGetButton( mSDLGameController, SDL_CONTROLLER_BUTTON_DPAD_DOWN )		!= 0 );
-	SetButtonState( Joystick::JOY_BUTTON_DPAD_LEFT,		SDL_GameControllerGetButton( mSDLGameController, SDL_CONTROLLER_BUTTON_DPAD_LEFT )		!= 0 );
-	SetButtonState( Joystick::JOY_BUTTON_DPAD_RIGHT,	SDL_GameControllerGetButton( mSDLGameController, SDL_CONTROLLER_BUTTON_DPAD_RIGHT )	!= 0 );
+	if (mSDLGameController)
+	{
+		SetButtonState(Joystick::JOY_BUTTON_DPAD_UP, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_DPAD_UP) != 0);
+		SetButtonState(Joystick::JOY_BUTTON_DPAD_DOWN, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_DPAD_DOWN) != 0);
+		SetButtonState(Joystick::JOY_BUTTON_DPAD_LEFT, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_DPAD_LEFT) != 0);
+		SetButtonState(Joystick::JOY_BUTTON_DPAD_RIGHT, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_DPAD_RIGHT) != 0);
 
-	SetButtonState( Joystick::JOY_BUTTON_START,			SDL_GameControllerGetButton( mSDLGameController, SDL_CONTROLLER_BUTTON_START )			!= 0 );
-	SetButtonState( Joystick::JOY_BUTTON_BACK,			SDL_GameControllerGetButton( mSDLGameController, SDL_CONTROLLER_BUTTON_BACK )			!= 0 );
-	SetButtonState( Joystick::JOY_BUTTON_LEFT_THUMB,	SDL_GameControllerGetButton( mSDLGameController, SDL_CONTROLLER_BUTTON_LEFTSTICK )	!= 0 );
-	SetButtonState( Joystick::JOY_BUTTON_RIGHT_THUMB,	SDL_GameControllerGetButton( mSDLGameController, SDL_CONTROLLER_BUTTON_RIGHTSTICK )	!= 0 );
+		SetButtonState(Joystick::JOY_BUTTON_START, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_START) != 0);
+		SetButtonState(Joystick::JOY_BUTTON_BACK, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_BACK) != 0);
+		SetButtonState(Joystick::JOY_BUTTON_LEFT_THUMB, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_LEFTSTICK) != 0);
+		SetButtonState(Joystick::JOY_BUTTON_RIGHT_THUMB, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_RIGHTSTICK) != 0);
 
-	SetButtonState(Joystick::JOY_BUTTON_LEFT_SHOULDER,	 SDL_GameControllerGetButton( mSDLGameController, SDL_CONTROLLER_BUTTON_LEFTSHOULDER )		!= 0 );
-	SetButtonState(Joystick::JOY_BUTTON_RIGHT_SHOULDER,	 SDL_GameControllerGetButton( mSDLGameController, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER )	!= 0 );
+		SetButtonState(Joystick::JOY_BUTTON_LEFT_SHOULDER, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_LEFTSHOULDER) != 0);
+		SetButtonState(Joystick::JOY_BUTTON_RIGHT_SHOULDER, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) != 0);
 
-	SetButtonState( Joystick::JOY_BUTTON_0,				SDL_GameControllerGetButton( mSDLGameController, SDL_CONTROLLER_BUTTON_A )			!= 0 );
-	SetButtonState( Joystick::JOY_BUTTON_1,				SDL_GameControllerGetButton( mSDLGameController, SDL_CONTROLLER_BUTTON_B )			!= 0 );
-	SetButtonState( Joystick::JOY_BUTTON_2,				SDL_GameControllerGetButton( mSDLGameController, SDL_CONTROLLER_BUTTON_X )			!= 0 );
-	SetButtonState( Joystick::JOY_BUTTON_3,				SDL_GameControllerGetButton( mSDLGameController, SDL_CONTROLLER_BUTTON_Y )			!= 0 );
+		SetButtonState(Joystick::JOY_BUTTON_A, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_A) != 0);
+		SetButtonState(Joystick::JOY_BUTTON_B, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_B) != 0);
+		SetButtonState(Joystick::JOY_BUTTON_X, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_X) != 0);
+		SetButtonState(Joystick::JOY_BUTTON_Y, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_Y) != 0);
 
-	float left_trigger = (float)SDL_GameControllerGetAxis( mSDLGameController, SDL_CONTROLLER_AXIS_TRIGGERLEFT ) / (float)MAXBYTE;
-	float right_trigger = (float)SDL_GameControllerGetAxis( mSDLGameController, SDL_CONTROLLER_AXIS_TRIGGERRIGHT ) / (float)MAXBYTE;
+		float left_trigger = ((float)SDL_GameControllerGetAxis(mSDLGameController, SDL_CONTROLLER_AXIS_TRIGGERLEFT)) / MAXBYTE;
+		float right_trigger = ((float)SDL_GameControllerGetAxis(mSDLGameController, SDL_CONTROLLER_AXIS_TRIGGERRIGHT)) / MAXBYTE;
 
-	SetAnalogButton( 0, left_trigger );
-	SetAnalogButton( 1, right_trigger );
+		SetAnalogButton(0, left_trigger);
+		SetAnalogButton(1, right_trigger);
 
-	types::vec2 left_stick;
-	types::vec2 right_stick;
+		types::vec2 left_stick;
+		types::vec2 right_stick;
 
-	left_stick.x = (float)SDL_GameControllerGetAxis( mSDLGameController, SDL_CONTROLLER_AXIS_LEFTX ) / (float)MAXBYTE;
-	left_stick.y = (float)SDL_GameControllerGetAxis( mSDLGameController, SDL_CONTROLLER_AXIS_LEFTY ) / (float)MAXBYTE;
-	right_stick.x = (float)SDL_GameControllerGetAxis( mSDLGameController, SDL_CONTROLLER_AXIS_RIGHTX ) / (float)MAXBYTE;
-	right_stick.y = (float)SDL_GameControllerGetAxis( mSDLGameController, SDL_CONTROLLER_AXIS_RIGHTY ) / (float)MAXBYTE;
+		left_stick.x = ((float)SDL_GameControllerGetAxis(mSDLGameController, SDL_CONTROLLER_AXIS_LEFTX)) / MAXBYTE;
+		left_stick.y = ((float)SDL_GameControllerGetAxis(mSDLGameController, SDL_CONTROLLER_AXIS_LEFTY)) / MAXBYTE;
+		right_stick.x = ((float)SDL_GameControllerGetAxis(mSDLGameController, SDL_CONTROLLER_AXIS_RIGHTX)) / MAXBYTE;
+		right_stick.y = ((float)SDL_GameControllerGetAxis(mSDLGameController, SDL_CONTROLLER_AXIS_RIGHTY)) / MAXBYTE;
 
-	SetLeftStick( left_stick );
-	SetRightStick( right_stick );
+		SetLeftStick(left_stick);
+		SetRightStick(right_stick);
+	}
+	
+	else if (mSDLJoystick)
+	{
+		// TODO( Petri ): Make this a bit more robust, deal with hats etc...
+
+		int button_count = SDL_JoystickNumButtons(mSDLJoystick);
+		if (button_count > ( Joystick::JOY_BUTTON_COUNT - Joystick::JOY_BUTTON_0 ) + 1)
+			button_count = ( Joystick::JOY_BUTTON_COUNT - Joystick::JOY_BUTTON_0 ) + 1;
+
+		for (int i = 0; i < button_count; ++i)
+		{
+			SetButtonState( Joystick::JOY_BUTTON_0 + i, SDL_JoystickGetButton(mSDLJoystick, i ) != 0 );
+		}
+
+		int axis_count = SDL_JoystickNumAxes(mSDLJoystick);
+		if (axis_count > 0)
+		{
+			// TODO( Petri ): 
+			// Needs more testing. Currently we're just guessing that 0 is x and 1 is y. 
+			// And that -1 is up and 1 is down
+
+			types::vec2 left_stick;
+			types::vec2 right_stick;
+
+			if (axis_count > 0)
+				left_stick.x = ((float)SDL_JoystickGetAxis(mSDLJoystick, 0)) / MAXBYTE;
+			if (axis_count > 1)
+				left_stick.y = ((float)SDL_JoystickGetAxis(mSDLJoystick, 1)) / MAXBYTE;
+			if (axis_count > 2)
+				right_stick.x = ((float)SDL_JoystickGetAxis(mSDLJoystick, 2)) / MAXBYTE;
+			if (axis_count > 3)
+				right_stick.y = ((float)SDL_JoystickGetAxis(mSDLJoystick, 3)) / MAXBYTE;
+
+			SetLeftStick(left_stick);
+			SetRightStick(right_stick);
+		}
+	}
 
 #endif
 }

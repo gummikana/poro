@@ -637,7 +637,9 @@ void PlatformDesktop::HandleEvents()
 				break;
 
 #ifndef PORO_USE_XINPUT
-			case SDL_CONTROLLERDEVICEADDED: 
+
+			case SDL_JOYDEVICEADDED:
+			case SDL_CONTROLLERDEVICEADDED:
 				{
 					std::cout << "PlatformDesktop - SDL2 gamepad added " << event.jdevice.which << std::endl;
 					JoystickImpl* device = (JoystickImpl*)GetJoystick( event.jdevice.which );
@@ -645,6 +647,8 @@ void PlatformDesktop::HandleEvents()
 						device->Impl_SDL2_OnAdded();
 				}
 				break;
+
+			case SDL_JOYDEVICEREMOVED:
 			case SDL_CONTROLLERDEVICEREMOVED: 
 				{
 					std::cout << "PlatformDesktop - SDL2 gamepad removed " << event.jdevice.which << std::endl;

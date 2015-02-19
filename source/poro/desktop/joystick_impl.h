@@ -29,6 +29,7 @@
 // typedef struct _SDL_GameController SDL_GameController;
 struct _SDL_GameController;
 struct _SDL_Haptic;
+struct _SDL_Joystick;
 
 namespace poro {
 
@@ -52,19 +53,18 @@ private:
 
 	void Update();
 
-#ifndef PORO_USE_XINPUT
 	void Impl_SDL2_OnAdded();
 	void Impl_SDL2_OnRemoved();
 	static void Impl_Init_SDL2();
 
 	int Impl_GetSDLInstanceID() const { return mSDLInstanceID; }
-#endif
 
 
 	// TODO(Petri): Wrap these into a structure
-	_SDL_GameController* mSDLGameController;
-	_SDL_Haptic*		 mSDLHaptic;
-	int					 mSDLInstanceID;
+	_SDL_GameController*	mSDLGameController;
+	_SDL_Joystick*			mSDLJoystick;
+	_SDL_Haptic*			mSDLHaptic;
+	int						mSDLInstanceID;
 };
 
 
