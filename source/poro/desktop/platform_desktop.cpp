@@ -397,6 +397,8 @@ void PlatformDesktop::Init( IApplication* application, int w, int h, bool fullsc
 	mKeyboard = new Keyboard;
 	mTouch = new Touch;
 
+	JoystickImpl::Impl_Init_SDL2();
+
 	mJoysticks.resize( PORO_WINDOWS_JOYSTICK_COUNT );
 	for( int i = 0; i < PORO_WINDOWS_JOYSTICK_COUNT; ++i ) {
 		mJoysticks[ i ] = new JoystickImpl( i );

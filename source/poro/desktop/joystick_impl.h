@@ -55,7 +55,7 @@ private:
 #ifndef PORO_USE_XINPUT
 	void Impl_SDL2_OnAdded();
 	void Impl_SDL2_OnRemoved();
-	void Impl_Init_SDL2();
+	static void Impl_Init_SDL2();
 
 	int Impl_GetSDLInstanceID() const { return mSDLInstanceID; }
 #endif
@@ -65,7 +65,6 @@ private:
 	_SDL_GameController* mSDLGameController;
 	_SDL_Haptic*		 mSDLHaptic;
 	int					 mSDLInstanceID;
-	bool mInitialized;
 };
 
 

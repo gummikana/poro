@@ -38,10 +38,9 @@ namespace {
 
 JoystickImpl::JoystickImpl( int id ) :
 	Joystick( id ),
-	mInitialized( false ),
 	mSDLGameController( NULL )
 {
-	Impl_SDL2_OnAdded();
+	Init();
 }
 
 JoystickImpl::~JoystickImpl()
@@ -55,14 +54,10 @@ void JoystickImpl::Init()
 	mSDLHaptic = NULL;
 	mSDLInstanceID = 0;
 
-	// SDL2 ..
-	Impl_Init_SDL2();
-
 	/// find the joystick
 	const int num_joysticks = SDL_NumJoysticks();
 	const int my_poro_id = GetId();
-
-	
+	bool connected = false;
 
 	if (my_poro_id < num_joysticks)
 	{
@@ -81,6 +76,7 @@ void JoystickImpl::Init()
 				{
 					mSDLInstanceID = SDL_JoystickInstanceID(joystick);
 				}
+				connected = true;
 			}
 		}
 		else
@@ -98,8 +94,9 @@ void JoystickImpl::Init()
 				std::cout << "   Joystick( " << my_poro_id << " ) - doesn't support haptic" << std::endl;
 			}
 		}
-
 	}
+
+	SetConnected(connected);
 }
 
 void JoystickImpl::Exit()
@@ -291,13 +288,9 @@ void JoystickImpl::Impl_SDL2_OnRemoved()
 
 void JoystickImpl::Impl_Init_SDL2()
 {
-	if ( mInitialized )
-		return;
-
 	int success = SDL_Init( SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC );
 	SDL_GameControllerEventState( SDL_QUERY );
 
-	mInitialized = true;
 }
 
 #endif
