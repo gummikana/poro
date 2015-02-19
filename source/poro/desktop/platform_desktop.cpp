@@ -430,10 +430,10 @@ void PlatformDesktop::Destroy()
 	for( std::size_t i = 0; i < mJoysticks.size(); ++i )
 		delete mJoysticks[ i ];
 
+	mJoysticks.clear();
+
 	delete mEventRecorder;
 	mEventRecorder = NULL;
-
-	mJoysticks.clear();
 }
 //-----------------------------------------------------------------------------
 

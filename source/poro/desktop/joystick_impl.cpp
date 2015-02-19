@@ -152,13 +152,13 @@ void JoystickImpl::Vibrate(const types::vec2& motor_forces, float time_in_second
     XInputSetState(controller_n, &vibration);
 #else
 	// SDL rumble 
-	if (mSDLHaptic)
-	{
-		const float length = ClampValue(sqrtf(motor_forces.x * motor_forces.x + motor_forces.y * motor_forces.y), 0.f, 1.f);
-		SDL_HapticRumblePlay(mSDLHaptic, length, (Uint32)( time_in_seconds * 1000.f ));
-	}
-#endif
+	if (mSDLHaptic == NULL)
+		return;
 
+	const float length = ClampValue(sqrtf(motor_forces.x * motor_forces.x + motor_forces.y * motor_forces.y), 0.f, 1.f);
+	SDL_HapticRumblePlay(mSDLHaptic, length, (Uint32)( time_in_seconds * 1000.f ));
+	
+#endif
 
 }
 
@@ -226,6 +226,9 @@ void JoystickImpl::Update()
 	SetLeftStick( left_stick );
 	SetRightStick( right_stick );
 #else
+	
+	if( GetConnected() == false || mSDLGameController == NULL )
+		return;
 
 	const float MAXBYTE = (float)32768;
 
@@ -290,6 +293,7 @@ void JoystickImpl::Impl_Init_SDL2()
 {
 	int success = SDL_Init( SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC );
 	SDL_GameControllerEventState( SDL_QUERY );
+	SDL_JoystickEventState(SDL_QUERY);
 
 }
 
