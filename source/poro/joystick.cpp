@@ -34,7 +34,8 @@ Joystick::Joystick( int id ) :
 	mRightStick( 0, 0 ),
 	mButtonsDown( Joystick::JOY_BUTTON_COUNT ),
 	mAnalogButtons( JOYSTICK_ANALOG_BUTTON_COUNT ),
-	mConnected( false )
+	mConnected( false ),
+	mIsGamePad( false)
 {
 	// just making sure everything is set to 0
 	for( std::size_t i = 0; i < mButtonsDown.size(); ++i )

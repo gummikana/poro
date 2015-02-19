@@ -36,40 +36,60 @@ public:
 
 	enum JoystickButtons
 	{
-		JOY_BUTTON_DPAD_UP				= 0,
-		JOY_BUTTON_DPAD_DOWN			= 1,
-		JOY_BUTTON_DPAD_LEFT        	= 2,
-		JOY_BUTTON_DPAD_RIGHT       	= 3,
+		// These are the beginning so that ANALOG_00 matches GetAnalogButton(0)
+		JOY_BUTTON_ANALOG_00_MOVED = 0,
+		JOY_BUTTON_ANALOG_01_MOVED = 1,
+		JOY_BUTTON_ANALOG_02_MOVED = 2,
+		JOY_BUTTON_ANALOG_03_MOVED = 3,
+		JOY_BUTTON_ANALOG_04_MOVED = 4,
+		JOY_BUTTON_ANALOG_05_MOVED = 5,
+		JOY_BUTTON_ANALOG_06_MOVED = 6,
+		JOY_BUTTON_ANALOG_07_MOVED = 7,
+		JOY_BUTTON_ANALOG_08_MOVED = 8,
+		JOY_BUTTON_ANALOG_09_MOVED = 9,
+
+		JOY_BUTTON_DPAD_UP				= 10,
+		JOY_BUTTON_DPAD_DOWN			= 11,
+		JOY_BUTTON_DPAD_LEFT        	= 12,
+		JOY_BUTTON_DPAD_RIGHT       	= 13,
 		
-		JOY_BUTTON_START            	= 4,
-		JOY_BUTTON_BACK             	= 5,
-		JOY_BUTTON_LEFT_THUMB       	= 6,
-		JOY_BUTTON_RIGHT_THUMB      	= 7,
-		JOY_BUTTON_LEFT_SHOULDER    	= 8,
-		JOY_BUTTON_RIGHT_SHOULDER   	= 9,
+		JOY_BUTTON_START            	= 14,
+		JOY_BUTTON_BACK             	= 15,
+		JOY_BUTTON_LEFT_THUMB       	= 16,
+		JOY_BUTTON_RIGHT_THUMB      	= 17,
+		JOY_BUTTON_LEFT_SHOULDER    	= 18,
+		JOY_BUTTON_RIGHT_SHOULDER   	= 19,
 
-		JOY_BUTTON_LEFT_STICK_MOVED		= 10,
-		JOY_BUTTON_RIGHT_STICK_MOVED	= 11,
+		JOY_BUTTON_LEFT_STICK_MOVED		= 20,
+		JOY_BUTTON_RIGHT_STICK_MOVED	= 21,
 
-		JOY_BUTTON_0					= 12,
-		JOY_BUTTON_1					= 13,
-		JOY_BUTTON_2					= 14,
-		JOY_BUTTON_3					= 15,
-		JOY_BUTTON_4					= 16,
-		JOY_BUTTON_5					= 17,
+		JOY_BUTTON_0					= 22,
+		JOY_BUTTON_1					= 23,
+		JOY_BUTTON_2					= 24,
+		JOY_BUTTON_3					= 25,
+		JOY_BUTTON_4					= 26,
+		JOY_BUTTON_5					= 27,
+		JOY_BUTTON_6					= 28,
+		JOY_BUTTON_7					= 29,
+		JOY_BUTTON_8					= 30,
+		JOY_BUTTON_9					= 31,
+		JOY_BUTTON_10					= 32,
+		JOY_BUTTON_11					= 33,
+		JOY_BUTTON_12					= 34,
+		JOY_BUTTON_13					= 35,
+		JOY_BUTTON_14					= 36,
+		JOY_BUTTON_15					= 37,
 
-		JOY_BUTTON_ANALOG_00_MOVED		= 18,
-		JOY_BUTTON_ANALOG_01_MOVED		= 19,
-		JOY_BUTTON_ANALOG_02_MOVED		= 20,
-		JOY_BUTTON_ANALOG_03_MOVED		= 21,
-		JOY_BUTTON_ANALOG_04_MOVED		= 22,
-		JOY_BUTTON_ANALOG_05_MOVED		= 23,
-		JOY_BUTTON_ANALOG_06_MOVED		= 24,
-		JOY_BUTTON_ANALOG_07_MOVED		= 25,
-		JOY_BUTTON_ANALOG_08_MOVED		= 26,
-		JOY_BUTTON_ANALOG_09_MOVED		= 27,
+		// note, if you add more buttons, remember to set JOY_BUTTON_MAX to the last one
 
-		JOY_BUTTON_COUNT
+		JOY_BUTTON_COUNT,
+
+		// ------ extra alias stuff ------
+		JOY_BUTTON_MAX = JOY_BUTTON_15, 
+		JOY_BUTTON_A = JOY_BUTTON_0,
+		JOY_BUTTON_B = JOY_BUTTON_1,
+		JOY_BUTTON_X = JOY_BUTTON_2,
+		JOY_BUTTON_Y = JOY_BUTTON_3,
 	};
 
 	// Listeners will not be released
@@ -79,6 +99,11 @@ public:
 	// Fires an event about connection
 	void SetConnected( bool value );
 	bool GetConnected() const;
+	bool IsConnected() const { return GetConnected(); }
+
+	// if it's a gamepad like 360 controller or not
+	void SetGamePad(bool is_game_pad);
+	bool IsGamePad() const;
 
 	// Fires an event about the new button state	
 	void SetButtonState( int button, bool is_down );
@@ -100,6 +125,8 @@ public:
 	void SetAnalogButton( int button, float value );
 
 	// returns analog value
+	// 0 is the first analog button or 
+	// JOY_BUTTON_ANALOG_00_MOVED should work as well
 	float GetAnalogButton( int button ) const;
 
 	// values are between [0 and 1]
@@ -119,12 +146,21 @@ private:
 	std::vector< bool >		mButtonsDown;
 	std::vector< float >	mAnalogButtons;
 	bool mConnected;
+	bool mIsGamePad;
 };
 
 //---------------------- inlined functions ------------------------------------
 
 inline bool Joystick::GetConnected() const { 
 	return mConnected; 
+}
+
+inline void Joystick::SetGamePad(bool is_game_pad) {
+	mIsGamePad = is_game_pad;
+}
+
+inline bool Joystick::IsGamePad() const {
+	return mIsGamePad;
 }
 
 inline bool Joystick::IsButtonDown( int button ) const {
