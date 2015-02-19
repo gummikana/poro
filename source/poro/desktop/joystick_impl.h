@@ -55,10 +55,10 @@ private:
 
 	void Impl_SDL2_OnAdded();
 	void Impl_SDL2_OnRemoved();
-	static void Impl_Init_SDL2();
-
 	int Impl_GetSDLInstanceID() const { return mSDLInstanceID; }
 
+	// Initializes SDL joystick, needs to be called before using joysticks
+	static void Impl_Init_SDL2();
 
 	// TODO(Petri): Wrap these into a structure
 	_SDL_GameController*	mSDLGameController;

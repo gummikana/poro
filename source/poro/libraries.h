@@ -38,7 +38,6 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <SDL.h>
-// #include <SDL_image.h>
 #include <SDL_mixer.h>
 #include <GLEW/GLEW.h>
 #include <GLUT/glut.h>
@@ -50,7 +49,6 @@
 #ifdef PORO_PLAT_LINUX
 
 #include <SDL.h>
-// #include <SDL_image.h>
 #include <SDL_mixer.h>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
@@ -64,16 +62,9 @@
 #ifdef PORO_PLAT_WINDOWS
 
 #	pragma comment( lib, "sdl2.lib" )
-// #	pragma comment( lib, "sdl_image.lib" )
 #	pragma comment( lib, "opengl32.lib" )
 #	pragma comment( lib, "glu32.lib" )
 #	pragma comment( lib, "glew32.lib" )
-
-#	ifdef PORO_USE_XINPUT
-#		pragma comment( lib, "XInput.lib")
-#	endif
-
-#	define WIN32_LEAN_AND_MEAN
 
 /*
 #	ifdef _MSC_VER
@@ -81,13 +72,8 @@
 #	endif
 */
 #	include <SDL.h>
-// #	include <SDL_image.h>
 #	include <sdl_mixer.h>
 #	include <GL/glew.h>
-
-#	ifdef PORO_USE_XINPUT
-#		include <xinput.h>		// needed for proper handling of 360 game pad
-#	endif
 
 #endif
 
