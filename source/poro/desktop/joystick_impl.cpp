@@ -63,7 +63,10 @@ void JoystickImpl::Init()
 	if (my_poro_id < num_joysticks)
 	{
 		const char* joystick_name = SDL_JoystickNameForIndex(my_poro_id);
-		std::cout << "SDL - Found a joystick - " << my_poro_id << " with name: " << (joystick_name ? joystick_name : "") << std::endl;
+		if (joystick_name) 
+			SetName(joystick_name);
+
+		std::cout << "SDL - Found a joystick - " << my_poro_id << " with name: " << GetName() << std::endl;
 		if (SDL_IsGameController(my_poro_id))
 		{
 			std::cout << "   Joystick is game controller - " << my_poro_id << std::endl;

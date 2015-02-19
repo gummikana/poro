@@ -30,6 +30,7 @@ const int JOYSTICK_ANALOG_BUTTON_COUNT = ( Joystick::JOY_BUTTON_ANALOG_09_MOVED 
 Joystick::Joystick( int id ) :
 	mListeners(),
 	mId( id ),
+	mName("(unknown)"),
 	mLeftStick( 0, 0 ),
 	mRightStick( 0, 0 ),
 	mButtonsDown( Joystick::JOY_BUTTON_COUNT ),

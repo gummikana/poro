@@ -133,12 +133,19 @@ public:
 	// can be implemented on the platform is available
 	virtual void Vibrate( const types::vec2& motor_forces, float time_in_seconds = 0.2f ) { }
 
+	// returns the id given at construction
 	int GetId() const;
+
+	// returns the name that is given by SetName(), 
+	// the platform should implement the SetName
+	std::string GetName() const;
+	void SetName(const std::string& name);
 
 private:
 	std::vector< IJoystickListener* > mListeners;
 
 	int mId;
+	std::string mName;
 
 	types::vec2 mLeftStick;
 	types::vec2 mRightStick;
@@ -178,16 +185,25 @@ inline types::vec2 Joystick::GetRightStick() const {
 	return mRightStick; 
 }
 
-inline int Joystick::GetId() const { 
+inline float Joystick::GetAnalogButton(int button) const {
+	poro_assert(button >= 0);
+	poro_assert(button < (int)mAnalogButtons.size());
+
+	return mAnalogButtons[button];
+}
+
+inline int Joystick::GetId() const {
 	return mId; 
 }
 
-inline float Joystick::GetAnalogButton( int button ) const {
-	poro_assert( button >= 0 );
-	poro_assert( button < (int)mAnalogButtons.size() );
+inline std::string Joystick::GetName() const {
+	return mName;
+}
 
-	return mAnalogButtons[ button ];
-}	
+inline void Joystick::SetName(const std::string& name) {
+	mName = name;
+}
+
 
 } // end of namespace poro
 
