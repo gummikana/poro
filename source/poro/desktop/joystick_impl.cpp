@@ -295,8 +295,8 @@ void JoystickImpl::Update()
 		// TODO( Petri ): Make this a bit more robust, deal with hats etc...
 
 		int button_count = SDL_JoystickNumButtons(mSDLJoystick);
-		if (button_count > ( Joystick::JOY_BUTTON_COUNT - Joystick::JOY_BUTTON_0 ) + 1)
-			button_count = ( Joystick::JOY_BUTTON_COUNT - Joystick::JOY_BUTTON_0 ) + 1;
+		if (button_count > ( Joystick::JOY_BUTTON_COUNT - Joystick::JOY_BUTTON_0 ))
+			button_count = ( Joystick::JOY_BUTTON_COUNT - Joystick::JOY_BUTTON_0 );
 
 		for (int i = 0; i < button_count; ++i)
 		{
