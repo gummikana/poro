@@ -343,7 +343,7 @@ void TestSDL_Keycodes()
 
 namespace poro {
 
-const int PORO_WINDOWS_JOYSTICK_COUNT = 4;
+const int PORO_WINDOWS_JOYSTICK_COUNT = 8;
 
 //-----------------------------------------------------------------------------
 
@@ -557,7 +557,6 @@ void PlatformDesktop::HandleEvents()
 	}
 
 	//---------
-
 	// Handle events
 	SDL_Event event;
 	while( SDL_PollEvent( &event ) )
@@ -640,9 +639,29 @@ void PlatformDesktop::HandleEvents()
 			case SDL_CONTROLLERDEVICEADDED:
 				{
 					std::cout << "PlatformDesktop - SDL2 gamepad added " << event.jdevice.which << std::endl;
-					JoystickImpl* device = (JoystickImpl*)GetJoystick( event.jdevice.which );
+
+					// There's 2 ways of handling this,
+					// 1) "nicer way", the problem with this handling is that the joystick's
+					// device id might override an existing devices id. If that happens, then 
+					// one of the joysticks is booted out and the other takes it's place
+					/*JoystickImpl* device = (JoystickImpl*)GetJoystick( event.jdevice.which );
 					if ( device )
 						device->Impl_SDL2_OnAdded();
+						*/
+
+					// 2) The hackish way, we just "flush all the joysticks"
+					// this might push back joysticks (so what happens is that the joystick order)
+					// is reorganized
+					for (int i = 0; i < GetJoystickCount(); ++i)
+					{
+						((JoystickImpl*)GetJoystick(i))->Impl_SDL2_OnRemoved();
+					}
+
+					for (int i = 0; i < GetJoystickCount(); ++i)
+					{
+						((JoystickImpl*)GetJoystick(i))->Impl_SDL2_OnAdded();
+					}
+
 				}
 				break;
 

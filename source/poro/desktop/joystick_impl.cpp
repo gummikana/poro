@@ -60,13 +60,15 @@ void JoystickImpl::Init()
 	const int my_poro_id = GetId();
 	bool connected = false;
 
+	std::cout << "my_poro_id < num_joysticks : " << my_poro_id << " < " << num_joysticks << std::endl;
+
 	if (my_poro_id < num_joysticks)
 	{
 		const char* joystick_name = SDL_JoystickNameForIndex(my_poro_id);
 		if (joystick_name) 
 			SetName(joystick_name);
 
-		std::cout << "SDL - Found a joystick - " << my_poro_id << " with name: " << GetName() << std::endl;
+		std::cout << "SDL - Found a joystick - " << my_poro_id << " with name: " << GetName() << " - " << std::endl;
 		if (SDL_IsGameController(my_poro_id))
 		{
 			std::cout << "   Joystick is game controller - " << my_poro_id << std::endl;
@@ -135,6 +137,8 @@ void JoystickImpl::Exit()
 		SDL_HapticClose(mSDLHaptic);
 		mSDLHaptic = NULL;
 	}
+
+	SetConnected(false);
 }
 
 
@@ -241,7 +245,7 @@ void JoystickImpl::Impl_SDL2_OnAdded()
 {
 	std::cout << "SDL2 gamepad added " <<  std::endl;
 	Init();
-	SetConnected(true);
+	// SetConnected(true);
 }
 
 
@@ -249,7 +253,6 @@ void JoystickImpl::Impl_SDL2_OnRemoved()
 {
 	std::cout << "SDL2 gamepad removed " <<  std::endl;
 	Exit();
-	SetConnected(false);
 }
 
 void JoystickImpl::Impl_Init_SDL2()
