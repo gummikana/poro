@@ -638,7 +638,7 @@ void PlatformDesktop::HandleEvents()
 			case SDL_JOYDEVICEADDED:
 			case SDL_CONTROLLERDEVICEADDED:
 				{
-					std::cout << "PlatformDesktop - SDL2 gamepad added " << event.jdevice.which << std::endl;
+					// std::cout << "PlatformDesktop - SDL2 gamepad added " << event.jdevice.which << std::endl;
 
 					// There's 2 ways of handling this,
 					// 1) "nicer way", the problem with this handling is that the joystick's
@@ -668,7 +668,7 @@ void PlatformDesktop::HandleEvents()
 			case SDL_JOYDEVICEREMOVED:
 			case SDL_CONTROLLERDEVICEREMOVED: 
 				{
-					std::cout << "PlatformDesktop - SDL2 gamepad removed " << event.jdevice.which << std::endl;
+					// std::cout << "PlatformDesktop - SDL2 gamepad removed " << event.jdevice.which << std::endl;
 					int instance_id = event.jdevice.which;
 					JoystickImpl* unplugged_device = NULL;
 					for (int i = 0; i < GetJoystickCount(); ++i)

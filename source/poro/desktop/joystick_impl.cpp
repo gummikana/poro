@@ -60,22 +60,20 @@ void JoystickImpl::Init()
 	const int my_poro_id = GetId();
 	bool connected = false;
 
-	std::cout << "my_poro_id < num_joysticks : " << my_poro_id << " < " << num_joysticks << std::endl;
-
 	if (my_poro_id < num_joysticks)
 	{
 		const char* joystick_name = SDL_JoystickNameForIndex(my_poro_id);
 		if (joystick_name) 
 			SetName(joystick_name);
 
-		std::cout << "SDL - Found a joystick - " << my_poro_id << " with name: " << GetName() << " - " << std::endl;
+		// std::cout << "SDL - Found a joystick - " << my_poro_id << " with name: " << GetName() << " - " << std::endl;
 		if (SDL_IsGameController(my_poro_id))
 		{
-			std::cout << "   Joystick is game controller - " << my_poro_id << std::endl;
+			// std::cout << "   Joystick is game controller - " << my_poro_id << std::endl;
 			mSDLGameController = SDL_GameControllerOpen(my_poro_id);
 			if (mSDLGameController)
 			{
-				std::cout << "   Game controller opened succesfully - " << my_poro_id << std::endl;
+				// std::cout << "   Game controller opened succesfully - " << my_poro_id << std::endl;
 				// mSDLGameController = controller;
 				SDL_Joystick* joystick = SDL_GameControllerGetJoystick(mSDLGameController);
 				if (joystick)
@@ -93,13 +91,13 @@ void JoystickImpl::Init()
 			mSDLJoystick = SDL_JoystickOpen(my_poro_id);
 			if (mSDLJoystick)
 			{
-				std::cout << "SDL - found a joystick " << std::endl;
+				// std::cout << "SDL - found a joystick " << std::endl;
 				mSDLInstanceID = SDL_JoystickInstanceID(mSDLJoystick);
 				connected = true;
 			}
 			else
 			{
-				std::cout << "SDL - joystick( " << my_poro_id << " ) is not a supported Game Controller" << std::endl;
+				// std::cout << "SDL - joystick( " << my_poro_id << " ) is not a supported Game Controller" << std::endl;
 			}
 		}
 
@@ -107,10 +105,10 @@ void JoystickImpl::Init()
 		mSDLHaptic = SDL_HapticOpen(my_poro_id);
 		if (mSDLHaptic)
 		{
-			std::cout << "   Joystick( " << my_poro_id << " ) - opened haptic" << std::endl;
+			// std::cout << "   Joystick( " << my_poro_id << " ) - opened haptic" << std::endl;
 			if (SDL_HapticRumbleInit(mSDLHaptic) != 0)
 			{
-				std::cout << "   Joystick( " << my_poro_id << " ) - doesn't support haptic" << std::endl;
+				// std::cout << "   Joystick( " << my_poro_id << " ) - doesn't support haptic" << std::endl;
 			}
 		}
 	}
@@ -243,15 +241,14 @@ void JoystickImpl::Update()
 
 void JoystickImpl::Impl_SDL2_OnAdded()
 {
-	std::cout << "SDL2 gamepad added " <<  std::endl;
+	// std::cout << "SDL2 gamepad added " <<  std::endl;
 	Init();
-	// SetConnected(true);
 }
 
 
 void JoystickImpl::Impl_SDL2_OnRemoved()
 {
-	std::cout << "SDL2 gamepad removed " <<  std::endl;
+	// std::cout << "SDL2 gamepad removed " <<  std::endl;
 	Exit();
 }
 
