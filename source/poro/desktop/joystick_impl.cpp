@@ -159,7 +159,8 @@ void JoystickImpl::Update()
 	if( GetConnected() == false )
 		return;
 
-	const float MAXBYTE = (float)32768;
+	const float MAXBYTE_P = 32767.f;
+	const float MAXBYTE_N = 32768.f; 
 
 	if (mSDLGameController)
 	{
@@ -181,19 +182,29 @@ void JoystickImpl::Update()
 		SetButtonState(Joystick::JOY_BUTTON_X, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_X) != 0);
 		SetButtonState(Joystick::JOY_BUTTON_Y, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_Y) != 0);
 
-		float left_trigger = ((float)SDL_GameControllerGetAxis(mSDLGameController, SDL_CONTROLLER_AXIS_TRIGGERLEFT)) / MAXBYTE;
-		float right_trigger = ((float)SDL_GameControllerGetAxis(mSDLGameController, SDL_CONTROLLER_AXIS_TRIGGERRIGHT)) / MAXBYTE;
+		// Triggers are always between 0 and 32767 (according to documentation)
+		float left_trigger = ((float)SDL_GameControllerGetAxis(mSDLGameController, SDL_CONTROLLER_AXIS_TRIGGERLEFT)) / MAXBYTE_P;
+		float right_trigger = ((float)SDL_GameControllerGetAxis(mSDLGameController, SDL_CONTROLLER_AXIS_TRIGGERRIGHT)) / MAXBYTE_P;
 
 		SetAnalogButton(0, left_trigger);
 		SetAnalogButton(1, right_trigger);
 
 		types::vec2 left_stick;
 		types::vec2 right_stick;
+		int axis_value;
 
-		left_stick.x = ((float)SDL_GameControllerGetAxis(mSDLGameController, SDL_CONTROLLER_AXIS_LEFTX)) / MAXBYTE;
-		left_stick.y = ((float)SDL_GameControllerGetAxis(mSDLGameController, SDL_CONTROLLER_AXIS_LEFTY)) / MAXBYTE;
-		right_stick.x = ((float)SDL_GameControllerGetAxis(mSDLGameController, SDL_CONTROLLER_AXIS_RIGHTX)) / MAXBYTE;
-		right_stick.y = ((float)SDL_GameControllerGetAxis(mSDLGameController, SDL_CONTROLLER_AXIS_RIGHTY)) / MAXBYTE;
+		// SDL2.0 returns -32768 to 32767, need to normalize differently for negative and positive values
+		axis_value = SDL_GameControllerGetAxis(mSDLGameController, SDL_CONTROLLER_AXIS_LEFTX);
+		left_stick.x = (float)axis_value / ( ( axis_value < 0 ) ? MAXBYTE_N : MAXBYTE_P);
+
+		axis_value = SDL_GameControllerGetAxis(mSDLGameController, SDL_CONTROLLER_AXIS_LEFTY);
+		left_stick.y = (float)axis_value / ( ( axis_value < 0 ) ? MAXBYTE_N : MAXBYTE_P);
+
+		axis_value = SDL_GameControllerGetAxis(mSDLGameController, SDL_CONTROLLER_AXIS_RIGHTX);
+		right_stick.x = (float)axis_value / ( ( axis_value < 0 ) ? MAXBYTE_N : MAXBYTE_P);
+
+		axis_value = SDL_GameControllerGetAxis(mSDLGameController, SDL_CONTROLLER_AXIS_RIGHTY);
+		right_stick.y = (float)axis_value / ( ( axis_value < 0 ) ? MAXBYTE_N : MAXBYTE_P);
 
 		SetLeftStick(left_stick);
 		SetRightStick(right_stick);
@@ -221,15 +232,32 @@ void JoystickImpl::Update()
 
 			types::vec2 left_stick;
 			types::vec2 right_stick;
+			int axis_value;
 
+			// SDL 1.2.5 returned (-32768 to 32768) 
+ 			// SDL 2.0 returns -32768 to 32767
+
+			// need to handle differently for negative and positive values
 			if (axis_count > 0)
-				left_stick.x = ((float)SDL_JoystickGetAxis(mSDLJoystick, 0)) / MAXBYTE;
+			{
+				axis_value = SDL_JoystickGetAxis(mSDLJoystick, 0);
+				left_stick.x = (float)axis_value / (float)((axis_value < 0)?MAXBYTE_N : MAXBYTE_P);
+			}
 			if (axis_count > 1)
-				left_stick.y = ((float)SDL_JoystickGetAxis(mSDLJoystick, 1)) / MAXBYTE;
+			{
+				axis_value = SDL_JoystickGetAxis(mSDLJoystick, 1);
+				left_stick.y = (float)axis_value / (float)((axis_value < 0)?MAXBYTE_N : MAXBYTE_P);
+			}
 			if (axis_count > 2)
-				right_stick.x = ((float)SDL_JoystickGetAxis(mSDLJoystick, 2)) / MAXBYTE;
+			{
+				axis_value = SDL_JoystickGetAxis(mSDLJoystick, 2);
+				right_stick.x = (float)axis_value / (float)((axis_value < 0)?MAXBYTE_N : MAXBYTE_P);
+			}
 			if (axis_count > 3)
-				right_stick.y = ((float)SDL_JoystickGetAxis(mSDLJoystick, 3)) / MAXBYTE;
+			{
+				axis_value = SDL_JoystickGetAxis(mSDLJoystick, 3);
+				right_stick.y = (float)axis_value / (float)((axis_value < 0)?MAXBYTE_N : MAXBYTE_P);
+			}
 
 			SetLeftStick(left_stick);
 			SetRightStick(right_stick);
