@@ -193,18 +193,24 @@ void JoystickImpl::Update()
 		types::vec2 right_stick;
 		int axis_value;
 
-		// SDL2.0 returns -32768 to 32767, need to normalize differently for negative and positive values
+		// SDL2.0.3 returns -32768 to 32767, need to normalize differently for negative and positive values
 		axis_value = SDL_GameControllerGetAxis(mSDLGameController, SDL_CONTROLLER_AXIS_LEFTX);
 		left_stick.x = (float)axis_value / ( ( axis_value < 0 ) ? MAXBYTE_N : MAXBYTE_P);
 
+		// SDL 2.0.3 on windows, does the Y axis clamping wrongly. 
+		// the range is from -32767 to 32767 instead of -32768 to 32767
+		// until it is fixed...
 		axis_value = SDL_GameControllerGetAxis(mSDLGameController, SDL_CONTROLLER_AXIS_LEFTY);
-		left_stick.y = (float)axis_value / ( ( axis_value < 0 ) ? MAXBYTE_N : MAXBYTE_P);
+		// left_stick.y = (float)axis_value / ( ( axis_value < 0 ) ? MAXBYTE_N : MAXBYTE_P);
+		left_stick.y = ClampValue((float)axis_value / MAXBYTE_P, -1.f, 1.f);
 
 		axis_value = SDL_GameControllerGetAxis(mSDLGameController, SDL_CONTROLLER_AXIS_RIGHTX);
 		right_stick.x = (float)axis_value / ( ( axis_value < 0 ) ? MAXBYTE_N : MAXBYTE_P);
 
+		// see the note above
 		axis_value = SDL_GameControllerGetAxis(mSDLGameController, SDL_CONTROLLER_AXIS_RIGHTY);
-		right_stick.y = (float)axis_value / ( ( axis_value < 0 ) ? MAXBYTE_N : MAXBYTE_P);
+		// right_stick.y = (float)axis_value / ( ( axis_value < 0 ) ? MAXBYTE_N : MAXBYTE_P);
+		right_stick.y = ClampValue((float)axis_value / MAXBYTE_P, -1.f, 1.f);
 
 		SetLeftStick(left_stick);
 		SetRightStick(right_stick);
@@ -236,6 +242,8 @@ void JoystickImpl::Update()
 
 			// SDL 1.2.5 returned (-32768 to 32768) 
  			// SDL 2.0 returns -32768 to 32767
+			// except on windows with XInput for Y Axis it's currently returning
+			// -32767 to 32767
 
 			// need to handle differently for negative and positive values
 			if (axis_count > 0)
