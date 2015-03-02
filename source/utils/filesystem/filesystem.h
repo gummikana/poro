@@ -25,9 +25,19 @@ namespace ceng
 	// every line is a separate element in the vector
 	void ReadFileToVector( const std::string& filename, std::vector< std::string >& output );		
 
+	// path/to/file.txt returns file.txt
 	std::string GetFilename( const std::string& filename );
-	std::string GetFileExtension( const std::string& filename );
-	std::string GetFilenameWithoutExtension( const std::string& filename );
+
+	// path/to/file.txt returns txt
+	std::string GetFileExtension(const std::string& filename);
+
+	// path/to/file.txt return path/to/file
+	std::string GetWithoutExtension(const std::string& filename);
+
+	// path/to/file.txt returns file
+	std::string GetFilenameWithoutExtension(const std::string& filename);
+
+	// path/to/file.txt returns path/to
 	std::string GetParentPath( const std::string& path );
 
 	// example MakeUniqueFilename( "test", "png" ) returns "test", if it's free

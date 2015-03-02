@@ -368,6 +368,15 @@ std::string GetFileExtension( const std::string& filename )
 	return "";
 }
 
+std::string GetWithoutExtension(const std::string& filename)
+{
+	unsigned int p = filename.find_last_of(".");
+	if (p < filename.size())
+		return filename.substr(0, p);
+
+	return filename;
+}
+
 std::string GetFilenameWithoutExtension( const std::string& filename )
 {
 	std::string result = GetFilename( filename );
