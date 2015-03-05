@@ -54,6 +54,9 @@ class SpriteAnimationUpdater;
 class Sprite : public DisplayObjectContainer
 {
 public:
+	static int culled_this_frame;
+	static int rendered_this_frame;
+
 	typedef poro::ITexture Image;
 
 	Sprite();
@@ -124,10 +127,10 @@ public:
 	bool		GetClearTweens() const			{ return mClearTweens; }
 
 
-	virtual bool Draw( poro::IGraphics* graphics, types::camera* camera, Transform& transform );
+	virtual void Draw( poro::IGraphics* graphics, types::camera* camera, Transform& transform );
 protected:
-	virtual bool DrawChildren( poro::IGraphics* graphics, types::camera* camera, Transform& transform );
-	virtual bool DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const Transform& transform );
+	void DrawChildren( poro::IGraphics* graphics, types::camera* camera, Transform& transform );
+	virtual void DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const Transform& transform );
 
 public:
 

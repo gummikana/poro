@@ -20,6 +20,7 @@
 
 #include "sprite.h"
 #include <map>
+#include <climits>
 
 // LoadSprite requires these
 #include "../../poro/iplatform.h"
@@ -35,6 +36,7 @@
 
 #include "asset_loading/Animations.h"
 #include "asset_loading/AnimationUpdater.h"
+
 
 namespace as { 
 
@@ -370,8 +372,6 @@ void ReleasePreloadedTexture( const std::string& filename )
 		mTextureBuffer.erase( i );
 	}
 }
-
-
 //-----------------------------------------------------------------------------
 
 poro::ITexture* GetTexture( const std::string& filename )
@@ -399,7 +399,6 @@ ceng::CArray2D< Uint32 >* GetImageData( const std::string& filename, bool load_a
 
 	return image_data;
 }
-
 //-----------------------------------------------------------------------------
 
 void LoadSpriteTo( const std::string& filename, as::Sprite* result )
@@ -445,6 +444,11 @@ void LoadSpriteTo( const std::string& filename, as::Sprite* result )
 		return;
 	}
 }
+
+//-----------------------------------------------------------------------------
+
+int Sprite::culled_this_frame;
+int Sprite::rendered_this_frame;
 
 //-----------------------------------------------------------------------------
 
@@ -574,18 +578,21 @@ poro::IGraphicsBuffer* Sprite::GetAlphaBuffer( poro::IGraphics* graphics )
 	return mAlphaBuffer;
 }
 
-bool Sprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& transform ) 
+void Sprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& transform ) 
 { 
+	// cull clearly invisible sprites
 	if( mVisible == false || this->GetScaleX() == 0 || this->GetScaleY() == 0 )
-		return true;
+		return;
 
+#ifdef PORO_GRAPHICS_API_OLD
+	// no idea what this monster is doing but can we just get rid of it, ok?
 	poro::IGraphicsBuffer* alpha_buffer = NULL;
 	poro::IGraphics* ex_graphics = NULL;
 	// if we have an alpha mask we set it up drawing with it
 	if( mAlphaMask )
 	{
 		if( mAlphaMask->GetScaleX() == 0 || mAlphaMask->GetScaleY() == 0 )
-			return true;
+			return;
 
 		alpha_buffer = mAlphaMask->GetAlphaBuffer( graphics );
 		if( alpha_buffer )
@@ -608,17 +615,17 @@ bool Sprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& 
 			graphics = alpha_buffer;
 		}
 	}
-
+#endif
 	
 	if( mRect ) 
 		DrawRect( *mRect, graphics, camera, transform );  
 	else 
 		DrawRect( types::rect( 0, 0, mSize.x, mSize.y ), graphics, camera, transform ); 
 	
-	
 	// draw all children
 	DrawChildren( graphics, camera, transform );
 
+#if PORO_GRAPHICS_API_OLD
 	if( mAlphaMask && alpha_buffer ) 
 	{
 		cassert( ex_graphics );
@@ -635,16 +642,14 @@ bool Sprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& 
 		mAlphaMask->Draw( graphics, camera, transform );
 		transform.PopXForm();
 	}
-	
-	return true;
+#endif
 }
-
 //-----------------------------------------------------------------------------
 
-bool Sprite::DrawChildren( poro::IGraphics* graphics, types::camera* camera, Transform& transform )
+void Sprite::DrawChildren( poro::IGraphics* graphics, types::camera* camera, Transform& transform )
 {
-	if( mChildren.empty() )
-		return true;
+	if ( mChildren.empty() )
+		return;
 
 	transform.PushXForm( mXForm, mColor );
 
@@ -681,106 +686,125 @@ bool Sprite::DrawChildren( poro::IGraphics* graphics, types::camera* camera, Tra
 	}
 
 	transform.PopXForm();
-
-	return true;
 }	
-
 //-----------------------------------------------------------------------------
 
-bool Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const Transform& transform )
+void Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const Transform& transform )
 {
 	if( mTexture == NULL && mAlphaBuffer == NULL )
-		return false;
+		return;
 
 	static poro::types::vec2 temp_verts[ 4 ];
 	static poro::types::vec2 tex_coords[ 4 ];
 	static poro::types::vec2 alpha_tex_coords[ 4 ];
 
-	if( true  )
+	const types::xform& matrix = transform.GetXForm();
+	const std::vector< float >& tcolor = transform.GetColor();
+
+	types::rect dest_rect(rect.x, rect.y, rect.w, rect.h );
+	poro::types::fcolor color_me = poro::GetFColor( 
+		mColor[ 0 ] * tcolor[ 0 ], 
+		mColor[ 1 ] * tcolor[ 1 ], 
+		mColor[ 2 ] * tcolor[ 2 ], 
+		mColor[ 3 ] * tcolor[ 3 ] );
+
+#if PORO_GRAPHICS_API_OLD
+	if( graphics ) // removed this because this is close to being the worst possible place to test for the existence of 'grahpics'
 	{
-		const types::xform& matrix = transform.GetXForm();
-		const std::vector< float >& tcolor = transform.GetColor();
+#endif
+		temp_verts[ 0 ].x = (float)0 - mCenterOffset.x;
+		temp_verts[ 0 ].y = (float)0 - mCenterOffset.y;
+		temp_verts[ 1 ].x = (float)0 - mCenterOffset.x;
+		temp_verts[ 1 ].y = (float)dest_rect.h - mCenterOffset.y;
+		temp_verts[ 3 ].x = (float)(dest_rect.w) - mCenterOffset.x;
+		temp_verts[ 3 ].y = (float)0 - mCenterOffset.y;
+		temp_verts[ 2 ].x = (float)dest_rect.w - mCenterOffset.x;
+		temp_verts[ 2 ].y = (float)dest_rect.h - mCenterOffset.y;
 
-		types::rect dest_rect(rect.x, rect.y, rect.w, rect.h );
-		poro::types::fcolor color_me = poro::GetFColor( 
-			mColor[ 0 ] * tcolor[ 0 ], 
-			mColor[ 1 ] * tcolor[ 1 ], 
-			mColor[ 2 ] * tcolor[ 2 ], 
-			mColor[ 3 ] * tcolor[ 3 ] );
+#if PORO_GRAPHICS_API_OLD
+		if( mAlphaBuffer ) { 
+			types::rect alpha_rect( 0, 0, 0, 0 );
 
-		if( graphics ) 
-		{
+			alpha_rect.w = (float)mAlphaBuffer->GetTexture()->GetWidth();
+			alpha_rect.h = (float)mAlphaBuffer->GetTexture()->GetHeight();
 
-			temp_verts[ 0 ].x = (float)0 - mCenterOffset.x;
-			temp_verts[ 0 ].y = (float)0 - mCenterOffset.y;
-			temp_verts[ 1 ].x = (float)0 - mCenterOffset.x;
-			temp_verts[ 1 ].y = (float)dest_rect.h - mCenterOffset.y;
-			temp_verts[ 3 ].x = (float)(dest_rect.w) - mCenterOffset.x;
-			temp_verts[ 3 ].y = (float)0 - mCenterOffset.y;
-			temp_verts[ 2 ].x = (float)dest_rect.w - mCenterOffset.x;
-			temp_verts[ 2 ].y = (float)dest_rect.h - mCenterOffset.y;
-
-			tex_coords[ 0 ].x = dest_rect.x;
-			tex_coords[ 0 ].y = dest_rect.y;
-			tex_coords[ 1 ].x = dest_rect.x;
-			tex_coords[ 1 ].y = dest_rect.y + dest_rect.h;
-			tex_coords[ 3 ].x = dest_rect.x + dest_rect.w;
-			tex_coords[ 3 ].y = dest_rect.y;
-			tex_coords[ 2 ].x = dest_rect.x + dest_rect.w;
-			tex_coords[ 2 ].y = dest_rect.y + dest_rect.h;
-
-			if( mAlphaBuffer ) { 
-				types::rect alpha_rect( 0, 0, 0, 0 );
-
-				alpha_rect.w = (float)mAlphaBuffer->GetTexture()->GetWidth();
-				alpha_rect.h = (float)mAlphaBuffer->GetTexture()->GetHeight();
-
-				alpha_rect.w = dest_rect.w;
-				alpha_rect.h = dest_rect.h;
-				alpha_tex_coords[ 0 ].x = alpha_rect.x;
-				alpha_tex_coords[ 0 ].y = alpha_rect.y;
-				alpha_tex_coords[ 1 ].x = alpha_rect.x;
-				alpha_tex_coords[ 1 ].y = alpha_rect.y + alpha_rect.h;
-				alpha_tex_coords[ 3 ].x = alpha_rect.x + alpha_rect.w;
-				alpha_tex_coords[ 3 ].y = alpha_rect.y;
-				alpha_tex_coords[ 2 ].x = alpha_rect.x + alpha_rect.w;
-				alpha_tex_coords[ 2 ].y = alpha_rect.y + alpha_rect.h;
-			}
-
-			if( true )
-			{
-				for( int i = 0; i < 4; ++i )
-				{
-					temp_verts[ i ] = ceng::math::MulWithScale( mXForm,  temp_verts[ i ] );
-					temp_verts[ i ] = ceng::math::MulWithScale( matrix, temp_verts[ i ] );
-					
-					if( camera )
-						temp_verts[ i ] = camera->Transform( temp_verts[ i ] );
-				}
-			}
-
-			// blend mode
-			if( mBlendMode != poro::IGraphics::BLEND_MODE_NORMAL )
-				graphics->PushBlendMode( mBlendMode );
-
-			if( mAlphaBuffer ) 
-			{
-				graphics->DrawTextureWithAlpha( mTexture, temp_verts, tex_coords, 4, color_me,
-					mAlphaBuffer->GetTexture(), temp_verts, alpha_tex_coords, color_me );
-			}
-			else
-			{
-				graphics->DrawTexture( mTexture, temp_verts, tex_coords, 4, color_me );
-			}
-
-			if( mBlendMode != poro::IGraphics::BLEND_MODE_NORMAL )
-				graphics->PopBlendMode();
-
+			alpha_rect.w = dest_rect.w;
+			alpha_rect.h = dest_rect.h;
+			alpha_tex_coords[ 0 ].x = alpha_rect.x;
+			alpha_tex_coords[ 0 ].y = alpha_rect.y;
+			alpha_tex_coords[ 1 ].x = alpha_rect.x;
+			alpha_tex_coords[ 1 ].y = alpha_rect.y + alpha_rect.h;
+			alpha_tex_coords[ 3 ].x = alpha_rect.x + alpha_rect.w;
+			alpha_tex_coords[ 3 ].y = alpha_rect.y;
+			alpha_tex_coords[ 2 ].x = alpha_rect.x + alpha_rect.w;
+			alpha_tex_coords[ 2 ].y = alpha_rect.y + alpha_rect.h;
 		}
-		return true;
-	}
+#endif
 
-	return false;
+		// calculate AABB for the transformed verts
+		for( int i = 0; i < 4; ++i )
+		{
+			temp_verts[ i ] = ceng::math::MulWithScale( mXForm,  temp_verts[ i ] );
+			temp_verts[ i ] = ceng::math::MulWithScale( matrix, temp_verts[ i ] );
+#if PORO_GRAPHICS_API_OLD
+			if( camera )
+				temp_verts[ i ] = camera->Transform( temp_verts[ i ] );
+#endif
+		}
+
+		using namespace std;
+		poro::types::vec2 verts_min = temp_verts[0];
+		poro::types::vec2 verts_max = temp_verts[0];
+
+		for ( int i = 1; i < 4; ++i )
+		{
+			verts_min.x = min( temp_verts[i].x, verts_min.x );
+			verts_min.y = min( temp_verts[i].y, verts_min.y );
+			verts_max.x = max( temp_verts[i].x, verts_max.x );
+			verts_max.y = max( temp_verts[i].y, verts_max.y );
+		}
+
+		if ( verts_max.x < 0 || verts_max.y < 0 || verts_min.x > graphics->GetInternalSize().x || verts_min.y > graphics->GetInternalSize().y )
+		{
+		#ifndef _DEBUG
+			culled_this_frame++;
+		#endif
+			return;
+		}
+
+	//#ifndef _DEBUG
+		rendered_this_frame++;
+	//#endif
+
+		// blend mode
+		if( mBlendMode != poro::IGraphics::BLEND_MODE_NORMAL )
+			graphics->PushBlendMode( mBlendMode );
+
+		tex_coords[ 0 ].x = dest_rect.x;
+		tex_coords[ 0 ].y = dest_rect.y;
+		tex_coords[ 1 ].x = dest_rect.x;
+		tex_coords[ 1 ].y = dest_rect.y + dest_rect.h;
+		tex_coords[ 3 ].x = dest_rect.x + dest_rect.w;
+		tex_coords[ 3 ].y = dest_rect.y;
+		tex_coords[ 2 ].x = dest_rect.x + dest_rect.w;
+		tex_coords[ 2 ].y = dest_rect.y + dest_rect.h;
+
+		if( mAlphaBuffer ) 
+		{
+			graphics->DrawTextureWithAlpha( mTexture, temp_verts, tex_coords, 4, color_me,
+				mAlphaBuffer->GetTexture(), temp_verts, alpha_tex_coords, color_me );
+		}
+		else
+		{
+			graphics->DrawTexture( mTexture, temp_verts, tex_coords, 4, color_me );
+		}
+
+		if( mBlendMode != poro::IGraphics::BLEND_MODE_NORMAL )
+			graphics->PopBlendMode();
+
+#if PORO_GRAPHICS_API_OLD
+	}
+#endif
 }
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -958,7 +982,6 @@ void Sprite::RectAnimation::Serialize( ceng::CXmlFileSys* filesys )
 	serializer.Serialize( filesys );
 }
 
-
 //-------------------------------------------------------------------------
 
 void Sprite::SetRectAnimation( RectAnimation* animation )
@@ -1014,7 +1037,6 @@ void Sprite::PlayRectAnimation( const std::string& name )
 		}
 	}
 }
-
 //-----------------------------------------------------------------------------
 
 void Sprite::PauseRectAnimation()
@@ -1022,7 +1044,6 @@ void Sprite::PauseRectAnimation()
 	if( mRectAnimation ) 
 		mRectAnimation->mPaused = true;
 }
-
 //-----------------------------------------------------------------------------
 
 bool Sprite::IsRectAnimationPlaying() const
@@ -1056,8 +1077,8 @@ std::string Sprite::GetRectAnimationName() const
 	if( mRectAnimation ) return mRectAnimation->mName;
 	return "";
 }
-
 //-----------------------------------------------------------------------------
+
 bool Sprite::IsAnimationPlaying() const
 {
 	if( mAnimationUpdater.get() == NULL ) return false;
@@ -1141,8 +1162,6 @@ types::vector2 Sprite::TransformWithAllParents( const types::vector2& mouse_pos 
 
 	return ceng::math::MulTWithScale( xform, mouse_pos );
 }
-
-
 //-----------------------------------------------------------------------------
 
 types::vector2 Sprite::MultiplyByParentXForm( const types::vector2& p ) const
@@ -1156,7 +1175,6 @@ types::vector2 Sprite::MultiplyByParentXForm( const types::vector2& p ) const
 	else 
 		return parent->MultiplyByParentXForm( result );
 }
-
 //-----------------------------------------------------------------------------
 
 void Sprite::SetAlphaMask( Sprite* alpha_mask )	{ 
@@ -1167,7 +1185,6 @@ void Sprite::SetAlphaMask( Sprite* alpha_mask )	{
 Sprite*	Sprite::GetAlphaMask() { 
 	return mAlphaMask; 
 }
-
 //-----------------------------------------------------------------------------
 
 std::vector< Sprite* > Sprite::FindSpritesAtPoint( const types::vector2& p )
@@ -1179,7 +1196,6 @@ std::vector< Sprite* > Sprite::FindSpritesAtPoint( const types::vector2& p )
 
 	return result;
 }
-
 //-----------------------------------------------------------------------------
 
 void Sprite::FindSpritesAtPointImpl( const types::vector2& pos, Transform& transform, std::vector< Sprite* >& results )
@@ -1231,6 +1247,6 @@ void Sprite::FindSpritesAtPointImpl( const types::vector2& pos, Transform& trans
 
 	transform.PopXForm();
 }
-
 //-----------------------------------------------------------------------------
+
 } // end of namespace as

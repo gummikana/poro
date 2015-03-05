@@ -250,10 +250,9 @@ void TextSprite::SetText( const std::string& text )
 	}
 }
 
-
-bool TextSprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const Transform& transform )
+void TextSprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const Transform& transform )
 {
-	return Sprite::DrawRect( rect, graphics, camera, transform );
+	Sprite::DrawRect( rect, graphics, camera, transform );
 }
 
 //-----------------------------------------------------------------------------
@@ -276,18 +275,18 @@ types::rect MultiRect( const types::xform& xform, types::rect r, const types::ve
 } // end of anonymous namespace
 //-----------------------------------------------------------------------------
 
-bool TextSprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& transform )
+void TextSprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& transform )
 { 
 	//-------------------------------------------
 	if( mVisible == false )
-		return true;
+		return;
 
 	// if we have an alpha mask we set it up drawing with it
 	if( mAlphaMask )
 	{
 		if( mAlphaMask->GetScaleX() == 0 || 
 			mAlphaMask->GetScaleY() == 0 )
-			return true;
+			return;
 	}
 
 	//------------------------------------
@@ -329,7 +328,6 @@ bool TextSprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transfo
 
 	// drawing children
 	DrawChildren( graphics, camera, transform );
-	return true;
 }
 
 void TextSprite::SetAlign( int align_type )
