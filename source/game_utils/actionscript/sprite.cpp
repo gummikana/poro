@@ -709,7 +709,7 @@ void Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 		mColor[ 3 ] * tcolor[ 3 ] );
 
 #if PORO_GRAPHICS_API_OLD
-	if( graphics ) // removed because this is close to being the worst possible place to test for the existence of 'grahpics'
+	if( graphics ) // removed because this is close to being the worst possible place to test for the existence of 'graphics'
 	{
 #endif
 		temp_verts[ 0 ].x = (float)0 - mCenterOffset.x;
