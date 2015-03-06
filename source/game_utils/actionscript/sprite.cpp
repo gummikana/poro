@@ -709,7 +709,7 @@ void Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 		mColor[ 3 ] * tcolor[ 3 ] );
 
 #if PORO_GRAPHICS_API_OLD
-	if( graphics ) // removed this because this is close to being the worst possible place to test for the existence of 'grahpics'
+	if( graphics ) // removed because this is close to being the worst possible place to test for the existence of 'grahpics'
 	{
 #endif
 		temp_verts[ 0 ].x = (float)0 - mCenterOffset.x;
@@ -741,7 +741,6 @@ void Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 		}
 #endif
 
-		// calculate AABB for the transformed verts
 		for( int i = 0; i < 4; ++i )
 		{
 			temp_verts[ i ] = ceng::math::MulWithScale( mXForm,  temp_verts[ i ] );
@@ -752,27 +751,11 @@ void Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 #endif
 		}
 
-		using namespace std;
-		poro::types::vec2 verts_min = temp_verts[0];
-		poro::types::vec2 verts_max = temp_verts[0];
-
-		for ( int i = 1; i < 4; ++i )
-		{
-			verts_min.x = min( temp_verts[i].x, verts_min.x );
-			verts_min.y = min( temp_verts[i].y, verts_min.y );
-			verts_max.x = max( temp_verts[i].x, verts_max.x );
-			verts_max.y = max( temp_verts[i].y, verts_max.y );
-		}
-
-		if ( verts_max.x < 0 || verts_max.y < 0 || verts_min.x > graphics->GetInternalSize().x || verts_min.y > graphics->GetInternalSize().y )
-		{
-		#ifndef _DEBUG
-			culled_this_frame++;
-		#endif
+		// cull the vertices so we can at least stress the graphics driver a bit less
+		if ( IsOutsideSreen( graphics, temp_verts ) )
 			return;
-		}
 
-	//#ifndef _DEBUG
+	//#ifdef _DEBUG
 		rendered_this_frame++;
 	//#endif
 
@@ -821,6 +804,34 @@ void DrawSprite( Sprite* sprite, poro::IGraphics* graphics, types::camera* camer
 
 	sprite->Draw( graphics, camera, transform );
 }
+
+bool Sprite::IsOutsideSreen(poro::IGraphics* graphics, const poro::types::vec2* verts)
+{
+	using namespace std;
+
+	// calculate AABB for the transformed verts
+	using namespace std;
+	poro::types::vec2 verts_min = verts[0];
+	poro::types::vec2 verts_max = verts[0];
+
+	for ( int i = 1; i < 4; ++i )
+	{
+		verts_min.x = min( verts[i].x, verts_min.x );
+		verts_min.y = min( verts[i].y, verts_min.y );
+		verts_max.x = max( verts[i].x, verts_max.x );
+		verts_max.y = max( verts[i].y, verts_max.y );
+	}
+
+	// don't render if outside the screen
+	bool outside_screen = verts_max.x < 0 || verts_max.y < 0 || verts_min.x > graphics->GetInternalSize().x || verts_min.y > graphics->GetInternalSize().y;
+
+//#ifdef _DEBUG
+	culled_this_frame += (int)outside_screen;
+//#endif
+
+	return outside_screen;
+}
+
 //=============================================================================
 
 void Sprite::Update( float dt )

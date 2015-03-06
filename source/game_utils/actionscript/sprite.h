@@ -131,6 +131,7 @@ public:
 protected:
 	void DrawChildren( poro::IGraphics* graphics, types::camera* camera, Transform& transform );
 	virtual void DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const Transform& transform );
+	bool IsOutsideSreen( poro::IGraphics* graphics, const poro::types::vec2* verts );
 
 public:
 

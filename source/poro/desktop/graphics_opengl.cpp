@@ -1049,6 +1049,7 @@ void GraphicsOpenGL::DrawTexture( ITexture* itexture, types::vec2* vertices, typ
 	if( color[3] <= 0 )
 		return;
 
+	// do some transformations to the texture coordinates
 	TextureOpenGL* texture = (TextureOpenGL*)itexture;
 
 	for( int i = 0; i < count; ++i )
