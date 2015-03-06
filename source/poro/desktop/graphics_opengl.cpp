@@ -750,7 +750,7 @@ void GraphicsOpenGL::ResetWindow()
 	//flags = SDL_WINDOW_OPENGL;
 		
 	if( mFullscreen ){
-		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+		flags |= SDL_WINDOW_FULLSCREEN;
 		window_width = (int)mDesktopWidth;
 		window_height = (int)mDesktopHeight;
 	} else {
@@ -801,7 +801,6 @@ void GraphicsOpenGL::ResetWindow()
 		gluOrtho2D(0, internal_width, 0, internal_height);
 	}
 }
-
 
 //=============================================================================
 
@@ -890,7 +889,6 @@ void GraphicsOpenGL::SetTextureWrappingMode( ITexture* itexture, int mode )
 		
 	glBindTexture( GL_TEXTURE_2D, 0 );
 }
-
 
 //=============================================================================
 
