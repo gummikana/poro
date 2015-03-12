@@ -675,12 +675,24 @@ bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::
 		exit(0);
 	}
 
-	SDL_DisplayMode display_mode;
-	SDL_GetWindowDisplayMode(mSDLWindow, &display_mode);
+	// use display 1 as default
+	int display_n = SDL_GetNumVideoDisplays();
+	if( display_n > 0 )
+	{
+		int monitor_i = 0;
+		SDL_DisplayMode display_mode;
+		SDL_GetDesktopDisplayMode( monitor_i, &display_mode );
 
-	mDesktopWidth = (float)display_mode.w;
-	mDesktopHeight = (float)display_mode.h;
+		mDesktopWidth = (float)display_mode.w;
+		mDesktopHeight = (float)display_mode.h;
+	}
+	else
+	{
+		mDesktopWidth = (float)width;
+		mDesktopHeight = (float)height;
+	}
 
+	// vsync? 0 = no vsync, 1 = vsync
 	SDL_GL_SetSwapInterval( 1 );
 	
 	IPlatform::Instance()->SetInternalSize( (types::Float32)width, (types::Float32)height );
@@ -748,9 +760,10 @@ void GraphicsOpenGL::ResetWindow()
 	int window_height;
 	
 	//flags = SDL_WINDOW_OPENGL;
+	// mFullscreen = true;
 		
 	if( mFullscreen ){
-		flags |= SDL_WINDOW_FULLSCREEN;
+		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 		window_width = (int)mDesktopWidth;
 		window_height = (int)mDesktopHeight;
 	} else {
