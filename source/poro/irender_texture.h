@@ -31,11 +31,9 @@ namespace poro {
 		virtual ~IRenderTexture() { }
 		virtual ITexture*	GetTexture() = 0;
 		virtual void		Release() { }
-		virtual void		BeginRendering() { };
-		virtual void		EndRendering() { };
 
-		//IGraphics
-		virtual bool		Init( int width, int height, bool fullscreen = false, const types::string& caption = "" ) = 0;
+		virtual void		BeginRendering( bool clear_color = true, bool clear_depth = true, float clear_r = 0.f, float clear_g = 0.f, float clear_b = 0.f, float clear_a = 0.f ) { };
+		virtual void		EndRendering() { };
 	};
 		
 } // end o namespace poro

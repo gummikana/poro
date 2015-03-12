@@ -83,15 +83,24 @@ void RenderTextureOpenGL::Release()
 }
 
 
-void RenderTextureOpenGL::BeginRendering()
+void RenderTextureOpenGL::BeginRendering( bool clear_color, bool clear_depth, float clear_r, float clear_g, float clear_b, float clear_a )
 {
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mBufferId);
-	glPushAttrib(GL_VIEWPORT_BIT);
-	// glViewport(0,0,mTexture.GetWidth(),mTexture.GetHeight());
-	glViewport(0,0,mTexture.GetWidth(),mTexture.GetHeight());
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, mBufferId );
+	glPushAttrib( GL_VIEWPORT_BIT );
+	glViewport( 0, 0, mTexture.GetWidth(), mTexture.GetHeight() );
 
-	glClearColor(0, 0, 0, 0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearColor( clear_r, clear_g, clear_b, clear_a );
+
+	if ( clear_color || clear_depth )
+	{
+		int clear_bits = 0;
+		if ( clear_color )
+			clear_bits |= GL_COLOR_BUFFER_BIT;
+		if ( clear_depth )
+			clear_bits |= GL_DEPTH_BUFFER_BIT;
+
+		glClear( clear_bits );
+	}
 }
 
 void RenderTextureOpenGL::EndRendering()
