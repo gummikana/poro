@@ -23,10 +23,6 @@ namespace poro {
 struct AppConfig
 {
     AppConfig() :
-        window_w( 1024 ),
-        window_h( 768 ),
-        fullscreen( false ),
-        title( "Application" ),
         internal_size_w( 1024 ),
         internal_size_h( 768 ),
         framerate( 60 ),
@@ -43,11 +39,13 @@ struct AppConfig
 
     virtual ~AppConfig() { }
 
-
+	/*
+	// Moved these into graphics_settings
     int window_w;
     int window_h;
     bool fullscreen;
     std::string title;
+	*/
 
     int internal_size_w;
     int internal_size_h;
@@ -87,7 +85,7 @@ int RunPoro( const AppConfig& conf = AppConfig()  )
 		poro_assert( poro );
 	    
         // initialize the platform:
-        poro->Init( app.get(), conf.window_w, conf.window_h, conf.fullscreen, conf.title );
+        poro->Init( app.get(), conf.graphics_settings );
 
         // recording things
         poro->SetEventRecording( conf.record_events );

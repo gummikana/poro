@@ -63,6 +63,9 @@ bool IsPointInsideAABB( const Type& point, const Type& rect_low, const Type& rec
 bool DoesLineAndBoxCollide( const CVector2< PointType >& p1, const CVector2< PointType >& p2, 
 						   const CVector2< PointType >& rect_low, const CVector2< PointType >& rect_high ); 
 
+bool DoesLineAndBoxCollide( const CVector2< PointType >& p1, const CVector2< PointType >& p2, 
+						   const CVector2< PointType >& rect_low, const CVector2< PointType >& rect_high, CVector2< PointType >& result ); 
+
 bool TestLineAABB( const CVector2< PointType >& p1, const CVector2< PointType >& p2, 
 						   const CVector2< PointType >& rect_low, const CVector2< PointType >& rect_high ); 
 

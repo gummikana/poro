@@ -57,7 +57,7 @@ public:
 	// you set the mInternalWidth and mInternalHeight to proper sizes if they
 	// haven't been set already!
 	// mInternalWidth is 0 if nobody has set it by hand same goes for mInternalHeight
-	virtual void Init(IApplication* application, int w, int h, bool fullscreen, std::string = "Poro Application");
+	virtual void Init( IApplication* application, const GraphicsSettings& graphics_settings );
 	virtual void Exit() { }
 
 	virtual void StartMainLoop() = 0;

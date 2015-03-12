@@ -234,10 +234,17 @@ bool DoesLineAndBoxCollide( const CVector2< PointType >& p1, const CVector2< Poi
 {
 	if( IsPointInsideRect( p1, rect_low, rect_high ) )
 		return true;
+
 	if( IsPointInsideRect( p2, rect_low, rect_high ) )
 		return true;
 
 	CVector2< PointType > result;
+	return DoesLineAndBoxCollide( p1, p2, rect_low, rect_high, result );
+}
+
+bool DoesLineAndBoxCollide( const CVector2< PointType >& p1, const CVector2< PointType >& p2, 
+						   const CVector2< PointType >& rect_low, const CVector2< PointType >& rect_high, CVector2< PointType >& result )
+{
 	typedef CVector2< PointType > vec2;
 	
 	if( LineIntersection( p1, p2, rect_low, vec2( rect_low.x, rect_high.y ), result ) )
@@ -254,7 +261,6 @@ bool DoesLineAndBoxCollide( const CVector2< PointType >& p1, const CVector2< Poi
 
 	return false;
 }
-
 ///////////////////////////////////////////////////////////////////////////////
 
 // Implementation from the book Real Time Collision Detection by Christer Ericson

@@ -644,13 +644,27 @@ bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::
 		exit(0);
 	}
 
-	/*info = SDL_GetVideoInfo();
-	if (!info)
+	// use display 1 as default
+	int display_n = SDL_GetNumVideoDisplays();
+	int monitor_i = 0;
+	if( display_n > 0 )
 	{
-		poro_logger << PORO_ERROR << "Video query failed: "<< SDL_GetError() << std::endl;
-		SDL_Quit();
-		exit(0);
-	}*/
+		monitor_i = OPENGL_SETTINGS.current_display;
+		if( monitor_i < 0 ) monitor_i = 0;
+		if( monitor_i >= display_n ) monitor_i = display_n - 1;
+
+		SDL_DisplayMode display_mode;
+		SDL_GetDesktopDisplayMode( monitor_i, &display_mode );
+
+		mDesktopWidth = (float)display_mode.w;
+		mDesktopHeight = (float)display_mode.h;
+	}
+	else
+	{
+		mDesktopWidth = (float)width;
+		mDesktopHeight = (float)height;
+	}
+
 
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
@@ -659,7 +673,10 @@ bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 
-	mSDLWindow = SDL_CreateWindow( caption.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL );
+	mSDLWindow = SDL_CreateWindow( caption.c_str(), 
+		SDL_WINDOWPOS_CENTERED_DISPLAY(monitor_i),
+		SDL_WINDOWPOS_CENTERED_DISPLAY(monitor_i), 
+		width, height, SDL_WINDOW_OPENGL );
 	if ( mSDLWindow == NULL )
 	{
 		poro_logger << PORO_ERROR << "Window creation failed:  " << SDL_GetError() << std::endl;
@@ -675,25 +692,10 @@ bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::
 		exit(0);
 	}
 
-	// use display 1 as default
-	int display_n = SDL_GetNumVideoDisplays();
-	if( display_n > 0 )
-	{
-		int monitor_i = 0;
-		SDL_DisplayMode display_mode;
-		SDL_GetDesktopDisplayMode( monitor_i, &display_mode );
-
-		mDesktopWidth = (float)display_mode.w;
-		mDesktopHeight = (float)display_mode.h;
-	}
-	else
-	{
-		mDesktopWidth = (float)width;
-		mDesktopHeight = (float)height;
-	}
+	
 
 	// vsync? 0 = no vsync, 1 = vsync
-	SDL_GL_SetSwapInterval( 1 );
+	SDL_GL_SetSwapInterval( OPENGL_SETTINGS.vsync ? 1 : 0 );
 	
 	IPlatform::Instance()->SetInternalSize( (types::Float32)width, (types::Float32)height );
 	ResetWindow();

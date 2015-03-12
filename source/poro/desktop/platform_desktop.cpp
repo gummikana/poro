@@ -376,9 +376,13 @@ PlatformDesktop::~PlatformDesktop()
 }
 //-----------------------------------------------------------------------------
 
-void PlatformDesktop::Init( IApplication* application, int w, int h, bool fullscreen, std::string title ) 
+void PlatformDesktop::Init( IApplication* application, const GraphicsSettings& settings ) 
 {
-	IPlatform::Init( application, w, h, fullscreen, title );
+	int w = settings.window_width;
+	int h = settings.window_height;
+	bool fullscreen = settings.fullscreen;
+
+	IPlatform::Init( application, settings);
 	mRandomSeed = (int)time(NULL);
 	mRunning = true;
 	mFrameCount = 1;
@@ -388,7 +392,8 @@ void PlatformDesktop::Init( IApplication* application, int w, int h, bool fullsc
 	mApplication = application;
 
 	mGraphics = new GraphicsOpenGL;
-	mGraphics->Init(w, h, fullscreen, title);
+	mGraphics->SetSettings( settings );
+	mGraphics->Init(w, h, fullscreen, settings.caption);
 
 	mSoundPlayer = new SoundPlayerSDL;
 	mSoundPlayer->Init();

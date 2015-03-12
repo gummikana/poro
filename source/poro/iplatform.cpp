@@ -75,18 +75,14 @@ IPlatform * IPlatform::Instance()
 	return gInstance;
 }
 
-void IPlatform::Init(IApplication* application,
-					   int screenWidth,
-					   int screenHeight,
-					   bool fullscreen,
-					   std::string title)
+void IPlatform::Init(IApplication* application, const GraphicsSettings& settings)
 {
 	mApplication = application;
 
 	if( mInternalWidth == 0.f )
-		mInternalWidth = (types::Float32)screenWidth;
+		mInternalWidth = (types::Float32)settings.window_width;
 	if( mInternalHeight == 0.f )
-		mInternalHeight = (types::Float32)screenHeight;
+		mInternalHeight = (types::Float32)settings.window_height;
 
 }
 

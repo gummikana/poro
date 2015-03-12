@@ -46,15 +46,29 @@ class IShader;
 struct GraphicsSettings
 {
 	GraphicsSettings() : 
+		window_width(1024),
+		window_height(768),
+		fullscreen(0),
+		caption("poro window"),
 		textures_resize_to_power_of_two( true ), 
 		textures_fix_alpha_channel( true ),
-		buffered_textures( false )
+		buffered_textures( false ),
+		vsync( false ),
+		current_display( 0 )
     {
 	}
+
+	int				window_width;
+	int				window_height;
+	bool			fullscreen;
+	types::string	caption;
 
 	bool textures_resize_to_power_of_two;
 	bool textures_fix_alpha_channel;
 	bool buffered_textures;
+	
+	bool vsync;
+	int current_display;	// opens fullscreen on this display index...
 };
 //-----------------------------
 
@@ -78,6 +92,7 @@ public:
 	virtual ~IGraphics() { }
 	//-------------------------------------------------------------------------
 
+	bool						Init( int width, int height, bool fullscreen, const types::string& caption, const GraphicsSettings& settings );
 	virtual bool				Init( int width, int height, bool fullscreen, const types::string& caption ) = 0;
 	virtual void				SetInternalSize( types::Float32 width, types::Float32 height )		{ poro_assert( false ); /* You have to implement this */ }
 	virtual poro::types::vec2	GetInternalSize() const												{ poro_assert( false ); /* You have to implement this */ return poro::types::vec2(); }
@@ -259,6 +274,12 @@ protected:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+
+inline bool IGraphics::Init( int width, int height, bool fullscreen, const types::string& caption, const GraphicsSettings& settings )
+{
+	SetSettings( settings );
+	return Init( width, height, fullscreen, caption );
+}
 
 inline void	IGraphics::PushBlendMode(int blend_mode) {
 	mBlendModes.push(mBlendMode);
