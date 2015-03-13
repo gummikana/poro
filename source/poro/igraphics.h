@@ -147,7 +147,8 @@ public:
 	enum BLEND_MODES {
 		BLEND_MODE_NORMAL = 0,
 		BLEND_MODE_MULTIPLY = 1,
-		BLEND_MODE_SCREEN = 2
+		BLEND_MODE_SCREEN = 2,
+		BLEND_MODE_COLORNORMAL_ALPHAMAX = 3
 	};
 
 	virtual void PushBlendMode( int blend_mode );

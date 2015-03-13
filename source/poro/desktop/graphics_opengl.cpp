@@ -127,7 +127,7 @@ namespace {
 		if( blend_mode == poro::IGraphics::BLEND_MODE_NORMAL ) {
 			glColor4f(color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		} else if( blend_mode == 1 ) {
+		} else if( blend_mode == poro::IGraphics::BLEND_MODE_MULTIPLY) {
 			if( color[ 3 ] == 0 ) 
 				return;
 
@@ -140,6 +140,10 @@ namespace {
 		} else if ( blend_mode == poro::IGraphics::BLEND_MODE_SCREEN ) {
 			glColor4f(color[0], color[1], color[2], color[3]);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		} else if ( blend_mode == poro::IGraphics::BLEND_MODE_COLORNORMAL_ALPHAMAX ) {
+			glColor4f(color[0], color[1], color[2], color[3]);
+			glBlendEquationSeparate(GL_FUNC_ADD, GL_MAX);
+			glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
 		}
 
 
@@ -155,6 +159,9 @@ namespace {
 		glEnd();
 		glDisable(GL_BLEND);
 		glDisable(GL_TEXTURE_2D);
+
+		if (blend_mode == poro::IGraphics::BLEND_MODE_COLORNORMAL_ALPHAMAX)
+			glBlendEquation(GL_FUNC_ADD);
 	}
 
 	//================================================================
