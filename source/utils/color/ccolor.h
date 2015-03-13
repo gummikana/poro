@@ -523,14 +523,19 @@ public:
 	// BUGBUG: Chechk should the return be r32 | g32 | b32 | a32 !?
 	uint32 Get32() const
 	{
-		uint32 r32, g32, b32, a32;
+		return 
+			( r << RShift ) |
+			( g << GShift ) | 
+			( b << BShift ) | 
+			( a << AShift ); 
+		/*uint32 r32, g32, b32, a32;
 		
 		r32 = GetR8() << RShift;
 		g32 = GetG8() << GShift;
 		b32 = GetB8() << BShift;
 		a32 = GetA8() << AShift;
 
-		return r32 | g32 | b32 | a32;
+		return r32 | g32 | b32 | a32;*/
 	}
 
 	//=========================================================================
