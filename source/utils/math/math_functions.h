@@ -227,6 +227,14 @@ inline Type Lerp( const Type& a, const Type& b, float t )
 
 //=============================================================================
 
+template< typename Type >
+inline Type ScaleToRange( const Type& a, const Type& orig_min, const Type& orig_max, const Type& new_min, const Type& new_max )
+{
+	return ((new_max - new_min) * (Clamp( a, orig_min, orig_max) - orig_min) / (orig_max - orig_min)) + new_min;
+}
+
+//=============================================================================
+
 } // end of namespace math
 } // end of namespace ceng
 
