@@ -140,7 +140,6 @@ std::string RemoveQuotes( std::string line );
 std::string Uppercase( const std::string& _string );
 //! returns a string in lowercase
 std::string Lowercase( const std::string& _string );
-
 //! for some vector to string conversation
 std::string ConvertNumbersToString( const std::vector< int >& array );
 
@@ -167,6 +166,9 @@ std::string MakeAlphaNumeric( const std::string& who );
 
 //! converts all the character to alpha numeric charasters
 std::string ConvertToAlphaNumeric( const std::string& who );
+
+//! converts "SomeString" to "some_string"
+std::string ConvertCamelCaseToUnderscoreCase(const std::string& _string);
 
 //-----------------------------------------------------------------------------
 

@@ -562,5 +562,24 @@ std::string ConvertToAlphaNumeric( const std::string& who )
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+std::string ConvertCamelCaseToUnderscoreCase( const std::string& _string )
+{
+	std::string return_value;
+
+	for (unsigned int i = 0; i < _string.size(); i++)
+	{
+		if (i != 0 && isupper(_string[i]))
+			return_value += '_';
+
+		return_value += tolower(_string[i]);
+	}
+
+	return return_value;
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 } // end of namespace ceng
  
