@@ -7,6 +7,19 @@
 // I converted them to a base class inheritance based utils.
 // - Petri
 
+// Back
+// Bounce
+// Circ
+// Cubic
+// Elastic
+// Expo
+// Linear
+// Quad
+// Quart
+// Quint
+// Sine
+// PetriHack
+
 namespace ceng {
 namespace easing {
 

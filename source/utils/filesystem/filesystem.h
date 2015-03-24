@@ -11,6 +11,9 @@
 namespace ceng
 {
 	void		CreateDir( const std::string& directory );
+
+	// returns the date as a string in format yyMMddhhmmss
+	// so 2015.01.30 19:35:45 becomes 150130193545
 	std::string GetDateForFile( const std::string& file );
 	bool		DoesExist( const std::string& file );
 
