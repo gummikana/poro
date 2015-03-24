@@ -70,6 +70,10 @@ void Mouse::OnFrameStart()
 		mMouseButtonsJustDown[ i ] = false; 
 		mMouseButtonsJustUp[ i ] = false;
 	}
+
+	// reset the state of mouse wheels, since they arent really buttons
+	mMouseButtonsDown[ MOUSE_BUTTON_WHEEL_UP ] = false;
+	mMouseButtonsDown[ MOUSE_BUTTON_WHEEL_DOWN ] = false;
 }
 
 //-----------------------------------------------------------------------------
