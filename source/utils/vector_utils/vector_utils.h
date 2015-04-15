@@ -45,9 +45,18 @@ bool VectorIsSorted( const std::vector< T >& array )
 }
 
 // binary search in the sorted array... Maybe we should cassert( that it's sorted... )
-template< class T > 
-bool VectorContainsSorted( const std::vector< T >& array, const T& element )
+template< class T >
+bool VectorContainsSorted(const std::vector< T >& array, const T& element)
 {
+	size_t out_index_dummy;
+	return VectorContainsSorted< T >( array, element, &out_index_dummy );
+}
+
+// binary search in the sorted array... Maybe we should cassert( that it's sorted... )
+template< class T > 
+bool VectorContainsSorted( const std::vector< T >& array, const T& element, size_t* out_index )
+{
+	*out_index = 0;
 	if( array.empty() ) return false;
 	if( array.size() == 1 ) return array[0] == element;
 
@@ -63,8 +72,11 @@ bool VectorContainsSorted( const std::vector< T >& array, const T& element )
 	{
 		if ( array[middle] < element )
 			first = middle + 1;    
-		else if ( array[middle] == element ) 
+		else if (array[middle] == element)
+		{
+			*out_index = middle;
 			return true;
+		}
 		else
 			last = middle - 1;
 
