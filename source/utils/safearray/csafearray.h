@@ -40,20 +40,23 @@ public:
 
 	const CSafeArray& operator=( const CSafeArray& other )
 	{
+		int min_size = Size();
+
 		if( other._size != _size )
 		{
 			Clear();
 			data =  new Type[ other._size ];
 			_size = other._size;
+			min_size = Size() < other.Size() ? Size() : other.Size();
 		}
 
+		
 		/*
 		for( SizeType i = 0; i < Size(); ++i ) 
 			data[ i ] = other.Rand( i );
 		*/
 		// memcpy( data, other.data, Size() * sizeof( Type ) );
-		fast_memcpy( data, other.data, Size() * sizeof( Type ) );
-		// X_aligned_memcpy_sse2( data, other.data, Size() * sizeof( Type ) );
+		fast_memcpy( data, other.data, min_size * sizeof( Type ) );
 
 		return *this;
 	}

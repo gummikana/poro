@@ -56,13 +56,14 @@ namespace ceng {
 
 // #define CENG_CARRAY2D_SAFE
 
-template < class _Ty, class _A = std::allocator<_Ty> >
+template < class _Ty, class _Container = ceng::CSafeArray< _Ty >, class _A = std::allocator<_Ty> >
 class CArray2D
 {
 public:
 
-	typedef typename _A::reference		reference;
-	typedef typename _A::const_reference const_reference;
+	typedef typename _A::reference						reference;
+	typedef typename _A::const_reference				const_reference;
+	typedef typename CArray2D< _Ty, _Container, _A >	self;
 
 	class CArray2DHelper
 	{
@@ -102,7 +103,7 @@ public:
 		Allocate();
 	}
 
-	CArray2D( const CArray2D< _Ty, _A >& other ) :
+	CArray2D( const CArray2D& other ) :
 		myWidth( other.myWidth ),
 		myHeight( other.myHeight ),
 		mySize( other.mySize ),
@@ -116,7 +117,7 @@ public:
 	CArray2DHelper& operator[] ( int _x ) { myArraysLittleHelper.SetX( _x ); return myArraysLittleHelper; }
 	const CArray2DHelper& operator[] ( int _x ) const { myArraysLittleHelper.SetX( _x ); return myArraysLittleHelper; }
 
-	const CArray2D< _Ty, _A >& operator=( const CArray2D< _Ty, _A >& other )
+	const CArray2D& operator=( const CArray2D& other )
 	{
 		myWidth = other.myWidth;
 		myHeight = other.myHeight;
@@ -165,11 +166,6 @@ public:
 	{
 #ifdef CENG_CARRAY2D_SAFE
 		if ( _x < 0 || _y < 0 || _x >= myWidth || _y >= myHeight ) return myNullReference;
-#else
-		if ( _x < 0 ) _x = 0;
-		if ( _y < 0 ) _y = 0;
-		if ( _x >= myWidth ) _x = myWidth - 1;
-		if ( _y >= myHeight ) _y = myHeight - 1;
 #endif
 
 		return myDataArray[ ( _y * myWidth ) + _x ];
@@ -180,12 +176,6 @@ public:
 	{
 #ifdef CENG_CARRAY2D_SAFE
 		if ( _x < 0 || _y < 0 || _x >= myWidth || _y >= myHeight ) return myNullReference;
-#else
-
-		if ( _x < 0 ) _x = 0;
-		if ( _y < 0 ) _y = 0;
-		if ( _x >= myWidth ) _x = myWidth - 1;
-		if ( _y >= myHeight ) _y = myHeight - 1;
 #endif
 
 		return myDataArray[ ( _y * myWidth ) + _x ];
@@ -216,9 +206,10 @@ public:
 
 	void Set( int _x, int _y, const _Ty& _who )
 	{
-
-		if ( _x > myWidth ) _x = myWidth;
-		if ( _y > myHeight ) _y = myHeight;
+#ifdef CENG_CARRAY2D_SAFE
+		if ( _x >= myWidth ) _x = myWidth;
+		if ( _y >= myHeight ) _y = myHeight;
+#endif
 
 		myDataArray[ ( _y * myWidth ) + _x ] = _who;
 	}
@@ -227,67 +218,17 @@ public:
 	{
 		int x, y;
 
-		for ( y = 0; y <= myHeight; y++ )
+		for ( y = 0; y < myHeight; y++ )
 		{
-			for ( x = 0; x <= myWidth; x++ )
+			for ( x = 0; x < myWidth; x++ )
 			{
-				if ( x >= _x && x <= _x + _who.GetWidth() &&
-					 y >= _y && y <= _y + _who.GetHeight() )
+				if ( x >= _x && x < _x + _who.GetWidth() &&
+					 y >= _y && y < _y + _who.GetHeight() )
 				{
 					Set( x, y, _who.At( x - _x, y - _y ) );
 				}
 			}
 		}
-	}
-
-	void Crop( const _Ty& _empty )
-	{
-		int left = myWidth;
-		int right = 0;
-		int top = myHeight;
-		int bottom = 0;
-
-		int x = 0;
-		int y = 0;
-
-		for ( y = 0; y <= myHeight; y++ )
-		{
-			for ( x = 0; x <= myWidth; x++ )
-			{
-				if ( At( x, y ) != _empty )
-				{
-					if ( x < left )		left	= x;
-					if ( x > right )	right	= x;
-					if ( y < top )		top		= y;
-					if ( y > bottom )	bottom	= y;
-				}
-			}
-		}
-
-		Crop( left, top, right - left, bottom - top );
-	}
-
-	void Crop( int _x, int _y, int _w, int _h )
-	{
-		cassert(false);
-
-	    /*
-		std::vector< _Ty > tmpDataArray;
-
-		tmpDataArray.resize( ( _w + 1 ) * ( _h + 1 ) );
-
-		int x, y;
-		for ( y = _y; y <= _y + _h; y++ )
-		{
-			for ( x = _x; x <= _x + _w; x++ )
-			{
-				tmpDataArray[ ( ( y - _y ) * _w ) + ( x - _x ) ] = At( x, y );
-			}
-		}
-
-		myDataArray = tmpDataArray;
-		myWidth = _w;
-		myHeight = _h;*/
 	}
 
 	void Clear()
@@ -303,9 +244,9 @@ public:
 	CSafeArray< _Ty >& GetData() { return myDataArray; }
 	const CSafeArray< _Ty >& GetData() const { return myDataArray; }
 
-	CArray2D< _Ty, _A>* CopyCropped( int _x, int _y, int _w, int _h)
+	CArray2D* CopyCropped( int _x, int _y, int _w, int _h)
 	{
-		CArray2D< _Ty, _A>* result = new CArray2D< _Ty, _A >( _w, _h);
+		CArray2D* result = new CArray2D( _w, _h);
 
 		int x, y;
 		for ( y = _y; y < _y + _h; y++ )
@@ -323,14 +264,6 @@ private:
 
 	void Allocate()
 	{
-		/*
-		int n_size = (myWidth + 1) * ( myHeight + 1 );
-		if( n_size != mySize )
-		{
-			mySize = n_size;
-			myDataArray.resize( mySize + 1 );
-		}*/
-
 		int n_size = (myWidth) * ( myHeight );
 		if( n_size != mySize )
 		{
@@ -347,9 +280,7 @@ private:
 	CArray2DHelper	   myArraysLittleHelper;
 
 	_Ty					myNullReference;
-
-	CSafeArray< _Ty > myDataArray;
-	// std::vector< _Ty > myDataArray;
+	_Container			myDataArray;
 };
 
 }
