@@ -20,6 +20,8 @@
 
 #include "platform_desktop.h"
 
+#include <iomanip>
+#include <sstream>
 #include <ctime>
 
 #include "../libraries.h"
@@ -488,8 +490,14 @@ void PlatformDesktop::StartMainLoop()
             mFrameRate = mFrameRateUpdateCounter;
             mFrameRateUpdateCounter = 0;
 
-			if( mPrintFramerate )
-				std::cout << "Fps: " << mFrameRate << " (CPU): " << ( mProcessorRate / (types::Double32)mFrameRate ) * 100.f << "%" << std::endl;
+			if ( mPrintFramerate )
+			{
+				std::stringstream ss;
+				ss << std::fixed << std::setprecision( 3 );
+				ss << elapsed_time*1000.f;
+
+				std::cout << "Fps: " << mFrameRate << " - " << ss.str() << "[ms] - (CPU): " << ( mProcessorRate / ( types::Double32 )mFrameRate ) * 100.f << "%" << std::endl;
+			}
 			
 			mProcessorRate = 0;
         }
