@@ -7,6 +7,7 @@
 #include <sstream>
 #include <fstream>
 #include <assert.h>
+#include "../xml/cxmlfilesys.h"
 
 namespace ceng {
 
@@ -221,7 +222,7 @@ struct VectorXmlSerializerObjects
 		}
 		else if ( filesys->IsReading() )
 		{
-			// clears the pointers
+			// clears the vector
 			array.clear();
 			int i = 0;
 			for( i = 0; i < filesys->GetNode()->GetChildCount(); i++ )

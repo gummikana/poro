@@ -150,6 +150,8 @@ float Randomf( float low, float high )
 // Does a check,  that low is low, and high is high
 int RandomSafe(int low, int high)
 {
+	if( low == high ) return low;
+
 	if (high < low)
 		return Random(high, low);
 	else

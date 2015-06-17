@@ -304,7 +304,7 @@ private:
 
     static std::list< const CAnyContainer* > myDeleteBanList;
 
-	// template < class T > friend T CAnyContainerCasto( const CAnyContainer* container );
+	// template < class T > friend T CAnyContainerPtr( const CAnyContainer* container );
 
 };
 
@@ -329,21 +329,19 @@ _Ty* CAnyContainerCast( CAnyContainer* container )
 */
 
 template< class _Ty >
-const _Ty* CAnyContainerCasto( const CAnyContainer* container )
+const _Ty* IMPL_CAnyContainerPtr( const CAnyContainer* container )
 {
-	// return CAnyContainerCast< _Ty >( const_cast< CAnyContainer* >( container ) );
 	CAnyContainer* t = const_cast< CAnyContainer* >( container );
 
 	if ( typeid( _Ty ) == container->GetTypeInfo() )
 		return &static_cast< const CContainer< _Ty >* >( container->_getContainerBase() )->myVar;
 	else return NULL;
-
 }
 
 template< class _Ty >
 _Ty CAnyContainerCast( const CAnyContainer& container )
 {
-	const _Ty* tmp_var = CAnyContainerCasto< _Ty >( &container );
+	const _Ty* tmp_var = IMPL_CAnyContainerPtr< _Ty >( &container );
 
 	if ( tmp_var == NULL )
 	{
