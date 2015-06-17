@@ -354,6 +354,7 @@ PlatformDesktop::PlatformDesktop() :
 	mFrameCount( 0 ),
 	mFrameRate( 0 ),
 	mOneFrameShouldLast( 1.f / 60.f ),
+	mTimeElapsedTracker( 0 ),
 	mFixedTimeStep( true ),
 	mWidth( 0 ),
 	mHeight( 0 ),
@@ -482,7 +483,8 @@ void PlatformDesktop::StartMainLoop()
 		mProcessorRate += ( elapsed_time / mOneFrameShouldLast );
         mFrameCount++;
         mFrameRateUpdateCounter++;
-		mLastFrameExecutionTime = time_after - time_before;
+		mLastFrameExecutionTime = elapsed_time;
+		mTimeElapsedTracker += elapsed_time;
 
         if( ( GetUpTime() - mFrameCountLastTime ) >= 1.0 )
         {
@@ -492,13 +494,16 @@ void PlatformDesktop::StartMainLoop()
 
 			if ( mPrintFramerate )
 			{
+				double elapsed_time_average = ( mTimeElapsedTracker / mFrameRate );
+
 				std::stringstream ss;
 				ss << std::fixed << std::setprecision( 3 );
-				ss << elapsed_time*1000.f;
+				ss << elapsed_time_average*1000.f;
 
-				std::cout << "Fps: " << mFrameRate << " - " << ss.str() << "[ms] - (CPU): " << ( mProcessorRate / ( types::Double32 )mFrameRate ) * 100.f << "%" << std::endl;
+				std::cout << "Fps: " << mFrameRate << " - " << ss.str() << " ms - (CPU): " << ( mProcessorRate / ( types::Double32 )mFrameRate ) * 100.f << "%" << std::endl;
 			}
 			
+			mTimeElapsedTracker = 0;
 			mProcessorRate = 0;
         }
 	}

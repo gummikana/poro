@@ -105,11 +105,15 @@ protected:
 	types::vec2		ConvertMouseToInternalSize( int x, int y );
 
 	GraphicsOpenGL*					mGraphics;
+	
+	// struct Timing
 	bool							mFixedTimeStep;
 	int								mFrameCount;
 	int								mFrameRate;
 	types::Double32					mLastFrameExecutionTime;
 	types::Double32					mOneFrameShouldLast;
+	types::Double32					mTimeElapsedTracker;
+
 	int								mWidth;
 	int								mHeight;
 	EventRecorder*					mEventRecorder;
