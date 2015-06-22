@@ -749,9 +749,25 @@ void DrawBox( poro::IGraphics* graphics, const types::vector2& min_pos, const ty
 
 //-----------------------------------------------------------------------------
 
+void DrawFilledBox( poro::IGraphics* graphics, const types::vector2& min_pos, const types::vector2& max_pos, const poro::types::fcolor& color, types::camera* camera )
+{
+	static auto vertices = std::vector< poro::types::vec2 >( 4 );
+
+	auto fill_mode = graphics->GetDrawFillMode();
+	graphics->SetDrawFillMode( poro::IGraphics::DRAWFILL_MODE_TRIANGLE_STRIP );
+
+	vertices[0] = poro::types::vec2( min_pos.x, max_pos.y );
+	vertices[1] = poro::types::vec2( min_pos.x, min_pos.y );
+	vertices[2] = poro::types::vec2( max_pos.x, max_pos.y );
+	vertices[3] = poro::types::vec2( max_pos.x, min_pos.y );
+
+	graphics->DrawFill( vertices, color );
+	graphics->SetDrawFillMode( fill_mode );
+}
+//-----------------------------------------------------------------------------
+
 void DrawHersheyText( poro::IGraphics* graphics, const std::string& text, const types::vector2& pos, float text_size, const poro::types::fcolor& color, types::camera* camera )
 {
-
 	float tx = pos.x;
 	float ty = pos.y;
 	const float scale = text_size / 24.0f;
