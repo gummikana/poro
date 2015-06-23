@@ -224,13 +224,15 @@ public:
 	//-------------------------------------------------------------------------
 	enum DRAWFILL_MODES {
 		DRAWFILL_MODE_FRONT_AND_BACK = 0,
-		DRAWFILL_MODE_TRIANGLE_STRIP = 1
+		DRAWFILL_MODE_TRIANGLE_STRIP = 1,
+		DRAWFILL_MODE_QUADS = 2
 	};
 	
 	virtual void SetDrawFillMode( int drawfill_mode )	{ mDrawFillMode = drawfill_mode; }
 	virtual int GetDrawFillMode() const					{ return mDrawFillMode; }
 
 	virtual void		DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) { }
+	virtual void		DrawQuads( float* vertices, int vertex_count, float* tex_coords, float* colors, ITexture* texture ) { }
 
 	//-------------------------------------------------------------------------
 

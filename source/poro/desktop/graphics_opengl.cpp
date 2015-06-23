@@ -121,7 +121,6 @@ namespace {
 		Uint32 tex = texture->mTexture;
 		glBindTexture(GL_TEXTURE_2D, tex);
 		glEnable(GL_TEXTURE_2D);
-		// glEnable(GL_BLEND);
 
 		glEnable(GL_BLEND);
 		if( blend_mode == poro::IGraphics::BLEND_MODE_NORMAL ) {
@@ -1215,6 +1214,9 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 {
 	FlushDrawTextureBuffer();
 
+	const int max_buffer_size = 256;
+	static GLfloat glVertices[ max_buffer_size ];
+
 	if( this->GetDrawFillMode() == DRAWFILL_MODE_FRONT_AND_BACK )
 	{
 		int vertCount = vertices.size();
@@ -1231,8 +1233,6 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 		const float yPlatformScale = 1.f;
 
 		
-		const int max_buffer_size = 256;
-		static GLfloat glVertices[ max_buffer_size ];
 
 		poro_assert( vertCount * 2 <= max_buffer_size );
 
@@ -1288,9 +1288,6 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 		const float xPlatformScale = 1.f;
 		const float yPlatformScale = 1.f;
 
-		const int max_buffer_size = 256;
-		static GLfloat glVertices[ max_buffer_size ];
-
 		poro_assert( vertCount * 2 <= max_buffer_size );
 
 		int o = -1;
@@ -1313,10 +1310,11 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		}
-				glVertexPointer(2, GL_FLOAT , 0, glVertices);
-				glEnableClientState(GL_VERTEX_ARRAY);
-				glDrawArrays (GL_TRIANGLE_STRIP, 0, vertCount);
-				glDisableClientState(GL_VERTEX_ARRAY);
+
+		glVertexPointer(2, GL_FLOAT , 0, glVertices);
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glDrawArrays (GL_TRIANGLE_STRIP, 0, vertCount);
+		glDisableClientState(GL_VERTEX_ARRAY);
 		
 		if( color[3] < 1.f ) 
 			glDisable(GL_BLEND);
@@ -1325,6 +1323,64 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 	}
 }
 
+void GraphicsOpenGL::DrawQuads( float* vertices, int vertex_count, float* tex_coords, float* colors, ITexture* texture )
+{
+	glPushMatrix();
+	
+	glEnable(GL_BLEND);
+	if( mBlendMode == poro::IGraphics::BLEND_MODE_NORMAL ) {
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	} else if( mBlendMode == poro::IGraphics::BLEND_MODE_MULTIPLY) {
+		glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+	} else if ( mBlendMode == poro::IGraphics::BLEND_MODE_SCREEN ) {
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	} else if ( mBlendMode == poro::IGraphics::BLEND_MODE_COLORNORMAL_ALPHAMAX ) {
+		glBlendEquationSeparate(GL_FUNC_ADD, GL_MAX);
+		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
+	}
+
+	
+	// glTexCoordPointer(2, GL_FLOAT, 0, NULL);
+	Uint32 tex = 0;
+	if( texture )
+	{
+		poro::TextureOpenGL* otexture = static_cast< poro::TextureOpenGL* >( texture );
+		tex = otexture->mTexture;
+		glBindTexture(GL_TEXTURE_2D, tex);
+		glEnable(GL_TEXTURE_2D);
+	}
+
+
+	if( colors )
+	{
+		glEnableClientState(GL_COLOR_ARRAY);
+		glColorPointer(4, GL_FLOAT, 0, colors);
+	}
+
+	if( tex_coords )
+	{
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glTexCoordPointer(2, GL_FLOAT, 0, tex_coords);
+	}
+	
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glVertexPointer(2, GL_FLOAT, 0, vertices);
+	
+	glDrawArrays(GL_QUADS, 0, vertex_count);
+	glDisableClientState(GL_VERTEX_ARRAY);
+	
+	if( colors )
+		glDisableClientState(GL_COLOR_ARRAY);
+
+	if( tex_coords )
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
+	if( texture )
+		glDisable(GL_TEXTURE_2D);
+
+	glDisable(GL_BLEND);
+	glPopMatrix();
+}
 
 void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture, const poro::types::fcolor& color, types::vec2* tex_coords, int count )
 {
