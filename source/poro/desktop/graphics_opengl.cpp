@@ -136,13 +136,15 @@ namespace {
 				color[ 2 ] / color[ 3 ], color[ 3 ] );
 
 			glBlendFunc(GL_ZERO, GL_SRC_COLOR);
-		} else if ( blend_mode == poro::IGraphics::BLEND_MODE_SCREEN ) {
+		} else if ( blend_mode == poro::IGraphics::BLEND_MODE_ADDITIVE ) {
 			glColor4f(color[0], color[1], color[2], color[3]);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		} else if ( blend_mode == poro::IGraphics::BLEND_MODE_COLORNORMAL_ALPHAMAX ) {
+		} else if ( blend_mode == poro::IGraphics::BLEND_MODE_ADDITIVE_ADDITIVEALPHA ) {
 			glColor4f(color[0], color[1], color[2], color[3]);
-			glBlendEquationSeparate(GL_FUNC_ADD, GL_MAX);
-			glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
+			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE );
+		} else if ( blend_mode == poro::IGraphics::BLEND_MODE_NORMAL_ADDITIVEALPHA ) {
+			glColor4f(color[0], color[1], color[2], color[3]);
+			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE );
 		}
 
 
@@ -159,7 +161,7 @@ namespace {
 		glDisable(GL_BLEND);
 		glDisable(GL_TEXTURE_2D);
 
-		if (blend_mode == poro::IGraphics::BLEND_MODE_COLORNORMAL_ALPHAMAX)
+		if (blend_mode == poro::IGraphics::BLEND_MODE_NORMAL_ADDITIVEALPHA)
 			glBlendEquation(GL_FUNC_ADD);
 	}
 
@@ -1332,13 +1334,13 @@ void GraphicsOpenGL::DrawQuads( float* vertices, int vertex_count, float* tex_co
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	} else if( mBlendMode == poro::IGraphics::BLEND_MODE_MULTIPLY) {
 		glBlendFunc(GL_ZERO, GL_SRC_COLOR);
-	} else if ( mBlendMode == poro::IGraphics::BLEND_MODE_SCREEN ) {
+	} else if ( mBlendMode == poro::IGraphics::BLEND_MODE_ADDITIVE ) {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	} else if ( mBlendMode == poro::IGraphics::BLEND_MODE_COLORNORMAL_ALPHAMAX ) {
-		glBlendEquationSeparate(GL_FUNC_ADD, GL_MAX);
-		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
+	} else if ( mBlendMode == poro::IGraphics::BLEND_MODE_ADDITIVE_ADDITIVEALPHA ) {
+		glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE );
+	} else if ( mBlendMode == poro::IGraphics::BLEND_MODE_NORMAL_ADDITIVEALPHA ) {
+		glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE );
 	}
-
 	
 	// glTexCoordPointer(2, GL_FLOAT, 0, NULL);
 	Uint32 tex = 0;
