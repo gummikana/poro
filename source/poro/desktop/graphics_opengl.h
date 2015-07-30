@@ -45,6 +45,7 @@ public:
 
 	virtual bool				Init( int width, int height, bool fullscreen, const types::string& caption );
 	virtual void				SetInternalSize( types::Float32 width, types::Float32 height );
+	virtual void				SetInternalSizeAdvanced( types::Float32 left, types::Float32 right, types::Float32 bottom, types::Float32 top );
 	virtual poro::types::vec2	GetInternalSize() const;
 	virtual void				SetWindowSize(int width, int height);
 	virtual poro::types::vec2	GetWindowSize() const;

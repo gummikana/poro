@@ -95,6 +95,7 @@ public:
 	bool						Init( int width, int height, bool fullscreen, const types::string& caption, const GraphicsSettings& settings );
 	virtual bool				Init( int width, int height, bool fullscreen, const types::string& caption ) = 0;
 	virtual void				SetInternalSize( types::Float32 width, types::Float32 height )		{ poro_assert( false ); /* You have to implement this */ }
+	virtual void				SetInternalSizeAdvanced( types::Float32 left, types::Float32 right, types::Float32 bottom, types::Float32 top )	{ poro_assert( false ); /* You have to implement this */ }
 	virtual poro::types::vec2	GetInternalSize() const												{ poro_assert( false ); /* You have to implement this */ return poro::types::vec2(); }
     virtual void				SetWindowSize( int width, int height )								{ poro_assert( false ); /* You have to implement this */ }
 	virtual poro::types::vec2	GetWindowSize() const												{ poro_assert( false ); /* You have to implement this */ return poro::types::vec2(); }

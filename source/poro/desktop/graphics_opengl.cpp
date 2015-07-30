@@ -731,6 +731,16 @@ void GraphicsOpenGL::SetInternalSize( types::Float32 width, types::Float32 heigh
 	}
 }
 
+void GraphicsOpenGL::SetInternalSizeAdvanced( types::Float32 left, types::Float32 right, types::Float32 bottom, types::Float32 top )
+{
+	if( mGlContextInitialized )
+	{
+		glMatrixMode( GL_PROJECTION );
+		glLoadIdentity();
+		gluOrtho2D((GLdouble)left, (GLdouble)right, (GLdouble)bottom, (GLdouble)top);
+	}
+}
+
 poro::types::vec2 GraphicsOpenGL::GetInternalSize() const
 {
 	return poro::types::vec2( IPlatform::Instance()->GetInternalWidth(), IPlatform::Instance()->GetInternalHeight() );
