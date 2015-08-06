@@ -760,7 +760,10 @@ void GraphicsOpenGL::SetWindowSize(int window_width, int window_height)
 
 poro::types::vec2	GraphicsOpenGL::GetWindowSize() const 
 {
-	return poro::types::vec2( (poro::types::Float32)mWindowWidth, (poro::types::Float32)mWindowHeight );
+	int window_w = mWindowWidth;
+	int window_h = mWindowHeight;
+	SDL_GetWindowSize( mSDLWindow, &window_w, &window_h );
+	return poro::types::vec2( (poro::types::Float32)window_w, (poro::types::Float32)window_h );
 }
 //-----------------------------------------------------------------------------
 
