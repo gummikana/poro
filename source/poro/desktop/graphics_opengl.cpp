@@ -664,13 +664,13 @@ bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::
 		SDL_DisplayMode display_mode;
 		SDL_GetDesktopDisplayMode( monitor_i, &display_mode );
 
-		mDesktopWidth = (float)display_mode.w;
-		mDesktopHeight = (float)display_mode.h;
+		mDesktopWidth = (int)display_mode.w;
+		mDesktopHeight = (int)display_mode.h;
 	}
 	else
 	{
-		mDesktopWidth = (float)width;
-		mDesktopHeight = (float)height;
+		mDesktopWidth = (int)width;
+		mDesktopHeight = (int)height;
 	}
 
 

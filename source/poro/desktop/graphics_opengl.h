@@ -152,8 +152,8 @@ private:
 	types::vec2 mViewportOffset;
 	types::vec2 mViewportSize;
 
-	float mDesktopWidth;
-	float mDesktopHeight;
+	int mDesktopWidth;
+	int mDesktopHeight;
 	
 	bool mGlContextInitialized;
 
