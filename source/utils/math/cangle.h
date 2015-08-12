@@ -86,6 +86,11 @@ public:
 		return result;
 	}
 
+	CAngle operator*( float value ) const {
+		CAngle result( GetValue() * value );
+		return result;
+	}
+
 	bool operator==( const CAngle& other ) const {
 		return GetValue() == other.GetValue();
 	}

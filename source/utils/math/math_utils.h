@@ -41,6 +41,7 @@
 #include "cvector2.h"
 #include "cmat22.h"
 #include "cxform.h"
+#include "cangle.h"
 #include "math_functions.h"
 
 
@@ -85,6 +86,13 @@ CVector2< Type > operator * ( Type s, const CVector2< Type >& v)
 {
 	return CVector2< Type >(s * v.x, s * v.y);
 }
+
+template< class Type >
+CAngle< Type > operator * ( float s, const CAngle< Type >& v)
+{
+	return ( v * s );
+}
+
 
 template< class Type >
 CMat22< Type > operator + (const CMat22< Type >& A, const CMat22< Type >& B)
