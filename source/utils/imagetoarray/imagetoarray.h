@@ -10,7 +10,7 @@
 typedef poro::types::Uint32 uint32;
 
 
-void	LoadImage( const std::string& filename, ceng::CArray2D< poro::types::Uint32 >& out_array2d, bool include_alpha );
+void	LoadImage( const std::string& filename, ceng::CArray2D< poro::types::Uint32 >& out_array2d, bool include_alpha = true );
 void	SaveImage( const std::string& filename, const ceng::CArray2D< poro::types::Uint32 >& image_data );
 
 
