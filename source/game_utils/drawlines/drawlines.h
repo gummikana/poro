@@ -51,6 +51,9 @@ void DrawLines( poro::IGraphics* graphics, const std::vector< types::vector2 >& 
 // draws an arrow, useful for visualizing vectors
 void DrawArrow( poro::IGraphics* graphics, const types::vector2& p1, const types::vector2& p2, const poro::types::fcolor& color, float arrow_size = 10, types::camera* camera = NULL );
 
+// draws an x at the position given
+void DrawCross( poro::IGraphics* graphics, const types::vector2& p, float r, const poro::types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ), types::camera* camera = NULL );
+
 // draws a circle with lines
 void DrawCircle( poro::IGraphics* graphics, const types::vector2& position, float r, const poro::types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ), types::camera* camera = NULL );
 

@@ -739,6 +739,14 @@ void DrawCircle( poro::IGraphics* graphics, const types::vector2& position, floa
 
 //-----------------------------------------------------------------------------
 
+void DrawCross( poro::IGraphics* graphics, const types::vector2& p, float r, const poro::types::fcolor& color, types::camera* camera )
+{
+	DrawLine( graphics, p - types::vector2( r, r ), p + types::vector2( r, r ), color, camera );
+	DrawLine( graphics, p + types::vector2( -r, r ), p + types::vector2( r, -r ), color, camera );
+}
+
+//-----------------------------------------------------------------------------
+
 void DrawBox( poro::IGraphics* graphics, const types::vector2& min_pos, const types::vector2& max_pos, const poro::types::fcolor& color, types::camera* camera )
 {
 	DrawLine( graphics, types::vector2( min_pos.x, min_pos.y ), types::vector2( max_pos.x, min_pos.y ), color, camera );
