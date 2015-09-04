@@ -389,6 +389,6 @@ void X_aligned_memcpy_sse2(void* dest, const void* src, const unsigned long size
       dec ebx;
 
       jnz loop_copy; //loop please
-    loop_copy_end:
+    //loop_copy_end:
   }
 }
