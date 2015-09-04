@@ -681,9 +681,13 @@ bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 
+	int pos_x = SDL_WINDOWPOS_CENTERED_DISPLAY(monitor_i);
+	int pos_y = SDL_WINDOWPOS_CENTERED_DISPLAY(monitor_i);
+	if( mDesktopHeight <= height ) pos_y = 0;
+
 	mSDLWindow = SDL_CreateWindow( caption.c_str(), 
-		SDL_WINDOWPOS_CENTERED_DISPLAY(monitor_i),
-		SDL_WINDOWPOS_CENTERED_DISPLAY(monitor_i), 
+		pos_x,
+		pos_y, 
 		width, height, SDL_WINDOW_OPENGL );
 	if ( mSDLWindow == NULL )
 	{
