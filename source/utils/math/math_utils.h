@@ -241,9 +241,10 @@ template< class Type >
 CVector2< Type > MulTWithScale( const CXForm< Type >& T, const CVector2< Type >& v )
 {
 	CVector2< Type > result( v );
+	result = MulT( T.R, result - T.position );
 	if( T.scale.x != 0 ) result.x /= T.scale.x;
 	if( T.scale.y != 0 ) result.y /= T.scale.y;
-	return MulT( T.R, result - T.position );
+	return result;
 }
 
 
