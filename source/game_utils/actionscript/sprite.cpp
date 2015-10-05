@@ -1218,7 +1218,7 @@ void Sprite::FindSpritesAtPointImpl( const types::vector2& pos, Transform& trans
 		dest_rect.w = mRect->w; dest_rect.h = mRect->h; 
 	}
 
-	if( mTexture )
+	if( dest_rect.w != 0 && dest_rect.h != 0 )
 	{
 		std::vector< types::vector2 > polygon( 4 );
 		polygon[ 0 ].Set( -mCenterOffset.x,					-mCenterOffset.y );
