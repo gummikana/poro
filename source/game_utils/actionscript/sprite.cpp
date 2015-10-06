@@ -1163,6 +1163,7 @@ types::vector2 Sprite::TransformWithAllParents( const types::vector2& mouse_pos 
 	getParentTree( parents );
 
 	types::xform xform;
+	// the i > 0 is on purpouse, so that we don't transform with ourselves
 	for( int i = (int)parents.size() - 1; i > 0; --i )
 	{
 		cassert( parents[ i ] );

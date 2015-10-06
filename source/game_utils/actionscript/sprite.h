@@ -294,6 +294,8 @@ public:
 
 	//-------------------------------------------------------------------------
 
+	// returns a list of sprites at position p (local coordinate). 
+	// First in the list [0] is the sprite itself (if it's at p)
 	std::vector< Sprite* >	FindSpritesAtPoint( const types::vector2& p );
 	types::vector2			GetScreenPosition() const;
 	types::vector2			TransformWithAllParents( const types::vector2& mouse_pos ) const;
