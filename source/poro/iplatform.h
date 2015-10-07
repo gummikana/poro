@@ -29,7 +29,7 @@
 #include "touch.h"
 #include "joystick.h"
 #include "keyboard.h"
-#include "filesystem.h"
+#include "fileio.h"
 
 namespace poro { class IPlatform; }
 

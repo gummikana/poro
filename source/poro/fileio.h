@@ -146,9 +146,10 @@ namespace poro {
 		// initialization API
 		std::vector<IFileDevice*> GetDeviceList();
 		void SetDeviceList( std::vector<IFileDevice*> devices );
+
+        FileSystem();
+        ~FileSystem();
 	private:
-		FileSystem();
-		~FileSystem();
 		void OnFrameEnd();
         // data
         std::vector<IFileDevice*> mDevices;
