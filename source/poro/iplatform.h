@@ -29,6 +29,7 @@
 #include "touch.h"
 #include "joystick.h"
 #include "keyboard.h"
+#include "filesystem.h"
 
 namespace poro { class IPlatform; }
 
@@ -70,6 +71,7 @@ public:
 	virtual IApplication*	GetApplication();
 	virtual IGraphics*		GetGraphics() = 0;
 	virtual ISoundPlayer*	GetSoundPlayer() = 0;
+    virtual FileSystem*     GetFileSystem() = 0;
 
 	// controllers
 	virtual Mouse*			GetMouse() = 0;
@@ -78,7 +80,6 @@ public:
 
 	virtual int				GetJoystickCount() const;
 	virtual Joystick*		GetJoystick( int n );
-
 
 	// window / screen
 	virtual void SetWindowSize( int width, int height ) { poro_assert( false ); }
