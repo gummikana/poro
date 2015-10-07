@@ -49,12 +49,12 @@ namespace poro {
         friend class ReadStream;
         friend class WriteStream;
 	public:
-		virtual ReadStream  OpenRead( const std::string& path );
-		virtual WriteStream OpenWrite( FileLocation::Enum location, const std::string& read_path_relative_to_location, StreamWriteMode::Enum write_mode = StreamWriteMode::Enum::Recreate );
-		virtual std::string GetReadRootPath();
+        virtual ReadStream  OpenRead( const std::string& path ) = 0;
+        virtual WriteStream OpenWrite( FileLocation::Enum location, const std::string& read_path_relative_to_location, StreamWriteMode::Enum write_mode = StreamWriteMode::Enum::Recreate ) = 0;
+        virtual std::string GetReadRootPath() = 0;
 	protected:
-		virtual void Close( WriteStream* stream );
-		virtual void Close( ReadStream* stream );
+        virtual void Close( WriteStream* stream ) = 0;
+        virtual void Close( ReadStream* stream ) = 0;
 	};
 
     // ================================
@@ -89,11 +89,11 @@ namespace poro {
 	public:
         ReadStream( const ReadStream& other ) { mDevice = other.mDevice; mStream = other.mStream; }
 		StreamStatus::Enum Read             ( char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read );
-		StreamStatus::Enum ReadWholeFile    ( char** out_buffer, u32* out_bytes_read );
+		StreamStatus::Enum ReadWholeFile    ( char*& out_buffer, u32* out_bytes_read );
 		StreamStatus::Enum ReadTextLine     ( char* out_buffer, u32 buffer_capacity, u32* out_length_read );
 		StreamStatus::Enum ReadTextLine     ( std::string* out_text );
 		StreamStatus::Enum ReadWholeTextFile( char* out_buffer, u32 buffer_capacity, u32* out_length_read );
-		StreamStatus::Enum ReadWholeTextFile( char* out_buffer, u32* out_length_read );
+		StreamStatus::Enum ReadWholeTextFile( char*& out_buffer, u32* out_length_read );
 		StreamStatus::Enum ReadWholeTextFile( std::string& out_text );
         ~ReadStream();
 	private:
@@ -116,11 +116,11 @@ namespace poro {
 
 		// immediate mode reading api
 		StreamStatus::Enum Read             ( const std::string& path, char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read );
-		StreamStatus::Enum ReadWholeFile    ( const std::string& path, char** out_buffer, u32* out_bytes_read );
+		StreamStatus::Enum ReadWholeFile    ( const std::string& path, char*& out_buffer, u32* out_bytes_read );
 		StreamStatus::Enum ReadTextLine     ( const std::string& path, char* out_buffer, u32 buffer_capacity, u32* out_length_read );
 		StreamStatus::Enum ReadTextLine     ( const std::string& path, std::string* out_text );
 		StreamStatus::Enum ReadWholeTextFile( const std::string& path, char* out_buffer, u32 buffer_capacity, u32* out_length_read );
-		StreamStatus::Enum ReadWholeTextFile( const std::string& path, char* out_buffer, u32* out_length_read );
+		StreamStatus::Enum ReadWholeTextFile( const std::string& path, char*& out_buffer, u32* out_length_read );
 		StreamStatus::Enum ReadWholeTextFile( const std::string& path, std::string& out_text );
 
 		// writing API

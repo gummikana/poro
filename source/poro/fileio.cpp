@@ -223,6 +223,14 @@ StreamStatus::Enum ReadStream::Read( char* out_buffer, u32 buffer_capacity_bytes
     return StreamStatus::NoError;
 }
 
+StreamStatus::Enum ReadStream::ReadWholeFile( char*& out_buffer, u32* out_bytes_read )
+{
+    if ( mStream == NULL )                           return StreamStatus::AccessFailed;
+    if ( mStream->mStatus != StreamStatus::NoError ) return mStream->mStatus;
+    // TODO: implement
+    return StreamStatus::NoError;
+}
+
 StreamStatus::Enum ReadStream::ReadTextLine( char* out_buffer, u32 buffer_capacity, u32* out_length_read )
 {
     if ( mStream == NULL )                           return StreamStatus::AccessFailed;
@@ -250,6 +258,14 @@ StreamStatus::Enum ReadStream::ReadWholeTextFile( char* out_buffer, u32 buffer_c
     if ( mStream == NULL )                           return StreamStatus::AccessFailed;
     if ( mStream->mStatus != StreamStatus::NoError ) return mStream->mStatus;
     mStream->Read( out_buffer, buffer_capacity, out_length_read );
+    return StreamStatus::NoError;
+}
+
+StreamStatus::Enum ReadStream::ReadWholeTextFile( char*& out_buffer, u32* out_length_read )
+{
+    if ( mStream == NULL )                           return StreamStatus::AccessFailed;
+    if ( mStream->mStatus != StreamStatus::NoError ) return mStream->mStatus;
+    // TODO: implement
     return StreamStatus::NoError;
 }
 
@@ -326,7 +342,7 @@ StreamStatus::Enum FileSystem::Read( const std::string& path, char* out_buffer, 
     return impl::gImCtx->readStream.Read( out_buffer, buffer_capacity_bytes, out_bytes_read );
 }
 
-StreamStatus::Enum FileSystem::ReadWholeFile( const std::string& path, char** out_buffer, u32* out_bytes_read )
+StreamStatus::Enum FileSystem::ReadWholeFile( const std::string& path, char*& out_buffer, u32* out_bytes_read )
 {
     impl::UpdateReadImContext( this, path );
     return impl::gImCtx->readStream.ReadWholeFile( out_buffer, out_bytes_read );
@@ -350,7 +366,7 @@ StreamStatus::Enum FileSystem::ReadWholeTextFile( const std::string& path, char*
     return impl::gImCtx->readStream.ReadWholeTextFile( out_buffer, buffer_capacity, out_length_read );
 }
 
-StreamStatus::Enum FileSystem::ReadWholeTextFile( const std::string& path, char* out_buffer, u32* out_length_read )
+StreamStatus::Enum FileSystem::ReadWholeTextFile( const std::string& path, char*& out_buffer, u32* out_length_read )
 {
     impl::UpdateReadImContext( this, path );
     return impl::gImCtx->readStream.ReadWholeTextFile( out_buffer, out_length_read );
