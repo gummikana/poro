@@ -1,3 +1,24 @@
+/***************************************************************************
+*
+* Copyright (c) 2015 Olli Harjola, Petri Purho, Dennis Belfrage
+*
+* This software is provided 'as-is', without any express or implied
+* warranty.  In no event will the authors be held liable for any damages
+* arising from the use of this software.
+* Permission is granted to anyone to use this software for any purpose,
+* including commercial applications, and to alter it and redistribute it
+* freely, subject to the following restrictions:
+* 1. The origin of this software must not be misrepresented; you must not
+*    claim that you wrote the original software. If you use this software
+*    in a product, an acknowledgment in the product documentation would be
+*    appreciated but is not required.
+* 2. Altered source versions must be plainly marked as such, and must not be
+*    misrepresented as being the original software.
+* 3. This notice may not be removed or altered from any source distribution.
+*
+***************************************************************************/
+
+
 #ifndef INC_FILEIO_H
 #define INC_FILEIO_H
 
@@ -66,17 +87,8 @@ namespace poro {
         friend class DiskFileDevice;
         friend struct poro::impl::ImContext;
 	public:
-        WriteStream( const WriteStream& other ) { mDevice = other.mDevice; mStream = other.mStream; }
-        WriteStream& operator= ( WriteStream& other )
-        {
-            if ( &other == this ) return *this;
-            WriteStream tmp( other );
-            other.mDevice = NULL;
-            other.mStream = NULL;
-            *this = std::move( tmp ); // re-use move-assignment
-            return *this;
-        }
-
+		WriteStream( const WriteStream& other ) { operator=( other ); }
+        WriteStream& operator= ( const WriteStream& other );
 		StreamStatus::Enum Write( char* data, u32 length_bytes );
 		StreamStatus::Enum Write( const std::string& text );
         ~WriteStream();
@@ -97,16 +109,8 @@ namespace poro {
         friend class DiskFileDevice;
         friend struct poro::impl::ImContext;
 	public:
-        ReadStream( const ReadStream& other ) { mDevice = other.mDevice; mStream = other.mStream; }
-        ReadStream& operator= ( ReadStream& other )
-        {
-            if ( &other == this ) return *this;
-            ReadStream tmp( other );
-            other.mDevice = NULL;
-            other.mStream = NULL;
-            *this = std::move( tmp ); // re-use move-assignment
-            return *this;
-        }
+		ReadStream( const ReadStream& other ) { operator=( other ); }
+		ReadStream& operator= ( const ReadStream& other );
 		StreamStatus::Enum Read             ( char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read );
 		StreamStatus::Enum ReadWholeFile    ( char*& out_buffer, u32* out_bytes_read );
 		StreamStatus::Enum ReadTextLine     ( char* out_buffer, u32 buffer_capacity, u32* out_length_read );

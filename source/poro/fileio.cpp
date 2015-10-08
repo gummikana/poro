@@ -6,11 +6,16 @@
 #include <algorithm>
 #include <utils/filesystem/filesystem.h>
 
+#ifdef PORO_PLAT_WINDOWS
+#include "external/poro_windows.h"
+#endif
+
 
 namespace poro {
 
 namespace platform_impl
 {
+	void Init();
     void GetFiles( const std::string& full_path, std::vector<std::string>* out_files );
     void GetDirectories( const std::string& full_path, std::vector<std::string>* out_directories );
     std::string GetFullPath( FileLocation::Enum location, const std::string& relative_path );
@@ -70,6 +75,11 @@ namespace platform_impl
 #ifdef PORO_PLAT_WINDOWS
 namespace platform_impl
 {
+	void Init()
+	{
+
+	}
+
     void GetFiles( const std::string& full_path, std::vector<std::string>* out_files )
     {
         // TODO:
@@ -82,20 +92,41 @@ namespace platform_impl
 
     std::string GetFullPath( FileLocation::Enum location, const std::string& relative_path )
     {
-        // TODO:
-        return "";
+		std::string a = GetFullPath( location );
+		return CombinePath( a, relative_path );
     }
 
     std::string GetFullPath( FileLocation::Enum location )
     {
-        // TODO:
-        return "";
+		TCHAR path[ MAX_PATH ];
+		std::string result;
+		if ( location == FileLocation::UserDocumentsDirectory )
+		{
+			if ( SUCCEEDED( SHGetFolderPath( NULL,
+				CSIDL_PERSONAL | CSIDL_FLAG_CREATE,
+				NULL,
+				0,
+				path ) ) )
+			{
+				result = std::string( path );
+			}
+		}
+		else
+		{
+			GetCurrentDirectory( MAX_PATH, path );
+			result = std::string( path );
+		}
+		
+		// clean the path
+		std::replace( result.begin(), result.end(), '\\', '/' );
+		if ( result[ result.length() - 1 ] != '/' )
+			result = result + '/';
+		return result;
     }
 
     std::string CombinePath( const std::string& a, const std::string& b )
     {
-        // TODO:
-        return "";
+		return a + b;
     }
 }
 #endif
@@ -114,13 +145,13 @@ namespace impl
     // thread local storage for immediate mode API
     struct ImContext
     {
-        ReadStream               readStream;
-        std::string              readPath;
+        ReadStream            readStream;
+        std::string           readPath;
 
-        WriteStream              writeStream;
-        std::string              writePath;
-        FileLocation::Enum       writeLocation;
-        StreamWriteMode::Enum    writeMode;
+        WriteStream           writeStream;
+        std::string           writePath;
+        FileLocation::Enum    writeLocation;
+        StreamWriteMode::Enum writeMode;
     };
 
     PORO_THREAD_LOCAL ImContext* gImCtx;
@@ -225,6 +256,16 @@ WriteStream::~WriteStream()
     Close();
 }
 
+WriteStream& WriteStream::operator= ( const WriteStream& other )
+{
+	if ( &other == this ) return *this;
+	this->mDevice = other.mDevice;
+	this->mStream = other.mStream;
+	WriteStream& other2 = const_cast<WriteStream&>( other );
+	other2.mDevice = NULL;
+	other2.mStream = NULL;
+	return *this;
+}
 
 // === ReadStream ================================
 
@@ -315,6 +356,16 @@ ReadStream::~ReadStream()
     Close();
 }
 
+ReadStream& ReadStream::operator= ( const ReadStream& other )
+{
+	if ( &other == this ) return *this;
+	this->mDevice = other.mDevice;
+	this->mStream = other.mStream;
+	ReadStream& other2 = const_cast<ReadStream&>( other );
+	other2.mDevice = NULL;
+	other2.mStream = NULL;
+	return *this;
+}
 
 // === FileSystem ================================
 
@@ -416,6 +467,7 @@ StreamStatus::Enum FileSystem::WriteSome( const std::string& path, char* data, u
     impl::UpdateWriteImContext( this, path, location, write_mode );
     return impl::gImCtx->writeStream.Write( data, length_bytes );
 }
+
 StreamStatus::Enum FileSystem::WriteSome( const std::string& path, const std::string& text, StreamWriteMode::Enum write_mode, FileLocation::Enum location )
 {
     impl::UpdateWriteImContext( this, path, location, write_mode );
@@ -502,6 +554,7 @@ void FileSystem::SetDeviceList( std::vector<IFileDevice*> devices )
 
 FileSystem::FileSystem()
 {
+	platform_impl::Init();
     mDefaultDevice = new DiskFileDevice( FileLocation::WorkingDirectory );
     mDevices.push_back( mDefaultDevice );
 }
@@ -535,7 +588,6 @@ DiskFileDevice::DiskFileDevice( FileLocation::Enum read_location, const std::str
 ReadStream DiskFileDevice::OpenRead( const std::string& path_relative_to_root )
 {
     const std::string full_path = platform_impl::CombinePath( mReadRootPath, path_relative_to_root );
-    bool file_opened_successfully = true;
     ReadStream result;
     result.mDevice = this;
     result.mStream = new platform_impl::StreamInternal( full_path, true ); // TODO: allocate from a pool
