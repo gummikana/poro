@@ -1,6 +1,6 @@
 /***************************************************************************
 *
-* Copyright (c) 2015 Olli Harjola, Petri Purho, Dennis Belfrage
+* Copyright (c) 2015 Olli Harjola, Petri Purho
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -17,7 +17,6 @@
 * 3. This notice may not be removed or altered from any source distribution.
 *
 ***************************************************************************/
-
 
 #ifndef INC_FILEIO_H
 #define INC_FILEIO_H
@@ -114,7 +113,7 @@ namespace poro {
 		StreamStatus::Enum Read             ( char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read );
 		StreamStatus::Enum ReadWholeFile    ( char*& out_buffer, u32* out_bytes_read );
 		StreamStatus::Enum ReadTextLine     ( char* out_buffer, u32 buffer_capacity, u32* out_length_read );
-		StreamStatus::Enum ReadTextLine     ( std::string* out_text );
+		StreamStatus::Enum ReadTextLine     ( std::string& out_text );
 		StreamStatus::Enum ReadWholeTextFile( char* out_buffer, u32 buffer_capacity, u32* out_length_read );
 		StreamStatus::Enum ReadWholeTextFile( char*& out_buffer, u32* out_length_read );
 		StreamStatus::Enum ReadWholeTextFile( std::string& out_text );
@@ -141,7 +140,7 @@ namespace poro {
 		StreamStatus::Enum Read             ( const std::string& path, char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read );
 		StreamStatus::Enum ReadWholeFile    ( const std::string& path, char*& out_buffer, u32* out_bytes_read );
 		StreamStatus::Enum ReadTextLine     ( const std::string& path, char* out_buffer, u32 buffer_capacity, u32* out_length_read );
-		StreamStatus::Enum ReadTextLine     ( const std::string& path, std::string* out_text );
+		StreamStatus::Enum ReadTextLine     ( const std::string& path, std::string& out_text );
 		StreamStatus::Enum ReadWholeTextFile( const std::string& path, char* out_buffer, u32 buffer_capacity, u32* out_length_read );
 		StreamStatus::Enum ReadWholeTextFile( const std::string& path, char*& out_buffer, u32* out_length_read );
 		StreamStatus::Enum ReadWholeTextFile( const std::string& path, std::string& out_text );

@@ -1,3 +1,23 @@
+/***************************************************************************
+*
+* Copyright (c) 2015 Olli Harjola, Petri Purho
+*
+* This software is provided 'as-is', without any express or implied
+* warranty.  In no event will the authors be held liable for any damages
+* arising from the use of this software.
+* Permission is granted to anyone to use this software for any purpose,
+* including commercial applications, and to alter it and redistribute it
+* freely, subject to the following restrictions:
+* 1. The origin of this software must not be misrepresented; you must not
+*    claim that you wrote the original software. If you use this software
+*    in a product, an acknowledgment in the product documentation would be
+*    appreciated but is not required.
+* 2. Altered source versions must be plainly marked as such, and must not be
+*    misrepresented as being the original software.
+* 3. This notice may not be removed or altered from any source distribution.
+*
+***************************************************************************/
+
 #include "fileio.h"
 
 #include <mutex>
@@ -24,9 +44,9 @@ namespace platform_impl
 
     struct StreamInternal
     {
-        StreamInternal( std::string filename, bool read )
+        StreamInternal( std::string filename, bool read, StreamStatus::Enum* out_status )
         {
-            mStatus = StreamStatus::AccessFailed;
+            *out_status = StreamStatus::AccessFailed;
             if ( read )
                 mFile.open( filename.c_str(), std::ios::in | std::ios::binary );
             else
@@ -35,18 +55,54 @@ namespace platform_impl
             if ( mFile.is_open() == 0 )
                 return;
 
-            mStatus = StreamStatus::NoError;
+			*out_status = StreamStatus::NoError;
             mSize = ceng::ReadFileSize( mFile );
             mPosition = 0;
         }
 
-        void Read( char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read )
+		StreamStatus::Enum Read( char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read )
         {
+			if (mFile.good() == false )
+				return StreamStatus::AccessFailed;
+
             long read_size = std::min( mSize - mPosition, (long)buffer_capacity_bytes );
             mPosition += read_size;
             mFile.read( out_buffer, read_size );
             *out_bytes_read = (u32)read_size;
+			return StreamStatus::NoError;
         }
+
+		StreamStatus::Enum ReadTextLine( std::string* out_text )
+		{
+			if ( mFile.good() == false )
+				return StreamStatus::AccessFailed;
+
+			bool first = true;
+			const int buffer_size = 1024;
+			char buffer[ buffer_size ];
+			int count = 0;
+			char c;
+			while ( mFile.get( c ).good() )
+			{
+				if ( c == '\n' )
+					break;
+				if ( c != '\r')
+					buffer[ count++ ] = c;
+
+				if ( count == buffer_size )
+				{
+					*out_text = first ? std::string( buffer, count ) : ( *out_text + std::string( buffer, count ) );
+					count = 0;
+				}
+			}
+
+			if (count > 0)
+				*out_text = first ? std::string( buffer, count ) : ( *out_text + std::string( buffer, count ) );
+			else if ( first )
+				*out_text = "";
+
+			return StreamStatus::NoError;
+		}
 
         /*void ReadText( char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read )
         {
@@ -65,7 +121,6 @@ namespace platform_impl
         }
 
 
-        StreamStatus::Enum mStatus;
         std::fstream mFile;
         long mSize;
         long mPosition;
@@ -271,63 +326,61 @@ WriteStream& WriteStream::operator= ( const WriteStream& other )
 
 StreamStatus::Enum ReadStream::Read( char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read )
 {
-    if ( mStream == NULL )                           return StreamStatus::AccessFailed;
-    if ( mStream->mStatus != StreamStatus::NoError ) return mStream->mStatus;
-    mStream->Read( out_buffer, buffer_capacity_bytes, out_bytes_read );
-    return StreamStatus::NoError;
+	if ( mStream == NULL ) return StreamStatus::AccessFailed;
+
+    return mStream->Read( out_buffer, buffer_capacity_bytes, out_bytes_read );
 }
 
 StreamStatus::Enum ReadStream::ReadWholeFile( char*& out_buffer, u32* out_bytes_read )
 {
-    if ( mStream == NULL )                           return StreamStatus::AccessFailed;
-    if ( mStream->mStatus != StreamStatus::NoError ) return mStream->mStatus;
+	if ( mStream == NULL ) return StreamStatus::AccessFailed;
+
     // TODO: implement
     return StreamStatus::NoError;
 }
 
 StreamStatus::Enum ReadStream::ReadTextLine( char* out_buffer, u32 buffer_capacity, u32* out_length_read )
 {
-    if ( mStream == NULL )                           return StreamStatus::AccessFailed;
-    if ( mStream->mStatus != StreamStatus::NoError ) return mStream->mStatus;
-    // TODO: implement
-    //mStream->Read( out_buffer, buffer_capacity, out_length_read );
-    return StreamStatus::NoError;
+	if ( mStream == NULL ) return StreamStatus::AccessFailed;
+
+	// TODO: optimize
+	std::string text;
+	StreamStatus::Enum status = mStream->ReadTextLine( &text );
+	if ( status != StreamStatus::NoError )
+		return status;
+
+	int len = std::min( buffer_capacity, text.length() );
+	for ( int i = 0; i < len; i++ )
+		out_buffer[ i ] = text[ i ];
+
+	return status;
 }
 
-StreamStatus::Enum ReadStream::ReadTextLine( std::string* out_text )
+StreamStatus::Enum ReadStream::ReadTextLine( std::string& out_text )
 {
-    if ( mStream == NULL )                           return StreamStatus::AccessFailed;
-    if ( mStream->mStatus != StreamStatus::NoError ) return mStream->mStatus;
+    if ( mStream == NULL ) return StreamStatus::AccessFailed;
 
-    if ( mStream->mFile.good() == false )
-        return StreamStatus::AccessFailed;
-
-    std::string line;
-    std::getline( mStream->mFile, line );
-    *out_text = line;
-    return StreamStatus::NoError;
+	return mStream->ReadTextLine( &out_text );
 }
 
 StreamStatus::Enum ReadStream::ReadWholeTextFile( char* out_buffer, u32 buffer_capacity, u32* out_length_read )
 {
-    if ( mStream == NULL )                           return StreamStatus::AccessFailed;
-    if ( mStream->mStatus != StreamStatus::NoError ) return mStream->mStatus;
-    mStream->Read( out_buffer, buffer_capacity, out_length_read );
-    return StreamStatus::NoError;
+	if ( mStream == NULL ) return StreamStatus::AccessFailed;
+
+    return mStream->Read( out_buffer, buffer_capacity, out_length_read );
 }
 
 StreamStatus::Enum ReadStream::ReadWholeTextFile( char*& out_buffer, u32* out_length_read )
 {
-    if ( mStream == NULL )                           return StreamStatus::AccessFailed;
-    if ( mStream->mStatus != StreamStatus::NoError ) return mStream->mStatus;
+	if ( mStream == NULL ) return StreamStatus::AccessFailed;
+
     // TODO: implement
     return StreamStatus::NoError;
 }
 
 StreamStatus::Enum ReadStream::ReadWholeTextFile( std::string& out_text )
 {
-    if ( mStream == NULL )                           return StreamStatus::AccessFailed;
-    if ( mStream->mStatus != StreamStatus::NoError ) return mStream->mStatus;
+	if ( mStream == NULL ) return StreamStatus::AccessFailed;
 
     std::stringstream text;
     char c;
@@ -377,7 +430,7 @@ ReadStream FileSystem::Read( const std::string& path )
     {
         IFileDevice* device = mDevices[i];
         ReadStream stream = device->OpenRead( path );
-        if ( stream.mStream && stream.mStream->mStatus == StreamStatus::NoError )
+        if ( stream.mStream )
         {
             result = stream;
             break;
@@ -395,7 +448,7 @@ void FileSystem::ReadAllMatchingFiles( const std::string& path, std::vector<Read
     {
         IFileDevice* device = mDevices[ i ];
         ReadStream stream = device->OpenRead( path );
-        if ( stream.mStream && stream.mStream->mStatus == StreamStatus::NoError )
+        if ( stream.mStream )
             out_files->push_back( stream );
     }
 }
@@ -422,7 +475,7 @@ StreamStatus::Enum FileSystem::ReadTextLine( const std::string& path, char* out_
     return impl::gImCtx->readStream.ReadTextLine( out_buffer, buffer_capacity, out_length_read );
 }
 
-StreamStatus::Enum FileSystem::ReadTextLine( const std::string& path, std::string* out_text )
+StreamStatus::Enum FileSystem::ReadTextLine( const std::string& path, std::string& out_text )
 {
     impl::UpdateReadImContext( this, path );
     return impl::gImCtx->readStream.ReadTextLine( out_text );
@@ -588,18 +641,30 @@ DiskFileDevice::DiskFileDevice( FileLocation::Enum read_location, const std::str
 ReadStream DiskFileDevice::OpenRead( const std::string& path_relative_to_root )
 {
     const std::string full_path = platform_impl::CombinePath( mReadRootPath, path_relative_to_root );
+	StreamStatus::Enum status;
     ReadStream result;
     result.mDevice = this;
-    result.mStream = new platform_impl::StreamInternal( full_path, true ); // TODO: allocate from a pool
+    result.mStream = new platform_impl::StreamInternal( full_path, true, &status ); // TODO: allocate from a pool
+	if ( status != StreamStatus::NoError )
+	{
+		delete result.mStream;
+		result.mStream = NULL;
+	}
     return result;
 }
 
 WriteStream DiskFileDevice::OpenWrite( FileLocation::Enum location, const std::string& path_relative_to_location, StreamWriteMode::Enum write_mode )
 {
     const std::string full_path = platform_impl::GetFullPath( location, path_relative_to_location );
+	StreamStatus::Enum status;
     WriteStream result;
     result.mDevice = this;
-    result.mStream = new platform_impl::StreamInternal( full_path, false );// TODO: allocate from a pool
+    result.mStream = new platform_impl::StreamInternal( full_path, false, &status );// TODO: allocate from a pool
+	if ( status != StreamStatus::NoError )
+	{
+		delete result.mStream;
+		result.mStream = NULL;
+	}
     return result;
 }
 
