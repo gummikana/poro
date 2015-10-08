@@ -3,8 +3,9 @@
 #include <mutex>
 #include <fstream>
 #include <sstream>
-#include <utils/filesystem/filesystem.h>
 #include <algorithm>
+#include <utils/filesystem/filesystem.h>
+
 
 namespace poro {
 
@@ -135,9 +136,21 @@ namespace impl
 
         if ( new_path != gImCtx->readPath )
         {
-            gImCtx->writeStream.~WriteStream();
+            gImCtx->readStream.~ReadStream();
             gImCtx->readPath = new_path;
             gImCtx->readStream = file_system->Read( new_path );
+        }
+    }
+
+    void CloseReadImContext( FileSystem* file_system )
+    {
+        if ( gImCtx == NULL )
+            gImCtx = new ImContext();
+
+        if ( gImCtx->readPath != "" )
+        {
+            gImCtx->readStream.~ReadStream();
+            gImCtx->readPath = "";
         }
     }
 
@@ -235,7 +248,8 @@ StreamStatus::Enum ReadStream::ReadTextLine( char* out_buffer, u32 buffer_capaci
 {
     if ( mStream == NULL )                           return StreamStatus::AccessFailed;
     if ( mStream->mStatus != StreamStatus::NoError ) return mStream->mStatus;
-    mStream->Read( out_buffer, buffer_capacity, out_length_read );
+    // TODO: implement
+    //mStream->Read( out_buffer, buffer_capacity, out_length_read );
     return StreamStatus::NoError;
 }
 
@@ -306,12 +320,13 @@ ReadStream::~ReadStream()
 
 ReadStream FileSystem::Read( const std::string& path )
 {
+    // use first device that is able to find a matching file
     ReadStream result = ReadStream();
     for ( size_t i = 0; i < mDevices.size(); i++ )
     {
         IFileDevice* device = mDevices[i];
         ReadStream stream = device->OpenRead( path );
-        if ( stream.mStream->mStatus == StreamStatus::NoError )
+        if ( stream.mStream && stream.mStream->mStatus == StreamStatus::NoError )
         {
             result = stream;
             break;
@@ -329,7 +344,7 @@ void FileSystem::ReadAllMatchingFiles( const std::string& path, std::vector<Read
     {
         IFileDevice* device = mDevices[ i ];
         ReadStream stream = device->OpenRead( path );
-        if ( stream.mStream->mStatus == StreamStatus::NoError )
+        if ( stream.mStream && stream.mStream->mStatus == StreamStatus::NoError )
             out_files->push_back( stream );
     }
 }
@@ -345,7 +360,9 @@ StreamStatus::Enum FileSystem::Read( const std::string& path, char* out_buffer, 
 StreamStatus::Enum FileSystem::ReadWholeFile( const std::string& path, char*& out_buffer, u32* out_bytes_read )
 {
     impl::UpdateReadImContext( this, path );
-    return impl::gImCtx->readStream.ReadWholeFile( out_buffer, out_bytes_read );
+    StreamStatus::Enum result = impl::gImCtx->readStream.ReadWholeFile( out_buffer, out_bytes_read );
+    impl::CloseReadImContext( this );
+    return result;
 }
 
 StreamStatus::Enum FileSystem::ReadTextLine( const std::string& path, char* out_buffer, u32 buffer_capacity, u32* out_length_read )
@@ -363,19 +380,25 @@ StreamStatus::Enum FileSystem::ReadTextLine( const std::string& path, std::strin
 StreamStatus::Enum FileSystem::ReadWholeTextFile( const std::string& path, char* out_buffer, u32 buffer_capacity, u32* out_length_read )
 {
     impl::UpdateReadImContext( this, path );
-    return impl::gImCtx->readStream.ReadWholeTextFile( out_buffer, buffer_capacity, out_length_read );
+    StreamStatus::Enum result = impl::gImCtx->readStream.ReadWholeTextFile( out_buffer, buffer_capacity, out_length_read );
+    impl::CloseReadImContext( this );
+    return result;
 }
 
 StreamStatus::Enum FileSystem::ReadWholeTextFile( const std::string& path, char*& out_buffer, u32* out_length_read )
 {
     impl::UpdateReadImContext( this, path );
-    return impl::gImCtx->readStream.ReadWholeTextFile( out_buffer, out_length_read );
+    StreamStatus::Enum result = impl::gImCtx->readStream.ReadWholeTextFile( out_buffer, out_length_read );
+    impl::CloseReadImContext( this );
+    return result;
 }
 
 StreamStatus::Enum FileSystem::ReadWholeTextFile( const std::string& path, std::string& out_text )
 {
     impl::UpdateReadImContext( this, path );
-    return impl::gImCtx->readStream.ReadWholeTextFile( out_text );
+    StreamStatus::Enum result = impl::gImCtx->readStream.ReadWholeTextFile( out_text );
+    impl::CloseReadImContext( this );
+    return result;
 }
 
 // ===

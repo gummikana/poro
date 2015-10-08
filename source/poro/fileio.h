@@ -67,6 +67,16 @@ namespace poro {
         friend struct poro::impl::ImContext;
 	public:
         WriteStream( const WriteStream& other ) { mDevice = other.mDevice; mStream = other.mStream; }
+        WriteStream& operator= ( WriteStream& other )
+        {
+            if ( &other == this ) return *this;
+            WriteStream tmp( other );
+            other.mDevice = NULL;
+            other.mStream = NULL;
+            *this = std::move( tmp ); // re-use move-assignment
+            return *this;
+        }
+
 		StreamStatus::Enum Write( char* data, u32 length_bytes );
 		StreamStatus::Enum Write( const std::string& text );
         ~WriteStream();
@@ -88,6 +98,15 @@ namespace poro {
         friend struct poro::impl::ImContext;
 	public:
         ReadStream( const ReadStream& other ) { mDevice = other.mDevice; mStream = other.mStream; }
+        ReadStream& operator= ( ReadStream& other )
+        {
+            if ( &other == this ) return *this;
+            ReadStream tmp( other );
+            other.mDevice = NULL;
+            other.mStream = NULL;
+            *this = std::move( tmp ); // re-use move-assignment
+            return *this;
+        }
 		StreamStatus::Enum Read             ( char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read );
 		StreamStatus::Enum ReadWholeFile    ( char*& out_buffer, u32* out_bytes_read );
 		StreamStatus::Enum ReadTextLine     ( char* out_buffer, u32 buffer_capacity, u32* out_length_read );
