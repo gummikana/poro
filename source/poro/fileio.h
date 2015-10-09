@@ -90,6 +90,7 @@ namespace poro {
         WriteStream& operator= ( const WriteStream& other );
 		StreamStatus::Enum Write( char* data, u32 length_bytes );
 		StreamStatus::Enum Write( const std::string& text );
+		StreamStatus::Enum WriteLine( const std::string& text );
         ~WriteStream();
 	private:
 		void Close();
@@ -130,26 +131,26 @@ namespace poro {
 	{
 	public:
 		// reading API
-		ReadStream Read                ( const std::string& path );
-		void       ReadAllMatchingFiles( const std::string& path, std::vector<ReadStream>* out_files );
+		ReadStream OpenRead            ( const std::string& path );
+		void       OpenReadOnAllMatchingFiles( const std::string& path, std::vector<ReadStream>* out_files );
 		//StreamStatus::Enum ReadAllMatchingFiles( const std::string& path, std::function<void(ReadStream&, const std::string&)> reader_function );  
 
 		// immediate mode reading api
-		StreamStatus::Enum Read             ( const std::string& path, char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read );
-		StreamStatus::Enum ReadWholeFile    ( const std::string& path, char*& out_buffer, u32* out_bytes_read );
-		StreamStatus::Enum ReadTextLine     ( const std::string& path, char* out_buffer, u32 buffer_capacity, u32* out_length_read );
-		StreamStatus::Enum ReadTextLine     ( const std::string& path, std::string& out_text );
-		StreamStatus::Enum ReadWholeTextFile( const std::string& path, std::string& out_text );
+		StreamStatus::Enum		 Read             ( const std::string& path, char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read );
+		StreamStatus::Enum		 ReadWholeFile    ( const std::string& path, char*& out_buffer, u32* out_bytes_read );
+		StreamStatus::Enum		 ReadTextLine     ( const std::string& path, char* out_buffer, u32 buffer_capacity, u32* out_length_read );
+		StreamStatus::Enum		 ReadTextLine     ( const std::string& path, std::string& out_text );
+		StreamStatus::Enum		 ReadWholeTextFile( const std::string& path, std::string& out_text );
 
-		void					 ReadTextLines( const std::string& path, std::vector<std::string>& out_text_lines );
-		std::vector<std::string> ReadTextLines( const std::string& path );
+		void					 ReadTextLines    ( const std::string& path, std::vector<std::string>& out_text_lines );
+		std::vector<std::string> ReadTextLines    ( const std::string& path );
 
 		// writing API
-		WriteStream Write( const std::string& path, StreamWriteMode::Enum write_mode = StreamWriteMode::Enum::Recreate, FileLocation::Enum location = FileLocation::Enum::UserDocumentsDirectory );
+		WriteStream OpenWrite( const std::string& path, StreamWriteMode::Enum write_mode = StreamWriteMode::Enum::Recreate, FileLocation::Enum location = FileLocation::Enum::UserDocumentsDirectory );
 
 		// immediate mode writing api
-		StreamStatus::Enum WriteSome( const std::string& path, char* data, u32 length_bytes, StreamWriteMode::Enum write_mode = StreamWriteMode::Enum::Recreate, FileLocation::Enum location = FileLocation::Enum::UserDocumentsDirectory );
-		StreamStatus::Enum WriteSome( const std::string& path, const std::string& text,      StreamWriteMode::Enum write_mode = StreamWriteMode::Enum::Recreate, FileLocation::Enum location = FileLocation::Enum::UserDocumentsDirectory );
+		StreamStatus::Enum WriteWholeTextFile( const std::string& path, char* data, u32 length_bytes, StreamWriteMode::Enum write_mode = StreamWriteMode::Enum::Recreate, FileLocation::Enum location = FileLocation::Enum::UserDocumentsDirectory );
+		StreamStatus::Enum WriteWholeTextFile( const std::string& path, const std::string& text,      StreamWriteMode::Enum write_mode = StreamWriteMode::Enum::Recreate, FileLocation::Enum location = FileLocation::Enum::UserDocumentsDirectory );
 
 		// file browsing API
 		virtual std::vector<std::string> GetFiles      ( FileLocation::Enum location, const std::string& path_relative_to_location = "" );
@@ -171,7 +172,6 @@ namespace poro {
         FileSystem();
         ~FileSystem();
 	private:
-		void OnFrameEnd();
         // data
         std::vector<IFileDevice*> mDevices;
         IFileDevice* mDefaultDevice;

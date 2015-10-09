@@ -113,6 +113,13 @@ namespace platform_impl
 			return StreamStatus::NoError;
 		}
 
+		StreamStatus::Enum WriteLineEnding()
+		{
+			const char* LINE_ENDING = "\r\n";
+			mFile.write( LINE_ENDING, 2 );
+			return StreamStatus::NoError;
+		}
+
         /*void ReadText( char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read )
         {
         long read_size = std::min( mSize - mPosition, (long)buffer_capacity_bytes );
@@ -219,10 +226,6 @@ namespace impl
     };
 
     PORO_THREAD_LOCAL ImContext* gImCtx;
-    std::vector<WriteStream> gWriteStreams;
-#ifndef PORO_CONSERVATIVE
-    std::mutex gWriteStreamsMutex; // the immediate mode API is not thread safe in case PORO_CONSERVATIVE is defined
-#endif
 
     void UpdateReadImContext( FileSystem* file_system, const std::string& new_path )
     {
@@ -233,7 +236,7 @@ namespace impl
         {
             gImCtx->readStream.~ReadStream();
             gImCtx->readPath = new_path;
-            gImCtx->readStream = file_system->Read( new_path );
+            gImCtx->readStream = file_system->OpenRead( new_path );
         }
     }
 
@@ -246,43 +249,6 @@ namespace impl
         {
             gImCtx->readStream.~ReadStream();
             gImCtx->readPath = "";
-        }
-    }
-
-    void UpdateWriteImContext( FileSystem* file_system, const std::string& new_path, FileLocation::Enum new_location, StreamWriteMode::Enum write_mode )
-    {
-        if ( gImCtx == NULL )
-            gImCtx = new ImContext();
-
-        if ( new_path != gImCtx->writePath || new_location != gImCtx->writeLocation || write_mode != gImCtx->writeMode )
-        {
-            gImCtx->writeStream.~WriteStream();
-            gImCtx->writePath = new_path;
-            gImCtx->writeLocation = new_location;
-            gImCtx->writeMode = write_mode;
-            gImCtx->writeStream = file_system->Write( new_path, write_mode, new_location );
-
-            {
-#ifndef PORO_CONSERVATIVE
-                std::unique_lock< std::mutex >( gWriteStreamsMutex );
-#endif
-                gWriteStreams.push_back( gImCtx->writeStream );
-            }
-        }
-    }
-
-    void OnFrameEndUpdateImContexts()
-    {
-        if ( gImCtx == NULL )
-            gImCtx = new ImContext();
-
-        {
-#ifndef PORO_CONSERVATIVE
-            std::unique_lock< std::mutex >( gWriteStreamsMutex );
-#endif
-            for ( size_t i = 0; i < gWriteStreams.size(); i++ )
-                gWriteStreams[ i ].~WriteStream();
-            gWriteStreams.clear();
         }
     }
 }
@@ -303,6 +269,16 @@ StreamStatus::Enum WriteStream::Write( const std::string& text )
 
 	return mStream->Write( const_cast<char*>( text.c_str() ), text.length() );
     return StreamStatus::NoError;
+}
+
+StreamStatus::Enum WriteStream::WriteLine( const std::string& text )
+{
+	if ( mStream == NULL ) return StreamStatus::AccessFailed;
+
+	StreamStatus::Enum status = mStream->Write( const_cast<char*>( text.c_str() ), text.length() );
+	if ( status != StreamStatus::NoError )
+		return status;
+	mStream->WriteLineEnding();
 }
 
 // ===
@@ -420,7 +396,7 @@ ReadStream& ReadStream::operator= ( const ReadStream& other )
 
 // === FileSystem ================================
 
-ReadStream FileSystem::Read( const std::string& path )
+ReadStream FileSystem::OpenRead( const std::string& path )
 {
     // use first device that is able to find a matching file
     ReadStream result = ReadStream();
@@ -439,7 +415,7 @@ ReadStream FileSystem::Read( const std::string& path )
 
 // ===
 
-void FileSystem::ReadAllMatchingFiles( const std::string& path, std::vector<ReadStream>* out_files )
+void FileSystem::OpenReadOnAllMatchingFiles( const std::string& path, std::vector<ReadStream>* out_files )
 {
     ReadStream result = ReadStream();
     for ( size_t i = 0; i < mDevices.size(); i++ )
@@ -508,24 +484,22 @@ std::vector<std::string> FileSystem::ReadTextLines( const std::string& path )
 
 // ===
 
-WriteStream FileSystem::Write( const std::string& path, StreamWriteMode::Enum write_mode, FileLocation::Enum location )
+WriteStream FileSystem::OpenWrite( const std::string& path, StreamWriteMode::Enum write_mode, FileLocation::Enum location )
 {
     return mDefaultDevice->OpenWrite( location, path, write_mode );
 }
 
-
 // ===
-
-StreamStatus::Enum FileSystem::WriteSome( const std::string& path, char* data, u32 length_bytes, StreamWriteMode::Enum write_mode, FileLocation::Enum location )
+StreamStatus::Enum FileSystem::WriteWholeTextFile( const std::string& path, char* data, u32 length_bytes, StreamWriteMode::Enum write_mode, FileLocation::Enum location )
 {
-    impl::UpdateWriteImContext( this, path, location, write_mode );
-    return impl::gImCtx->writeStream.Write( data, length_bytes );
+	WriteStream stream = OpenWrite( path, write_mode, location );
+	return stream.Write( data, length_bytes );
 }
 
-StreamStatus::Enum FileSystem::WriteSome( const std::string& path, const std::string& text, StreamWriteMode::Enum write_mode, FileLocation::Enum location )
+StreamStatus::Enum FileSystem::WriteWholeTextFile( const std::string& path, const std::string& text, StreamWriteMode::Enum write_mode, FileLocation::Enum location )
 {
-    impl::UpdateWriteImContext( this, path, location, write_mode );
-    return impl::gImCtx->writeStream.Write( text );
+	WriteStream stream = OpenWrite( path, write_mode, location );
+	return stream.Write( text );
 }
 
 // ===
@@ -617,11 +591,6 @@ FileSystem::~FileSystem()
 {
     mDevices.clear();
     delete mDefaultDevice;
-}
-
-void FileSystem::OnFrameEnd()
-{
-    impl::OnFrameEndUpdateImContexts();
 }
 
 
