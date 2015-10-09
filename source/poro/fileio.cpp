@@ -218,11 +218,6 @@ namespace impl
     {
         ReadStream            readStream;
         std::string           readPath;
-
-        WriteStream           writeStream;
-        std::string           writePath;
-        FileLocation::Enum    writeLocation;
-        StreamWriteMode::Enum writeMode;
     };
 
     PORO_THREAD_LOCAL ImContext* gImCtx;
@@ -278,7 +273,7 @@ StreamStatus::Enum WriteStream::WriteLine( const std::string& text )
 	StreamStatus::Enum status = mStream->Write( const_cast<char*>( text.c_str() ), text.length() );
 	if ( status != StreamStatus::NoError )
 		return status;
-	mStream->WriteLineEnding();
+	return mStream->WriteLineEnding();
 }
 
 // ===
