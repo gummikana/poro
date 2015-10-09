@@ -120,17 +120,6 @@ namespace platform_impl
 			return StreamStatus::NoError;
 		}
 
-        /*void ReadText( char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read )
-        {
-        long read_size = std::min( mSize - mPosition, (long)buffer_capacity_bytes );
-        long count = 0;
-        char c;
-        while ( count < read_size && mFile.get( c ).good() )
-        out_buffer[ count++ ] = c;
-        mPosition += read_size;
-        *out_bytes_read = (u32)read_size;
-        }*/
-
         void Close()
         {
             mFile.close();
@@ -253,39 +242,39 @@ namespace impl
 
 StreamStatus::Enum WriteStream::Write( char* data, u32 length_bytes )
 {
-	if ( mStream == NULL ) return StreamStatus::AccessFailed;
+	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
 	
-	return mStream->Write( data, length_bytes );
+	return mStreamImpl->Write( data, length_bytes );
 }
 
 StreamStatus::Enum WriteStream::Write( const std::string& text )
 {
-	if ( mStream == NULL ) return StreamStatus::AccessFailed;
+	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
 
-	return mStream->Write( const_cast<char*>( text.c_str() ), text.length() );
+	return mStreamImpl->Write( const_cast<char*>( text.c_str() ), text.length() );
     return StreamStatus::NoError;
 }
 
 StreamStatus::Enum WriteStream::WriteLine( const std::string& text )
 {
-	if ( mStream == NULL ) return StreamStatus::AccessFailed;
+	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
 
-	StreamStatus::Enum status = mStream->Write( const_cast<char*>( text.c_str() ), text.length() );
+	StreamStatus::Enum status = mStreamImpl->Write( const_cast<char*>( text.c_str() ), text.length() );
 	if ( status != StreamStatus::NoError )
 		return status;
-	return mStream->WriteLineEnding();
+	return mStreamImpl->WriteLineEnding();
 }
 
 // ===
 
 void WriteStream::Close()
 {
-    if ( mStream )
+    if ( mStreamImpl )
     {
         mDevice->Close( this );
-        mStream->Close();
-        delete mStream;
-        mStream = NULL;
+        mStreamImpl->Close();
+        delete mStreamImpl;
+        mStreamImpl = NULL;
     }
 }
 
@@ -298,10 +287,10 @@ WriteStream& WriteStream::operator= ( const WriteStream& other )
 {
 	if ( &other == this ) return *this;
 	this->mDevice = other.mDevice;
-	this->mStream = other.mStream;
+	this->mStreamImpl = other.mStreamImpl;
 	WriteStream& other2 = const_cast<WriteStream&>( other );
 	other2.mDevice = NULL;
-	other2.mStream = NULL;
+	other2.mStreamImpl = NULL;
 	return *this;
 }
 
@@ -309,27 +298,27 @@ WriteStream& WriteStream::operator= ( const WriteStream& other )
 
 StreamStatus::Enum ReadStream::Read( char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read )
 {
-	if ( mStream == NULL ) return StreamStatus::AccessFailed;
+	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
 
-    return mStream->Read( out_buffer, buffer_capacity_bytes, out_bytes_read );
+    return mStreamImpl->Read( out_buffer, buffer_capacity_bytes, out_bytes_read );
 }
 
 StreamStatus::Enum ReadStream::ReadWholeFile( char*& out_buffer, u32* out_bytes_read )
 {
-	if ( mStream == NULL ) return StreamStatus::AccessFailed;
+	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
 
 	out_bytes_read = 0;
-	out_buffer = (char*)malloc( mStream->mSize );
-	return mStream->Read( out_buffer, mStream->mSize, out_bytes_read );
+	out_buffer = (char*)malloc( mStreamImpl->mSize );
+	return mStreamImpl->Read( out_buffer, mStreamImpl->mSize, out_bytes_read );
 }
 
 StreamStatus::Enum ReadStream::ReadTextLine( char* out_buffer, u32 buffer_capacity, u32* out_length_read )
 {
-	if ( mStream == NULL ) return StreamStatus::AccessFailed;
+	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
 
 	// TODO: optimize
 	std::string text;
-	StreamStatus::Enum status = mStream->ReadTextLine( &text );
+	StreamStatus::Enum status = mStreamImpl->ReadTextLine( &text );
 	if ( status != StreamStatus::NoError )
 		return status;
 
@@ -342,18 +331,18 @@ StreamStatus::Enum ReadStream::ReadTextLine( char* out_buffer, u32 buffer_capaci
 
 StreamStatus::Enum ReadStream::ReadTextLine( std::string& out_text )
 {
-    if ( mStream == NULL ) return StreamStatus::AccessFailed;
+    if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
 
-	return mStream->ReadTextLine( &out_text );
+	return mStreamImpl->ReadTextLine( &out_text );
 }
 
 StreamStatus::Enum ReadStream::ReadWholeTextFile( std::string& out_text )
 {
-	if ( mStream == NULL ) return StreamStatus::AccessFailed;
+	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
 
     std::stringstream text;
     char c;
-    while ( mStream->mFile.get( c ).good() )
+    while ( mStreamImpl->mFile.get( c ).good() )
         text.put( c );
 
     out_text = text.str();
@@ -364,12 +353,12 @@ StreamStatus::Enum ReadStream::ReadWholeTextFile( std::string& out_text )
 
 void ReadStream::Close()
 { 
-    if ( mStream )
+    if ( mStreamImpl )
     {
         mDevice->Close( this );
-        mStream->Close();
-        delete mStream;
-        mStream = NULL;
+        mStreamImpl->Close();
+        delete mStreamImpl;
+        mStreamImpl = NULL;
     }
 }
 
@@ -382,10 +371,10 @@ ReadStream& ReadStream::operator= ( const ReadStream& other )
 {
 	if ( &other == this ) return *this;
 	this->mDevice = other.mDevice;
-	this->mStream = other.mStream;
+	this->mStreamImpl = other.mStreamImpl;
 	ReadStream& other2 = const_cast<ReadStream&>( other );
 	other2.mDevice = NULL;
-	other2.mStream = NULL;
+	other2.mStreamImpl = NULL;
 	return *this;
 }
 
@@ -399,7 +388,7 @@ ReadStream FileSystem::OpenRead( const std::string& path )
     {
         IFileDevice* device = mDevices[i];
         ReadStream stream = device->OpenRead( path );
-        if ( stream.mStream )
+        if ( stream.mStreamImpl )
         {
             result = stream;
             break;
@@ -417,7 +406,7 @@ void FileSystem::OpenReadOnAllMatchingFiles( const std::string& path, std::vecto
     {
         IFileDevice* device = mDevices[ i ];
         ReadStream stream = device->OpenRead( path );
-        if ( stream.mStream )
+        if ( stream.mStreamImpl )
             out_files->push_back( stream );
     }
 }
@@ -609,11 +598,11 @@ ReadStream DiskFileDevice::OpenRead( const std::string& path_relative_to_root )
 	StreamStatus::Enum status;
     ReadStream result;
     result.mDevice = this;
-    result.mStream = new platform_impl::StreamInternal( full_path, true, &status ); // TODO: allocate from a pool
+    result.mStreamImpl = new platform_impl::StreamInternal( full_path, true, &status ); // TODO: allocate from a pool
 	if ( status != StreamStatus::NoError )
 	{
-		delete result.mStream;
-		result.mStream = NULL;
+		delete result.mStreamImpl;
+		result.mStreamImpl = NULL;
 	}
     return result;
 }
@@ -624,11 +613,11 @@ WriteStream DiskFileDevice::OpenWrite( FileLocation::Enum location, const std::s
 	StreamStatus::Enum status;
     WriteStream result;
     result.mDevice = this;
-    result.mStream = new platform_impl::StreamInternal( full_path, false, &status );// TODO: allocate from a pool
+    result.mStreamImpl = new platform_impl::StreamInternal( full_path, false, &status );// TODO: allocate from a pool
 	if ( status != StreamStatus::NoError )
 	{
-		delete result.mStream;
-		result.mStream = NULL;
+		delete result.mStreamImpl;
+		result.mStreamImpl = NULL;
 	}
     return result;
 }

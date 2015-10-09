@@ -94,10 +94,10 @@ namespace poro {
         ~WriteStream();
 	private:
 		void Close();
-        WriteStream() { mDevice = NULL; mStream = NULL; }
+        WriteStream() { mDevice = NULL; mStreamImpl = NULL; }
         // data
         IFileDevice*                   mDevice;
-        platform_impl::StreamInternal* mStream;
+        platform_impl::StreamInternal* mStreamImpl;
 	};
 
     // ================================
@@ -119,10 +119,10 @@ namespace poro {
         ~ReadStream();
 	private:
 		void Close();
-        ReadStream() { mDevice = NULL; mStream = NULL; }
+        ReadStream() { mDevice = NULL; mStreamImpl = NULL; }
         // data
 		IFileDevice*                   mDevice;
-        platform_impl::StreamInternal* mStream;
+        platform_impl::StreamInternal* mStreamImpl;
 	};
 
     // ================================
@@ -133,7 +133,6 @@ namespace poro {
 		// reading API
 		ReadStream OpenRead            ( const std::string& path );
 		void       OpenReadOnAllMatchingFiles( const std::string& path, std::vector<ReadStream>* out_files );
-		//StreamStatus::Enum ReadAllMatchingFiles( const std::string& path, std::function<void(ReadStream&, const std::string&)> reader_function );  
 
 		// immediate mode reading api
 		StreamStatus::Enum		 Read             ( const std::string& path, char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read );
