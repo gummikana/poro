@@ -505,6 +505,25 @@ StreamStatus::Enum FileSystem::ReadWholeTextFile( const std::string& path, std::
     return result;
 }
 
+void FileSystem::ReadTextLines( const std::string& path, std::vector<std::string>& out_text_lines )
+{
+	impl::UpdateReadImContext( this, path );
+	std::string line;
+	while ( impl::gImCtx->readStream.ReadTextLine( line ) )
+		out_text_lines.push_back( line );
+	return;
+}
+
+std::vector<std::string> FileSystem::ReadTextLines( const std::string& path )
+{
+	impl::UpdateReadImContext( this, path );
+	std::vector<std::string> text_lines;
+	std::string line;
+	while ( impl::gImCtx->readStream.ReadTextLine( line ) )
+		text_lines.push_back( line );
+	return text_lines;
+}
+
 // ===
 
 WriteStream FileSystem::Write( const std::string& path, StreamWriteMode::Enum write_mode, FileLocation::Enum location )

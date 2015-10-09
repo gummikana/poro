@@ -145,6 +145,9 @@ namespace poro {
 		StreamStatus::Enum ReadWholeTextFile( const std::string& path, char*& out_buffer, u32* out_length_read );
 		StreamStatus::Enum ReadWholeTextFile( const std::string& path, std::string& out_text );
 
+		void					 ReadTextLines( const std::string& path, std::vector<std::string>& out_text_lines );
+		std::vector<std::string> ReadTextLines( const std::string& path );
+
 		// writing API
 		WriteStream Write( const std::string& path, StreamWriteMode::Enum write_mode = StreamWriteMode::Enum::Recreate, FileLocation::Enum location = FileLocation::Enum::UserDocumentsDirectory );
 
