@@ -114,8 +114,6 @@ namespace poro {
 		StreamStatus::Enum ReadWholeFile    ( char*& out_buffer, u32* out_bytes_read );
 		StreamStatus::Enum ReadTextLine     ( char* out_buffer, u32 buffer_capacity, u32* out_length_read );
 		StreamStatus::Enum ReadTextLine     ( std::string& out_text );
-		StreamStatus::Enum ReadWholeTextFile( char* out_buffer, u32 buffer_capacity, u32* out_length_read );
-		StreamStatus::Enum ReadWholeTextFile( char*& out_buffer, u32* out_length_read );
 		StreamStatus::Enum ReadWholeTextFile( std::string& out_text );
         ~ReadStream();
 	private:
@@ -141,8 +139,6 @@ namespace poro {
 		StreamStatus::Enum ReadWholeFile    ( const std::string& path, char*& out_buffer, u32* out_bytes_read );
 		StreamStatus::Enum ReadTextLine     ( const std::string& path, char* out_buffer, u32 buffer_capacity, u32* out_length_read );
 		StreamStatus::Enum ReadTextLine     ( const std::string& path, std::string& out_text );
-		StreamStatus::Enum ReadWholeTextFile( const std::string& path, char* out_buffer, u32 buffer_capacity, u32* out_length_read );
-		StreamStatus::Enum ReadWholeTextFile( const std::string& path, char*& out_buffer, u32* out_length_read );
 		StreamStatus::Enum ReadWholeTextFile( const std::string& path, std::string& out_text );
 
 		void					 ReadTextLines( const std::string& path, std::vector<std::string>& out_text_lines );
