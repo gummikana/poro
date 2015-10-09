@@ -568,13 +568,16 @@ FileSystem::FileSystem()
 {
 	platform_impl::Init();
     mDefaultDevice = new DiskFileDevice( FileLocation::WorkingDirectory );
-    mDevices.push_back( mDefaultDevice );
+
+	mDefaultDevice2 = new DiskFileDevice( FileLocation::WorkingDirectory );
+    mDevices.push_back( mDefaultDevice2 );
 }
 
 FileSystem::~FileSystem()
 {
-    mDevices.clear();
     delete mDefaultDevice;
+	delete mDefaultDevice2;
+    mDevices.clear();
 }
 
 
