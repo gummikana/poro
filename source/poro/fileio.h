@@ -24,21 +24,10 @@
 #include <vector>
 #include "poro_types.h"
 
-
-// TODO: get rid of u32 typedef
-
-//#define PORO_CONSERVATIVE 1
-
-
-#ifdef PORO_CONSERVATIVE
-    #define PORO_THREAD_LOCAL static
-#else
-    #define PORO_THREAD_LOCAL __declspec(thread)
-#endif
-
+// define PORO_CONSERVATIVE if you only need a single-threaded API
+#define PORO_CONSERVATIVE 1
 
 namespace poro {
-    typedef poro::types::Uint32 u32;
     namespace impl { struct ImContext;  }
     namespace platform_impl { struct StreamInternal; }
     // ================================
@@ -89,6 +78,8 @@ namespace poro {
 
     // ================================
 
+	// Provides write access to a file.
+	// The stream is automatically closed at the end of the scope in which it was created.
 	class WriteStream
 	{
 	    friend class IFileDevice;
@@ -99,7 +90,7 @@ namespace poro {
 		WriteStream( const WriteStream& other ) { operator=( other ); }
         WriteStream& operator= ( const WriteStream& other );
 		// write 'length_bytes' bytes from 'data' to the stream.
-		StreamStatus::Enum Write( char* data, u32 length_bytes );
+		StreamStatus::Enum Write( char* data, poro::types::Uint32 length_bytes );
 		// write 'text' to the stream.
 		StreamStatus::Enum Write( const std::string& text );
 		// write 'text' to the stream, then a line ending.
@@ -116,6 +107,8 @@ namespace poro {
 
     // ================================
 
+	// Provides read access to a file.
+	// The stream is automatically closed at the end of the scope in which it was created.
 	class ReadStream
 	{
         friend class IFileDevice;
@@ -126,15 +119,15 @@ namespace poro {
 		ReadStream( const ReadStream& other ) { operator=( other ); }
 		ReadStream& operator= ( const ReadStream& other );
 		// read 'buffer_capacity_bytes' bytes from the stream to 'out_buffer'. actual number of bytes read is written to 'out_bytes_read'.
-		StreamStatus::Enum Read             ( char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read );
+		StreamStatus::Enum Read             ( char* out_buffer, poro::types::Uint32 buffer_capacity_bytes, poro::types::Uint32* out_bytes_read );
 		// read one line of text from the stream to to 'out_buffer'. actual number of bytes read is written to 'out_bytes_read'. 'buffer_capacity' specifies the maximum capacity of the buffer.
-		StreamStatus::Enum ReadTextLine     ( char* out_buffer, u32 buffer_capacity, u32* out_length_read );
+		StreamStatus::Enum ReadTextLine     ( char* out_buffer, poro::types::Uint32 buffer_capacity, poro::types::Uint32* out_length_read );
 		// read one line of text from the stream to 'out_text'.
 		StreamStatus::Enum ReadTextLine     ( std::string& out_text );
 		// close the stream and clean up all resources used by it.
         ~ReadStream();
 	private:
-		StreamStatus::Enum ReadWholeFile( char*& out_buffer, u32* out_bytes_read );
+		StreamStatus::Enum ReadWholeFile( char*& out_buffer, poro::types::Uint32* out_bytes_read );
 		StreamStatus::Enum ReadWholeTextFile( std::string& out_text );
 		void Close();
         ReadStream() { mDevice = NULL; mStreamImpl = NULL; }
@@ -145,6 +138,14 @@ namespace poro {
 
     // ================================
 
+	// FileSystem provides the main access to reading, writing and enumeration of files in various locations.
+	// The API is thread safe if SetDeviceList and GetDeviceList are used correctly. In normal usage scenarious they'd be called at the initialization of a game, before any file operations take place.
+	// Please see the documentation of SetDeviceList and GetDeviceList for more details.
+	// Any ReadStream and WriteStream instances returned by this API should only be used in the thread where they were created.
+	//
+	// SetDeviceList and GetDeviceList are intended to be used to change the locations where files are searched from. This can be used for example to build a game that supports multiple mods at the same time.
+	// Each device provided via SetDeviceList is used as a "root" directory when searching for a file inside a _Read_ call.
+	// All functions take relative file paths unless otherwise specified.
 	class FileSystem
 	{
 	public:
@@ -156,11 +157,11 @@ namespace poro {
 
 		// === immediate mode reading api ===
 		// read 'buffer_capacity_bytes' bytes from the file in 'relative_path' to 'out_buffer'. actual number of bytes read is written to 'out_bytes_read'
-		StreamStatus::Enum		 Read             ( const std::string& relative_path, char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read );
+		StreamStatus::Enum		 Read             ( const std::string& relative_path, char* out_buffer, poro::types::Uint32 buffer_capacity_bytes, poro::types::Uint32* out_bytes_read );
 		// read the entire contents of file at 'relative_path' to out_buffer. out_buffer is allocated during the call and must be released by user using 'free' when they're done with it. number of bytes read is written to 'out_bytes_read'
-		StreamStatus::Enum		 ReadWholeFile    ( const std::string& relative_path, char*& out_buffer, u32* out_bytes_read );
+		StreamStatus::Enum		 ReadWholeFile    ( const std::string& relative_path, char*& out_buffer, poro::types::Uint32* out_bytes_read );
 		// reads one line of text from the file at 'relative_path' to 'out_buffer'. consecutive calls to this function from current thread will continue reading from the same stream.
-		StreamStatus::Enum		 ReadTextLine     ( const std::string& relative_path, char* out_buffer, u32 buffer_capacity, u32* out_length_read );
+		StreamStatus::Enum		 ReadTextLine     ( const std::string& relative_path, char* out_buffer, poro::types::Uint32 buffer_capacity, poro::types::Uint32* out_length_read );
 		// reads one line of text from the file at 'relative_path' to 'out_text'. consecutive calls to this function from current thread will continue reading from the same stream.
 		StreamStatus::Enum		 ReadTextLine     ( const std::string& relative_path, std::string& out_text );
 		// reads the entire contents of the file at 'relative_path' to 'out_text'.
@@ -177,7 +178,7 @@ namespace poro {
 
 		// === immediate mode writing api ===
 		// write 'length_bytes' bytes from data to the file at 'relative_path'
-		StreamStatus::Enum WriteWholeTextFile( const std::string& relative_path, char* data, u32 length_bytes, StreamWriteMode::Enum write_mode = StreamWriteMode::Enum::Recreate, FileLocation::Enum location = FileLocation::Enum::UserDocumentsDirectory );
+		StreamStatus::Enum WriteWholeTextFile( const std::string& relative_path, char* data, poro::types::Uint32 length_bytes, StreamWriteMode::Enum write_mode = StreamWriteMode::Enum::Recreate, FileLocation::Enum location = FileLocation::Enum::UserDocumentsDirectory );
 		// write 'text' to the file at 'relative_path'
 		StreamStatus::Enum WriteWholeTextFile( const std::string& relative_path, const std::string& text,      StreamWriteMode::Enum write_mode = StreamWriteMode::Enum::Recreate, FileLocation::Enum location = FileLocation::Enum::UserDocumentsDirectory );
 

@@ -30,6 +30,7 @@
 #include "external/poro_windows.h"
 #endif
 
+typedef poro::types::Uint32 u32;
 
 namespace poro {
 
@@ -138,62 +139,68 @@ namespace platform_impl
 }
 
 #ifdef PORO_PLAT_WINDOWS
-namespace platform_impl
-{
-	void Init()
+	#ifdef PORO_CONSERVATIVE
+		#define PORO_THREAD_LOCAL 
+	#else
+		#define PORO_THREAD_LOCAL __declspec(thread)
+	#endif
+
+	namespace platform_impl
 	{
-
-	}
-
-    void GetFiles( const std::string& full_path, std::vector<std::string>* out_files )
-    {
-        // TODO:
-    }
-
-    void GetDirectories( const std::string& full_path, std::vector<std::string>* out_directories )
-    {
-        // TODO:
-    }
-
-    std::string GetFullPath( FileLocation::Enum location, const std::string& relative_path )
-    {
-		std::string a = GetFullPath( location );
-		return CombinePath( a, relative_path );
-    }
-
-    std::string GetFullPath( FileLocation::Enum location )
-    {
-		TCHAR path[ MAX_PATH ];
-		std::string result;
-		if ( location == FileLocation::UserDocumentsDirectory )
+		void Init()
 		{
-			if ( SUCCEEDED( SHGetFolderPath( NULL,
-				CSIDL_PERSONAL | CSIDL_FLAG_CREATE,
-				NULL,
-				0,
-				path ) ) )
+
+		}
+
+		void GetFiles( const std::string& full_path, std::vector<std::string>* out_files )
+		{
+			// TODO:
+		}
+
+		void GetDirectories( const std::string& full_path, std::vector<std::string>* out_directories )
+		{
+			// TODO:
+		}
+
+		std::string GetFullPath( FileLocation::Enum location, const std::string& relative_path )
+		{
+			std::string a = GetFullPath( location );
+			return CombinePath( a, relative_path );
+		}
+
+		std::string GetFullPath( FileLocation::Enum location )
+		{
+			TCHAR path[ MAX_PATH ];
+			std::string result;
+			if ( location == FileLocation::UserDocumentsDirectory )
 			{
+				if ( SUCCEEDED( SHGetFolderPath( NULL,
+					CSIDL_PERSONAL | CSIDL_FLAG_CREATE,
+					NULL,
+					0,
+					path ) ) )
+				{
+					result = std::string( path );
+				}
+			}
+			else
+			{
+				GetCurrentDirectory( MAX_PATH, path );
 				result = std::string( path );
 			}
-		}
-		else
-		{
-			GetCurrentDirectory( MAX_PATH, path );
-			result = std::string( path );
-		}
 		
-		// clean the path
-		std::replace( result.begin(), result.end(), '\\', '/' );
-		if ( result[ result.length() - 1 ] != '/' )
-			result = result + '/';
-		return result;
-    }
+			// clean the path
+			std::replace( result.begin(), result.end(), '\\', '/' );
+			if ( result[ result.length() - 1 ] != '/' )
+				result = result + '/';
+			return result;
+		}
 
-    std::string CombinePath( const std::string& a, const std::string& b )
-    {
-		return a + b;
-    }
-}
+		std::string CombinePath( const std::string& a, const std::string& b )
+		{
+			return a + b;
+		}
+	}
 #endif
 
 #ifdef PORO_PLAT_MAC
