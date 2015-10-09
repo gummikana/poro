@@ -120,6 +120,11 @@ namespace platform_impl
 			return StreamStatus::NoError;
 		}
 
+		void SeekToBeginning()
+		{
+			mFile.seekg( 0, std::ios::beg );
+		}
+
         void Close()
         {
             mFile.close();
@@ -307,7 +312,7 @@ StreamStatus::Enum ReadStream::ReadWholeFile( char*& out_buffer, u32* out_bytes_
 {
 	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
 
-	out_bytes_read = 0;
+	mStreamImpl->SeekToBeginning();
 	out_buffer = (char*)malloc( mStreamImpl->mSize );
 	return mStreamImpl->Read( out_buffer, mStreamImpl->mSize, out_bytes_read );
 }
@@ -340,6 +345,7 @@ StreamStatus::Enum ReadStream::ReadWholeTextFile( std::string& out_text )
 {
 	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
 
+	mStreamImpl->SeekToBeginning();
     std::stringstream text;
     char c;
     while ( mStreamImpl->mFile.get( c ).good() )
@@ -441,6 +447,7 @@ StreamStatus::Enum FileSystem::ReadTextLine( const std::string& path, std::strin
 
 StreamStatus::Enum FileSystem::ReadWholeTextFile( const std::string& path, std::string& out_text )
 {
+	impl::CloseReadImContext( this );
     impl::UpdateReadImContext( this, path );
     StreamStatus::Enum result = impl::gImCtx->readStream.ReadWholeTextFile( out_text );
     impl::CloseReadImContext( this );
@@ -449,20 +456,24 @@ StreamStatus::Enum FileSystem::ReadWholeTextFile( const std::string& path, std::
 
 void FileSystem::ReadTextLines( const std::string& path, std::vector<std::string>& out_text_lines )
 {
+	impl::CloseReadImContext( this );
 	impl::UpdateReadImContext( this, path );
 	std::string line;
 	while ( impl::gImCtx->readStream.ReadTextLine( line ) )
 		out_text_lines.push_back( line );
+	impl::CloseReadImContext( this );
 	return;
 }
 
 std::vector<std::string> FileSystem::ReadTextLines( const std::string& path )
 {
+	impl::CloseReadImContext(this);
 	impl::UpdateReadImContext( this, path );
 	std::vector<std::string> text_lines;
 	std::string line;
 	while ( impl::gImCtx->readStream.ReadTextLine( line ) )
 		text_lines.push_back( line );
+	impl::CloseReadImContext( this );
 	return text_lines;
 }
 

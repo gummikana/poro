@@ -157,7 +157,7 @@ namespace poro {
 		// === immediate mode reading api ===
 		// read 'buffer_capacity_bytes' bytes from the file in 'relative_path' to 'out_buffer'. actual number of bytes read is written to 'out_bytes_read'
 		StreamStatus::Enum		 Read             ( const std::string& relative_path, char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read );
-		// read the entire contents of file at 'relative_path' to out_buffer. out_buffer is allocated during the call and must be released by user using 'free' when done with it. number of bytes read is written to 'out_bytes_read'
+		// read the entire contents of file at 'relative_path' to out_buffer. out_buffer is allocated during the call and must be released by user using 'free' when they're done with it. number of bytes read is written to 'out_bytes_read'
 		StreamStatus::Enum		 ReadWholeFile    ( const std::string& relative_path, char*& out_buffer, u32* out_bytes_read );
 		// reads one line of text from the file at 'relative_path' to 'out_buffer'. consecutive calls to this function from current thread will continue reading from the same stream.
 		StreamStatus::Enum		 ReadTextLine     ( const std::string& relative_path, char* out_buffer, u32 buffer_capacity, u32* out_length_read );
