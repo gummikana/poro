@@ -321,7 +321,13 @@ StreamStatus::Enum ReadStream::ReadWholeFile( char*& out_buffer, u32* out_bytes_
 
 	mStreamImpl->SeekToBeginning();
 	out_buffer = (char*)malloc( mStreamImpl->mSize );
-	return mStreamImpl->Read( out_buffer, mStreamImpl->mSize, out_bytes_read );
+	StreamStatus::Enum status = mStreamImpl->Read( out_buffer, mStreamImpl->mSize, out_bytes_read );
+	if ( status != StreamStatus::NoError )
+	{
+		free( out_buffer );
+		out_buffer = NULL;
+	}
+	return status;
 }
 
 StreamStatus::Enum ReadStream::ReadTextLine( char* out_buffer, u32 buffer_capacity, u32* out_length_read )
@@ -492,7 +498,7 @@ WriteStream FileSystem::OpenWrite( const std::string& path, StreamWriteMode::Enu
 }
 
 // ===
-StreamStatus::Enum FileSystem::WriteWholeTextFile( const std::string& path, char* data, u32 length_bytes, StreamWriteMode::Enum write_mode, FileLocation::Enum location )
+StreamStatus::Enum FileSystem::WriteWholeFile( const std::string& path, char* data, u32 length_bytes, StreamWriteMode::Enum write_mode, FileLocation::Enum location )
 {
 	WriteStream stream = OpenWrite( path, write_mode, location );
 	return stream.Write( data, length_bytes );

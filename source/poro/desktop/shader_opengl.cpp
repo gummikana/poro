@@ -18,12 +18,10 @@
  *
  ***************************************************************************/
 
-#include <fstream>
-#include <string>
+#include "shader_opengl.h"
 
 #include "../libraries.h"
 #include "../iplatform.h"
-#include "shader_opengl.h"
 #include "../itexture.h"
 
 
@@ -177,15 +175,17 @@ bool ShaderOpenGL::GetIsCompiledAndLinked() const
 
 int ShaderOpenGL::LoadShader( const std::string& filename, bool is_vertex_shader )
 {
-	unsigned int filetext_size;
-	char* filetext_ptr;
-	Poro()->GetFileSystem()->ReadWholeFile( filename, filetext_ptr, &filetext_size );
+	CharBufferAutoFree text;
+	StreamStatus::Enum read_status = Poro()->GetFileSystem()->ReadWholeFile( filename, text.memory, &text.size_bytes );
+	if ( read_status != StreamStatus::NoError )
+	{
+		isCompiledAndLinked = false;
+		return 0;
+	}
 
 	int shader_handle = glCreateShader( is_vertex_shader ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER );
-	glShaderSource( shader_handle, 1, (const char**)&filetext_ptr, (int*)&filetext_size );
+	glShaderSource( shader_handle, 1, (const char**)&text.memory, (int*)&text.size_bytes );
 	glCompileShader( shader_handle );
-
-	free( filetext_ptr );
 
 	//DEBUG
 	GLint status;

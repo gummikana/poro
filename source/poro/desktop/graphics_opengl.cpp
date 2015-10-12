@@ -29,6 +29,7 @@
 #include "texture3d_opengl.h"
 
 #define STB_IMAGE_IMPLEMENTATION
+#define STBI_NO_STDIO
 #include "../external/stb_image.h"
 #undef STB_IMAGE_IMPLEMENTATION
 
@@ -415,8 +416,13 @@ namespace {
 	{
 		TextureOpenGL* result = NULL;
 		
+		CharBufferAutoFree texture_data;
+		StreamStatus::Enum read_status = Poro()->GetFileSystem()->ReadWholeFile( filename, texture_data.memory, &texture_data.size_bytes );
+		if ( read_status != StreamStatus::NoError )
+			return NULL;
+
 		int x,y,bpp;
-		unsigned char *data = stbi_load(filename.c_str(), &x, &y, &bpp, 4);
+		unsigned char *data = stbi_load_from_memory( (stbi_uc*)texture_data.memory, texture_data.size_bytes, &x, &y, &bpp, 4);
 
 		if( data == NULL ) 
 			return NULL;
@@ -934,8 +940,13 @@ void GraphicsOpenGL::SetTextureWrappingMode( ITexture* itexture, int mode )
 
 ITexture3d* GraphicsOpenGL::LoadTexture3d( const types::string& filename )
 {
+	CharBufferAutoFree texture_data;
+	auto read_status = Poro()->GetFileSystem()->ReadWholeFile( filename, texture_data.memory, &texture_data.size_bytes );
+	if ( read_status != StreamStatus::NoError )
+		return NULL;
+
 	int x, y, z, bpp;
-	unsigned char *data = stbi_load( filename.c_str(), &x, &y, &bpp, 4 );
+	unsigned char *data = stbi_load_from_memory( (stbi_uc*)texture_data.memory, texture_data.size_bytes, &x, &y, &bpp, 4 );
 
 	if ( data == NULL )
 	{
@@ -1604,8 +1615,8 @@ void GraphicsOpenGL::SaveScreenshot( const std::string& filename, int pos_x, int
 		}
 	}
 
-	int result = stbi_write_png( filename.c_str(), w, h, 3, other_pixels, w * 3 );
-	if( result == 0 ) poro_logger << "Error SaveScreenshot() - couldn't write to file: " << filename << std::endl;
+	if ( ImageSave( filename.c_str(), w, h, 3, other_pixels, w * 3 ) == 0 )
+		poro_logger << "Error SaveScreenshot() - couldn't write to file: " << filename << std::endl;
 
 	if( other_pixels != pixels ) delete [] other_pixels;
 	// no need to release the static pixels
@@ -1619,12 +1630,32 @@ void GraphicsOpenGL::SaveScreenshot( const std::string& filename )
 
 unsigned char*	GraphicsOpenGL::ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp )
 {
-	return stbi_load( filename, x, y, comp, req_comp );
+	char*               data;
+	poro::types::Uint32 data_size_bytes;
+	StreamStatus::Enum read_status = Poro()->GetFileSystem()->ReadWholeFile( filename, data, &data_size_bytes );
+	if ( read_status != StreamStatus::NoError )
+		return NULL;
+
+	return stbi_load_from_memory( (stbi_uc*)data, data_size_bytes, x, y, comp, req_comp );
 }
 
 int	GraphicsOpenGL::ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes )
 {
-	return stbi_write_png( filename, x, y, comp, data, stride_bytes );
+	int   png_size_bytes;
+	unsigned char* png_memory = stbi_write_png_to_mem( (unsigned char*)data, stride_bytes, x, y, comp, &png_size_bytes );
+	if ( png_memory != 0 && png_size_bytes  > 0 )
+	{
+		StreamStatus::Enum write_status = Poro()->GetFileSystem()->WriteWholeFile( filename, (char*)png_memory, (unsigned int)png_size_bytes, StreamWriteMode::Recreate, FileLocation::WorkingDirectory );
+		if ( write_status != StreamStatus::NoError )
+			poro_logger << "Error ImageSave() - couldn't write to file: " << filename << std::endl;
+	}
+	else
+	{
+		return 0;
+	}
+	free( png_memory );
+
+	return 1;
 }
 
 //=============================================================================

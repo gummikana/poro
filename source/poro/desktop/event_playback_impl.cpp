@@ -17,7 +17,6 @@ namespace {
 //
 std::vector<std::string> Split( const std::string& _separator, std::string _string )
 {
-
     std::vector <std::string> array;
 
     size_t position;
