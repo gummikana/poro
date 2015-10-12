@@ -261,7 +261,6 @@ namespace poro {
 
 		~CharBufferAutoFree()
 		{
-			std::cout << "released mem" << std::endl;
 			if ( memory )
 				free( memory );
 			memory = NULL;
