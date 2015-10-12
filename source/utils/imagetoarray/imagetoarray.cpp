@@ -1,9 +1,8 @@
 #include "imagetoarray.h"
 
-#include <poro/external/stb_image.h>
-#include <poro/external/stb_image_write.h>
-
 #include <utils/color/ccolor.h>
+#include <poro/iplatform.h>
+
 
 //-----------------------------------------------------------------------------
 void LoadImage( const std::string& filename, ceng::CArray2D< poro::types::Uint32 >& out_array2d, bool include_alpha )
@@ -61,8 +60,8 @@ void SaveImage( const std::string& filename, const ceng::CArray2D< poro::types::
 		}
 	}
 
-	stbi_write_png( filename.c_str(), w, h, 4, pixels, w * 4 );
-	// poro::IPlatform::Instance()->GetGraphics()->ImageSave( filename.c_str(), w, h, 4, pixels, w * 4 );
+	//stbi_write_png( filename.c_str(), w, h, 4, pixels, w * 4 );
+	Poro()->GetGraphics()->ImageSave( filename.c_str(), w, h, 4, pixels, w * 4 );
 
 	delete [] pixels;
 	pixels = NULL;
@@ -75,7 +74,7 @@ namespace imagetoarray {
 TempTexture* GetTexture( const std::string& filename )
 {
 	TempTexture* result = new TempTexture;
-	result->data = stbi_load(filename.c_str(), &result->width, &result->height, &result->bpp, 4);
+	result->data = Poro()->GetGraphics()->ImageLoad( filename.c_str(), &result->width, &result->height, &result->bpp, 4 );
 	if( result->data == NULL ) std::cout << "LoadLevel - Couldn't load file: " << filename << std::endl;
 	result->filename = filename;
 	return result;

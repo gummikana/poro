@@ -18,13 +18,12 @@
  *
  ***************************************************************************/
 
-#include <fstream>
-#include <string>
+#include "shader_opengl.h"
 
 #include "../libraries.h"
-#include "../iplatform.h"
-#include "shader_opengl.h"
 #include "../itexture.h"
+#include "../iplatform.h"
+#include "../fileio.h"
 
 
 namespace poro {
@@ -177,19 +176,16 @@ bool ShaderOpenGL::GetIsCompiledAndLinked() const
 
 int ShaderOpenGL::LoadShader( const std::string& filename, bool is_vertex_shader )
 {
-	std::ifstream ifile(filename.c_str());
-    std::string filetext;
-
-    while( ifile.good() ) {
-        std::string line;
-        std::getline(ifile, line);
-        filetext.append(line + "\n");
-    }
-
-	const char* filetext_ptr = filetext.c_str();
+	CharBufferAutoFree text;
+	StreamStatus::Enum read_status = Poro()->GetFileSystem()->ReadWholeFile( filename, text.memory, &text.size_bytes );
+	if ( read_status != StreamStatus::NoError )
+	{
+		isCompiledAndLinked = false;
+		return 0;
+	}
 
 	int shader_handle = glCreateShader( is_vertex_shader ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER );
-	glShaderSource( shader_handle, 1, &filetext_ptr, NULL );
+	glShaderSource( shader_handle, 1, (const char**)&text.memory, (int*)&text.size_bytes );
 	glCompileShader( shader_handle );
 
 	//DEBUG

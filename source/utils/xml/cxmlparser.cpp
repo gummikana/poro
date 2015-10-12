@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- * Copyright (c) 2003 - 2011 Petri Purho
+ * Copyright (c) 2003 - 2011 Petri Purho, Olli Harjola
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,57 +18,61 @@
  *
  ***************************************************************************/
 
+ // 12.10.2015 Olli
+ //		Converted XML file IO to use poro FileSystem API
 
 #include "cxmlparser.h"
-
-#include <fstream>
-#include <iostream>
-
 #include "cxmlhandler.h"
 
-
-// #include "../basepath/basepath.h"
 
 #define ADD_BASE_PATH( x ) x
 
 namespace ceng {
 
-void CXmlParser::ParseFile( const std::string& file )
+void CXmlParser::ParseFile( const std::string& filename )
 {
+	using namespace poro;
+
 	myHandler->StartDocument();
 
-	std::fstream file_input;
-    
-	std::string line;
-
-	if( file.empty() == false )
+	if( filename.empty() == false )
 	{
-		std::string t = ADD_BASE_PATH(file.c_str());
-		file_input.open(t.c_str() , std::ios::in );
-
-		if(!file_input.good())
+		FileSystem* file_system = Poro()->GetFileSystem();
+		bool delete_file_system = false;
+		if ( file_system == NULL )
 		{
-			logger << "Unable to open xml-file: " << file.c_str() << "\n";
+			file_system = new FileSystem();
+			delete_file_system = true;
 		}
-		while ( file_input.good() ) 
+
+		ReadStream file = file_system->OpenRead( filename );
+		if ( file.IsValid() )
 		{
-			std::getline( file_input, line );
-			
-			if( line.size() > 256 )
+			std::string line;
+			while ( file.ReadTextLine( line ) )
 			{
-				std::vector< std::string > lines = ceng::Split( ">", line );
-				for( unsigned int i = 0; i < lines.size(); ++i )
+				if ( line.size() > 256 )
 				{
-					ParseLine( lines[ i ] + ">" );    
+					std::vector< std::string > lines = ceng::Split( ">", line );
+					for ( unsigned int i = 0; i < lines.size(); ++i )
+					{
+						ParseLine( lines[ i ] + ">" );
+					}
+				}
+				else
+				{
+					ParseLine( line );
 				}
 			}
-			else
-			{
-				ParseLine( line );    
-			}
+		}
+		else
+		{
+			logger << "Unable to open xml-file: " << filename.c_str() << "\n";
 		}
 
-		file_input.close();
+		file.~ReadStream(); // close the file *BEFORE* deleting the file system
+		if ( delete_file_system )
+			delete file_system;
 	}
 
 	myHandler->EndDocument();

@@ -28,5 +28,7 @@
 #include "cmultikeyvector.h"
 #include "canycontainer.h"
 
+#include "../../poro/fileio.h"
+#include "../../poro/iplatform.h"
 
 #endif

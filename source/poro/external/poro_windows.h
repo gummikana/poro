@@ -10,6 +10,8 @@
 #endif
 
 #include <windows.h>
+#include <Shlobj.h>
+#include <Pathcch.h>
 
 #undef LoadImage
 #undef SendMessage

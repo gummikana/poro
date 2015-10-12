@@ -35,6 +35,7 @@ class GraphicsOpenGL;
 class Keyboard;
 class Touch;
 class SoundPlayerSDL;
+class FileSystem;
 
 //-----------------------------------------------------------------------------
 
@@ -64,6 +65,7 @@ public:
 	virtual void			SetApplication( IApplication* application );
 	virtual IGraphics*		GetGraphics();
 	virtual ISoundPlayer*	GetSoundPlayer();
+    virtual FileSystem*     GetFileSystem();
 
 	// controllers
 	virtual Mouse*			GetMouse();
@@ -122,6 +124,7 @@ protected:
 	Touch*							mTouch;
 	std::vector< JoystickImpl* >	mJoysticks;
 	SoundPlayerSDL*		            mSoundPlayer;
+    FileSystem*                     mFileSystem;
 	bool						    mRunning;
 	types::vec2					    mMousePos;
 	int								mSleepingMode;
@@ -165,6 +168,11 @@ inline Touch* PlatformDesktop::GetTouch() {
 
 inline int	PlatformDesktop::GetJoystickCount() const  {
 	return (int)mJoysticks.size();
+}
+
+// ---
+inline FileSystem* PlatformDesktop::GetFileSystem() {
+    return mFileSystem;
 }
 
 // ---

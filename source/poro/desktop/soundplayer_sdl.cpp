@@ -21,6 +21,9 @@
 #include "soundplayer_sdl.h"
 #include "sound_sdl.h"
 #include "../poro_macros.h"
+#include "../iplatform.h"
+#include "../fileio.h"
+
 
 namespace poro {
 
@@ -59,7 +62,7 @@ ISound* SoundPlayerSDL::LoadSound( const types::string& filename )
 		return NULL;
 
 	SoundSDL* sound = new SoundSDL;
-	sound->mFilename = filename;
+	sound->mFilename = Poro()->GetFileSystem()->GetFullPathFromRelativePath( filename );
 	sound->mMixChunk = Mix_LoadWAV( filename.c_str() );
 	if( sound->mMixChunk == NULL )
 		poro_logger << "Error couldn't load sound file: " << filename << std::endl;

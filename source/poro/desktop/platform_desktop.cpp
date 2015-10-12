@@ -31,6 +31,7 @@
 #include "../keyboard.h"
 #include "../touch.h"
 #include "../event_recorder.h"
+#include "../iapplication.h"
 
 #include "event_recorder_impl.h"
 #include "event_playback_impl.h"
@@ -38,6 +39,8 @@
 #include "soundplayer_sdl.h"
 #include "joystick_impl.h"
 #include "mouse_impl.h"
+
+#include "../fileio.h"
 
 namespace {
 
@@ -401,6 +404,8 @@ void PlatformDesktop::Init( IApplication* application, const GraphicsSettings& s
 	mSoundPlayer = new SoundPlayerSDL;
 	mSoundPlayer->Init();
 
+    mFileSystem = new FileSystem();
+
 	mMouse = new MouseImpl;
 	mKeyboard = new Keyboard;
 	mTouch = new Touch;
@@ -425,6 +430,9 @@ void PlatformDesktop::Destroy()
 
 	delete mSoundPlayer;
 	mSoundPlayer = NULL;
+
+    delete mFileSystem;
+    mFileSystem = NULL;
 
 	delete mMouse;
 	mMouse = NULL;

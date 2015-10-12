@@ -1,9 +1,9 @@
 #include "event_playback_impl.h"
 
-#include <fstream>
 #include <sstream>
 
-#include "../poro_macros.h"
+#include "../iplatform.h"
+#include "../fileio.h"
 
 namespace poro {
 
@@ -17,7 +17,6 @@ namespace {
 //
 std::vector<std::string> Split( const std::string& _separator, std::string _string )
 {
-
     std::vector <std::string> array;
 
     size_t position;
@@ -194,7 +193,6 @@ void EventPlaybackImpl::FireTouchUpEvent(const types::vec2& pos, int touchId) {
 
 void EventPlaybackImpl::LoadPlaybacksFromFile( const std::string& filename )
 {
-	std::fstream file_input;
 	std::string line;
 
 	poro_assert( mPlaybacks.empty() );
@@ -203,12 +201,10 @@ void EventPlaybackImpl::LoadPlaybacksFromFile( const std::string& filename )
 	int line_num = 0;
 	if( filename.empty() == false )
 	{
-		file_input.open( filename.c_str(), std::ios::in );
+		ReadStream file = Poro()->GetFileSystem()->OpenRead( filename );
         
-		while ( file_input.good() ) 
+		while ( file.ReadTextLine( line ) ) 
 		{
-			std::getline( file_input, line );
-
 			// comment sections
 			if( line.empty() == false && line[ 0 ] == '#' ) continue;
 
@@ -257,7 +253,6 @@ void EventPlaybackImpl::LoadPlaybacksFromFile( const std::string& filename )
 				}
 			}
 		}
-		file_input.close();
 	}
 	else
 	{

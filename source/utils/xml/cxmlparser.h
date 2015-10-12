@@ -81,7 +81,7 @@ public:
 	void SetRemoveWhiteSpace( bool whitespace ) { myRemoveWhiteSpace = whitespace; }
 	bool GetRemoveWhiteSpace() { return myRemoveWhiteSpace; }
 
-	void ParseFile( const std::string& file );
+	void ParseFile( const std::string& filename );
 	void ParseStringData( const std::string& stringdata );
 
 	//-------------------------------------------------------------------------

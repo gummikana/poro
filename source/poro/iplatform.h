@@ -22,15 +22,24 @@
 #define INC_IPLATFORM_H
 
 #include "poro_types.h"
-#include "iapplication.h"
-#include "igraphics.h"
-#include "isoundplayer.h"
-#include "mouse.h"
-#include "touch.h"
-#include "joystick.h"
-#include "keyboard.h"
+#include "poro_macros.h"
 
-namespace poro { class IPlatform; }
+
+namespace poro 
+{ 
+	class IPlatform;
+
+	class IApplication;
+	class IGraphics;
+	class ISoundPlayer;
+	class Mouse;
+	class Touch;
+	class Joystick;
+	class Keyboard;
+	class FileSystem;
+
+	struct GraphicsSettings;
+}
 
 //=============================================================================
 // Function that returns a pointer to IPlatform class, can be used instead of
@@ -70,6 +79,7 @@ public:
 	virtual IApplication*	GetApplication();
 	virtual IGraphics*		GetGraphics() = 0;
 	virtual ISoundPlayer*	GetSoundPlayer() = 0;
+    virtual FileSystem*     GetFileSystem() = 0;
 
 	// controllers
 	virtual Mouse*			GetMouse() = 0;
@@ -78,7 +88,6 @@ public:
 
 	virtual int				GetJoystickCount() const;
 	virtual Joystick*		GetJoystick( int n );
-
 
 	// window / screen
 	virtual void SetWindowSize( int width, int height ) { poro_assert( false ); }
@@ -160,17 +169,6 @@ enum PORO_SLEEPING_MODES
 };
 
 //-------------------------- inlined stuff ------------------------------------
-
-inline void IPlatform::SetInternalSize( types::Float32 width, types::Float32 height) {
-	mInternalWidth = width;
-	mInternalHeight = height;
-
-	IGraphics* graphics = GetGraphics();
-	poro_assert( graphics );
-
-	if( graphics )
-		graphics->SetInternalSize( width, height );
-}
 
 inline int IPlatform::GetJoystickCount() const {
 	// If this fails, it means you should implement joysticks on your end of things
