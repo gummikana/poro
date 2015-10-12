@@ -86,7 +86,6 @@ void IPlatform::Init(IApplication* application, const GraphicsSettings& settings
 		mInternalWidth = (types::Float32)settings.window_width;
 	if( mInternalHeight == 0.f )
 		mInternalHeight = (types::Float32)settings.window_height;
-
 }
 
 void IPlatform::Destroy()

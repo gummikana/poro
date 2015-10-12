@@ -285,6 +285,13 @@ StreamStatus::Enum WriteStream::WriteLine( const std::string& text )
 	return mStreamImpl->WriteLineEnding();
 }
 
+StreamStatus::Enum WriteStream::WriteEndOfLine()
+{
+	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
+
+	return mStreamImpl->WriteLineEnding();
+}
+
 // ===
 
 void WriteStream::Close()

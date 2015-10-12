@@ -30,7 +30,8 @@
 #include "poro_types.h"
 
 // define PORO_CONSERVATIVE if you only need a single-threaded API
-#define PORO_CONSERVATIVE 1
+// #define PORO_CONSERVATIVE 1
+
 
 namespace poro {
     namespace impl { struct ImContext;  }
@@ -107,6 +108,10 @@ namespace poro {
 		StreamStatus::Enum Write( const std::string& text );
 		// write 'text' to the stream, then a line ending.
 		StreamStatus::Enum WriteLine( const std::string& text );
+		// write a line ending to the stream.
+		StreamStatus::Enum WriteEndOfLine();
+		// Returns true if the stream was succesfully opened and has not been closed.
+		bool IsValid() { return mStreamImpl != NULL; }
 		// close the stream and clean up all resources used by it.
         ~WriteStream();
 	private:
@@ -136,6 +141,8 @@ namespace poro {
 		StreamStatus::Enum ReadTextLine     ( char* out_buffer, poro::types::Uint32 buffer_capacity, poro::types::Uint32* out_length_read );
 		// Read one line of text from the stream to 'out_text'.
 		StreamStatus::Enum ReadTextLine     ( std::string& out_text );
+		// Returns true if the stream was succesfully opened and has not been closed.
+		bool IsValid() { return mStreamImpl != NULL; }
 		// Close the stream and clean up all resources used by it.
         ~ReadStream();
 	private:

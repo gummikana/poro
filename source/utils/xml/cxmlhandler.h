@@ -47,10 +47,10 @@
 #include <string>
 #include <map>
 #include <sstream>
-#include <ostream>
 #include "xml_libraries.h"
 #include "xml_macros.h"
 #include "cxmlnode.h"
+
 
 namespace ceng {
 
@@ -99,7 +99,7 @@ public:
 
 	CXmlStreamHandler() : 
 		myCount(0), 
-		myPackThight( false ),
+		myPackTight ( false ),
 		myWriteAttributesOnLines( false ),
 		myExtraLineBetweenTags( false )
 		{ 
@@ -110,8 +110,8 @@ public:
 	virtual void StartDocument() { }
 	virtual void EndDocument() { }
 
-	virtual void Characters( const std::string& chars, std::ostream& stream  ) { if ( !chars.empty() ) PrintText( chars, stream ); }
-	virtual void StartElement( const std::string& name, const attributes& attr, std::ostream& stream  )
+	virtual void Characters( const std::string& chars, poro::WriteStream* stream  ) { if ( !chars.empty() ) PrintText( chars, stream ); }
+	virtual void StartElement( const std::string& name, const attributes& attr, poro::WriteStream* stream  )
 	{
 		std::stringstream ss;
 		ss << "<" << name;
@@ -144,30 +144,30 @@ public:
 		myCount++;
 	}
 
-	virtual void EndElement( const std::string& name, std::ostream& stream  )
+	virtual void EndElement( const std::string& name, poro::WriteStream* stream  )
 	{
 		myCount--;
 		PrintText( "</" + name + ">", stream );
 		if( myExtraLineBetweenTags ) 
-			stream << std::endl;
+			stream->WriteEndOfLine();
 	}
 
 	//! Just for printing the text
-	void PrintText( const std::string& text, std::ostream& stream  )
+	void PrintText( const std::string& text, poro::WriteStream* stream  )
 	{
-		if( myPackThight == false )
+		if( myPackTight == false )
 		{
 			for( int i = 0; i < myCount; i++ )
-				stream << "  ";
+				stream->Write( "  " );
 		}
 
-		stream << text;
-		if( myPackThight == false )
-			stream << std::endl;
+		stream->Write( text );
+		if( myPackTight == false )
+			stream->WriteEndOfLine();
 	}
 
 	//! Just for parsing open the Node
-	void ParseOpen( CXmlNode* rootnode, std::ostream& stream )
+	void ParseOpen( CXmlNode* rootnode, poro::WriteStream* stream )
 	{
 		StartElement( rootnode->GetName(), CreateAttributes( rootnode ), stream );
 		Characters( rootnode->GetContent() , stream );
@@ -191,12 +191,12 @@ public:
 		return tmp_map;
 	}
 
-	void SetPackThight( bool value )				{ myPackThight = value; }
+	void SetPackTight( bool value )					{ myPackTight = value; }
 	void SetWriteAttributesOnLines( bool value )	{ myWriteAttributesOnLines = value; }
 	void SetExtraLineBetweenTags( bool value )		{ myExtraLineBetweenTags = value; }
 
 	int				myCount;
-	bool			myPackThight;
+	bool			myPackTight;
 	bool			myWriteAttributesOnLines;
 	bool			myExtraLineBetweenTags;
 };

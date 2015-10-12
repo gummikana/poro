@@ -132,13 +132,13 @@
 #define INC_CXML_H
 
 #include <string>
-#include <fstream>
 
 #include "cxmlhandler.h"
 #include "cxmlcast.h"
 #include "cxmlfilesys.h"
 #include "cxmlnode.h"
 #include "cxmlparser.h"
+
 
 //#define PORO_XCODE_ERROR_HACK_TOGGLE
 
@@ -190,19 +190,19 @@ namespace ceng {
 		CXmlNode* node;
 		node = XmlConvertFrom( mesh, rootnodename );
 
-		std::ofstream file_output( file.c_str(), std::ios::out );
-
-		CXmlStreamHandler handler;
-		if( parse_on_multiple_lines )
+		poro::WriteStream stream = Poro()->GetFileSystem()->OpenWrite( file );
+		if ( stream.IsValid() )
 		{
-			handler.SetPackThight( false );
-			handler.SetWriteAttributesOnLines( true );
-			handler.SetExtraLineBetweenTags( true );
+			CXmlStreamHandler handler;
+			if ( parse_on_multiple_lines )
+			{
+				handler.SetPackTight( false );
+				handler.SetWriteAttributesOnLines( true );
+				handler.SetExtraLineBetweenTags( true );
+			}
+
+			handler.ParseOpen( node, &stream );
 		}
-
-		handler.ParseOpen( node, file_output );
-
-		file_output.close();
 
 		ceng::CXmlNode::FreeNode( node );
 	}
@@ -220,7 +220,7 @@ namespace ceng {
 
 #ifndef PORO_XCODE_ERROR_HACK_TOGGLE
 	template< class T >
-	inline void XmlLoadFromFile( T& mesh, const std::string& file, const std::string& rootnodename)
+	inline void XmlLoadFromFile( T& mesh, const std::string& file, const std::string& rootnodename )
 	{
 		CXmlParser	parser;
 		CXmlHandler handler;
