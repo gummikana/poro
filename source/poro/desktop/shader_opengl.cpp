@@ -177,20 +177,15 @@ bool ShaderOpenGL::GetIsCompiledAndLinked() const
 
 int ShaderOpenGL::LoadShader( const std::string& filename, bool is_vertex_shader )
 {
-	std::ifstream ifile(filename.c_str());
-    std::string filetext;
-
-    while( ifile.good() ) {
-        std::string line;
-        std::getline(ifile, line);
-        filetext.append(line + "\n");
-    }
-
-	const char* filetext_ptr = filetext.c_str();
+	unsigned int filetext_size;
+	char* filetext_ptr;
+	Poro()->GetFileSystem()->ReadWholeFile( filename, filetext_ptr, &filetext_size );
 
 	int shader_handle = glCreateShader( is_vertex_shader ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER );
-	glShaderSource( shader_handle, 1, &filetext_ptr, NULL );
+	glShaderSource( shader_handle, 1, (const char**)&filetext_ptr, (int*)&filetext_size );
 	glCompileShader( shader_handle );
+
+	free( filetext_ptr );
 
 	//DEBUG
 	GLint status;
