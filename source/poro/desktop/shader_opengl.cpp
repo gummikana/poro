@@ -21,8 +21,9 @@
 #include "shader_opengl.h"
 
 #include "../libraries.h"
-#include "../iplatform.h"
 #include "../itexture.h"
+#include "../iplatform.h"
+#include "../fileio.h"
 
 
 namespace poro {

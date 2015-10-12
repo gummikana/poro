@@ -23,6 +23,7 @@
 #include <cmath>
 
 #include "../iplatform.h"
+#include "../fileio.h"
 #include "../libraries.h"
 #include "../poro_macros.h"
 #include "texture_opengl.h"

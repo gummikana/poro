@@ -40,6 +40,8 @@
 
 #include <stdlib.h>
 
+#include "igraphics.h"
+
 
 
 namespace poro {
@@ -75,6 +77,7 @@ IPlatform * IPlatform::Instance()
 	return gInstance;
 }
 
+
 void IPlatform::Init(IApplication* application, const GraphicsSettings& settings)
 {
 	mApplication = application;
@@ -91,6 +94,17 @@ void IPlatform::Destroy()
 	mApplication = NULL;
 }
 
+
+void IPlatform::SetInternalSize( types::Float32 width, types::Float32 height ) {
+	mInternalWidth = width;
+	mInternalHeight = height;
+
+	IGraphics* graphics = GetGraphics();
+	poro_assert( graphics );
+
+	if ( graphics )
+		graphics->SetInternalSize( width, height );
+}
 
 void IPlatform::SetApplication(IApplication* application){
 	mApplication = application;

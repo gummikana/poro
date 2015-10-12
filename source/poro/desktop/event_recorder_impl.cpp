@@ -1,9 +1,11 @@
 #include "event_recorder_impl.h"
 
-#include <fstream>
 #include <sstream>
-#include <iomanip>
 #include <ctime>
+
+#include "../iplatform.h"
+#include "../fileio.h"
+
 
 namespace poro {
 
@@ -144,22 +146,25 @@ void EventRecorderImpl::StartOfFrame( float start_time ) {
 
 void EventRecorderImpl::EndOfFrame( float time ) {
 
-	std::ofstream		file_out;
-	if( mFrameCount == 0 ) 
-		file_out.open( mFilename.c_str(), std::ios::out );
-	else 
-		file_out.open( mFilename.c_str(), std::ios::app );
+	StreamWriteMode::Enum write_mode;
+	if ( mFrameCount == 0 )
+		write_mode = StreamWriteMode::Recreate;
+	else
+		write_mode = StreamWriteMode::Append;
 
+	WriteStream file = Poro()->GetFileSystem()->OpenWrite( mFilename, write_mode, FileLocation::WorkingDirectory );
 
+	std::stringstream ss;
+	ss << mFrameCount << ", " << (int)( ( time - mFrameStartTime ) * 1000.f ) << " ms : ";
 
-	file_out << mFrameCount << ", " << (int)(( time - mFrameStartTime ) * 1000.f) << " ms : ";
 	for( int i = 0; i < (int)mEventBuffer.size(); ++i ) {
-		file_out << mEventBuffer[ i ];
+		ss << mEventBuffer[ i ];
 		if( i < (int)mEventBuffer.size() - 1 ) 
-			file_out << ", ";
+			ss << ", ";
 	}
-	file_out << std::endl;
-	file_out.close();
+	ss << std::endl;
+
+	file.Write( ss.str() );
 
 	mEventBuffer.clear();
 	mFrameCount++;

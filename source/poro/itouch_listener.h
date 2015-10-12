@@ -25,7 +25,6 @@
 
 namespace poro
 {
-	
 	class ITouchListener
 	{
 	public:
@@ -36,7 +35,6 @@ namespace poro
 		virtual void TouchMove(const types::vec2& pos, int touchId) = 0;
 		virtual void TouchDown(const types::vec2& pos, int touchId) = 0;
 		virtual void TouchUp(const types::vec2& pos, int touchId) = 0;
-		
 	};
 	
 } // end of namespace poro

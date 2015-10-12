@@ -45,13 +45,21 @@ namespace platform_impl
 
     struct StreamInternal
     {
-        StreamInternal( std::string filename, bool read, StreamStatus::Enum* out_status )
+        StreamInternal( std::string filename, bool read, StreamStatus::Enum* out_status, StreamWriteMode::Enum write_mode )
         {
             *out_status = StreamStatus::AccessFailed;
-            if ( read )
+
+			if ( read )
+			{
                 mFile.open( filename.c_str(), std::ios::in | std::ios::binary );
+			}
             else
-                mFile.open( filename.c_str(), std::ios::out | std::ios::binary );
+			{ 
+				if (write_mode == StreamWriteMode::Append )
+					mFile.open( filename.c_str(), std::ios::app | std::ios::binary );
+				else
+					mFile.open( filename.c_str(), std::ios::out | std::ios::binary );
+			}
 
             if ( mFile.is_open() == 0 )
                 return;
@@ -512,6 +520,21 @@ StreamStatus::Enum FileSystem::WriteWholeTextFile( const std::string& path, cons
 
 // ===
 
+std::string FileSystem::GetFullPathFromRelativePath( const std::string& relative_path )
+{
+	// use first device that is able to find a matching file
+    ReadStream result = ReadStream();
+	for ( size_t i = 0; i < mDevices.size(); i++ )
+	{
+		IFileDevice* device = mDevices[ i ];
+		const std::string full_path = device->GetFullPath( relative_path );
+		if ( ceng::DoesExist( full_path ) )
+			return full_path;
+	}
+	return "";
+}
+
+
 std::vector<std::string> FileSystem::GetFiles( FileLocation::Enum location, const std::string& path_relative_to_location )
 {
     std::vector<std::string> result;
@@ -619,13 +642,13 @@ DiskFileDevice::DiskFileDevice( FileLocation::Enum read_location, const std::str
 
 // ===
 
-ReadStream DiskFileDevice::OpenRead( const std::string& path_relative_to_root )
+ReadStream DiskFileDevice::OpenRead( const std::string& path_relative_to_device_root )
 {
-    const std::string full_path = platform_impl::CombinePath( mReadRootPath, path_relative_to_root );
+    const std::string full_path = GetFullPath( path_relative_to_device_root );
 	StreamStatus::Enum status;
     ReadStream result;
     result.mDevice = this;
-    result.mStreamImpl = new platform_impl::StreamInternal( full_path, true, &status ); // TODO: allocate from a pool
+    result.mStreamImpl = new platform_impl::StreamInternal( full_path, true, &status, StreamWriteMode::Recreate ); // TODO: allocate from a pool
 	if ( status != StreamStatus::NoError )
 	{
 		delete result.mStreamImpl;
@@ -640,7 +663,7 @@ WriteStream DiskFileDevice::OpenWrite( FileLocation::Enum location, const std::s
 	StreamStatus::Enum status;
     WriteStream result;
     result.mDevice = this;
-    result.mStreamImpl = new platform_impl::StreamInternal( full_path, false, &status );// TODO: allocate from a pool
+    result.mStreamImpl = new platform_impl::StreamInternal( full_path, false, &status, write_mode );// TODO: allocate from a pool
 	if ( status != StreamStatus::NoError )
 	{
 		delete result.mStreamImpl;
@@ -652,6 +675,11 @@ WriteStream DiskFileDevice::OpenWrite( FileLocation::Enum location, const std::s
 std::string DiskFileDevice::GetReadRootPath()
 {
     return mReadRootPath;
+}
+
+std::string DiskFileDevice::GetFullPath( const std::string& path_relative_to_device_root )
+{
+	return platform_impl::CombinePath( mReadRootPath, path_relative_to_device_root );
 }
 
 // ===

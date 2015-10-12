@@ -18,6 +18,9 @@
 *
 ***************************************************************************/
 
+// TODO: all functions should use full file path if given one.
+
+
 #ifndef INC_FILEIO_H
 #define INC_FILEIO_H
 
@@ -79,6 +82,7 @@ namespace poro {
         virtual ReadStream  OpenRead( const std::string& path ) = 0;
         virtual WriteStream OpenWrite( FileLocation::Enum location, const std::string& read_path_relative_to_location, StreamWriteMode::Enum write_mode = StreamWriteMode::Enum::Recreate ) = 0;
         virtual std::string GetReadRootPath() = 0;
+		virtual std::string GetFullPath( const std::string& path_relative_to_device_root ) = 0;
 	protected:
         virtual void Close( WriteStream* stream ) = 0;
         virtual void Close( ReadStream* stream ) = 0;
@@ -191,6 +195,9 @@ namespace poro {
 		StreamStatus::Enum WriteWholeTextFile( const std::string& relative_path, const std::string& text,                      StreamWriteMode::Enum write_mode = StreamWriteMode::Enum::Recreate, FileLocation::Enum location = FileLocation::Enum::UserDocumentsDirectory );
 
 		// === file browsing API ===
+		// Get the full location of a file.
+		std::string GetFullPathFromRelativePath( const std::string& relative_path );
+
 		// Get a list of files at the location specified by the parameters.
 		std::vector<std::string> GetFiles      ( FileLocation::Enum location, const std::string& path_relative_to_location = "" );
 		// Get a list of files at the location specified by the parameters.
@@ -236,9 +243,10 @@ namespace poro {
 		DiskFileDevice( const std::string& read_root_path_full );
 		DiskFileDevice( FileLocation::Enum read_location, const std::string& read_root_path_relative_to_location = "" );
 
-        virtual ReadStream    OpenRead( const std::string& path_relative_to_root ) override;
+        virtual ReadStream    OpenRead( const std::string& path_relative_to_device_root ) override;
         virtual WriteStream   OpenWrite( FileLocation::Enum location, const std::string& path_relative_to_location, StreamWriteMode::Enum write_mode = StreamWriteMode::Enum::Recreate ) override;
         virtual std::string   GetReadRootPath() override;
+		virtual std::string   GetFullPath( const std::string& path_relative_to_device_root ) override;
     protected:
         virtual void Close( WriteStream* stream ) override;
         virtual void Close( ReadStream* stream ) override;
