@@ -24,8 +24,6 @@
 #ifndef INC_FILEIO_H
 #define INC_FILEIO_H
 
-#include <iostream>
-
 #include <vector>
 #include "poro_types.h"
 
