@@ -31,6 +31,7 @@
 #include "../keyboard.h"
 #include "../touch.h"
 #include "../event_recorder.h"
+#include "../iapplication.h"
 
 #include "event_recorder_impl.h"
 #include "event_playback_impl.h"

@@ -1,6 +1,5 @@
 #include "event_playback_impl.h"
 
-//#include <fstream>
 #include <sstream>
 
 #include "../iplatform.h"
