@@ -41,7 +41,7 @@ namespace platform_impl
     void GetDirectories( const std::string& full_path, std::vector<std::string>* out_directories );
     std::string GetFullPath( FileLocation::Enum location, const std::string& relative_path );
     std::string GetFullPath( FileLocation::Enum location );
-    std::string CombinePath( const std::string& a, const std::string& b );
+    std::string CombinePath( const std::string& root, const std::string& relative_to_root );
 
     struct StreamInternal
     {
@@ -204,9 +204,24 @@ namespace platform_impl
 			return result;
 		}
 
-		std::string CombinePath( const std::string& a, const std::string& b )
+		std::string CombinePath( const std::string& root, const std::string& relative_to_root )
 		{
-			return a + b;
+			// detect full path
+			char c = 0;
+			char prev = 0;
+			for ( size_t i = 0; i < relative_to_root.length(); i++ )
+			{
+				c = relative_to_root[ i ];
+				if ( prev == ':' && c == '\\' )
+					return relative_to_root;
+				prev = c;
+			}
+
+			// ideally we would use this but because we won't because winapi designers are horrible people.
+			//if ( PathIsRelative( relative_to_root.c_str() ) == false )
+			//	return relative_to_root;
+
+			return root + relative_to_root;
 		}
 	}
 #endif

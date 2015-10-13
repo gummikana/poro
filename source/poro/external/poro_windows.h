@@ -12,6 +12,7 @@
 #include <windows.h>
 #include <Shlobj.h>
 #include <Pathcch.h>
+//#include <Shlwapi.h>
 
 #undef LoadImage
 #undef SendMessage
