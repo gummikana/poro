@@ -527,7 +527,8 @@ Sprite* Sprite::GetChildByName( const std::string& name, bool recursive ) const
 			}
 			else if( recursive )
 			{
-				return sprite->GetChildByName( name );
+				as::Sprite* temp = sprite->GetChildByName( name, recursive );
+				if( temp ) return temp;
 			}
 		}
 	}
