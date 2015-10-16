@@ -139,8 +139,7 @@ public:
 	
 	void Clear();
 
-	Sprite*			GetChildByName( const std::string& name );
-	const Sprite*	GetChildByName( const std::string& name ) const;
+	Sprite*			GetChildByName( const std::string& name, bool recursive = false ) const;
 	void			SetName( const std::string& name )	{ mName = name; }
 	std::string		GetName() const						{ return mName; }
 

@@ -513,29 +513,23 @@ Sprite::~Sprite()
 }
 //-----------------------------------------------------------------------------
 
-Sprite* Sprite::GetChildByName( const std::string& name )
-{
-	ChildList::iterator i;
-	for( i = mChildren.begin(); i != mChildren.end(); ++i )
-	{
-		Sprite* sprite = dynamic_cast< Sprite* >(*i);
-		if( sprite &&
-			sprite->GetName() == name )
-			return sprite;
-	}
-
-	return NULL;
-}
-
-const Sprite* Sprite::GetChildByName( const std::string& name ) const
+Sprite* Sprite::GetChildByName( const std::string& name, bool recursive ) const
 {
 	ChildList::const_iterator i;
 	for( i = mChildren.begin(); i != mChildren.end(); ++i )
 	{
-		const Sprite* sprite = dynamic_cast< const Sprite* >(*i);
-		if( sprite &&
-			sprite->GetName() == name )
-			return sprite;
+		Sprite* sprite = dynamic_cast< Sprite* >(*i);
+		if( sprite )
+		{
+			if(sprite->GetName() == name )
+			{
+				return sprite;
+			}
+			else if( recursive )
+			{
+				return sprite->GetChildByName( name );
+			}
+		}
 	}
 
 	return NULL;

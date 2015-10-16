@@ -130,8 +130,8 @@ types::rect TextSprite::GetBounds()
 	
 	return bounds;
 }
-
 //-----------------------------------------------------------------------------
+
 void TextSprite::RecalcuateRects()
 {
 	if( mFont ) 
@@ -195,49 +195,6 @@ void TextSprite::RecalcuateRects()
 			mRealSize.x = mTextBox.w;
 			mRealSize.y = mTextBox.h;
 		}
-#if 0 
-		mInRects = mFont->GetRectsForText( mText );
-		mOutRects.clear();
-
-		if( mFontAlign == NULL || mTextBox.w < 0 )
-		{
-			types::vector2 f_pos( 0, 0 );
-			for( std::size_t i = 0; i < mInRects.size(); ++i )
-			{
-				types::rect font_rect = mInRects[ i ];
-				font_rect.x = f_pos.x;
-				font_rect.y = f_pos.y;
-
-				mOutRects.push_back( font_rect );
-
-				f_pos.x += ( font_rect.w + mFont->GetCharSpace() );  /* GetScale().x;*/
-			}
-
-			// figure out mRealSize.x && mRealSize.y
-			types::vector2 min_p( 100000.f, 100000.f );
-			types::vector2 max_p( -100000.f, -100000.f );
-			for( std::size_t i = 0; i < mOutRects.size(); ++i )
-			{
-				if( mOutRects[ i ].w >= 0 &&
-					mOutRects[ i ].h >= 0 )
-				{
-					min_p.x = ceng::math::Min( min_p.x, mOutRects[ i ].x );
-					min_p.y = ceng::math::Min( min_p.y, mOutRects[ i ].y );
-					max_p.x = ceng::math::Max( max_p.x, mOutRects[ i ].x + mOutRects[ i ].w );
-					max_p.y = ceng::math::Max( max_p.y, mOutRects[ i ].y + mOutRects[ i ].h );
-				}
-
-				mRealSize.x = max_p.x - min_p.x;
-				mRealSize.y = max_p.y - min_p.y;
-			}
-		}
-		else if( mFontAlign )
-		{
-			mOutRects = mFontAlign->GetRectPositions( mInRects, mText, types::rect( 0, 0, mTextBox.w, mTextBox.h ), mFont );
-			mRealSize.x = mTextBox.w;
-			mRealSize.y = mTextBox.h;
-		}
-#endif
 	}
 }
 
