@@ -345,17 +345,29 @@ StreamStatus::Enum ReadStream::Read( char* out_buffer, u32 buffer_capacity_bytes
     return mStreamImpl->Read( out_buffer, buffer_capacity_bytes, out_bytes_read );
 }
 
-StreamStatus::Enum ReadStream::ReadWholeFile( char*& out_buffer, u32* out_bytes_read )
+StreamStatus::Enum ReadStream::ReadWholeFile( char*& out_buffer, u32* out_bytes_read, bool add_null_terminate )
 {
 	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
 
 	mStreamImpl->SeekToBeginning();
-	out_buffer = (char*)malloc( mStreamImpl->mSize );
+	auto buffer_size = mStreamImpl->mSize;
+	if( add_null_terminate ) 
+		++buffer_size;
+
+	out_buffer = (char*)malloc( buffer_size );
 	StreamStatus::Enum status = mStreamImpl->Read( out_buffer, mStreamImpl->mSize, out_bytes_read );
 	if ( status != StreamStatus::NoError )
 	{
 		free( out_buffer );
 		out_buffer = NULL;
+	}
+	else
+	{
+		if( add_null_terminate )
+		{
+			++(*out_bytes_read);
+			out_buffer[ mStreamImpl->mSize ] = '\0';
+		}
 	}
 	return status;
 }
@@ -391,6 +403,7 @@ StreamStatus::Enum ReadStream::ReadWholeTextFile( std::string& out_text )
 	mStreamImpl->SeekToBeginning();
     std::stringstream text;
     char c;
+	// TODO! This really should be used, this is pretty slow...
     while ( mStreamImpl->mFile.get( c ).good() )
         text.put( c );
 
@@ -471,7 +484,15 @@ StreamStatus::Enum FileSystem::Read( const std::string& path, char* out_buffer, 
 StreamStatus::Enum FileSystem::ReadWholeFile( const std::string& path, char*& out_buffer, u32* out_bytes_read )
 {
     impl::UpdateReadImContext( this, path );
-    StreamStatus::Enum result = impl::gImCtx->readStream.ReadWholeFile( out_buffer, out_bytes_read );
+    StreamStatus::Enum result = impl::gImCtx->readStream.ReadWholeFile( out_buffer, out_bytes_read, false );
+    impl::CloseReadImContext( this );
+    return result;
+}
+
+StreamStatus::Enum FileSystem::ReadWholeFileAndNullTerminate( const std::string& path, char*& out_buffer, poro::types::Uint32* out_bytes_read )
+{
+    impl::UpdateReadImContext( this, path );
+    StreamStatus::Enum result = impl::gImCtx->readStream.ReadWholeFile( out_buffer, out_bytes_read, true );
     impl::CloseReadImContext( this );
     return result;
 }

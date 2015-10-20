@@ -144,7 +144,7 @@ namespace poro {
 		// Close the stream and clean up all resources used by it.
         ~ReadStream();
 	private:
-		StreamStatus::Enum ReadWholeFile( char*& out_buffer, poro::types::Uint32* out_bytes_read );
+		StreamStatus::Enum ReadWholeFile( char*& out_buffer, poro::types::Uint32* out_bytes_read, bool add_null_terminate );
 		StreamStatus::Enum ReadWholeTextFile( std::string& out_text );
 		void Close();
         ReadStream() { mDevice = NULL; mStreamImpl = NULL; }
@@ -177,6 +177,8 @@ namespace poro {
 		StreamStatus::Enum		 Read             ( const std::string& relative_path, char* out_buffer, poro::types::Uint32 buffer_capacity_bytes, poro::types::Uint32* out_bytes_read );
 		// Read the entire contents of file at 'relative_path' to 'out_buffer'. 'out_buffer' is allocated during the call using 'malloc' and must be released by the user using 'free' when they're done with it. Number of bytes read is written to 'out_bytes_read'
 		StreamStatus::Enum		 ReadWholeFile    ( const std::string& relative_path, char*& out_buffer, poro::types::Uint32* out_bytes_read );
+		// Reads the entire file and adds a '\0' to the end
+		StreamStatus::Enum		 ReadWholeFileAndNullTerminate( const std::string& relative_path, char*& out_buffer, poro::types::Uint32* out_bytes_read );
 		// Reads one line of text from the file at 'relative_path' to 'out_buffer'. consecutive calls to this function from current thread will continue reading from the same stream.
 		StreamStatus::Enum		 ReadTextLine     ( const std::string& relative_path, char* out_buffer, poro::types::Uint32 buffer_capacity, poro::types::Uint32* out_length_read );
 		// Reads one line of text from the file at 'relative_path' to 'out_text'. consecutive calls to this function from current thread will continue reading from the same stream.

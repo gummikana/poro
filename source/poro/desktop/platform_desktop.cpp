@@ -404,7 +404,7 @@ void PlatformDesktop::Init( IApplication* application, const GraphicsSettings& s
 	mSoundPlayer = new SoundPlayerSDL;
 	mSoundPlayer->Init();
 
-    mFileSystem = new FileSystem();
+    mFileSystem = new FileSystem;
 
 	mMouse = new MouseImpl;
 	mKeyboard = new Keyboard;
