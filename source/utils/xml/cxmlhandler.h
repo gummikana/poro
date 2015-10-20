@@ -54,36 +54,6 @@
 
 namespace ceng {
 
-//! Base class for Handlers
-class CXmlHandlerInterface
-{
-public:
-	typedef std::map< std::string, CAnyContainer >					attributes;
-	typedef std::map< std::string, CAnyContainer >::iterator		attributes_iterator;
-	typedef std::map< std::string, CAnyContainer >::const_iterator	attributes_const_iterator;
-
-	virtual ~CXmlHandlerInterface() { }
-
-	//! Called when a document it startted
-	virtual void StartDocument() { }
-
-	//! Called when the document is ended
-	virtual void EndDocument() { }
-
-
-	//! When we hit some characters this gets called,
-	virtual void Characters( const std::string& chars ) { }
-
-	//! When a element gets startted this gets called
-	virtual void StartElement( const std::string& name, const attributes& attr ) { }
-
-	//! And when it ends we call him
-	virtual void EndElement( const std::string& name ) { }
-
-
-};
-
-
 //-----------------------------------------------------------------------------
 
 
@@ -93,9 +63,10 @@ public:
 	a xml file structure and output it in you favourite stream.
 */
 
-class CXmlStreamHandler : public CXmlHandlerInterface
+class CXmlStreamHandler 
 {
 public:
+	typedef std::map< std::string, CAnyContainer >					attributes;
 
 	CXmlStreamHandler() : 
 		myCount(0), 
@@ -105,13 +76,13 @@ public:
 		{ 
 		}
 
-	virtual ~CXmlStreamHandler() { }
+	~CXmlStreamHandler() { }
 
-	virtual void StartDocument() { }
-	virtual void EndDocument() { }
+	void StartDocument() { }
+	void EndDocument() { }
 
-	virtual void Characters( const std::string& chars, poro::WriteStream* stream  ) { if ( !chars.empty() ) PrintText( chars, stream ); }
-	virtual void StartElement( const std::string& name, const attributes& attr, poro::WriteStream* stream  )
+	void Characters( const std::string& chars, poro::WriteStream* stream  ) { if ( !chars.empty() ) PrintText( chars, stream ); }
+	void StartElement( const std::string& name, const attributes& attr, poro::WriteStream* stream  )
 	{
 		std::stringstream ss;
 		ss << "<" << name;
@@ -144,7 +115,7 @@ public:
 		myCount++;
 	}
 
-	virtual void EndElement( const std::string& name, poro::WriteStream* stream  )
+	void EndElement( const std::string& name, poro::WriteStream* stream  )
 	{
 		myCount--;
 		PrintText( "</" + name + ">", stream );
@@ -169,7 +140,9 @@ public:
 	//! Just for parsing open the Node
 	void ParseOpen( CXmlNode* rootnode, poro::WriteStream* stream )
 	{
-		StartElement( rootnode->GetName(), CreateAttributes( rootnode ), stream );
+		std::map< std::string, CAnyContainer > attributes;
+		CreateAttributes( rootnode, attributes );
+		StartElement( rootnode->GetName(), attributes, stream );
 		Characters( rootnode->GetContent() , stream );
 		for( int i = 0; i < rootnode->GetChildCount(); i++ )
 		{
@@ -179,16 +152,12 @@ public:
 	}
 
 	//! Returns a map of attributes
-	std::map< std::string, CAnyContainer > CreateAttributes( CXmlNode* node )
+	void CreateAttributes( CXmlNode* node, std::map< std::string, CAnyContainer >& tmp_map )
 	{
-		std::map< std::string, CAnyContainer > tmp_map;
-
 		for( int i = 0; i < node->GetAttributeCount(); i++ )
 		{
 			tmp_map.insert( std::pair< std::string, CAnyContainer >( node->GetAttributeName( i ), node->GetAttributeValue( i ) ) );
 		}
-
-		return tmp_map;
 	}
 
 	void SetPackTight( bool value )					{ myPackTight = value; }
@@ -216,24 +185,27 @@ public:
 	created. The user should always remember to release after use.
 
 */
-class CXmlHandler : public CXmlHandlerInterface
+class CXmlHandler
 {
 public:
+	typedef std::map< std::string, CAnyContainer >					attributes;
+	typedef std::map< std::string, CAnyContainer >::const_iterator	attributes_const_iterator;
+
 
 	CXmlHandler() { StartDocument();  }
-	virtual ~CXmlHandler() { }
+	~CXmlHandler() { }
 
-	virtual void StartDocument()	{ myCurrentNode = NULL; myRootElement = NULL; }
-	virtual void EndDocument()		{ /*cassert( myCurrentNode == NULL ); if( myCurrentNode != NULL) reportError();*/  }
+	void StartDocument()	{ myCurrentNode = NULL; myRootElement = NULL; }
+	void EndDocument()		{ /*cassert( myCurrentNode == NULL ); if( myCurrentNode != NULL) reportError();*/  }
 
-	virtual void Characters( const std::string& chars )
+	void Characters( const std::string& chars )
 	{
 		if( myCurrentNode )
 			myCurrentNode->SetContent( chars );
 		// else report_error
 	}
 
-	virtual void StartElement( const std::string& name, const attributes& attr )
+	void StartElement( const std::string& name, const attributes& attr )
 	{
 
 		CXmlNode* tmp_node = CXmlNode::CreateNewNode();
@@ -266,7 +238,7 @@ public:
 
 	}
 
-	virtual void EndElement( const std::string& name )
+	void EndElement( const std::string& name )
 	{
 		// fixing bugs 12/06/2008
 		if( myCurrentNode )
@@ -274,7 +246,7 @@ public:
 	}
 
 	//! Returns the root node
-	virtual CXmlNode* GetRootElement() const
+	CXmlNode* GetRootElement() const
 	{
 		return myRootElement;
 	}
@@ -287,6 +259,19 @@ private:
 };
 
 //-----------------------------------------------------------------------------
+
+class CFasterParserHandler
+{
+public:
+	CXmlHandler mHandler;
+
+	void ParseFile( const char* filename );
+
+	CXmlNode* GetRootElement() const
+	{
+		return mHandler.GetRootElement();
+	}
+};
 
 }
 

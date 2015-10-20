@@ -222,15 +222,17 @@ namespace ceng {
 	template< class T >
 	inline void XmlLoadFromFile( T& mesh, const std::string& file, const std::string& rootnodename )
 	{
-		CXmlParser	parser;
-		CXmlHandler handler;
-
-		parser.SetHandler( &handler );
+		CFasterParserHandler parser;
 		parser.ParseFile( file.c_str() );
+		/*CXmlParser	parser;
+		CXmlHandler handler;*/
 
-		XmlConvertTo( handler.GetRootElement(), mesh );
+		// parser.SetHandler( &handler );
+		// parser.ParseFile( file.c_str() );
 
-		CXmlNode::FreeNode( handler.GetRootElement() );
+		XmlConvertTo( parser.GetRootElement(), mesh );
+
+		CXmlNode::FreeNode( parser.GetRootElement() );
 	}
 #endif
 /*	void XmlLoadFromFile2( const std::string& mesh, const std::string& file, const std::string& rootnodename = "rootelement" )

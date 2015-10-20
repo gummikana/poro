@@ -24,6 +24,7 @@
 #include "cxmlparser.h"
 #include "cxmlhandler.h"
 
+#include "../../../../Source/misc_utils/simple_profiler.h"
 
 #define ADD_BASE_PATH( x ) x
 
@@ -31,6 +32,8 @@ namespace ceng {
 
 void CXmlParser::ParseFile( const std::string& filename )
 {
+	SPROFILE( "XML::ParseFile" );
+
 	using namespace poro;
 
 	myHandler->StartDocument();
