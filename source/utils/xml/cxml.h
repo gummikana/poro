@@ -133,7 +133,6 @@
 
 #include <string>
 
-#include "cxmlhandler.h"
 #include "cxmlcast.h"
 #include "cxmlfilesys.h"
 #include "cxmlnode.h"
@@ -222,7 +221,7 @@ namespace ceng {
 	template< class T >
 	inline void XmlLoadFromFile( T& mesh, const std::string& file, const std::string& rootnodename )
 	{
-		CFasterParserHandler parser;
+		CXmlParser parser;
 		parser.ParseFile( file.c_str() );
 		/*CXmlParser	parser;
 		CXmlHandler handler;*/
