@@ -12,6 +12,7 @@
 #include <windows.h>
 #include <Shlobj.h>
 #include <Pathcch.h>
+#include <io.h>
 //#include <Shlwapi.h>
 
 #undef LoadImage

@@ -20,7 +20,10 @@
 
 #include "fileio.h"
 
+#ifndef PORO_CONSERVATIVE
 #include <mutex>
+#endif
+
 #include <fstream>
 #include <sstream>
 #include <algorithm>
@@ -29,6 +32,8 @@
 #ifdef PORO_PLAT_WINDOWS
 #include "external/poro_windows.h"
 #endif
+
+#include "poro_macros.h"
 
 typedef poro::types::Uint32 u32;
 
@@ -41,7 +46,7 @@ namespace platform_impl
     void GetDirectories( const std::string& full_path, std::vector<std::string>* out_directories );
     std::string GetFullPath( FileLocation::Enum location, const std::string& relative_path );
     std::string GetFullPath( FileLocation::Enum location );
-    std::string CombinePath( const std::string& root, const std::string& relative_to_root );
+    std::string CombinePath( std::string root, std::string relative_to_root );
 
     struct StreamInternal
     {
@@ -160,15 +165,41 @@ namespace platform_impl
 
 		}
 
-		void GetFiles( const std::string& full_path, std::vector<std::string>* out_files )
+		void ListFiles( const std::string& full_path, std::vector<std::string>* out_files, bool list_directories )
 		{
-			// TODO:
+			poro_assert( out_files );
+
+			struct _finddata_t file_info;
+			int file_handle;
+			std::string find_path = CombinePath( full_path, "*.*" );
+			// find first file...
+			if( (file_handle = _findfirst( find_path.c_str(), &file_info )) != -1 )
+			{
+				do {
+					if( (file_info.attrib & _A_SUBDIR ) )
+					{
+						if( list_directories ) 
+							out_files->push_back( CombinePath( full_path, file_info.name ) );
+					}
+					else
+					{
+						if( list_directories == false ) 
+							out_files->push_back( CombinePath( full_path, file_info.name ) );
+					}
+
+				} while( _findnext( file_handle, &file_info ) == 0 );
+				_findclose( file_handle );
+			}
+			else
+			{
+				// nothing found, or an error happened
+			}
 		}
 
-		void GetDirectories( const std::string& full_path, std::vector<std::string>* out_directories )
+		/*void GetDirectories( const std::string& full_path, std::vector<std::string>* out_directories )
 		{
 			// TODO:
-		}
+		}*/
 
 		std::string GetFullPath( FileLocation::Enum location, const std::string& relative_path )
 		{
@@ -204,8 +235,23 @@ namespace platform_impl
 			return result;
 		}
 
-		std::string CombinePath( const std::string& root, const std::string& relative_to_root )
+		static bool IsSeparator( char c ) { return c == '\\' ||c == '/'; }
+		static char GetSeparator( const std::string& path )
 		{
+			for( std::size_t i = 0; i < path.size(); ++i )
+			{
+				if(path[i] == '\\' ) return '\\';
+				if(path[i] == '/' ) return '/';
+			}
+			return '\\';
+		}
+
+		std::string CombinePath( std::string root, std::string relative_to_root )
+		{
+			// check if the paths are combined properly
+			if( root.empty() ) return relative_to_root;
+			if( relative_to_root.empty() ) return relative_to_root;
+			
 			// detect full path
 			char c = 0;
 			char prev = 0;
@@ -220,6 +266,13 @@ namespace platform_impl
 			// ideally we would use this but because we won't because winapi designers are horrible people.
 			//if ( PathIsRelative( relative_to_root.c_str() ) == false )
 			//	return relative_to_root;
+			if( root.size() > 1 && IsSeparator( root.back() ) && IsSeparator( relative_to_root[0] ) ) 
+				root.pop_back();
+
+			if( !IsSeparator( root.back() ) && !IsSeparator( relative_to_root[0] ) ) 
+				return root + GetSeparator( root ) + relative_to_root;
+			
+			poro_assert( IsSeparator( root.back() ) || IsSeparator( relative_to_root[0] ));
 
 			return root + relative_to_root;
 		}
@@ -581,65 +634,63 @@ std::string FileSystem::GetFullPathFromRelativePath( const std::string& relative
 std::vector<std::string> FileSystem::GetFiles( FileLocation::Enum location, const std::string& path_relative_to_location )
 {
     std::vector<std::string> result;
-    const std::string full_path = platform_impl::GetFullPath( location, path_relative_to_location );
-    platform_impl::GetFiles( full_path, &result );
+	GetFiles( location, path_relative_to_location, &result );
     return result;
 }
 
 std::vector<std::string> FileSystem::GetFiles( std::string full_path )
 {
     std::vector<std::string> result;
-    platform_impl::GetFiles( full_path, &result );
+	GetFiles( full_path, &result );
     return result;
 }
 
 std::vector<std::string> FileSystem::GetDirectories( FileLocation::Enum location, const std::string& path_relative_to_location )
 {
     std::vector<std::string> result;
-    const std::string full_path = platform_impl::GetFullPath( location, path_relative_to_location );
-    platform_impl::GetDirectories( full_path, &result );
+	GetDirectories( location, path_relative_to_location, &result );
     return result;
 }
 
 std::vector<std::string> FileSystem::GetDirectories( std::string full_path )
 {
     std::vector<std::string> result;
-    platform_impl::GetDirectories( full_path, &result );
+    GetDirectories( full_path, &result );
     return result;
 }
 
 void FileSystem::GetFiles( FileLocation::Enum location, std::vector<std::string>* out_files )
 {
     const std::string full_path = platform_impl::GetFullPath( location );
-    platform_impl::GetFiles( full_path, out_files );
+    platform_impl::ListFiles( full_path, out_files, false );
 }
 
 void FileSystem::GetFiles( FileLocation::Enum location, const std::string& path_relative_to_location, std::vector<std::string>* out_files )
 {
     const std::string full_path = platform_impl::GetFullPath( location, path_relative_to_location );
-    platform_impl::GetFiles( full_path, out_files );
+    platform_impl::ListFiles( full_path, out_files, false );
 }
 
 void FileSystem::GetFiles( std::string full_path, std::vector<std::string>* out_files )
 {
-    platform_impl::GetFiles( full_path, out_files );
+    platform_impl::ListFiles( full_path, out_files, false );
 }
 
 void FileSystem::GetDirectories( FileLocation::Enum location, std::vector<std::string>* out_directories )
 {
     const std::string full_path = platform_impl::GetFullPath( location );
-    platform_impl::GetDirectories( full_path, out_directories );
+    platform_impl::ListFiles( full_path, out_directories, true );
 }
 
 void FileSystem::GetDirectories( FileLocation::Enum location, const std::string& path_relative_to_location, std::vector<std::string>* out_directories )
 {
     const std::string full_path = platform_impl::GetFullPath( location, path_relative_to_location );
-    platform_impl::GetDirectories( full_path, out_directories );
+    platform_impl::ListFiles( full_path, out_directories, true );
 }
 
 void FileSystem::GetDirectories( std::string full_path, std::vector<std::string>* out_directories )
 {
-    platform_impl::GetDirectories( full_path, out_directories );
+    platform_impl::ListFiles( full_path, out_directories, true );
 }
 
 // ===
