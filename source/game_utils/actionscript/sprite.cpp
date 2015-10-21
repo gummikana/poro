@@ -234,7 +234,9 @@ namespace {
 		// reload (or load for the first time)
 		if (data->time_stamp != time_stamp)
 		{
-			std::cout << "reloading sprite: " << filename << std::endl;
+			if( data->time_stamp.empty() == false )
+				std::cout << "reloading sprite: " << filename << "\n";
+
 			ceng::XmlLoadFromFile((*data), filename, "Sprite");
 			data->time_stamp = time_stamp;
 		}
@@ -457,6 +459,18 @@ Sprite* LoadSprite( const std::string& filename )
 	Sprite* result = new Sprite;
 	LoadSpriteTo( filename, result );
 	return result;
+}
+
+bool PreloadSprite( const std::string& filename )
+{
+	if( filename.size() >= 3 && filename.substr( filename.size() - 3 ) == "xml" )
+	{
+		impl::SpriteLoadHelper* sprite_data = GetSpriteLoadHelper(filename);
+		return ( sprite_data ? 1 : 0 );
+	}
+
+	TextureBuffer* buffer = GetTextureBuffer( filename );
+	return ( buffer ? 1 : 0 );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
