@@ -45,7 +45,7 @@ public:
 	static Number PI;
 
 /*
-	round()
+round()
 sqrt()
 random()
 cos()

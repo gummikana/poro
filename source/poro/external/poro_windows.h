@@ -10,6 +10,7 @@
 #endif
 
 #include <windows.h>
+#include <winnt.h>
 #include <Shlobj.h>
 #include <Pathcch.h>
 #include <io.h>
