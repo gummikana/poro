@@ -27,8 +27,8 @@ namespace poro {
 
 void RenderTextureOpenGL::InitTexture(int width,int height, bool linear_filtering ) {
 
-	GLsizei widthP2 = (GLsizei)GetNextPowerOfTwo(width);
-	GLsizei heightP2 = (GLsizei)GetNextPowerOfTwo(height);
+	GLsizei widthP2 = width;  //(GLsizei)GetNextPowerOfTwo( width );
+	GLsizei heightP2 = height; // (GLsizei)GetNextPowerOfTwo( height );
 	mTexture.mWidth = width;
 	mTexture.mHeight = height;
 	mTexture.mUv[0] = 0;
