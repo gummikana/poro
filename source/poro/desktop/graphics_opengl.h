@@ -65,9 +65,9 @@ public:
 	virtual void		SetTextureData(ITexture* texture, void* data );
 	virtual ITexture*	LoadTexture( const types::string& filename );
 	virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data );
-	virtual void		ReleaseTexture( ITexture* texture );
-	virtual void		SetTextureSmoothFiltering( ITexture* itexture, bool enabled );
-	virtual void		SetTextureWrappingMode( ITexture* itexture, int  mode );
+	virtual void		DestroyTexture( ITexture* texture );
+	virtual void		SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode );
+	virtual void		SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum  mode );
 
 	//-------------------------------------------------------------------------
 

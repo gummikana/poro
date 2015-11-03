@@ -70,11 +70,11 @@ namespace {
 
 	Uint32 GetGLVertexMode(int vertex_mode){
 		switch (vertex_mode) {
-			case IGraphics::VERTEX_MODE_TRIANGLE_FAN:
+		    case VERTEX_MODE::TRIANGLE_FAN:
 				return GL_TRIANGLE_FAN;
-			case IGraphics::VERTEX_MODE_TRIANGLE_STRIP:
+			case VERTEX_MODE::TRIANGLE_STRIP:
 				return GL_TRIANGLE_STRIP;
-			case IGraphics::VERTEX_MODE_TRIANGLES:
+			case VERTEX_MODE::TRIANGLES:
 				return GL_TRIANGLES;
 			default:
 				poro_assert(false);
@@ -125,26 +125,16 @@ namespace {
 		glEnable(GL_TEXTURE_2D);
 
 		glEnable(GL_BLEND);
-		if( blend_mode == poro::IGraphics::BLEND_MODE_NORMAL ) {
+		if( blend_mode == BLEND_MODE::NORMAL ) {
 			glColor4f(color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		} else if( blend_mode == poro::IGraphics::BLEND_MODE_MULTIPLY) {
-			if( color[ 3 ] == 0 ) 
-				return;
-
-			glColor4f(
-				color[ 0 ] / color[ 3 ], 
-				color[ 1 ] / color[ 3 ], 
-				color[ 2 ] / color[ 3 ], color[ 3 ] );
-
-			glBlendFunc(GL_ZERO, GL_SRC_COLOR);
-		} else if ( blend_mode == poro::IGraphics::BLEND_MODE_ADDITIVE ) {
+		} else if ( blend_mode == BLEND_MODE::ADDITIVE ) {
 			glColor4f(color[0], color[1], color[2], color[3]);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		} else if ( blend_mode == poro::IGraphics::BLEND_MODE_ADDITIVE_ADDITIVEALPHA ) {
+		} else if ( blend_mode == BLEND_MODE::ADDITIVE_ADDITIVEALPHA ) {
 			glColor4f(color[0], color[1], color[2], color[3]);
 			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE );
-		} else if ( blend_mode == poro::IGraphics::BLEND_MODE_NORMAL_ADDITIVEALPHA ) {
+		} else if ( blend_mode == BLEND_MODE::NORMAL_ADDITIVEALPHA ) {
 			glColor4f(color[0], color[1], color[2], color[3]);
 			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE );
 		}
@@ -163,7 +153,7 @@ namespace {
 		glDisable(GL_BLEND);
 		glDisable(GL_TEXTURE_2D);
 
-		if (blend_mode == poro::IGraphics::BLEND_MODE_NORMAL_ADDITIVEALPHA)
+		if (blend_mode == BLEND_MODE::NORMAL_ADDITIVEALPHA)
 			glBlendEquation(GL_FUNC_ADD);
 	}
 
@@ -308,7 +298,7 @@ namespace {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	
-		if(IPlatform::Instance()->GetGraphics()->GetMipmapMode()==IGraphics::MIPMAP_MODE_NEAREST){
+		if( IPlatform::Instance()->GetGraphics()->GetMipmapMode()== TEXTURE_FILTERING_MODE::NEAREST ){
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		} else {
@@ -351,7 +341,6 @@ namespace {
 	// 
 	void GetSimpleFixAlphaChannel( unsigned char* pixels, int w, int h, int bpp )
 	{
-
 		using namespace types;
 		if( w < 2 || h < 2)
 			return;
@@ -887,7 +876,7 @@ ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename, bool store
 	return result;
 }
 
-void GraphicsOpenGL::ReleaseTexture( ITexture* itexture )
+void GraphicsOpenGL::DestroyTexture( ITexture* itexture )
 {
 	TextureOpenGL* texture = dynamic_cast< TextureOpenGL* >( itexture );
 
@@ -895,48 +884,56 @@ void GraphicsOpenGL::ReleaseTexture( ITexture* itexture )
 		glDeleteTextures(1, &texture->mTexture);
 }
 
-void GraphicsOpenGL::SetTextureSmoothFiltering( ITexture* itexture, bool enabled )
+void GraphicsOpenGL::SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode )
 {
 	TextureOpenGL* texture = dynamic_cast< TextureOpenGL* >( itexture );
+	if( texture == NULL)
+		return;
 
 	glEnable( GL_TEXTURE_2D );
-
-	if( texture )
-		glBindTexture( GL_TEXTURE_2D, texture->mTexture );
-	else
-		return;
+	glBindTexture( GL_TEXTURE_2D, texture->mTexture );
 	
-	if( enabled ){
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    } else {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    }
+	switch ( mode )
+	{
+		case TEXTURE_FILTERING_MODE::LINEAR:
+		{
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+			break;
+		}
+
+		case TEXTURE_FILTERING_MODE::NEAREST:
+		{
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+			break;
+		}
+
+		default:
+		{
+			poro_assert( "Unsupported texture filtering mode used." );
+			break;
+		}
+	}
 		
 	glBindTexture( GL_TEXTURE_2D, 0 );
 }
 
-void GraphicsOpenGL::SetTextureWrappingMode( ITexture* itexture, int mode )
+void GraphicsOpenGL::SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum mode )
 {
 	TextureOpenGL* texture = dynamic_cast< TextureOpenGL* >( itexture );
-
-	glEnable( GL_TEXTURE_2D );
-
-	if( texture )
-		glBindTexture( GL_TEXTURE_2D, texture->mTexture );
-	else
+	if( texture == NULL)
 		return;
 
-	int mode_gl = mode; // TODO:
+	glEnable( GL_TEXTURE_2D );
+	glBindTexture( GL_TEXTURE_2D, texture->mTexture );
 
+	int mode_gl = (int)mode; // the enum is mapped to GL constants, no need for conversion
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mode_gl );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mode_gl );
 
-		
 	glBindTexture( GL_TEXTURE_2D, 0 );
 }
-
 //=============================================================================
 
 ITexture3d* GraphicsOpenGL::LoadTexture3d( const types::string& filename )
@@ -1082,7 +1079,7 @@ void GraphicsOpenGL::DrawTexture( ITexture* itexture, float x, float y, float w,
 	tex_coords[ 3 ].x = tx2;
 	tex_coords[ 3 ].y = ty2;
 
-	PushVertexMode(poro::IGraphics::VERTEX_MODE_TRIANGLE_STRIP);
+	PushVertexMode(VERTEX_MODE::TRIANGLE_STRIP);
 	DrawTexture( texture,  temp_verts, tex_coords, 4, color );
 	PopVertexMode();
 
@@ -1248,7 +1245,7 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 	const int max_buffer_size = 256;
 	static GLfloat glVertices[ max_buffer_size ];
 
-	if( this->GetDrawFillMode() == DRAWFILL_MODE_FRONT_AND_BACK )
+	if( this->GetDrawFillMode() == DRAWFILL_MODE::POLYGON )
 	{
 		int vertCount = vertices.size();
 		
@@ -1303,7 +1300,7 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 		glDisable( GL_POLYGON_SMOOTH );
 		glDisable(GL_BLEND);
 	}
-	else if( GetDrawFillMode() == DRAWFILL_MODE_TRIANGLE_STRIP )
+	else if( GetDrawFillMode() == DRAWFILL_MODE::TRIANGLE_STRIP )
 	{
 
 		int vertCount = vertices.size();
@@ -1359,15 +1356,13 @@ void GraphicsOpenGL::DrawQuads( float* vertices, int vertex_count, float* tex_co
 	glPushMatrix();
 	
 	glEnable(GL_BLEND);
-	if( mBlendMode == poro::IGraphics::BLEND_MODE_NORMAL ) {
+	if( mBlendMode == BLEND_MODE::NORMAL ) {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	} else if( mBlendMode == poro::IGraphics::BLEND_MODE_MULTIPLY) {
-		glBlendFunc(GL_ZERO, GL_SRC_COLOR);
-	} else if ( mBlendMode == poro::IGraphics::BLEND_MODE_ADDITIVE ) {
+	} else if ( mBlendMode == BLEND_MODE::ADDITIVE ) {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	} else if ( mBlendMode == poro::IGraphics::BLEND_MODE_ADDITIVE_ADDITIVEALPHA ) {
+	} else if ( mBlendMode == BLEND_MODE::ADDITIVE_ADDITIVEALPHA ) {
 		glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE );
-	} else if ( mBlendMode == poro::IGraphics::BLEND_MODE_NORMAL_ADDITIVEALPHA ) {
+	} else if ( mBlendMode == BLEND_MODE::NORMAL_ADDITIVEALPHA ) {
 		glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE );
 	}
 	

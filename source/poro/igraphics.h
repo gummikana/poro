@@ -43,6 +43,64 @@ class IShader;
 
 //-----------------------------
 
+// enums
+
+namespace TEXTURE_FILTERING_MODE
+{
+	enum Enum 
+	{
+		LINEAR = 0,
+		NEAREST = 1
+	};
+};
+
+namespace TEXTURE_WRAPPING_MODE
+{
+	enum Enum
+	{
+		REPEAT = 0x2901,
+		MIRRORED_REPEAT = 0x8370,
+		CLAMP = 0x2900,
+		CLAMP_TO_EDGE = 0x812F,
+		CLAMP_TO_BORDER = 0x812D,
+	};
+}
+
+namespace BLEND_MODE
+{
+	enum Enum 
+	{
+		NORMAL = 0,
+		ADDITIVE = 1,
+		ADDITIVE_ADDITIVEALPHA = 2,
+		NORMAL_ADDITIVEALPHA = 3,
+		SCREEN = ADDITIVE, // DEPRECATED: this has been left here for legacy reasons but should've never been called 'screen'.
+	};
+}
+
+namespace VERTEX_MODE
+{
+	enum Enum
+	{
+		TRIANGLE_FAN = 0,
+		TRIANGLE_STRIP = 1,
+		TRIANGLES = 2
+	};
+};
+
+namespace DRAWFILL_MODE
+{
+	enum Enum
+	{
+		POLYGON = 0,
+		TRIANGLE_STRIP = 1,
+		QUADS = 2
+	};
+};
+
+
+//-----------------------------
+
 struct GraphicsSettings
 {
 	GraphicsSettings() : 
@@ -79,12 +137,12 @@ public:
 	IGraphics() :
         mClearBackground(true),
         mFillColor(),
-		mBlendMode( BLEND_MODE_NORMAL ),
+		mBlendMode( BLEND_MODE::NORMAL ),
 		mBlendModes(),
-		mVertexMode( VERTEX_MODE_TRIANGLE_FAN ),
+		mVertexMode( VERTEX_MODE::TRIANGLE_FAN ),
         mVertexModes(),		
-		mMipmapMode( MIPMAP_MODE_LINEAR ),
-		mDrawFillMode( DRAWFILL_MODE_FRONT_AND_BACK )
+		mMipmapMode( TEXTURE_FILTERING_MODE::LINEAR ),
+		mDrawFillMode( DRAWFILL_MODE::POLYGON )
     {
 		mFillColor[0] = 0.f;mFillColor[1] = 0.f; mFillColor[2] = 0.f; mFillColor[3] = 1.f;
 	}
@@ -119,54 +177,34 @@ public:
 
 	virtual ITexture*	LoadTexture( const types::string& filename ) = 0;
 	virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data ) = 0;
-	virtual void		ReleaseTexture( ITexture* texture )  = 0;
-	virtual void		SetTextureSmoothFiltering( ITexture* itexture, bool enabled ) = 0;
-	virtual void		SetTextureWrappingMode( ITexture* itexture, int mode ) = 0;
+	virtual void		DestroyTexture( ITexture* texture ) = 0;
+	virtual void		SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode ) = 0;
+	virtual void		SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum mode ) = 0;
 	//-------------------------------------------------------------------------
 	
 	virtual ITexture3d*	LoadTexture3d( const types::string& filename );
-	virtual void		ReleaseTexture3d( ITexture3d* texture );
+	virtual void		DestroyTexture3d( ITexture3d* texture );
 
 	//-------------------------------------------------------------------------
 
 	virtual void		BeginRendering() = 0;
 	virtual void		EndRendering() = 0;
-    virtual void		SetClearBackground(bool clear) { mClearBackground=clear; }
+    virtual void		SetClearBackground( bool clear ) { mClearBackground = clear; }
 
 	//-------------------------------------------------------------------------
     
-	enum MIPMAP_MODES {
-		MIPMAP_MODE_LINEAR = 0,
-		MIPMAP_MODE_NEAREST = 1
-	};
-    
-	virtual void SetMipmapMode( int mipmap_mode ){ mMipmapMode=mipmap_mode;}
+	virtual void SetMipmapMode( TEXTURE_FILTERING_MODE::Enum mode ){ mMipmapMode = mode;}
 	virtual int GetMipmapMode(){ return mMipmapMode; }
 	
     //-------------------------------------------------------------------------
 
-	enum BLEND_MODES {
-		BLEND_MODE_NORMAL = 0,
-		BLEND_MODE_MULTIPLY = 1,
-		BLEND_MODE_ADDITIVE = 2,
-		BLEND_MODE_ADDITIVE_ADDITIVEALPHA = 3,
-		BLEND_MODE_NORMAL_ADDITIVEALPHA = 4,
-		BLEND_MODE_SCREEN = BLEND_MODE_ADDITIVE, // DEPRECATED: this has been left here for legacy reasons but should've never been called 'screen'.
-	};
-
-	virtual void PushBlendMode( int blend_mode );
+	virtual void PushBlendMode( BLEND_MODE::Enum blend_mode );
 	virtual void PopBlendMode();
 
 	//-------------------------------------------------------------------------
 
-	enum VERTEX_MODES {
-		VERTEX_MODE_TRIANGLE_FAN = 0,
-		VERTEX_MODE_TRIANGLE_STRIP = 1,
-		VERTEX_MODE_TRIANGLES = 2
-	};
-
-	virtual void		PushVertexMode(int vertex_mode);
-	virtual void		PopVertexMode();
+	virtual void PushVertexMode( VERTEX_MODE::Enum vertex_mode);
+	virtual void PopVertexMode();
 
 	//-------------------------------------------------------------------------
     
@@ -181,12 +219,12 @@ public:
     // - The buffer is full.
     // - Turinging of the buffering.
     
-    virtual void        SetDrawTextureBuffering( bool buffering ) {}
-	virtual bool		GetDrawTextureBuffering() const { return false; }
+    virtual void SetDrawTextureBuffering( bool buffering ) {}
+	virtual bool GetDrawTextureBuffering() const { return false; }
 	
     //-------------------------------------------------------------------------
 
-	virtual void		DrawTexture(	ITexture* texture,
+	virtual void DrawTexture( ITexture* texture,
 										types::Float32 x, 
 										types::Float32 y, 
 										types::Float32 w, 
@@ -195,14 +233,14 @@ public:
 										types::Float32 rotation = 0 )  = 0;
 
 	
-	virtual void		DrawTexture(	ITexture* texture, 
+	virtual void DrawTexture( ITexture* texture, 
 										types::vec2* vertices, 
 										types::vec2* tex_coords, 
 										int count, 
 										const types::fcolor& color ) = 0;
 
 	
-	virtual void		DrawTextureWithAlpha(	ITexture* texture, 
+	virtual void DrawTextureWithAlpha( ITexture* texture, 
 												types::vec2* vertices, 
 												types::vec2* tex_coords, 
 												int count, 
@@ -213,7 +251,7 @@ public:
 												const types::fcolor& alpha_color ) { poro_assert( false && "Needs to be implemented" ); }
 
 
-	virtual void		DrawTexturedRect(	const poro::types::vec2& position, 
+	virtual void DrawTexturedRect( const poro::types::vec2& position, 
 											const poro::types::vec2& size, 
 											ITexture* itexture, 
 											const types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ), 
@@ -222,30 +260,22 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual void		DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth, float width, bool loop = false ) { }
-	virtual void		DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) { DrawLines( vertices, color, false, 1.f, true ); }
+	virtual void DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth, float width, bool loop = false ) { }
+	virtual void DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) { DrawLines( vertices, color, false, 1.f, true ); }
 	//-------------------------------------------------------------------------
-	enum DRAWFILL_MODES {
-		DRAWFILL_MODE_FRONT_AND_BACK = 0,
-		DRAWFILL_MODE_TRIANGLE_STRIP = 1,
-		DRAWFILL_MODE_QUADS = 2
-	};
-	
+
 	virtual void SetDrawFillMode( int drawfill_mode )	{ mDrawFillMode = drawfill_mode; }
-	virtual int GetDrawFillMode() const					{ return mDrawFillMode; }
+	virtual int  GetDrawFillMode() const				{ return mDrawFillMode; }
 
-	virtual void		DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) { }
-	virtual void		DrawQuads( float* vertices, int vertex_count, float* tex_coords, float* colors, ITexture* texture ) { }
-
-	//-------------------------------------------------------------------------
-
-	virtual IGraphicsBuffer* CreateGraphicsBuffer(int width, int height);
-	virtual void DestroyGraphicsBuffer(IGraphicsBuffer* buffer);
+	virtual IGraphicsBuffer* CreateGraphicsBuffer( int width, int height ) { return NULL; }
+	virtual void DestroyGraphicsBuffer(IGraphicsBuffer* buffer) { }
+	virtual void DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) { }
+	virtual void DrawQuads( float* vertices, int vertex_count, float* tex_coords, float* colors, ITexture* texture ) { }
 
 	//-------------------------------------------------------------------------
 
-	virtual IRenderTexture* CreateRenderTexture(int width, int height, bool linear_filtering = false);
-	virtual void DestroyRenderTexture(IRenderTexture* buffer);
+	virtual IRenderTexture* CreateRenderTexture( int width, int height, bool linear_filtering ); // , TEXTURE_FILTERING_MODE::Enum filtering_mode = TEXTURE_FILTERING_MODE::NEAREST, TEXTURE_WRAPPING_MODE::Enum wrapping_mode = TEXTURE_WRAPPING_MODE::CLAMP );
+	virtual void DestroyRenderTexture( IRenderTexture* buffer );
 
 	//-------------------------------------------------------------------------
 
@@ -267,16 +297,15 @@ protected:
     bool mClearBackground;
 	poro::types::fcolor mFillColor;
 	
-	int mBlendMode;
-	std::stack<int> mBlendModes;
+	BLEND_MODE::Enum mBlendMode;
+	std::stack< BLEND_MODE::Enum > mBlendModes;
 	
-	int mVertexMode;
-	std::stack<int> mVertexModes;
+	VERTEX_MODE::Enum mVertexMode;
+	std::stack< VERTEX_MODE::Enum > mVertexModes;
 
-    int mMipmapMode;
+    TEXTURE_FILTERING_MODE::Enum mMipmapMode;
 
 	int mDrawFillMode;
-    
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -287,7 +316,7 @@ inline bool IGraphics::Init( int width, int height, bool fullscreen, const types
 	return Init( width, height, fullscreen, caption );
 }
 
-inline void	IGraphics::PushBlendMode(int blend_mode) {
+inline void	IGraphics::PushBlendMode( BLEND_MODE::Enum blend_mode) {
 	mBlendModes.push(mBlendMode);
 	mBlendMode=blend_mode;
 }
@@ -297,7 +326,7 @@ inline void	IGraphics::PopBlendMode() {
 	mBlendModes.pop();
 }
 
-inline void	IGraphics::PushVertexMode(int vertex_mode) {
+inline void	IGraphics::PushVertexMode( VERTEX_MODE::Enum vertex_mode) {
 	mVertexModes.push(mVertexMode);
 	mVertexMode=vertex_mode;
 }
@@ -307,13 +336,13 @@ inline void	IGraphics::PopVertexMode() {
 	mVertexModes.pop();
 }
 
-inline ITexture* IGraphics::CreateTexture(int width, int height) {
+inline ITexture* IGraphics::CreateTexture( int width, int height ) {
 	// If this fails, it means you have not implemented create texture
 	poro_assert( false );
 	return NULL;
 }
 
-inline void IGraphics::SetTextureData(ITexture* texture, void* data ) {
+inline void IGraphics::SetTextureData( ITexture* texture, void* data ) {
 	// If this fails, it means you have not implemented set texture data
 	poro_assert( false );
 }
@@ -323,22 +352,12 @@ inline ITexture3d* IGraphics::LoadTexture3d( const types::string& filename ) {
 	poro_assert( false );
 	return NULL;
 }
-inline void IGraphics::ReleaseTexture3d( ITexture3d* texture ) {
+inline void IGraphics::DestroyTexture3d( ITexture3d* texture ) {
 	// If this fails, it means you should implement 3d texture on your end of things
 	poro_assert( false );
 }
 
-inline IGraphicsBuffer* IGraphics::CreateGraphicsBuffer(int width, int height) {
-	// If this fails, it means you should implement grafics buffer on your end of things
-	poro_assert( false );
-	return NULL;
-}
-inline void IGraphics::DestroyGraphicsBuffer(IGraphicsBuffer* buffer){
-	// If this fails, it means you should implement grafics buffer on your end of things
-	poro_assert( false );
-}
-
-inline IRenderTexture* IGraphics::CreateRenderTexture(int width, int height, bool linear_filtering) {
+inline IRenderTexture* IGraphics::CreateRenderTexture(int width, int height, bool linear_filtering ) { // , TEXTURE_FILTERING_MODE::Enum filtering_mode, TEXTURE_WRAPPING_MODE::Enum wrapping_mode
 	// If this fails, it means you should implement render texture on your end of things
 	poro_assert( false );
 	return NULL;
@@ -347,7 +366,6 @@ inline void IGraphics::DestroyRenderTexture(IRenderTexture* buffer){
 	// If this fails, it means you should implement render texture on your end of things
 	poro_assert( false );
 }
-
 
 
 inline void	IGraphics::SetFillColor( const poro::types::fcolor& c ) { 
@@ -360,6 +378,6 @@ inline poro::types::fcolor IGraphics::GetFillColor() const {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-} // end o namespace poro
+} // end of namespace poro
 
 #endif

@@ -92,8 +92,8 @@ public:
 	float 			GetRotation();
 	void			SetVisibility( bool value );
 	bool			GetVisibility() const;
-	void			SetBlendMode( int blend_mode );
-	int				GetBlendMode() const;
+	void			SetBlendMode( poro::BLEND_MODE::Enum blend_mode );
+	poro::BLEND_MODE::Enum GetBlendMode() const;
 
 	virtual types::vector2 GetSize() const;
 	virtual types::vector2 GetTextureSize() const;
@@ -319,7 +319,7 @@ protected:
 	Sprite*						mAlphaMask;
 	poro::IGraphicsBuffer*		mAlphaBuffer;
 
-	poro::types::Int8			mBlendMode;
+	poro::BLEND_MODE::Enum		mBlendMode;
 
 	std::string					mName;
 	Image*						mTexture;
@@ -499,12 +499,12 @@ inline bool Sprite::GetVisibility() const {
 	return mVisible; 
 }
 
-inline void	Sprite::SetBlendMode( int blend_mode ) {
-	mBlendMode = (poro::types::Int8)blend_mode;
+inline void	Sprite::SetBlendMode( poro::BLEND_MODE::Enum blend_mode ) {
+	mBlendMode = blend_mode;
 }
 
-inline int Sprite::GetBlendMode() const {
-	return (int)mBlendMode;
+inline poro::BLEND_MODE::Enum Sprite::GetBlendMode() const {
+	return mBlendMode;
 }
 
 

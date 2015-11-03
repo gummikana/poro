@@ -309,7 +309,7 @@ namespace {
 
 				// release old texture
 				poro::IGraphics* graphics = poro::IPlatform::Instance()->GetGraphics();
-				graphics->ReleaseTexture( i->second->texture );
+				graphics->DestroyTexture( i->second->texture );
 
 				std::cout << "Release of texture done: " << filename << std::endl;
 
@@ -368,7 +368,7 @@ void ReleasePreloadedTexture( const std::string& filename )
 	if( i != mTextureBuffer.end() )
 	{
 		poro::IGraphics* graphics = poro::IPlatform::Instance()->GetGraphics();
-		graphics->ReleaseTexture( i->second->texture );
+		graphics->DestroyTexture( i->second->texture );
 		delete i->second;
 
 		mTextureBuffer.erase( i );
@@ -480,7 +480,7 @@ Sprite::Sprite() :
 	mClearTweens( true ),
 	mAlphaMask( NULL ),
 	mAlphaBuffer( NULL ),
-	mBlendMode( poro::IGraphics::BLEND_MODE_NORMAL ),
+	mBlendMode( poro::BLEND_MODE::NORMAL ),
 	mName( "" ),
 	mTexture( NULL ),
 	mImageData( NULL ),
@@ -769,7 +769,7 @@ void Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 	//#endif
 
 		// blend mode
-		if( mBlendMode != poro::IGraphics::BLEND_MODE_NORMAL )
+		if( mBlendMode != poro::BLEND_MODE::NORMAL )
 			graphics->PushBlendMode( mBlendMode );
 
 		tex_coords[ 0 ].x = dest_rect.x;
@@ -791,7 +791,7 @@ void Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 			graphics->DrawTexture( mTexture, temp_verts, tex_coords, 4, color_me );
 		}
 
-		if( mBlendMode != poro::IGraphics::BLEND_MODE_NORMAL )
+		if( mBlendMode != poro::BLEND_MODE::NORMAL )
 			graphics->PopBlendMode();
 
 #if PORO_GRAPHICS_API_OLD
