@@ -46,9 +46,9 @@ public:
 	{ 
 	}
 
-	virtual int GetWidth() const	{ return mWidth; } 
-	virtual int GetHeight() const	{ return mHeight; }
-	virtual int GetDepth() const	{ return mDepth; }
+	virtual int GetWidth()  const PORO_OVERRIDE	{ return mWidth; } 
+	virtual int GetHeight() const PORO_OVERRIDE	{ return mHeight; }
+	virtual int GetDepth()  const PORO_OVERRIDE	{ return mDepth; }
 
 	virtual std::string GetFilename() const								{ return mFilename; }
 	void				SetFilename( const types::string& filename )	{ mFilename = filename; }

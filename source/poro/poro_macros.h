@@ -33,11 +33,13 @@
 
 #  define poro_logger std::cout
 #  define poro_assert POW2_ASSERT
+#  define PORO_OVERRIDE override
 
 #else
 
 #  define poro_logger std::cout
 #  define poro_assert assert
+#  define PORO_OVERRIDE
 
 #endif
 

@@ -37,16 +37,15 @@ public:
 	virtual ~RenderTextureOpenGL(){ Release(); }
 
 	// IRenderTexture
-	virtual ITexture*	GetTexture() { return &mTexture; }
+	virtual ITexture*	GetTexture() PORO_OVERRIDE { return &mTexture; }
 
+	virtual void		Release() PORO_OVERRIDE;
+	virtual void		BeginRendering( bool clear_color = true, bool clear_depth = true, float clear_r = 0.f, float clear_g = 0.f, float clear_b = 0.f, float clear_a = 0.f ) PORO_OVERRIDE;
+	virtual void		EndRendering() PORO_OVERRIDE;
+
+	// impl
 	void InitRenderTexture( int width, int height, bool linear_filtering = false );
-
-	// IGraphics
-	virtual bool		Init( int width, int height, bool fullscreen = false, const types::string& caption = "" );
-	virtual void		Release();
-	virtual void		BeginRendering( bool clear_color = true, bool clear_depth = true, float clear_r = 0.f, float clear_g = 0.f, float clear_b = 0.f, float clear_a = 0.f );
-	virtual void		EndRendering();
-	
+	bool Init( int width, int height, bool fullscreen = false, const types::string& caption = "" );
 private:
 	void InitTexture(int width, int height, bool linear_filtering = false);
 	

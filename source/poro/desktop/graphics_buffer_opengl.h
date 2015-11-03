@@ -37,15 +37,15 @@ public:
 	virtual ~GraphicsBufferOpenGL(){ Release(); }
 
 	// IGraphicsBuffer
-	virtual ITexture*	GetTexture() { return &mTexture; }
+	virtual ITexture*	GetTexture() PORO_OVERRIDE { return &mTexture; }
 
-	virtual void		SetGraphicsBufferScale( float x, float y ) { mBufferScale.x = x; mBufferScale.y = y; }
+	virtual void		SetGraphicsBufferScale( float x, float y ) PORO_OVERRIDE { mBufferScale.x = x; mBufferScale.y = y; }
 	
 	// IGraphics
-	virtual bool		Init( int width, int height, bool fullscreen = false, const types::string& caption = "" );
-	virtual void		Release();
+	virtual bool		Init( int width, int height, bool fullscreen = false, const types::string& caption = "" ) PORO_OVERRIDE;
+	virtual void		Release() PORO_OVERRIDE;
 	
-	virtual void DrawTexture( ITexture* itexture, float x, float y, float w, float h, const types::fcolor& color, float rotation )
+	virtual void DrawTexture( ITexture* itexture, float x, float y, float w, float h, const types::fcolor& color, float rotation ) PORO_OVERRIDE
 	{
 		GraphicsOpenGL::DrawTexture( itexture, x, y, w, h, color, rotation );
 	}
@@ -54,10 +54,10 @@ public:
 									types::vec2* vertices, 
 									types::vec2* tex_coords, 
 									int count, 
-									const types::fcolor& color );
+									const types::fcolor& color ) PORO_OVERRIDE;
 
-	virtual void		BeginRendering();
-	virtual void		EndRendering();
+	virtual void		BeginRendering() PORO_OVERRIDE;
+	virtual void		EndRendering() PORO_OVERRIDE;
 	
 private:
 	void InitTexture(int width, int height);

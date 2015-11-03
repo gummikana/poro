@@ -1018,7 +1018,7 @@ ITexture3d* GraphicsOpenGL::LoadTexture3d( const types::string& filename )
 	return result;
 }
 
-void GraphicsOpenGL::ReleaseTexture3d( ITexture3d* itexture )
+void GraphicsOpenGL::DestroyTexture3d( ITexture3d* itexture )
 {
 	Texture3dOpenGL* texture = dynamic_cast< Texture3dOpenGL* >( itexture );
 
