@@ -257,7 +257,7 @@ public:
 											const types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ), 
 											types::vec2* tex_coords = NULL, 
 											int count = 0,
-		                                    types::vec2* tex_coords2 = NULL) { poro_assert( false && "Needs to be implemented" ); }
+		                                    types::vec2* tex_coords2 = NULL ) { poro_assert( false && "Needs to be implemented" ); }
 
 	//-------------------------------------------------------------------------
 
