@@ -1408,7 +1408,7 @@ void GraphicsOpenGL::DrawQuads( float* vertices, int vertex_count, float* tex_co
 	glPopMatrix();
 }
 
-void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture, const poro::types::fcolor& color, types::vec2* tex_coords, int count )
+void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture, const poro::types::fcolor& color, types::vec2* tex_coords, int count, types::vec2* tex_coords2 )
 {
 	TextureOpenGL* texture;
 	if( itexture != NULL )
@@ -1449,13 +1449,26 @@ void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const 
 		if( itexture != NULL )
 		{ 
 			if ( tex_coords == NULL || i >= count )
-				glTexCoord2f( vertices[ i ].x / texture->GetWidth(), vertices[ i ].y / texture->GetHeight() );
+			{
+				if (tex_coords2)
+					glTexCoord4f( vertices[i].x / texture->GetWidth(), vertices[i].y / texture->GetHeight(), vertices[i].x / texture->GetWidth(), vertices[i].y / texture->GetHeight() );
+				else
+					glTexCoord2f( vertices[i].x / texture->GetWidth(), vertices[i].y / texture->GetHeight() );
+			}
 			else
-				glTexCoord2f( tex_coords[ i ].x / texture->GetWidth(), tex_coords[ i ].y / texture->GetHeight() );
+			{
+				if (tex_coords2)
+					glTexCoord4f( tex_coords[i].x / texture->GetWidth(), tex_coords[i].y / texture->GetHeight(), tex_coords2[i].x / texture->GetWidth(), tex_coords2[i].y / texture->GetHeight() );
+				else
+					glTexCoord2f( tex_coords[i].x / texture->GetWidth(), tex_coords[i].y / texture->GetHeight() );
+			}
 		}
 		else
 		{
-			glTexCoord2f( tex_coords[ i ].x, tex_coords[ i ].y );
+			if ( tex_coords2 )
+				glTexCoord4f( tex_coords[i].x, tex_coords[i].y, tex_coords2[i].x, tex_coords2[i].y );
+			else
+				glTexCoord2f( tex_coords[i].x, tex_coords[i].y );
 		}
 
 		glVertex2f(vertices[ i ].x, vertices[ i ].y );
