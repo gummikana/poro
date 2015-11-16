@@ -83,6 +83,7 @@ public:
 	virtual types::Double32 GetUpTime();
 	virtual void			SetPrintFramerate( bool fps );
 	virtual types::Double32 GetLastFrameExecutionTime() const;
+	virtual types::Double32 GetAverageFrameExecutionTime() const;
 
 	// event recordings
 	virtual void SetEventRecording( bool record_events );
@@ -113,6 +114,7 @@ protected:
 	int								mFrameCount;
 	int								mFrameRate;
 	types::Double32					mLastFrameExecutionTime;
+	types::Double32					mAverageFrameExecutionTime;
 	types::Double32					mOneFrameShouldLast;
 	types::Double32					mTimeElapsedTracker;
 
@@ -177,7 +179,7 @@ inline FileSystem* PlatformDesktop::GetFileSystem() {
 
 // ---
 inline void PlatformDesktop::SetFrameRate( int targetRate, bool fixed_time_step ) {
-	mFrameRate = targetRate;
+	// mFrameRate = targetRate;
 	mOneFrameShouldLast = 1.0 / (types::Double32)targetRate;
 	mFixedTimeStep = fixed_time_step;
 }
@@ -211,6 +213,10 @@ inline void PlatformDesktop::SetPrintFramerate( bool framerate ) {
 
 inline types::Double32 PlatformDesktop::GetLastFrameExecutionTime() const {
 	return mLastFrameExecutionTime;
+}
+
+inline types::Double32 PlatformDesktop::GetAverageFrameExecutionTime() const {
+	return mAverageFrameExecutionTime;
 }
 
 

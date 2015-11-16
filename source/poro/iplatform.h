@@ -117,6 +117,7 @@ public:
 	virtual types::Float32	GetTime()							{ return (types::Float32)GetUpTime(); }
 	virtual void			SetPrintFramerate( bool fps )		{ }
 	virtual types::Double32 GetLastFrameExecutionTime() const	{ return 0; }
+	virtual types::Double32 GetAverageFrameExecutionTime() const { return 0; }
 
 
 	// event recording

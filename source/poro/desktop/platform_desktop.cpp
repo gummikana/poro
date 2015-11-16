@@ -356,6 +356,8 @@ PlatformDesktop::PlatformDesktop() :
 	mGraphics( NULL ),
 	mFrameCount( 0 ),
 	mFrameRate( 0 ),
+	mLastFrameExecutionTime( 0 ),
+	mAverageFrameExecutionTime( 0 ),
 	mOneFrameShouldLast( 1.f / 60.f ),
 	mTimeElapsedTracker( 0 ),
 	mFixedTimeStep( true ),
@@ -502,11 +504,11 @@ void PlatformDesktop::StartMainLoop()
 
 			if ( mPrintFramerate )
 			{
-				double elapsed_time_average = ( mTimeElapsedTracker / mFrameRate );
+				mAverageFrameExecutionTime = ( mTimeElapsedTracker / mFrameRate );
 
 				std::stringstream ss;
 				ss << std::fixed << std::setprecision( 3 );
-				ss << elapsed_time_average*1000.f;
+				ss << mAverageFrameExecutionTime*1000.f;
 
 				std::cout << "Fps: " << mFrameRate << " - " << ss.str() << " ms - (CPU): " << ( mProcessorRate / ( types::Double32 )mFrameRate ) * 100.f << "%" << std::endl;
 			}
