@@ -1581,20 +1581,22 @@ void GraphicsOpenGL::SaveScreenshot( const std::string& filename, int pos_x, int
 	int width = (int)mViewportSize.x;
 	int height = (int)mViewportSize.y;
 
-	static unsigned char* pixels = new unsigned char[ 3 * (int)mViewportSize.x * (int)mViewportSize.y ];
-	const int pixels_size = 3 * (int)mViewportSize.x * (int)mViewportSize.y;
+	const int bpp = 4;
+
+	static unsigned char* pixels = new unsigned char[ bpp * (int)mViewportSize.x * (int)mViewportSize.y ];
+	const int pixels_size = bpp * (int)mViewportSize.x * (int)mViewportSize.y;
 
 	// read the whole image into a buffer, since this crashes with unspecified sizes
-	glReadPixels( (int)mViewportOffset.x, (int)mViewportOffset.y, (int)mViewportSize.x, (int)mViewportSize.y, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+	glReadPixels( (int)mViewportOffset.x, (int)mViewportOffset.y, (int)mViewportSize.x, (int)mViewportSize.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 	// need to flip the pixels
-	for( int x = 0; x < width * 3; ++x ) 
+	for( int x = 0; x < width * bpp; ++x ) 
 	{
 		for( int y = 0; y < height / 2; ++y ) 
 		{
 			std::swap( 
-				pixels[ x + 3 * width * y ], 
-				pixels[ x + 3 * width * ( height - y - 1 ) ] );
+				pixels[ x + bpp * width * y ], 
+				pixels[ x + bpp * width * ( height - y - 1 ) ] );
 		}
 	}
 	
@@ -1609,13 +1611,13 @@ void GraphicsOpenGL::SaveScreenshot( const std::string& filename, int pos_x, int
 		w = (int)( ((float)w) * ( mViewportSize.x / GetInternalSize().x ) );
 		h = (int)( ((float)h) * ( mViewportSize.y / GetInternalSize().y ) );
 
-		other_pixels = new unsigned char[ 3 * w * h ];	
+		other_pixels = new unsigned char[ bpp * w * h ];	
 		for( int y = 0; y < h; ++y )
 		{
-			for( int x = 0; x < w * 3; ++x )
+			for( int x = 0; x < w * bpp; ++x )
 			{
-				int p1 = (x + 3 * w * y);
-				int p2 = (x + (pos_x * 3)) + ( 3 * width * ( y + pos_y));
+				int p1 = (x + bpp * w * y);
+				int p2 = (x + (pos_x * bpp)) + ( bpp * width * ( y + pos_y));
 				if( p2 < pixels_size )
 					other_pixels[ p1 ] = pixels[ p2 ];
 				else 
@@ -1624,7 +1626,7 @@ void GraphicsOpenGL::SaveScreenshot( const std::string& filename, int pos_x, int
 		}
 	}
 
-	if ( ImageSave( filename.c_str(), w, h, 3, other_pixels, w * 3 ) == 0 )
+	if ( ImageSave( filename.c_str(), w, h, bpp, other_pixels, w * bpp ) == 0 )
 		poro_logger << "Error SaveScreenshot() - couldn't write to file: " << filename << std::endl;
 
 	if( other_pixels != pixels ) delete [] other_pixels;
