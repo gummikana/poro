@@ -79,7 +79,7 @@
 			} while(0)
 #	else
 		// optimized assert that doesn't do anything
-#		define cassert(cond) do { } while(0)
+#		define cassert(cond) if( !(cond)) { assert_logger << "Assert failed: (" << #cond << ") in " << __FILE__ << " at line " << __LINE__ << std::endl; int* _break_me_ = 0; (*_break_me_) = 7337; }
 #	endif
 
 #else
