@@ -193,7 +193,7 @@ namespace poro {
 
 		// === writing API ===
 		// Open a file at 'relative_path' for reading.
-		WriteStream OpenWrite( const std::string& relative_path, StreamWriteMode::Enum write_mode = StreamWriteMode::Enum::Recreate, FileLocation::Enum location = FileLocation::Enum::UserDocumentsDirectory );
+		WriteStream OpenWrite( const std::string& relative_path, StreamWriteMode::Enum write_mode = StreamWriteMode::Recreate, FileLocation::Enum location = FileLocation::UserDocumentsDirectory );
 
 		// === immediate mode writing api ===
 		// Write 'length_bytes' bytes from data to the file at 'relative_path'.

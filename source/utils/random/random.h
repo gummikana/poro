@@ -124,7 +124,6 @@ public:
 	static void SetSeed( double seed );
 
 	Global_LGMRandom() { }
-	~Global_LGMRandom() { }
 
 
 	double operator()() 
@@ -157,8 +156,7 @@ public:
 	void SetSeed( double seed );
 
 	CLGMRandom() : seed( 0 ), iseed( 0 ) { }
-	~CLGMRandom() { }
-
+	CLGMRandom( double seed ) { SetSeed( seed ); }
 
 	double operator()() 
 	{
@@ -188,6 +186,7 @@ class CFastRandom
 {
 public:
 	CFastRandom() : mSeed( 0 )  { }
+	CFastRandom( int seed ) { SetSeed( seed ); }
 
 	void SetSeed( int in_seed ) {
 		mSeed = in_seed ^ 13 - 1;
