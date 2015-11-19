@@ -82,6 +82,8 @@ public:
 
 	virtual int GetFrameLength() const { return 0; }
 
+	virtual void FlushAndClose() { }
+
 protected:
 	Keyboard* mKeyboard;
 	Mouse* mMouse;

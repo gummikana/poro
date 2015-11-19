@@ -14,7 +14,7 @@ public:
 	EventRecorderImpl();
 	EventRecorderImpl( Keyboard* keyboard, Mouse* mouse, Touch* touch );
 	
-	virtual ~EventRecorderImpl() { }
+	virtual ~EventRecorderImpl() { FlushAndClose(); }
 
 	//-------------------------------------------------------------------------
 	
@@ -48,11 +48,13 @@ public:
 	virtual void StartOfFrame( float start_time );
 	virtual void EndOfFrame( float end_time );
 
+	void FlushAndClose();
 
 	//-------------------------------------------------------------------------
 protected:
 	std::vector< std::string > mEventBuffer;
 	std::string mFilename;
+	WriteStream mFile;
 	int mFrameCount;
 	float mFrameStartTime;
 

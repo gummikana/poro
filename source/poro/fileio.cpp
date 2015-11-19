@@ -37,6 +37,15 @@
 
 typedef poro::types::Uint32 u32;
 
+
+#ifdef PORO_PLAT_WINDOWS
+	#ifdef PORO_CONSERVATIVE
+	#define PORO_THREAD_LOCAL 
+	#else
+	#define PORO_THREAD_LOCAL __declspec(thread)
+	#endif
+#endif
+
 namespace poro {
 
 namespace platform_impl
@@ -48,6 +57,8 @@ namespace platform_impl
     std::string GetFullPath( FileLocation::Enum location );
     std::string CombinePath( std::string root, std::string relative_to_root );
 
+
+
     struct StreamInternal
     {
         StreamInternal( std::string filename, bool read, StreamStatus::Enum* out_status, StreamWriteMode::Enum write_mode )
@@ -56,10 +67,14 @@ namespace platform_impl
 
 			if ( read )
 			{
+				mWriteBuffer = NULL;
                 mFile.open( filename.c_str(), std::ios::in | std::ios::binary );
 			}
             else
-			{ 
+			{
+				mWriteBuffer = (char*)malloc( WRITE_BUFFER_SIZE_BYTES );
+				mWriteBufferPos = 0;
+
 				if (write_mode == StreamWriteMode::Append )
 					mFile.open( filename.c_str(), std::ios::app | std::ios::binary );
 				else
@@ -73,6 +88,10 @@ namespace platform_impl
             mSize = ceng::ReadFileSize( mFile );
             mPosition = 0;
         }
+
+		StreamInternal() : mWriteBuffer( NULL )
+		{
+		}
 
 		StreamStatus::Enum Read( char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read )
         {
@@ -118,45 +137,83 @@ namespace platform_impl
 			return StreamStatus::NoError;
 		}
 
-		StreamStatus::Enum Write( char* buffer, u32 buffer_size_bytes )
+		StreamStatus::Enum Write( const char* buffer, u32 buffer_size_bytes )
 		{
 			if ( mFile.good() == false )
 				return StreamStatus::AccessFailed;
 
-			mFile.write( buffer, buffer_size_bytes );
+			if ( buffer_size_bytes > WRITE_BUFFER_SIZE_BYTES )
+			{
+				if ( mWriteBufferPos > 0 )
+				{
+					mFile.write( mWriteBuffer, mWriteBufferPos );
+					mWriteBufferPos = 0;
+				}
+
+				mFile.write( buffer, buffer_size_bytes );
+			}
+			else
+			{
+				if ( mWriteBufferPos + buffer_size_bytes > WRITE_BUFFER_SIZE_BYTES )
+				{
+					mFile.write( mWriteBuffer, mWriteBufferPos );
+					mWriteBufferPos = 0;
+				}
+
+				memcpy( mWriteBuffer + mWriteBufferPos, buffer, buffer_size_bytes );
+				mWriteBufferPos += buffer_size_bytes;
+			}
+
+			//mFile.write( buffer, buffer_size_bytes );
 			return StreamStatus::NoError;
 		}
 
 		StreamStatus::Enum WriteLineEnding()
 		{
 			const char* LINE_ENDING = "\r\n";
-			mFile.write( LINE_ENDING, 2 );
-			return StreamStatus::NoError;
+			return Write( LINE_ENDING, 2 );
 		}
 
 		void SeekToBeginning()
 		{
 			mFile.seekg( 0, std::ios::beg );
+			mWriteBufferPos = 0;
+		}
+
+		void FlushWrites()
+		{
+			if ( mWriteBufferPos > 0 )
+			{
+				mFile.write( mWriteBuffer, mWriteBufferPos );
+				mWriteBufferPos = 0;
+			}
+
+			mFile.flush();
 		}
 
         void Close()
         {
+			if ( mWriteBuffer )
+			{
+				FlushWrites();
+
+				free( mWriteBuffer );
+				mWriteBuffer = NULL;
+			}
             mFile.close();
         }
 
+		const unsigned int WRITE_BUFFER_SIZE_BYTES = 8192;
 
         std::fstream mFile;
+		char* mWriteBuffer;
+		u32   mWriteBufferPos;
         long mSize;
         long mPosition;
     };
 }
 
 #ifdef PORO_PLAT_WINDOWS
-	#ifdef PORO_CONSERVATIVE
-		#define PORO_THREAD_LOCAL 
-	#else
-		#define PORO_THREAD_LOCAL __declspec(thread)
-	#endif
 
 	namespace platform_impl
 	{
@@ -358,6 +415,14 @@ StreamStatus::Enum WriteStream::WriteEndOfLine()
 	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
 
 	return mStreamImpl->WriteLineEnding();
+}
+
+StreamStatus::Enum WriteStream::FlushWrites()
+{
+	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
+
+	mStreamImpl->FlushWrites();
+	return StreamStatus::NoError;
 }
 
 // ===

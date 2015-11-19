@@ -35,6 +35,8 @@ EventRecorderImpl::EventRecorderImpl() :
 	mFrameStartTime( 0 )
 { 
 	mFilename = GetEventRecorderFilename();
+
+	mFile = Poro()->GetFileSystem()->OpenWrite( mFilename, StreamWriteMode::Recreate, FileLocation::WorkingDirectory );
 }
 
 EventRecorderImpl::EventRecorderImpl( Keyboard* keyboard, Mouse* mouse, Touch* touch ) : 
@@ -44,6 +46,8 @@ EventRecorderImpl::EventRecorderImpl( Keyboard* keyboard, Mouse* mouse, Touch* t
 	mFrameStartTime( 0 )
 { 
 	mFilename = GetEventRecorderFilename();
+
+	mFile = Poro()->GetFileSystem()->OpenWrite( mFilename, StreamWriteMode::Recreate, FileLocation::WorkingDirectory );
 }
 
 //=============================================================================	
@@ -146,13 +150,11 @@ void EventRecorderImpl::StartOfFrame( float start_time ) {
 
 void EventRecorderImpl::EndOfFrame( float time ) {
 
-	StreamWriteMode::Enum write_mode;
+	/*StreamWriteMode::Enum write_mode;
 	if ( mFrameCount == 0 )
 		write_mode = StreamWriteMode::Recreate;
 	else
-		write_mode = StreamWriteMode::Append;
-
-	WriteStream file = Poro()->GetFileSystem()->OpenWrite( mFilename, write_mode, FileLocation::WorkingDirectory );
+		write_mode = StreamWriteMode::Append;*/
 
 	std::stringstream ss;
 	ss << mFrameCount << ", " << (int)( ( time - mFrameStartTime ) * 1000.f ) << " ms : ";
@@ -164,10 +166,17 @@ void EventRecorderImpl::EndOfFrame( float time ) {
 	}
 	ss << std::endl;
 
-	file.Write( ss.str() );
+	mFile.Write( ss.str() );
 
 	mEventBuffer.clear();
 	mFrameCount++;
+}
+
+void EventRecorderImpl::FlushAndClose()
+{
+	EndOfFrame( Poro()->GetTime() );
+
+	mFile.~WriteStream();
 }
 
 //=============================================================================

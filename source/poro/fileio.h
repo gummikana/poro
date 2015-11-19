@@ -98,6 +98,7 @@ namespace poro {
         friend class DiskFileDevice;
         friend struct poro::impl::ImContext;
 	public:
+		WriteStream() { mDevice = NULL; mStreamImpl = NULL; }
 		WriteStream( const WriteStream& other ) { operator=( other ); }
         WriteStream& operator= ( const WriteStream& other );
 		// write 'length_bytes' bytes from 'data' to the stream.
@@ -108,13 +109,14 @@ namespace poro {
 		StreamStatus::Enum WriteLine( const std::string& text );
 		// write a line ending to the stream.
 		StreamStatus::Enum WriteEndOfLine();
+		// flush all buffered writes to the file
+		StreamStatus::Enum FlushWrites();
 		// Returns true if the stream was succesfully opened and has not been closed.
 		bool IsValid() { return mStreamImpl != NULL; }
 		// close the stream and clean up all resources used by it.
         ~WriteStream();
 	private:
 		void Close();
-        WriteStream() { mDevice = NULL; mStreamImpl = NULL; }
         // data
         IFileDevice*                   mDevice;
         platform_impl::StreamInternal* mStreamImpl;

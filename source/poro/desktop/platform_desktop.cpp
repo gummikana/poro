@@ -24,6 +24,8 @@
 #include <sstream>
 #include <ctime>
 
+#include <signal.h>
+
 #include "../libraries.h"
 #include "../external/poro_windows.h"
 
@@ -87,6 +89,17 @@ int ConvertSDLKeySymToPoroKey(int sdl_key)
 
 	return sdl_key;
 }
+
+
+poro::EventRecorder* gEventRecorder;
+
+void SegFaultHandler( int signal )
+{
+	if ( gEventRecorder )
+		gEventRecorder->FlushAndClose();
+}
+
+
 
 void TestSDL_Keycodes()
 {
@@ -420,6 +433,7 @@ void PlatformDesktop::Init( IApplication* application, const GraphicsSettings& s
 	}
 
 	mEventRecorder = new EventRecorder( mKeyboard, mMouse, mTouch, NULL );
+	gEventRecorder = mEventRecorder;
 	// mEventRecorder = new EventRecorderImpl( mKeyboard, mMouse, mTouch );
 	// mEventRecorder->SetFilename( );
 }
@@ -432,9 +446,6 @@ void PlatformDesktop::Destroy()
 
 	delete mSoundPlayer;
 	mSoundPlayer = NULL;
-
-    delete mFileSystem;
-    mFileSystem = NULL;
 
 	delete mMouse;
 	mMouse = NULL;
@@ -452,12 +463,19 @@ void PlatformDesktop::Destroy()
 
 	delete mEventRecorder;
 	mEventRecorder = NULL;
+	gEventRecorder = NULL;
+
+	delete mFileSystem;
+	mFileSystem = NULL;
 }
 //-----------------------------------------------------------------------------
 
 void PlatformDesktop::StartMainLoop() 
 {
 	mRunning = true;
+
+	// install a handler for segfaults so we can flush the playback before crashing down
+	signal( SIGSEGV, SegFaultHandler );
 
 	// just render the screen black before initializing the application
 	if( mGraphics && true ) {
@@ -761,6 +779,7 @@ void PlatformDesktop::SetEventRecording( bool record_events )
 		{
 			delete mEventRecorder;
 			mEventRecorder = new EventRecorderImpl( mKeyboard, mMouse, mTouch );
+			gEventRecorder = mEventRecorder;
 			mRandomSeed = mEventRecorder->GetRandomSeed();
 		}
 	}
@@ -770,6 +789,7 @@ void PlatformDesktop::SetEventRecording( bool record_events )
 		{
 			delete mEventRecorder;
 			mEventRecorder = NULL;
+			gEventRecorder = NULL;
 			mEventRecorder = new EventRecorder( mKeyboard, mMouse, mTouch, NULL );
 		}
 	}
