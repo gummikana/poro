@@ -189,7 +189,7 @@ namespace ceng {
 		CXmlNode* node;
 		node = XmlConvertFrom( mesh, rootnodename );
 
-		poro::WriteStream stream = Poro()->GetFileSystem()->OpenWrite( file );
+		poro::WriteStream stream = Poro()->GetFileSystem()->OpenWrite( file, poro::StreamWriteMode::Recreate, poro::FileLocation::WorkingDirectory );
 		if ( stream.IsValid() )
 		{
 			CXmlStreamHandler handler;
