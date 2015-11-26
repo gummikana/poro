@@ -519,11 +519,10 @@ void PlatformDesktop::StartMainLoop()
             mFrameCountLastTime = GetUpTime();
             mFrameRate = mFrameRateUpdateCounter;
             mFrameRateUpdateCounter = 0;
+			mAverageFrameExecutionTime = ( mTimeElapsedTracker / mFrameRate );
 
 			if ( mPrintFramerate )
 			{
-				mAverageFrameExecutionTime = ( mTimeElapsedTracker / mFrameRate );
-
 				std::stringstream ss;
 				ss << std::fixed << std::setprecision( 3 );
 				ss << mAverageFrameExecutionTime*1000.f;
