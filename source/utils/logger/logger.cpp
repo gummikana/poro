@@ -21,11 +21,14 @@
 
 #include "logger.h"
 
+#include <fstream>
+
 namespace ceng {
 
 #ifdef PORO_USE_LOGGER
 CLog logger_impl;
 CLog assert_logger;
+
 #endif
 
 void ClearLogs()
