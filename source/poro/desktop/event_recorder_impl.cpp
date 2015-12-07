@@ -29,25 +29,28 @@ std::string GetEventRecorderFilename()
 //=============================================================================	
 
 EventRecorderImpl::EventRecorderImpl() : 
-	EventRecorder(), 
+	EventRecorder(),
+	mFlushEveryFrame( true ),
 	mFrameCount( 0 ), 
 	mFilename(),
 	mFrameStartTime( 0 )
 { 
 	mFilename = GetEventRecorderFilename();
 
-	mFile = Poro()->GetFileSystem()->OpenWrite( mFilename, StreamWriteMode::Recreate, FileLocation::WorkingDirectory );
+	//mFile = Poro()->GetFileSystem()->OpenWrite( mFilename, StreamWriteMode::Recreate, FileLocation::WorkingDirectory );
 }
 
-EventRecorderImpl::EventRecorderImpl( Keyboard* keyboard, Mouse* mouse, Touch* touch ) : 
-	EventRecorder( keyboard, mouse, touch, NULL ), 
+EventRecorderImpl::EventRecorderImpl( Keyboard* keyboard, Mouse* mouse, Touch* touch, bool flush_every_frame ) :
+	EventRecorder( keyboard, mouse, touch, NULL ),
+	mFlushEveryFrame( flush_every_frame ),
 	mFrameCount( 0 ),
 	mFilename(),
 	mFrameStartTime( 0 )
 { 
 	mFilename = GetEventRecorderFilename();
 
-	mFile = Poro()->GetFileSystem()->OpenWrite( mFilename, StreamWriteMode::Recreate, FileLocation::WorkingDirectory );
+	if ( mFlushEveryFrame == false )
+		mFile = Poro()->GetFileSystem()->OpenWrite( mFilename, StreamWriteMode::Recreate, FileLocation::WorkingDirectory );
 }
 
 //=============================================================================	
@@ -150,11 +153,16 @@ void EventRecorderImpl::StartOfFrame( float start_time ) {
 
 void EventRecorderImpl::EndOfFrame( float time ) {
 
-	/*StreamWriteMode::Enum write_mode;
-	if ( mFrameCount == 0 )
-		write_mode = StreamWriteMode::Recreate;
-	else
-		write_mode = StreamWriteMode::Append;*/
+	if ( mFlushEveryFrame )
+	{
+		StreamWriteMode::Enum write_mode;
+		if ( mFrameCount == 0 )
+			write_mode = StreamWriteMode::Recreate;
+		else
+			write_mode = StreamWriteMode::Append;
+
+		mFile = Poro()->GetFileSystem()->OpenWrite( mFilename, write_mode, FileLocation::WorkingDirectory );
+	}
 
 	std::stringstream ss;
 	ss << mFrameCount << ", " << (int)( ( time - mFrameStartTime ) * 1000.f ) << " ms : ";
@@ -170,6 +178,11 @@ void EventRecorderImpl::EndOfFrame( float time ) {
 
 	mEventBuffer.clear();
 	mFrameCount++;
+
+	if ( mFlushEveryFrame )
+	{
+		mFile.~WriteStream();
+	}
 }
 
 void EventRecorderImpl::FlushAndClose()

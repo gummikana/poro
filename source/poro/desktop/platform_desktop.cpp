@@ -566,6 +566,7 @@ void PlatformDesktop::SingleLoop()
 
 	if( mEventRecorder )
 		mEventRecorder->EndOfFrame( GetTime() );
+	
 }
 //-----------------------------------------------------------------------------
 
@@ -770,14 +771,14 @@ ISoundPlayer* PlatformDesktop::GetSoundPlayer() {
 
 //-----------------------------------------------------------------------------
 
-void PlatformDesktop::SetEventRecording( bool record_events ) 
+void PlatformDesktop::SetEventRecording( bool record_events, bool flush_every_frame ) 
 {
 	if( record_events ) 
 	{
 		if( mEventRecorder == NULL || mEventRecorder->IsRecording() == false ) 
 		{
 			delete mEventRecorder;
-			mEventRecorder = new EventRecorderImpl( mKeyboard, mMouse, mTouch );
+			mEventRecorder = new EventRecorderImpl( mKeyboard, mMouse, mTouch, flush_every_frame );
 			gEventRecorder = mEventRecorder;
 			mRandomSeed = mEventRecorder->GetRandomSeed();
 		}

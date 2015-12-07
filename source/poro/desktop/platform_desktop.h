@@ -86,7 +86,7 @@ public:
 	virtual types::Double32 GetAverageFrameExecutionTime() const;
 
 	// event recordings
-	virtual void SetEventRecording( bool record_events );
+	virtual void SetEventRecording( bool record_events, bool flush_every_frame );
 	virtual bool GetEventRecording() const;
 	
 	virtual void DoEventPlayback( const std::string& filename );

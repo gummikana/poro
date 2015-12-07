@@ -28,6 +28,7 @@ struct AppConfig
         framerate( 60 ),
         iphone_is_landscape( true ),
 		sounds( true ),
+		event_recorder_flush_every_frame( false ),
 		record_events( true ),
 		do_a_playback( false ),
 		playback_file( "" ),
@@ -54,6 +55,7 @@ struct AppConfig
     bool iphone_is_landscape;
     bool sounds;
 
+	bool            event_recorder_flush_every_frame;
     bool			record_events;
     bool			do_a_playback;
     std::string		playback_file;
@@ -88,7 +90,7 @@ int RunPoro( const AppConfig& conf = AppConfig()  )
         poro->Init( app.get(), conf.graphics_settings );
 
         // recording things
-        poro->SetEventRecording( conf.record_events );
+        poro->SetEventRecording( conf.record_events, conf.event_recorder_flush_every_frame );
 	
         if( conf.do_a_playback ) 
             poro->DoEventPlayback( conf.playback_file );
