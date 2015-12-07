@@ -121,7 +121,7 @@ public:
 
 
 	// event recording
-	virtual void SetEventRecording( bool record_events )		{ }
+	virtual void SetEventRecording( bool record_events, bool flush_every_frame ) { }
 	virtual bool GetEventRecording() const						{ return false; }
 	
 	virtual void DoEventPlayback( const std::string& filename ) { }

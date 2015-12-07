@@ -13,7 +13,7 @@ class EventRecorderImpl : public EventRecorder
 {
 public:
 	EventRecorderImpl();
-	EventRecorderImpl( Keyboard* keyboard, Mouse* mouse, Touch* touch );
+	EventRecorderImpl( Keyboard* keyboard, Mouse* mouse, Touch* touch, bool flush_every_frame );
 	
 	virtual ~EventRecorderImpl() { FlushAndClose(); }
 
@@ -57,6 +57,7 @@ protected:
 	std::vector< std::string > mEventBuffer;
 	std::string mFilename;
 	WriteStream mFile;
+	bool mFlushEveryFrame;
 	int mFrameCount;
 	float mFrameStartTime;
 	bool mFirstThisFrame;
