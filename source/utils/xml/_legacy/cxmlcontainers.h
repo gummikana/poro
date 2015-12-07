@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- * Copyright (c) 2010 Petri Purho, Dennis Belfrage
+ * Copyright (c) 2003 - 2011 Petri Purho
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,43 +18,46 @@
  *
  ***************************************************************************/
 
-#ifndef INC_PORO_MACROS_H
-#define INC_PORO_MACROS_H
 
-#include "platform_defs.h"
-#include "poro_types.h"
+#ifndef INC_CXMLCONTAINERS_H
+#define INC_CXMLCONTAINERS_H
 
-#include <assert.h>
-#include <iostream>
+#include "cxmlcast.h"
 
-#ifdef PORO_PLAT_WINDOWS
+#include <vector>
 
-#include "../utils/poro_assert.h"
+struct container
+{
+public:
+	template< class T >
+	container( std::vector< T >& from ) { }
+};
 
-#  define poro_logger std::cout
-#  define poro_assert cassert
-#  define PORO_OVERRIDE override
+//.............................................................................
+//! The Vector serialization
 
-#else
+// Loading a vector
+template< class T, class A >
+void XmlSerializeTo( CXmlFileSys* from, std::vector< T, A >& to )
+{
+	if( from == NULL ) return;
 
-#  define poro_logger std::cout
-#  define poro_assert assert
-#  define PORO_OVERRIDE
-
-#endif
-
-namespace poro {
-	inline types::fcolor GetFColor( float r, float g, float b, float a = 1.f );
-
-	types::fcolor GetFColor( float r, float g, float b, float a  )
-	{
-		types::fcolor result;
-		result[ 0 ] = r;
-		result[ 1 ] = g;
-		result[ 2 ] = b;
-		result[ 3 ] = a;
-		return result;
-	}
+	// to.Serialize( from );
 }
+
+/*
+// Saving a vector
+template< >
+void XmlSerializeFrom( CXmlFileSys* to, const container& from )
+{
+	if ( to == NULL ) return;
+
+
+
+	// from.Serialize( to );
+}*/
+
+
+//.............................................................................
 
 #endif

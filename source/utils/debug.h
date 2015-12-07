@@ -64,31 +64,7 @@
 
 #endif
 
-//----------------- ASSERT ----------------------------------------------------
-// define cassert
-#include "pow2assert/pow2assert.h"
-
-#ifdef NDEBUG
-
-// assert that could be used during run time. Just outputs the error, instead of crashing things
-#	ifdef PORO_USE_RELEASE_ASSERTS
-
-#		define cassert(cond) \
-			do \
-			{ \
-				if (!(cond)) \
-				{ \
-					assert_logger << "Assert failed: (" << #cond << ") in " << __FILE__ << " at line " << __LINE__ << std::endl; \
-				} \
-			} while(0)
-#	else
-		// optimized assert that doesn't do anything
-#		define cassert(cond) if( !(cond)) { assert_logger << "Assert failed: (" << #cond << ") in " << __FILE__ << " at line " << __LINE__ << std::endl; int* _break_me_ = 0; (*_break_me_) = 7337; }
-#	endif
-
-#else
-#	define cassert 	POW2_ASSERT
-#endif
+#include "poro_assert.h"
 
 
 template< class T >
