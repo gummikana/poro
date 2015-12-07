@@ -28,6 +28,7 @@ namespace ceng {
 
 void ClearLogs();
 
+
 #ifdef PORO_USE_LOGGER
 
 extern CLog logger_impl;

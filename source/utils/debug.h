@@ -55,10 +55,14 @@
 // #   define PORO_USE_LOGGER
 #endif
 
-// #include "logger/logger.h"
+#ifdef PORO_USE_LOGGER
+	#include "logger/logger.h"
+#else
+
 #define logger std::cout
 #define assert_logger std::cout
 
+#endif
 
 //----------------- ASSERT ----------------------------------------------------
 // define cassert
@@ -86,6 +90,15 @@
 #	define cassert 	POW2_ASSERT
 #endif
 
+
+template< class T >
+void DEBUG_LOG( const T& what )
+{
+	// god damn, couldn't get the logger to work...
+	std::ofstream fileout( "logger.txt", std::ios::out | std::ios::app );
+	fileout << what << std::endl;
+	fileout.close();
+}
 
 
 
