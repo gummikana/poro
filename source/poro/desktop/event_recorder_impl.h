@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "../fileio.h"
 #include "../event_recorder.h"
 
 namespace poro {
@@ -49,6 +50,7 @@ public:
 	virtual void EndOfFrame( float end_time );
 
 	void FlushAndClose();
+	void Flush();
 
 	//-------------------------------------------------------------------------
 protected:
@@ -57,6 +59,7 @@ protected:
 	WriteStream mFile;
 	int mFrameCount;
 	float mFrameStartTime;
+	bool mFirstThisFrame;
 
 };
 //-----------------------------------------------------------------------------
