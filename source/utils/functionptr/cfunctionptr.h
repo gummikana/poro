@@ -151,14 +151,13 @@ public:
 	ReturnValue operator()() { return AnyCast< ReturnValue >( myFunc->Call() ); }
 	
 	template< class Arg1 >
-	CAnyContainer operator()( const Arg1& a1 ) { return myFunc->Call( a1 ); }
+	ReturnValue operator()( const Arg1& a1 ) { return AnyCast< ReturnValue >( myFunc->Call( a1 ) ); }
 
 	template< class Arg1, class Arg2 >
-	CAnyContainer operator()( const Arg1& a1, const Arg2& a2 ) { return myFunc->Call( a1, a2 ); }
+	ReturnValue operator()( const Arg1& a1, const Arg2& a2 ) { return AnyCast< ReturnValue >( myFunc->Call( a1, a2 ) ); }
 
 	template< class Arg1, class Arg2, class Arg3 >
-	CAnyContainer operator()( const Arg1& a1, const Arg2& a2, const Arg3& a3 ) { return myFunc->Call( a1, a2, a3 ); }
-	
+	ReturnValue operator()( const Arg1& a1, const Arg2& a2, const Arg3& a3 ) { return AnyCast< ReturnValue >( myFunc->Call( a1, a2, a3 ) ); }
 
 	//-------------------------------------------------------------------------
 	
