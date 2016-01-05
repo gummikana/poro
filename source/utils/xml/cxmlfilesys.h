@@ -268,6 +268,9 @@ public:
 	//! Sets the filename to myFilename
 	void SetFileName( const std::string& file ) { myFilename = file; }
 
+	std::string		GetFileName() const { return myFilename; }
+	unsigned int	GetLineNumber() const { return myLine; }
+
 	//! Sets the strict, default true
 	/*!
 		This parameter decides does the CXmlFileSys biatch if it confronts
