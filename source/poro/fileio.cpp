@@ -61,7 +61,7 @@ namespace platform_impl
 
     struct StreamInternal
     {
-        StreamInternal( std::string filename, bool read, StreamStatus::Enum* out_status, StreamWriteMode::Enum write_mode )
+        StreamInternal( std::string filename, bool read, StreamStatus::Enum* out_status, u32 write_mode )
         {
             *out_status = StreamStatus::AccessFailed;
 
@@ -75,10 +75,17 @@ namespace platform_impl
 				mWriteBuffer = (char*)malloc( WRITE_BUFFER_SIZE_BYTES );
 				mWriteBufferPos = 0;
 
-				if (write_mode == StreamWriteMode::Append )
-					mFile.open( filename.c_str(), std::ios::app | std::ios::binary );
+				if( write_mode & StreamWriteMode::Ascii )
+				{
+					mFile.open( filename.c_str(), 
+						( (write_mode & StreamWriteMode::Append ) ? std::ios::app :  std::ios::out ) );
+				}
 				else
-					mFile.open( filename.c_str(), std::ios::out | std::ios::binary );
+				{
+					mFile.open( filename.c_str(), 
+						( (write_mode & StreamWriteMode::Append ) ? std::ios::app :  std::ios::out ) 
+						| std::ios::binary );
+				}
 			}
 
             if ( mFile.is_open() == 0 )
@@ -661,7 +668,7 @@ std::vector<std::string> FileSystem::ReadTextLines( const std::string& path )
 
 // ===
 
-WriteStream FileSystem::OpenWrite( const std::string& path, StreamWriteMode::Enum write_mode, FileLocation::Enum location )
+WriteStream FileSystem::OpenWrite( const std::string& path, u32 write_mode, FileLocation::Enum location )
 {
     return mDefaultDevice->OpenWrite( location, path, write_mode );
 }
@@ -816,7 +823,7 @@ ReadStream DiskFileDevice::OpenRead( const std::string& path_relative_to_device_
     return result;
 }
 
-WriteStream DiskFileDevice::OpenWrite( FileLocation::Enum location, const std::string& path_relative_to_location, StreamWriteMode::Enum write_mode )
+WriteStream DiskFileDevice::OpenWrite( FileLocation::Enum location, const std::string& path_relative_to_location, u32 write_mode )
 {
     const std::string full_path = platform_impl::GetFullPath( location, path_relative_to_location );
 	StreamStatus::Enum status;

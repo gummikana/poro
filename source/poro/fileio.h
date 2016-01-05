@@ -41,9 +41,13 @@ namespace poro {
 		enum Enum 
 		{ 
 			// Clear and rewrite the file.
-			Recreate,
+			Recreate = 1,
 			// Write to the end of the existing file contents.
-			Append,
+			Append = 2,
+
+			// these allow to define binary or ascii, if none is defined binary is used
+			Binary = 4,
+			Ascii = 8
 		};
 	}
 
@@ -79,7 +83,7 @@ namespace poro {
         friend class WriteStream;
 	public:
         virtual ReadStream  OpenRead( const std::string& path ) = 0;
-        virtual WriteStream OpenWrite( FileLocation::Enum location, const std::string& read_path_relative_to_location, StreamWriteMode::Enum write_mode = StreamWriteMode::Enum::Recreate ) = 0;
+        virtual WriteStream OpenWrite( FileLocation::Enum location, const std::string& read_path_relative_to_location, poro::types::Uint32 write_mode = StreamWriteMode::Enum::Recreate ) = 0;
         virtual std::string GetReadRootPath() = 0;
 		virtual std::string GetFullPath( const std::string& path_relative_to_device_root ) = 0;
 	protected:
@@ -195,7 +199,7 @@ namespace poro {
 
 		// === writing API ===
 		// Open a file at 'relative_path' for reading.
-		WriteStream OpenWrite( const std::string& relative_path, StreamWriteMode::Enum write_mode = StreamWriteMode::Recreate, FileLocation::Enum location = FileLocation::UserDocumentsDirectory );
+		WriteStream OpenWrite( const std::string& relative_path, poro::types::Uint32 write_mode = StreamWriteMode::Recreate, FileLocation::Enum location = FileLocation::UserDocumentsDirectory );
 
 		// === immediate mode writing api ===
 		// Write 'length_bytes' bytes from data to the file at 'relative_path'.
@@ -253,7 +257,7 @@ namespace poro {
 		DiskFileDevice( FileLocation::Enum read_location, const std::string& read_root_path_relative_to_location = "" );
 
         virtual ReadStream    OpenRead( const std::string& path_relative_to_device_root ) override;
-        virtual WriteStream   OpenWrite( FileLocation::Enum location, const std::string& path_relative_to_location, StreamWriteMode::Enum write_mode = StreamWriteMode::Enum::Recreate ) override;
+        virtual WriteStream   OpenWrite( FileLocation::Enum location, const std::string& path_relative_to_location, poro::types::Uint32 write_mode = StreamWriteMode::Enum::Recreate ) override;
         virtual std::string   GetReadRootPath() override;
 		virtual std::string   GetFullPath( const std::string& path_relative_to_device_root ) override;
     protected:
