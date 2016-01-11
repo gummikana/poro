@@ -68,7 +68,7 @@ public:
 	class CArray2DHelper
 	{
 	public:
-		CArray2DHelper( CArray2D& array ) : myArray( array ) { }
+		CArray2DHelper( CArray2D& array ) : myArray( array ), myX( 0 ) { }
 		~CArray2DHelper() { }
 
 		reference operator [] ( int _y ) { return myArray.Rand( myX, _y ); }
