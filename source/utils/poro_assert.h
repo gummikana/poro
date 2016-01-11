@@ -10,7 +10,7 @@
 			{ \
 				if (!(cond)) \
 				{ \
-					printf("Assert failed: (" #cond ") in " __FILE__ " at line "  __LINE__ "\n");
+					printf("Assert failed: (" #cond ") in " __FILE__ " at line "  __LINE__ "\n"); \
 				} \
 			} while(0)
 #	else
