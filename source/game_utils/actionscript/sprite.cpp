@@ -48,6 +48,7 @@ namespace
 	{
 		TextureBuffer() :
 			texture(NULL),
+			image_data(NULL),
 			time_stamp("")
 		{ }
 

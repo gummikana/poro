@@ -797,7 +797,7 @@ void DrawHersheyText( poro::IGraphics* graphics, const std::string& text, const 
 			const char gx = glyph[j*2+0];
 			char gy = glyph[j*2+1];
 
-			if (gy == -1 && gy == -1)
+			if (gx == -1 && gy == -1)
 			{
 				count = 0;
 				continue;

@@ -382,6 +382,7 @@ PlatformDesktop::PlatformDesktop() :
 	mTouch( NULL ),
 	mJoysticks(),
 	mSoundPlayer( NULL ),
+	mFileSystem( NULL ),
 	mRunning( 0 ),
 	mMousePos(),
 	mSleepingMode( PORO_MAXIMIZE_SLEEP ),

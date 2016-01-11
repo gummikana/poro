@@ -96,7 +96,11 @@ namespace platform_impl
             mPosition = 0;
         }
 
-		StreamInternal() : mWriteBuffer( NULL )
+		StreamInternal() : 
+			mWriteBuffer( NULL ),
+			mWriteBufferPos( 0 ),
+			mSize( 0 ),
+			mPosition( 0 )
 		{
 		}
 

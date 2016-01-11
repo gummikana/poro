@@ -199,7 +199,7 @@ void EventRecorderImpl::Flush()
 {
 	if( mFlushEveryFrame )
 	{
-		StreamWriteMode::Enum write_mode = StreamWriteMode::Append;
+		unsigned int write_mode = StreamWriteMode::Append | StreamWriteMode::Ascii;
 		WriteStream file = Poro()->GetFileSystem()->OpenWrite( mFilename, write_mode, FileLocation::WorkingDirectory );
 
 		std::stringstream ss;

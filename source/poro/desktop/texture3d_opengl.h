@@ -34,7 +34,8 @@ public:
 	Texture3dOpenGL() : 
 		mTexture( 0 ), 
 		mWidth( 0 ), 
-		mHeight( 0 )
+		mHeight( 0 ),
+		mDepth( 0 )
 	{
 	}
 

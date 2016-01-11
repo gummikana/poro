@@ -60,7 +60,7 @@ public:
 	template< typename T >
 	GTween( T& variable, const T& target, float duration = 1.f, ceng::easing::IEasingFunc& math_func = ceng::easing::Linear::easeNone, bool autokill = true ) 
 	{
-		GTween( duration, autokill );
+		this->GTween::GTween( duration, autokill );
 
 		SetFunction( math_func );
 		AddVariable( variable, target, "variable" );

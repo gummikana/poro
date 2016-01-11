@@ -123,7 +123,7 @@ namespace
 {
 	struct FontSerializeHelper
 	{
-		FontSerializeHelper() { }
+		FontSerializeHelper() : recto(), id(0) { }
 		FontSerializeHelper( CFont::CharType id, const types::rect& recto ) : id( id ), recto( recto ) { }
 
 		void Serialize( ceng::CXmlFileSys* filesys )
@@ -145,7 +145,7 @@ namespace
 
 	struct FontQuadHelper
 	{
-		FontQuadHelper() : char_quad( NULL ) { }
+		FontQuadHelper() : char_quad( NULL ), id(0) { }
 		FontQuadHelper(  CFont::CharType id, CFont::CharQuad* char_quad ) : id( id ), char_quad( char_quad ) { }
 
 		void Serialize( ceng::CXmlFileSys* filesys ) 
