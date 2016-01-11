@@ -207,8 +207,8 @@ public:
 
 		cassert( other );
 		cassert( this->myEvent.get() != other->myEvent.get() );
-
 		cassert( this->myEvent.get() );
+
 		return ( myEvent->CheckEvent( other->myEvent.get() ) );
 	}
 	

@@ -15,8 +15,10 @@
 			} while(0)
 #	else
 		// prints the assert and crashes
-// #		define cassert(cond) if( !(cond)) { printf("Assert failed: (%s) in %s at line %d\n", (#cond), __FILE__, __LINE__); int* _break_me_ = 0; (*_break_me_) = 7337; }
-#define cassert(cond) ((void)0)
+#		define cassert(cond) if( !(cond)) { printf("Assert failed: (%s) in %s at line %d\n", (#cond), __FILE__, __LINE__); int* _break_me_ = 0; (*_break_me_) = 7337; }
+//  #define cassert(cond) ((void)0)
+
 #	endif
+
 
 #endif
