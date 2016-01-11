@@ -448,7 +448,8 @@ namespace {
 		int bpp = 4;
 		int char_size = width * height * bpp;
 		unsigned char* data = new unsigned char[ char_size ];
-		if( data == NULL ) return NULL;
+		if( data == NULL ) 
+			return NULL;
 
 		for( int i = 0; i < char_size; ++i )
 		{

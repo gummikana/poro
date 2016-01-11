@@ -205,6 +205,7 @@ public:
 		if( this == other )
 			return true;
 
+		cassert( other );
 		cassert( this->myEvent.get() != other->myEvent.get() );
 
 		cassert( this->myEvent.get() );

@@ -207,6 +207,19 @@ public:
             return *this;
     }
 
+	CAnyContainer& operator=( const CAnyContainer& other )
+	{
+        if ( IsBanned( this ) == false )
+        {
+                delete myContainer;
+                delete myReference;
+        } else RemoveBan( this );
+		other.BanMe();
+
+		myContainer = other.myContainer;
+		myReference = other.myReference;
+	}
+
 	template< class _Ty >
 	bool operator == ( const _Ty& reference )
 	{

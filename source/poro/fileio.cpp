@@ -494,6 +494,7 @@ StreamStatus::Enum ReadStream::ReadWholeFile( char*& out_buffer, u32* out_bytes_
 	{
 		if( add_null_terminate )
 		{
+			poro_assert( out_buffer );
 			++(*out_bytes_read);
 			out_buffer[ mStreamImpl->mSize ] = '\0';
 		}

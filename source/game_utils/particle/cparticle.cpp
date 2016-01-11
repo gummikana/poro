@@ -59,9 +59,6 @@ bool CParticle::Update( float dt )
 	if( myTimeNow >= myLifeTime )
 		myDead = true;
 		
-	if( mySprite == NULL )
-		return false;
-		
 	std::vector< float > color = mySprite->GetColor();
 	for( int i = 0; i < 4; ++i )
 		color[ i ] = ceng::math::Clamp( color[ i ] + myColorChanges[ i ] * dt, 0.f, 1.f );
