@@ -687,7 +687,7 @@ StreamStatus::Enum FileSystem::WriteWholeFile( const std::string& path, char* da
 
 StreamStatus::Enum FileSystem::WriteWholeTextFile( const std::string& path, const std::string& text, StreamWriteMode::Enum write_mode, FileLocation::Enum location )
 {
-	WriteStream stream = OpenWrite( path, write_mode, location );
+	WriteStream stream = OpenWrite( path, write_mode | StreamWriteMode::Ascii , location );
 	return stream.Write( text );
 }
 
