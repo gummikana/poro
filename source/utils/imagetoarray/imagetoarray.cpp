@@ -75,7 +75,7 @@ TempTexture* GetTexture( const std::string& filename )
 {
 	TempTexture* result = new TempTexture;
 	result->data = Poro()->GetGraphics()->ImageLoad( filename.c_str(), &result->width, &result->height, &result->bpp, 4 );
-	if( result->data == NULL ) std::cout << "LoadLevel - Couldn't load file: " << filename << std::endl;
+	if( result->data == NULL ) std::cout << "GetTexture - Couldn't load file: " << filename << std::endl;
 	result->filename = filename;
 	return result;
 }
