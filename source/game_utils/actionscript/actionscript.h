@@ -66,6 +66,7 @@ ceng::CArray2D< Uint32 >*	GetImageData( const std::string& filename, bool load_a
 as::Sprite*					LoadSprite( const std::string& filename );
 void						LoadSpriteTo( const std::string& filename, as::Sprite* sprite );
 as::TextSprite*				LoadTextSprite( const std::string& font_file );
+void						LoadTextSpriteTo( const std::string& font_file, as::TextSprite* sprite );
 bool						PreloadSprite( const std::string& filename );
 
 } // end of namespace as

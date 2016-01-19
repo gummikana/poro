@@ -37,10 +37,9 @@ namespace as {
 // ---- just a simple font cache ----------------------------------------
 std::map< std::string, CFont* > m_font_cache;
 
-
-as::TextSprite* LoadTextSprite( const std::string& font_file )
+void LoadTextSpriteTo( const std::string& font_file, as::TextSprite* mTextSprite )
 {
-	as::TextSprite* mTextSprite = new as::TextSprite;
+	if( mTextSprite == NULL ) return;
 
 	CFont* font = m_font_cache[ font_file ];
 	if( font == NULL ) {
@@ -51,7 +50,12 @@ as::TextSprite* LoadTextSprite( const std::string& font_file )
 
 	mTextSprite->SetFont( font );
 	mTextSprite->SetColor( 0, 0, 0 );
+}
 
+as::TextSprite* LoadTextSprite( const std::string& font_file )
+{
+	as::TextSprite* mTextSprite = new as::TextSprite;
+	LoadTextSpriteTo( font_file, mTextSprite );
 	return mTextSprite;
 }
 
