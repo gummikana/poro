@@ -476,7 +476,7 @@ void PlatformDesktop::StartMainLoop()
 	mRunning = true;
 
 	// install a handler for segfaults so we can flush the playback before crashing down
-	signal( SIGSEGV, SegFaultHandler );
+	// signal( SIGSEGV, SegFaultHandler );
 
 	// just render the screen black before initializing the application
 	if( mGraphics && true ) {

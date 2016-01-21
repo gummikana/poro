@@ -41,7 +41,7 @@ namespace ceng {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-std::vector <std::string> Split( const std::string& _separator, std::string _string )
+std::vector <std::string> Split( const std::string& _separator, std::string _string, bool include_empty )
 {
 
     std::vector <std::string> array;
@@ -60,6 +60,8 @@ std::vector <std::string> Split( const std::string& _separator, std::string _str
         // to the array
         if ( position != 0 )
             array.push_back( _string.substr( 0, position ) );
+		else if( include_empty )
+			array.push_back( "" );
 
         // When the cutted part is pushed into the array we
         // remove it and the separator from the _string
@@ -70,7 +72,7 @@ std::vector <std::string> Split( const std::string& _separator, std::string _str
     }
 
     // We will push the rest of the stuff in to the array
-    if ( _string.empty() == false )
+    if ( include_empty || _string.empty() == false )
         array.push_back( _string );
 
     // Then we'll just return the array

@@ -97,7 +97,7 @@ namespace ceng {
 	substring of string formed by splitting it on
 	boundaries formed by the string separator.
 */
-std::vector <std::string> Split( const std::string& _separator, std::string _string );
+std::vector <std::string> Split( const std::string& _separator, std::string _string, bool include_empty = false );
 
 //! If limit is set, the returned array will contain a maximum of limit
 //! elements with the last element containing the rest of string.
