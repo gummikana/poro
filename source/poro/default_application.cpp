@@ -1,6 +1,8 @@
 #include "default_application.h"
 #include "iplatform.h"
 #include "poro_macros.h"
+#include "mouse.h"
+#include "keyboard.h"
 
 namespace poro {
 

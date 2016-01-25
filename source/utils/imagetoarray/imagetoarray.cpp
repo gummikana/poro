@@ -2,6 +2,7 @@
 
 #include <utils/color/ccolor.h>
 #include <poro/iplatform.h>
+#include <poro/igraphics.h>
 
 
 //-----------------------------------------------------------------------------
