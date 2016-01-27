@@ -168,6 +168,12 @@ float RandomfSafe(float low, float high)
 }
 
 
+float ChooseRandom( float a, float b )
+{
+	return ( Random( 0, 1 ) == 0 ) ? a : b;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 int CreateWeightedRandom( int low, int high, const std::vector< int >& data, float constant )

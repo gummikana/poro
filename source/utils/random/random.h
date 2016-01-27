@@ -59,6 +59,9 @@ float Randomf( float low, float high );
 // Does a check,  that low is low, and high is high
 float RandomfSafe(float low, float high);
 
+// returns either a or b with a 50% chance for each
+float ChooseRandom( float a, float b );
+
 //-----------------------------------------------------------------------------
 // Here's some stats that produced by a quick testing of the speed of the 
 // Random algorithms. The tests were run on MSVC2008 
