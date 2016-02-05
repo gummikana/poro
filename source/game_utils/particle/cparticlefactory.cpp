@@ -32,7 +32,9 @@ CParticleFactory::~CParticleFactory()
 
 CParticle*	CParticleFactory::NewParticle( CSprite* sprite )
 {
-	return new CParticle( sprite );
+	CParticle* result = new CParticle( sprite );
+	myParticles.push_back( result );
+	return result;
 }
 
 CParticle* CParticleFactory::NewParticle( CSprite* sprite, float life_time, const types::vector2& velocity, float rotation )
@@ -42,7 +44,6 @@ CParticle* CParticleFactory::NewParticle( CSprite* sprite, float life_time, cons
 	result->myVelocity = velocity;
 	result->myRotationVelocity = rotation;
 	
-	myParticles.push_back( result );
 	return result;
 }
 
