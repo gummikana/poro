@@ -9,10 +9,10 @@
 
 namespace poro {
 
-int EventRecorder::GetRandomSeed() 
+unsigned int EventRecorder::GetRandomSeed() 
 { 
 	if( mRandomSeed == 0 ) 
-		mRandomSeed = (int)time( NULL );
+		mRandomSeed = (unsigned int)time( NULL );
 
 	return mRandomSeed; 
 }

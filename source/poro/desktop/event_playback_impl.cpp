@@ -131,7 +131,7 @@ EventPlaybackImpl::EventPlaybackImpl( Keyboard* keyboard, Mouse* mouse, Touch* t
 }
 //=============================================================================	
 
-int EventPlaybackImpl::GetRandomSeed()
+unsigned int EventPlaybackImpl::GetRandomSeed()
 {
 	return mRandomSeed;
 }
@@ -197,7 +197,7 @@ void EventPlaybackImpl::LoadPlaybacksFromFile( const std::string& filename )
 
 	poro_assert( mPlaybacks.empty() );
 
-	int random_seed = 0;
+	unsigned int random_seed = 0;
 	int line_num = 0;
 	if( filename.empty() == false )
 	{

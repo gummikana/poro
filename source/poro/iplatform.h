@@ -134,13 +134,13 @@ public:
 
 	// RANDOM SEED
 	// 	basically returns (int)time(NULL)
-	// 	reason to use this is that it's saved into the playback file
-	// 	and if you call this after loading the playback file, you'll 
-	// 	get the same one for your application. Pretty useful when making
-	// 	a deterministic playback functionality
-	// 	if you want to use a seed that is saved in the playback file
+	// + a simple PRNG randomizer to the value,  
+	// so calling this multipletimes in a row will give you different results
 	virtual int GetRandomSeed();
 
+	// 	basically returns (unsigned int)time(NULL)
+	// this will return the same value everytime you call it
+	virtual unsigned int GetTimeNull() const = 0;
 
 private:
 

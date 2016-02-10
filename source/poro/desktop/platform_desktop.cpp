@@ -387,7 +387,8 @@ PlatformDesktop::PlatformDesktop() :
 	mMousePos(),
 	mSleepingMode( PORO_MAXIMIZE_SLEEP ),
 	mPrintFramerate( false ),
-	mRandomSeed( 1234567 )
+	mRandomSeed( 1234567 ),
+	mRandomI( 1234567 )
 {
 	StartCounter();
 	TestSDL_Keycodes();
@@ -405,7 +406,8 @@ void PlatformDesktop::Init( IApplication* application, const GraphicsSettings& s
 	bool fullscreen = settings.fullscreen;
 
 	IPlatform::Init( application, settings);
-	mRandomSeed = (int)time(NULL);
+	mRandomSeed = (unsigned int)time(NULL);
+	mRandomI = (int)mRandomSeed;
 	mRunning = true;
 	mFrameCount = 1;
 	mFrameRate = -1;
@@ -782,6 +784,7 @@ void PlatformDesktop::SetEventRecording( bool record_events, bool flush_every_fr
 			mEventRecorder = new EventRecorderImpl( mKeyboard, mMouse, mTouch, flush_every_frame );
 			gEventRecorder = mEventRecorder;
 			mRandomSeed = mEventRecorder->GetRandomSeed();
+			mRandomI = (int)mRandomSeed;
 		}
 	}
 	else
@@ -809,6 +812,7 @@ void PlatformDesktop::DoEventPlayback( const std::string& filename )
 	temp->LoadFromFile( filename );
 	mEventRecorder = temp;
 	mRandomSeed = mEventRecorder->GetRandomSeed();
+	mRandomI = (int)mRandomSeed;
 }
 
 bool PlatformDesktop::IsBreakpointFrame()
@@ -822,13 +826,18 @@ bool PlatformDesktop::IsBreakpointFrame()
 
 int PlatformDesktop::GetRandomSeed()
 {
-	int result = mRandomSeed;
+	int result = mRandomI;
 	// use a simple randomizer to randomize the random seed 
 	// random func from https://code.google.com/p/nvidia-mesh-tools/source/browse/trunk/src/nvmath/Random.h
-	unsigned int t = ((unsigned int)(mRandomSeed)) * 1103515245 + 12345;
-	mRandomSeed = (int)t;
+	unsigned int t = ((unsigned int)(mRandomI)) * 1103515245 + 12345;
+	mRandomI = (int)t;
 	
 	return result;
+}
+
+unsigned int PlatformDesktop::GetTimeNull() const
+{
+	return mRandomSeed;
 }
 
 //-----------------------------------------------------------------------------

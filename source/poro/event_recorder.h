@@ -42,7 +42,7 @@ public:
 	
 	//-------------------------------------------------------------------------
 
-	virtual int GetRandomSeed();
+	virtual unsigned int GetRandomSeed();
 
 	//-------------------------------------------------------------------------
 
@@ -90,7 +90,7 @@ protected:
 	Touch* mTouch;
 	Joystick* mJoystick;
 
-	int mRandomSeed;
+	unsigned int mRandomSeed;
 };
 
 

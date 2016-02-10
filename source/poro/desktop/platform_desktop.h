@@ -98,6 +98,7 @@ public:
 
 	// random seed
 	virtual int GetRandomSeed();
+	unsigned int GetTimeNull() const;
 
 	// looping and handling events
 	void SingleLoop();
@@ -132,7 +133,8 @@ protected:
 	int								mSleepingMode;
 	bool							mPrintFramerate;
 	poro::types::string				mWorkingDir;
-	int								mRandomSeed;
+	int								mRandomI;
+	unsigned int					mRandomSeed;
 
 private:
 };

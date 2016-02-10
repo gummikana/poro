@@ -57,11 +57,11 @@ EventRecorderImpl::EventRecorderImpl( Keyboard* keyboard, Mouse* mouse, Touch* t
 
 //=============================================================================	
 
-int EventRecorderImpl::GetRandomSeed() 
+unsigned int EventRecorderImpl::GetRandomSeed() 
 {
 	if( mRandomSeed == 0 ) 
 	{
-		mRandomSeed = (int)( time(NULL) * time(NULL) );
+		mRandomSeed = (unsigned int)( time(NULL) );
 
 		std::stringstream ss;
 		ss << "randomseed " << mRandomSeed;
