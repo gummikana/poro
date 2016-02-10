@@ -89,6 +89,7 @@ void CLGMRandom::SetSeed( double s )
 {
 	seed = s;
 	iseed = 0;
+	Next();
 }
 
 double CLGMRandom::Next()
