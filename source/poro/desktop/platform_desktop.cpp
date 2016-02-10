@@ -407,6 +407,15 @@ void PlatformDesktop::Init( IApplication* application, const GraphicsSettings& s
 
 	IPlatform::Init( application, settings);
 	mRandomSeed = (unsigned int)time(NULL);
+
+	{
+		unsigned int time_null = (unsigned int)time( NULL );
+		double up_time = 0.1234;
+		up_time = GetUpTime();
+		time_null = time_null + (unsigned int)( up_time * (double)time_null );
+		mRandomSeed = time_null;
+		std::cout << "Poro random seed: " << mRandomSeed << std::endl;
+	}
 	mRandomI = (int)mRandomSeed;
 	mRunning = true;
 	mFrameCount = 1;

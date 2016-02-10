@@ -90,7 +90,8 @@ int RunPoro( const AppConfig& conf = AppConfig()  )
         poro->Init( app.get(), conf.graphics_settings );
 
         // recording things
-        poro->SetEventRecording( conf.record_events, conf.event_recorder_flush_every_frame );
+		if( conf.do_a_playback == false )
+			poro->SetEventRecording( conf.record_events, conf.event_recorder_flush_every_frame );
 	
         if( conf.do_a_playback ) 
             poro->DoEventPlayback( conf.playback_file );

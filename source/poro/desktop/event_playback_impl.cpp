@@ -245,7 +245,7 @@ void EventPlaybackImpl::LoadPlaybacksFromFile( const std::string& filename )
 							if( CheckIfTheBeginningIsSame( "randomseed", str ) ) 
 							{
 								std::vector< std::string > pieces = Split( " ", str );
-								random_seed = ParseSafely< int >( pieces, 1 );
+								random_seed = ParseSafely< unsigned int >( pieces, 1 );
 								std::cout << "randomseed: " << random_seed << std::endl;
 							}
 						}

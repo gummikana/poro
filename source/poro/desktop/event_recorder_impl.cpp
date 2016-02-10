@@ -61,7 +61,7 @@ unsigned int EventRecorderImpl::GetRandomSeed()
 {
 	if( mRandomSeed == 0 ) 
 	{
-		mRandomSeed = (unsigned int)( time(NULL) );
+		mRandomSeed = EventRecorder::GetRandomSeed();
 
 		std::stringstream ss;
 		ss << "randomseed " << mRandomSeed;

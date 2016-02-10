@@ -6,13 +6,20 @@
 #include "mouse.h"
 #include "touch.h"
 #include "joystick.h"
+#include "iplatform.h"
 
 namespace poro {
 
 unsigned int EventRecorder::GetRandomSeed() 
 { 
 	if( mRandomSeed == 0 ) 
-		mRandomSeed = (unsigned int)time( NULL );
+	{
+		unsigned int time_null = (unsigned int)time( NULL );
+		double up_time = 0.1234;
+		if( Poro() ) up_time = Poro()->GetUpTime();
+		time_null = time_null + (unsigned int)( up_time * (double)time_null );
+		mRandomSeed = time_null;
+	}
 
 	return mRandomSeed; 
 }
