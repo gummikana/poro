@@ -214,4 +214,7 @@ namespace types {
 
 } // end of namespace types
 
+typedef ceng::math::CVector2< float > vec2;
+typedef ceng::math::CVector2< int > ivec2;
+
 #endif
