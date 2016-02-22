@@ -55,7 +55,7 @@ void StartCounter()
 {
     LARGE_INTEGER li;
     if(!QueryPerformanceFrequency(&li))
-		std::cout << "QueryPerformanceFrequency failed" << std::endl;
+		std::cout << "QueryPerformanceFrequency failed" << "\n";
 
     cpu_frequence = double(li.QuadPart);
 
@@ -414,7 +414,7 @@ void PlatformDesktop::Init( IApplication* application, const GraphicsSettings& s
 		up_time = GetUpTime();
 		time_null = time_null + (unsigned int)( up_time * (double)time_null );
 		mRandomSeed = time_null;
-		std::cout << "Poro random seed: " << mRandomSeed << std::endl;
+		std::cout << "Poro random seed: " << mRandomSeed << "\n";
 	}
 	mRandomI = (int)mRandomSeed;
 	mRunning = true;
@@ -539,7 +539,7 @@ void PlatformDesktop::StartMainLoop()
 				ss << std::fixed << std::setprecision( 3 );
 				ss << mAverageFrameExecutionTime*1000.f;
 
-				std::cout << "Fps: " << mFrameRate << " - " << ss.str() << " ms - (CPU): " << ( mProcessorRate / ( types::Double32 )mFrameRate ) * 100.f << "%" << std::endl;
+				std::cout << "Fps: " << mFrameRate << " - " << ss.str() << " ms - (CPU): " << ( mProcessorRate / ( types::Double32 )mFrameRate ) * 100.f << "%" << "\n";
 			}
 			
 			mTimeElapsedTracker = 0;
@@ -696,7 +696,7 @@ void PlatformDesktop::HandleEvents()
 			case SDL_JOYDEVICEADDED:
 			case SDL_CONTROLLERDEVICEADDED:
 				{
-					// std::cout << "PlatformDesktop - SDL2 gamepad added " << event.jdevice.which << std::endl;
+					// std::cout << "PlatformDesktop - SDL2 gamepad added " << event.jdevice.which << "\n";
 
 					// There's 2 ways of handling this,
 					// 1) "nicer way", the problem with this handling is that the joystick's
@@ -726,7 +726,7 @@ void PlatformDesktop::HandleEvents()
 			case SDL_JOYDEVICEREMOVED:
 			case SDL_CONTROLLERDEVICEREMOVED: 
 				{
-					// std::cout << "PlatformDesktop - SDL2 gamepad removed " << event.jdevice.which << std::endl;
+					// std::cout << "PlatformDesktop - SDL2 gamepad removed " << event.jdevice.which << "\n";
 					int instance_id = event.jdevice.which;
 					JoystickImpl* unplugged_device = NULL;
 					for (int i = 0; i < GetJoystickCount(); ++i)

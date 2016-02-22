@@ -263,7 +263,6 @@ void RectBoolean( TRect& first, TRect& second, TRect& third  )
 
 	if ( RectHit( first, second ) == false )
 	{
-		//std::cout << "jees" << std::endl;
 		return;
 	}
 

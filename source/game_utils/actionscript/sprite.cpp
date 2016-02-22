@@ -236,7 +236,7 @@ namespace {
 		if (data->time_stamp != time_stamp)
 		{
 			if( data->time_stamp.empty() == false )
-				std::cout << "reloading sprite: " << filename << "\n";
+				logger << "reloading sprite: " << filename << "\n";
 
 			ceng::XmlLoadFromFile((*data), filename, "Sprite");
 			data->time_stamp = time_stamp;
@@ -306,13 +306,13 @@ namespace {
 			if( i->second->time_stamp != time_stamp ) 
 			{
 				// debug reasons
-				std::cout << "Reloading texture file: " << filename << std::endl;
+				logger << "Reloading texture file: " << filename << "\n";
 
 				// release old texture
 				poro::IGraphics* graphics = poro::IPlatform::Instance()->GetGraphics();
 				graphics->DestroyTexture( i->second->texture );
 
-				std::cout << "Release of texture done: " << filename << std::endl;
+				logger << "Release of texture done: " << filename << "\n";
 
 				// release old image data
 				if ( i->second->image_data != NULL )
@@ -321,7 +321,7 @@ namespace {
 					delete i->second->image_data;
 					i->second->image_data = NULL;
 
-					std::cout << "Release of image data done: " << filename << std::endl;
+					logger << "Release of image data done: " << filename << "\n";
 				}
 			
 				// reload
@@ -329,7 +329,7 @@ namespace {
 
 				if ( image == NULL ) return NULL;
 
-				std::cout << "Loading of new texture done: " << filename << std::endl;
+				logger << "Loading of new texture done: " << filename << "\n";
 
 				i->second->texture = image;
 				i->second->time_stamp = time_stamp;
@@ -409,7 +409,7 @@ void LoadSpriteTo( const std::string& filename, as::Sprite* result )
 	cassert( result );
 	if( ceng::DoesExist( filename ) == false ) 
 	{
-		std::cout << "ERROR - LoadSpriteTo()... file doesn't exist: " << filename << std::endl;
+		logger << "ERROR - LoadSpriteTo()... file doesn't exist: " << filename << "\n";
 	}
 
 	if( filename.size() >= 3 && filename.substr( filename.size() - 3 ) == "xml" )
@@ -1114,7 +1114,7 @@ void Sprite::PlayAnimation( const std::string& animation_name )
 
 	if( mAnimations == NULL )
 	{
-		// logger << "Error trying to play animation before AnimationsSheet has been added: " << animation_name << std::endl;
+		// logger << "Error trying to play animation before AnimationsSheet has been added: " << animation_name << "\n";
 		return;
 	}
 
@@ -1126,7 +1126,7 @@ void Sprite::PlayAnimation( const std::string& animation_name )
 
 	if( a == NULL )
 	{
-		logger << "Error animation not found in animation sheet: " << animation_name << std::endl;
+		logger << "Error animation not found in animation sheet: " << animation_name << "\n";
 		mAnimationUpdater.reset( NULL );
 		return;
 	}

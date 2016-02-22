@@ -44,7 +44,7 @@ void trace( const std::string& what );
 
 inline void trace( const std::string& what )
 {
-	std::cout << what << std::endl;
+	logger << what << "\n";
 }
 
 class Rndm

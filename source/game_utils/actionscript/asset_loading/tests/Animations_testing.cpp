@@ -31,7 +31,7 @@ int AnimationsTest()
 	Animations test;
 	ceng::XmlLoadFromFile( test, "temp/testdata/animations.xml", "Animations" );
 
-	 // std::cout << "Size: " << test.animations.size() << std::endl;
+	 // std::cout << "Size: " << test.animations.size() << "\n";
 	return 0;
 }
 

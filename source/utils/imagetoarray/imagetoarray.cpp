@@ -14,7 +14,7 @@ void LoadImage( const std::string& filename, ceng::CArray2D< poro::types::Uint32
 
 	if( surface == NULL || surface->data == NULL )
 	{
-		std::cout << "LoadImage() - Failed to load image: " << filename << std::endl;
+		std::cout << "LoadImage() - Failed to load image: " << filename << "\n";
 		return;		
 	}
 	
@@ -76,7 +76,7 @@ TempTexture* GetTexture( const std::string& filename )
 {
 	TempTexture* result = new TempTexture;
 	result->data = Poro()->GetGraphics()->ImageLoad( filename.c_str(), &result->width, &result->height, &result->bpp, 4 );
-	if( result->data == NULL ) std::cout << "GetTexture - Couldn't load file: " << filename << std::endl;
+	if( result->data == NULL ) std::cout << "GetTexture - Couldn't load file: " << filename << "\n";
 	result->filename = filename;
 	return result;
 }

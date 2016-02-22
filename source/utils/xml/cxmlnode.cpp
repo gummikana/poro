@@ -61,7 +61,7 @@ bool CXmlNode::myReplaceEscapeChars = true;
 		{
 			node->Clear();
 			myFreeNodes.push_back( node );
-			// ceng::logger << "CxmlNode* size: " << myFreeNodes.size() << std::endl;
+			// ceng::logger << "CxmlNode* size: " << myFreeNodes.size() << "\n";
 		}
 	}
 

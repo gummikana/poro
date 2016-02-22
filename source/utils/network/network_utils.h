@@ -75,7 +75,7 @@ namespace network_utils
 
 			if( SDL_mutexP( mLock ) == -1 )
 			{
-				std::cout << "Thread fail: SDL_mutexP failed" << std::endl;
+				std::cout << "Thread fail: SDL_mutexP failed" << "\n";
 				return false;
 			}
 
@@ -94,7 +94,7 @@ namespace network_utils
 
 			if( SDL_mutexV( mLock ) == -1 )
 			{
-				std::cout << "Thread fail: SDL_mutexV failed" << std::endl;
+				std::cout << "Thread fail: SDL_mutexV failed" << "\n";
 				return false;
 			}
 

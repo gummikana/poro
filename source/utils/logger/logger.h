@@ -43,10 +43,12 @@ extern CLog logger_impl;
 
 #else
 
-#define logger std::cout
-#define logger_error	std::cout
-#define logger_warning	std::cout
-#define logger_debug	std::cout
+#ifndef logger 
+#define logger std::cout 
+#endif
+#define logger_error	logger
+#define logger_warning	logger
+#define logger_debug	logger
 
 #endif
 

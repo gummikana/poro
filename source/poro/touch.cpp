@@ -27,7 +27,7 @@ namespace poro
 {
 	void Touch::AddTouchListener(ITouchListener *listener)
 	{
-		poro_logger << "Added touch listener" << std::endl;
+		poro_logger << "Added touch listener" << "\n";
 		mTouchListeners.push_back(listener);
 	}
 

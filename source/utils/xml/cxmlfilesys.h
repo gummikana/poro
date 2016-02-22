@@ -205,7 +205,7 @@ public:
 	void EndElement( const std::string& name )
 	{
 		if ( myCurrentNode->GetName() != name )
-			if ( myUseStrict ) logger << "Xml warning, trying to end a different node: " << name << " should end: " << myCurrentNode->GetName() << " in file: " << myFilename << " at line " << myLine << std::endl;
+			if ( myUseStrict ) logger << "Xml warning, trying to end a different node: " << name << " should end: " << myCurrentNode->GetName() << " in file: " << myFilename << " at line " << myLine << "\n";
 
 		myCurrentNode = myCurrentNode->GetFather();
 
@@ -216,7 +216,7 @@ public:
 	CXmlNode* FindChildByName( const std::string& name )
 	{
 		if ( myUseStrict && myChildPosition >= myCurrentNode->GetChildCount() )
-			logger << "Xml warning, ain't no childs left in the current node: " << myCurrentNode->GetName() << " in file: " << myFilename << " at line " << myLine << std::endl;
+			logger << "Xml warning, ain't no childs left in the current node: " << myCurrentNode->GetName() << " in file: " << myFilename << " at line " << myLine << "\n";
 
 		if( HasChildNamed( name ) == false )
 			return NULL;
@@ -228,7 +228,7 @@ public:
 			return myCurrentNode->GetChild( myChildPosition-1 );
 		}
 
-		if ( myUseStrict ) logger << "Xml warning a child node wasn't in the place it should be, order fucked up in node: " << myCurrentNode->GetName() << " in file: " << myFilename << " at line " << myLine << std::endl;
+		if ( myUseStrict ) logger << "Xml warning a child node wasn't in the place it should be, order fucked up in node: " << myCurrentNode->GetName() << " in file: " << myFilename << " at line " << myLine << "\n";
 
 		for (	myChildPosition = 0;
 				myChildPosition < myCurrentNode->GetChildCount() &&
@@ -237,7 +237,7 @@ public:
 
 		if ( myChildPosition == myCurrentNode->GetChildCount() )
 		{
-			if ( myUseStrict ) logger << "Xml error a child node: " << name << " wasn't found at all in the node: " << myCurrentNode->GetName() << " in file: " << myFilename << " at line " << myLine << std::endl;
+			if ( myUseStrict ) logger << "Xml error a child node: " << name << " wasn't found at all in the node: " << myCurrentNode->GetName() << " in file: " << myFilename << " at line " << myLine << "\n";
 			return NULL;
 		}
 

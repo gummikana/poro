@@ -179,7 +179,7 @@ void EventRecorderImpl::EndOfFrame( float time ) {
 			if( i < (int)mEventBuffer.size() - 1 ) 
 				ss << ", ";
 		}
-		ss << std::endl;
+		ss << "\n";
 
 		mFile.Write( ss.str() );
 
@@ -217,7 +217,7 @@ void EventRecorderImpl::Flush()
 			if( i < (int)mEventBuffer.size() - 1 ) 
 				ss << ", ";
 		}
-		ss << std::endl;
+		ss << "\n";
 
 		file.Write( ss.str() );
 

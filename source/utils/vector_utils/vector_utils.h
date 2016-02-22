@@ -282,7 +282,7 @@ void VectorSaveToTxtFile( std::vector< T >& array, const std::string& filename )
 	std::ofstream file( filename.c_str(), std::ios::out );
 	for( std::size_t i = 0; i < array.size(); ++i ) 
 	{
-		file << array[i] << std::endl;
+		file << array[i] << "\n";
 	}
 	file.close();
 }

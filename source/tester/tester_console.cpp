@@ -27,8 +27,8 @@ int RunTests()
 	using namespace poro;
 	using namespace poro::tester;
 
-	test_logger << "Ceng tester..." << std::endl;
-	test_logger << "------------------------------------------------------------------ " << std::endl;
+	test_logger << "Ceng tester..." << "\n";
+	test_logger << "------------------------------------------------------------------ " << "\n";
 	bool passed = true;
 	unsigned int i;
 
@@ -40,13 +40,13 @@ int RunTests()
 		{
 			// Error 
 
-			test_logger << CTester::GetSingleton().GetName( i ) << " FAILED!" << std::endl;
+			test_logger << CTester::GetSingleton().GetName( i ) << " FAILED!" << "\n";
 			
-			test_logger << " in the file " << CTester::GetSingleton().GetFile( i ) << ".\n" << std::endl;
+			test_logger << " in the file " << CTester::GetSingleton().GetFile( i ) << ".\n" << "\n";
 			
-			test_logger << " on the following test assert: " << CTester::GetSingletonPtr()->GetAssertation() << std::endl;
+			test_logger << " on the following test assert: " << CTester::GetSingletonPtr()->GetAssertation() << "\n";
 
-			test_logger << CTester::GetSingletonPtr()->GetError() << std::endl;
+			test_logger << CTester::GetSingletonPtr()->GetError() << "\n";
 
 			passed = false;
 		}
@@ -54,15 +54,15 @@ int RunTests()
 		{
 
 			// Success
-			test_logger << CTester::GetSingleton().GetName( i ) + " [OK]" << std::endl;
+			test_logger << CTester::GetSingleton().GetName( i ) + " [OK]" << "\n";
 		}
 	}
 	
-	test_logger << "------------------------------------------------------------------ " << std::endl;
+	test_logger << "------------------------------------------------------------------ " << "\n";
 	
 	if( passed ) 
-		test_logger << "All tests OK" << std::endl << std::endl;
-	else test_logger << "Some of the tests failed miserably" << std::endl << std::endl;
+		test_logger << "All tests OK" << "\n" << "\n";
+	else test_logger << "Some of the tests failed miserably" << "\n" << "\n";
 
 
 	return 0;

@@ -42,13 +42,13 @@ Keyboard::Keyboard() :
 void Keyboard::AddKeyboardListener( IKeyboardListener* listener )
 {
 	poro_assert( listener );
-	// poro_logger << "Added keyboard listener" << std::endl;
+	// poro_logger << "Added keyboard listener" << "\n";
 	mListeners.push_back(listener);
 }
 
 void Keyboard::RemoveKeyboardListener( IKeyboardListener* listener )
 {
-	// poro_logger << "Remove keyboard listener" << std::endl;
+	// poro_logger << "Remove keyboard listener" << "\n";
 	std::vector< IKeyboardListener* >::iterator i = 
 		std::find( mListeners.begin(), mListeners.end(), listener );
 

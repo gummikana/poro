@@ -372,7 +372,7 @@ public:
 		}
 		
 
-		std::cout << "XML error in file(" << mFilename << ") at line (" << line_count << ")" << error_message << std::endl;
+		logger << "XML error in file(" << mFilename << ") at line (" << line_count << ")" << error_message << "\n";
 	}
 
 	void ParseTag( Tokenizer* tokenizer, XmlHandlerImpl* handler, Token tag_name )
@@ -488,7 +488,7 @@ public:
 							else if( close_greater.type != TOKEN_CloseGreater )
 							{
 								ReportError( tokenizer, "No closing '>' found for ending element </" + AsString( end_name ) );
-								// std::cout << "Error at - expected >" << std::endl;
+								// std::cout << "Error at - expected >" << "\n";
 							}
 						}
 						else

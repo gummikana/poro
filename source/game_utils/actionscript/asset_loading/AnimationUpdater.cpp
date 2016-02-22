@@ -47,7 +47,7 @@ void AnimationUpdater::SetFrame( int frame_i )
 		as::Sprite* alpha_mask = sprite_container->GetChildByName( animation->mask );
 		if( alpha_mask == NULL ) 
 		{
-			// std::cout << "Error! Couldn't find alpha mask: " << animation->mask << std::endl;
+			// std::cout << "Error! Couldn't find alpha mask: " << animation->mask << "\n";
 		}
 		else 
 		{
@@ -81,7 +81,7 @@ void AnimationUpdater::SetFrame( int frame_i )
 			/*
 			if( frame == NULL && frame_i == parts[ i ]->frames.size() ) 
 			{
-				// std::cout << "Frame's (" << name << ") go too far:" << frame_i << std::endl;
+				// std::cout << "Frame's (" << name << ") go too far:" << frame_i << "\n";
 				// frame = parts[ i ]->GetFrame( frame_i - 1 );
 			}*/
 
@@ -99,7 +99,7 @@ void AnimationUpdater::SetFrame( int frame_i )
 	{
 		// HACK HACK HACK for Jesus vs. Dinosaurs
 		// PlayEffect(""  );
-		// std::cout << "PlayEffect: " << marker->name << std::endl;
+		// std::cout << "PlayEffect: " << marker->name << "\n";
 		if( handle_markers_func.Empty() == false ) {
 			handle_markers_func( marker->name );
 		}

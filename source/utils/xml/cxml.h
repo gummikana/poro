@@ -197,7 +197,7 @@ namespace ceng {
 			{
 				handler.SetPackTight( false );
 				handler.SetWriteAttributesOnLines( true );
-				handler.SetExtraLineBetweenTags( true );
+				handler.SetExtraLineBetweenTags( false );
 			}
 
 			handler.ParseOpen( node, &stream );

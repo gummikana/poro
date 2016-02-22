@@ -40,7 +40,7 @@ Sprite* LoadSpriteFromAtlas( const Texture& t )
 	poro::ITexture* from_memory = GetTexture( atlas_name );
 	if( from_memory == NULL ) 
 	{
-		std::cout << "ERROR! Couldn't load atlas: " << atlas_name << std::endl;
+		std::cout << "ERROR! Couldn't load atlas: " << atlas_name << "\n";
 		return NULL;
 	}
 
@@ -117,7 +117,7 @@ Sprite* TextureSheet::AsSprite( const std::string& path, bool use_atlas )
 		if( child == NULL ||
 			child->Empty() )
 		{
-			std::cout << "TextureSheet::AsSprite() - Couldn't load file: " << filename << std::endl;
+			std::cout << "TextureSheet::AsSprite() - Couldn't load file: " << filename << "\n";
 		}
 		else
 		{
@@ -156,7 +156,7 @@ Sprite* TextureSheet::LoadSpriteFromSheet( const std::string& path, const std::s
 			if( child == NULL ||
 				child->Empty() )
 			{
-				std::cout << "TextureSheet::AsSprite() - Couldn't load file: " << filename << std::endl;
+				std::cout << "TextureSheet::AsSprite() - Couldn't load file: " << filename << "\n";
 			}
 			else
 			{

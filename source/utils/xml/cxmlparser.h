@@ -213,7 +213,7 @@ public:
 			for ( i = attr.begin(); i != attr.end(); ++i )
 			{
 				if( myWriteAttributesOnLines )
-					ss << std::endl << extra_space;
+					ss << "\n" << extra_space;
 
 				ss << i->first << "=\"" << CAnyContainerCast< std::string >( i->second ) << "\" ";
 			}

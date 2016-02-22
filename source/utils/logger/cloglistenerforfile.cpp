@@ -218,18 +218,18 @@ public:
 		std::ofstream		myLog;
 		myLog.open( myFilename.c_str(), std::ios::app );
 
-		myLog << std::endl;
-		myLog << "------------------------" << CENG_CFG_HEADER_STR_2 << "------------------------" << std::endl;
-		myLog << std::endl;
+		myLog << "\n";
+		myLog << "------------------------" << CENG_CFG_HEADER_STR_2 << "------------------------" << "\n";
+		myLog << "\n";
 		for ( i = 0; i < myErrors.size(); i++ )
 		{
 			if ( myErrors[i].find( error_prefix )	!= myErrors[i].npos ) Errors++;
 			if ( myErrors[i].find( warning_prefix ) != myErrors[i].npos ) Warnings++;
-			myLog << myErrors[i] << std::endl;
+			myLog << myErrors[i] << "\n";
 		}
 
-		myLog << std::endl;
-		myLog << CENG_CFG_HEADER_STR_2 << " - " << Errors << " error(s), " << Warnings << " warning(s)" << std::endl;
+		myLog << "\n";
+		myLog << CENG_CFG_HEADER_STR_2 << " - " << Errors << " error(s), " << Warnings << " warning(s)" << "\n";
 
 		myLog.close();
 	}

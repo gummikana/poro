@@ -451,7 +451,7 @@ void GTween::Reverse()
 	}
 	else if( mLooping && mTimer < mDuration )
 	{
-		std::cout << "ERROROR" <<std::endl;
+		std::cout << "ERROROR" <<"\n";
 	}
 }
 

@@ -165,13 +165,13 @@ namespace {
 	{
 		
 #ifdef PORO_DONT_USE_GLEW
-		poro_logger << "Error: Glew isn't enable alpha masking, this means we can't do alpha masking. " << std::endl;
+		poro_logger << "Error: Glew isn't enable alpha masking, this means we can't do alpha masking. " << "\n";
 		return;
 #else
 		// no glew on mac? We'll maybe we need graphics_mac!?
 		if(!GLEW_VERSION_1_3)
 		{
-			poro_logger << "Error: OpenGL 1.3. isn't supported, this means we can't do alpha masking. " << std::endl;
+			poro_logger << "Error: OpenGL 1.3. isn't supported, this means we can't do alpha masking. " << "\n";
 			return;
 		}
 
@@ -429,7 +429,7 @@ namespace {
 			if( false && GetFileExtension( filename ) == "png" )
 			{
 				int result = stbi_write_png( filename.c_str(), x, y, 4, data, x * 4 );
-				if( result == 0 ) std::cout << "problems saving: " << filename << std::endl;
+				if( result == 0 ) std::cout << "problems saving: " << filename << "\n";
 			}
 #endif
 		}
@@ -570,7 +570,7 @@ public:
 		if( vertex_buffer_count > 0 ) {
 			drawsprite( prev_texture, vertex_buffer, prev_color, vertex_buffer_count, GL_TRIANGLES, prev_blend_mode );
 			/*if( vertex_buffer_count != 6 )
-				std::cout << "Buffered draw call: " << vertex_buffer_count << std::endl;*/
+				std::cout << "Buffered draw call: " << vertex_buffer_count << "\n";*/
 		}
 		vertex_buffer_count = 0;
 	}
@@ -644,7 +644,7 @@ bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE) < 0)
 	{
-		poro_logger << PORO_ERROR << "Video initialization failed:  " << SDL_GetError() << std::endl;
+		poro_logger << PORO_ERROR << "Video initialization failed:  " << SDL_GetError() << "\n";
 		SDL_Quit();
 		exit(0);
 	}
@@ -688,7 +688,7 @@ bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::
 		width, height, SDL_WINDOW_OPENGL );
 	if ( mSDLWindow == NULL )
 	{
-		poro_logger << PORO_ERROR << "Window creation failed:  " << SDL_GetError() << std::endl;
+		poro_logger << PORO_ERROR << "Window creation failed:  " << SDL_GetError() << "\n";
 		SDL_Quit();
 		exit(0);
 	}
@@ -696,7 +696,7 @@ bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::
 	SDL_GLContext sdl_gl_context = SDL_GL_CreateContext(mSDLWindow);
 	if ( sdl_gl_context == NULL )
 	{
-		poro_logger << PORO_ERROR << "GL context creation failed:  " << SDL_GetError() << std::endl;
+		poro_logger << PORO_ERROR << "GL context creation failed:  " << SDL_GetError() << "\n";
 		SDL_Quit();
 		exit(0);
 	}
@@ -715,7 +715,7 @@ bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::
 	if (GLEW_OK != glew_err)
 	{
 		/* Problem: glewInit failed, something is seriously wrong. */
-		poro_logger << "Error: " << glewGetErrorString(glew_err) << std::endl;
+		poro_logger << "Error: " << glewGetErrorString(glew_err) << "\n";
 	}
 #endif
 	return 1;
@@ -868,7 +868,7 @@ ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename, bool store
 	ITexture* result = LoadTextureForReal( filename, store_raw_pixel_data );
 	
 	if( result == NULL )
-		poro_logger << "Couldn't load image: " << filename << std::endl;
+		poro_logger << "Couldn't load image: " << filename << "\n";
 		
 	TextureOpenGL* texture = dynamic_cast< TextureOpenGL* >( result );
 	if( texture )
@@ -949,7 +949,7 @@ ITexture3d* GraphicsOpenGL::LoadTexture3d( const types::string& filename )
 
 	if ( data == NULL )
 	{
-		poro_logger << "Error: 3d texture image loading failed. Loaded data is NULL: " << filename << std::endl;
+		poro_logger << "Error: 3d texture image loading failed. Loaded data is NULL: " << filename << "\n";
 		return NULL;
 	}
 
@@ -957,7 +957,7 @@ ITexture3d* GraphicsOpenGL::LoadTexture3d( const types::string& filename )
 	if ( x != y )
 	{
 		free(data);
-		poro_logger << "Error: 3d texture image is not square: " << filename << std::endl;
+		poro_logger << "Error: 3d texture image is not square: " << filename << "\n";
 		return NULL;
 	}
 
@@ -965,7 +965,7 @@ ITexture3d* GraphicsOpenGL::LoadTexture3d( const types::string& filename )
 	if ( z * z * z > x )
 	{
 		free(data);
-		poro_logger << "Error: 3d texture image has invalid size: " << filename << std::endl;
+		poro_logger << "Error: 3d texture image has invalid size: " << filename << "\n";
 		return NULL;
 	}
 	
@@ -981,7 +981,7 @@ ITexture3d* GraphicsOpenGL::LoadTexture3d( const types::string& filename )
 		if( false && GetFileExtension( filename ) == "png" )
 		{
 			int result = stbi_write_png( filename.c_str(), x, y, 4, data, x * 4 );
-			if( result == 0 ) std::cout << "problems saving: " << filename << std::endl;
+			if( result == 0 ) std::cout << "problems saving: " << filename << "\n";
 		}
 #endif
 	}
@@ -1014,7 +1014,7 @@ ITexture3d* GraphicsOpenGL::LoadTexture3d( const types::string& filename )
 		result->SetFilename( filename );
 	}
 	else
-		poro_logger << "Couldn't load 3d texture: " << filename << std::endl;
+		poro_logger << "Couldn't load 3d texture: " << filename << "\n";
 		
 	return result;
 }
@@ -1199,7 +1199,7 @@ void GraphicsOpenGL::BeginRendering()
 void GraphicsOpenGL::EndRendering()
 {
 	FlushDrawTextureBuffer();
-	// std::cout << "DrawCalls:" << drawcalls << std::endl;
+	// std::cout << "DrawCalls:" << drawcalls << "\n";
 	// drawcalls=0;
 	SDL_GL_SwapWindow(mSDLWindow);
 }
@@ -1628,7 +1628,7 @@ void GraphicsOpenGL::SaveScreenshot( const std::string& filename, int pos_x, int
 	}
 
 	if ( ImageSave( filename.c_str(), w, h, bpp, other_pixels, w * bpp ) == 0 )
-		poro_logger << "Error SaveScreenshot() - couldn't write to file: " << filename << std::endl;
+		poro_logger << "Error SaveScreenshot() - couldn't write to file: " << filename << "\n";
 
 	if( other_pixels != pixels ) delete [] other_pixels;
 	// no need to release the static pixels
@@ -1659,7 +1659,7 @@ int	GraphicsOpenGL::ImageSave( char const *filename, int x, int y, int comp, con
 	{
 		StreamStatus::Enum write_status = Poro()->GetFileSystem()->WriteWholeFile( filename, (char*)png_memory, (unsigned int)png_size_bytes, StreamWriteMode::Recreate, FileLocation::WorkingDirectory );
 		if ( write_status != StreamStatus::NoError )
-			poro_logger << "Error ImageSave() - couldn't write to file: " << filename << std::endl;
+			poro_logger << "Error ImageSave() - couldn't write to file: " << filename << "\n";
 	}
 	else
 	{

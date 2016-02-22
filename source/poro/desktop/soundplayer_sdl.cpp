@@ -31,12 +31,12 @@ namespace poro {
 bool SoundPlayerSDL::Init()
 {
 	if( SDL_InitSubSystem( SDL_INIT_AUDIO ) < 0 ) {
-		poro_logger << "SoundPlayerSDL::Init() Trying to Init SDL_AUDIO failed " << SDL_GetError() << std::endl;
+		poro_logger << "SoundPlayerSDL::Init() Trying to Init SDL_AUDIO failed " << SDL_GetError() << "\n";
 		return false;
 	}
 
 	if( Mix_OpenAudio( 44100, AUDIO_S16SYS, 2, 2048 ) < 0 )	{
-		poro_logger << "Danger Danger, we couldn't open Audio port with 44100 Hz 16-bit - " << Mix_GetError() << std::endl;
+		poro_logger << "Danger Danger, we couldn't open Audio port with 44100 Hz 16-bit - " << Mix_GetError() << "\n";
 		return false;
 	}
 
@@ -45,7 +45,7 @@ bool SoundPlayerSDL::Init()
 	{
 		char s[ 256 ];
 		SDL_AudioDriverName( s, 256 );
-		poro_logger << s << std::endl;
+		poro_logger << s << "\n";
 	}*/
 
 	// allocate 16 mixing channels
@@ -65,7 +65,7 @@ ISound* SoundPlayerSDL::LoadSound( const types::string& filename )
 	sound->mFilename = Poro()->GetFileSystem()->GetFullPathFromRelativePath( filename );
 	sound->mMixChunk = Mix_LoadWAV( filename.c_str() );
 	if( sound->mMixChunk == NULL )
-		poro_logger << "Error couldn't load sound file: " << filename << std::endl;
+		poro_logger << "Error couldn't load sound file: " << filename << "\n";
 
 	return sound;
 }

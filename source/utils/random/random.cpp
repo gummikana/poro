@@ -52,7 +52,7 @@ CRandomSeedSetter seed_stter;
 
 void SetRandomSeeds( int random_seed )
 {
-	std::cout << "Setting random seed: " << random_seed << std::endl;
+	std::cout << "Setting random seed: " << random_seed << "\n";
 	srand ( (unsigned int)random_seed );
 	Global_LGMRandom::SetSeed( (double)random_seed );
 	set_fastrand_seed( (int)random_seed );
@@ -234,12 +234,12 @@ int CreateWeightedRandom( int low, int high, const std::vector< int >& data, flo
 
 	/*if( result == 0 )
 	{
-		ceng::logger << "Random problems: " << random_f << std::endl;
+		ceng::logger << "Random problems: " << random_f << "\n";
 		for( i = 0; i < numbers.size(); ++i )
 		{
 			ceng::logger << numbers[ i ] << ", ";
 		}
-		ceng::logger << std::endl;
+		ceng::logger << "\n";
 
 		result = range;
 	}*/

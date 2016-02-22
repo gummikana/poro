@@ -44,7 +44,7 @@ Mouse::Mouse() :
 
 void Mouse::AddMouseListener( IMouseListener* listener )
 {
-	// poro_logger << "Added mouse listener" << std::endl;
+	// poro_logger << "Added mouse listener" << "\n";
 	mMouseListeners.push_back( listener );
 }
 

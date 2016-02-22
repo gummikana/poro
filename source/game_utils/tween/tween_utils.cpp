@@ -42,7 +42,7 @@ void GTweenClearPointerOfTweens( void* pointer )
 		bool value = tween->ClearPointer( pointer );
 		if( value ) 
 		{
-			// std::cout << "Found a bastard" << std::endl;
+			// std::cout << "Found a bastard" << "\n";
 		}
 	}
 }

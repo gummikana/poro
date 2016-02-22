@@ -102,7 +102,7 @@ T ParseSafely( const std::vector< std::string >& pieces, int i )
 {
 	if( i < 0 || i >= (int)pieces.size() ) 
 	{
-		poro_logger << "Error: EventPlaybackImpl::DoAnEventFromString() trying to parse index: " << i << " for an event that doesn't exist in the array" << std::endl;
+		poro_logger << "Error: EventPlaybackImpl::DoAnEventFromString() trying to parse index: " << i << " for an event that doesn't exist in the array" << "\n";
 		return T();
 	}
 
@@ -246,7 +246,7 @@ void EventPlaybackImpl::LoadPlaybacksFromFile( const std::string& filename )
 							{
 								std::vector< std::string > pieces = Split( " ", str );
 								random_seed = ParseSafely< unsigned int >( pieces, 1 );
-								std::cout << "randomseed: " << random_seed << std::endl;
+								std::cout << "randomseed: " << random_seed << "\n";
 							}
 						}
 					}
@@ -256,7 +256,7 @@ void EventPlaybackImpl::LoadPlaybacksFromFile( const std::string& filename )
 	}
 	else
 	{
-		poro_logger << "Error: couldn't read playback file: " << filename << std::endl;
+		poro_logger << "Error: couldn't read playback file: " << filename << "\n";
 	}
 
 	if( random_seed != 0 ) 
@@ -301,7 +301,7 @@ void EventPlaybackImpl::DoAnEventFromString( const std::string& event_string )
 		FireTouchUpEvent(  types::Vec2( ParseSafely< float >( pieces, 1 ), ParseSafely< float >( pieces, 2 ) ), ParseSafely< int >( pieces, 3 )  );
 	}
 	else {
-		poro_logger << "Error: EventPlaybackImpl::DoAnEventFromString() - unknown event type: " << type << std::endl;
+		poro_logger << "Error: EventPlaybackImpl::DoAnEventFromString() - unknown event type: " << type << "\n";
 	}
 
 }

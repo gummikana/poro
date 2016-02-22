@@ -263,7 +263,7 @@ long ReadFileSize( const std::string& filename )
 
 	if ( file.is_open() == 0 )
 	{
-		logger_error << "Error! Could not open " << filename << " for reading" << std::endl;
+		logger_error << "Error! Could not open " << filename << " for reading" << "\n";
 		return 0;
 	}
 
@@ -281,7 +281,7 @@ void ReadFileToBuffer( const std::string& filename, CSafeArray< char, long >& bu
 
 	if ( file.is_open() == 0 )
 	{
-		logger_error << "Error! Could not open " << filename << " for reading" << std::endl;
+		logger_error << "Error! Could not open " << filename << " for reading" << "\n";
 		return;
 	}
 

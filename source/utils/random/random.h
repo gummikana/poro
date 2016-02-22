@@ -220,7 +220,7 @@ public:
 
 	inline float Randomf( float low, float high ) {
 		mSeed = (214013*mSeed+2531011); 
-		return low+((high-low)*((float)((mSeed>>16)&0x7FFF) / (float)RAND_MAX) );
+		return low+((high-low)*((float)((mSeed>>16)&0x7FFF) / (float)0x7FFF) );
 	}
 
 	int mSeed;

@@ -25,6 +25,10 @@
 #include <iostream>
 // #include <assert.h>
 
+// hax hax hax
+#include "../../../Source/misc_utils/wizard_log.h"
+#define logger Log
+
 
 //----------------- TESTING ---------------------------------------------------
 // if for some reason you don't want the tests enabled
@@ -51,6 +55,7 @@
 // logger that logs into a file, or we just use std::cout to output into
 // the terminal window
 
+
 #ifdef PORO_PLAT_WINDOWS
 // #   define PORO_USE_LOGGER
 #endif
@@ -59,7 +64,7 @@
 	#include "logger/logger.h"
 #else
 
-#define logger std::cout
+// #define logger std::cout
 #define assert_logger std::cout
 
 #endif
@@ -72,7 +77,7 @@ void DEBUG_LOG( const T& what )
 {
 	// god damn, couldn't get the logger to work...
 	std::ofstream fileout( "logger.txt", std::ios::out | std::ios::app );
-	fileout << what << std::endl;
+	fileout << what << "\n";
 	fileout.close();
 }
 

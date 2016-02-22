@@ -57,7 +57,7 @@ struct TempTexture
 		int co2 = data[co + 2];
 		int co3 = data[co + 3];
 		
-		std::cout << "CO( " << x << ", " << y << " ): " << co0 << ", " << co1 << ", " << co2 << ", " << co3 << std::endl;*/
+		std::cout << "CO( " << x << ", " << y << " ): " << co0 << ", " << co1 << ", " << co2 << ", " << co3 << "\n";*/
 
 		poro::types::Uint32 result = 
 			data[ co ] << 16 |

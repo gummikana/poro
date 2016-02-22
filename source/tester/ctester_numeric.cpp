@@ -137,7 +137,7 @@ CFloatingPointCheck operator + ( const CFloatingPointCheck& L, const CFloatingPo
 CComparePair operator == ( const CFloatingPointCheck& L, const CFloatingPointCheck& R ) 
 {
 	
-	// std::cout << "Double" << std::endl;
+	// std::cout << "Double" << "\n";
 	return CComparePair( L, R, true ); 
 }
 
@@ -147,7 +147,7 @@ bool AssertFloat( const CComparePair& values, double accuracy, double relative )
 {
 	/*values.left.d_value;
 	values.right.d_value;*/
-	// std::cout << "Hello world" << std::endl;
+	// std::cout << "Hello world" << "\n";
 	CFloatingPointCheck::Type t = CFloatingPointCheck::t_double;
 	
 	if( values.left.type == CFloatingPointCheck::t_float || values.right.type == CFloatingPointCheck::t_float )
