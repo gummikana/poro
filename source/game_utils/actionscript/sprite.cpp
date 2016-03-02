@@ -413,6 +413,7 @@ ceng::CArray2D< Uint32 >* GetImageData( const std::string& filename, bool load_a
 void LoadSpriteTo( const std::string& filename, as::Sprite* result )
 {
 	cassert( result );
+
 	if( ceng::DoesExist( filename ) == false ) 
 	{
 		logger_error << "ERROR - LoadSpriteTo()... file doesn't exist: " << filename << "\n";
@@ -423,21 +424,15 @@ void LoadSpriteTo( const std::string& filename, as::Sprite* result )
 	{
 		// if we're loading an xml file
 		using namespace impl;
+
 		SpriteLoadHelper* sprite_data = GetSpriteLoadHelper(filename);
-
-		// ceng::XmlLoadFromFile( sprite_data, filename, "Sprite" );
-
-		// Sprite* result = new Sprite;
-		impl::ApplySpriteLoadHelperToSprite(result, sprite_data);
-
+		ApplySpriteLoadHelperToSprite(result, sprite_data);
 		result->SetFilename(filename);
 		return;
 	}
 	else
 	{
 		// we're loading just a texture...
-
-		// Sprite* result = new Sprite;
 
 		TextureBuffer* buffer = GetTextureBuffer( filename );
 		if ( buffer == NULL ) return;
