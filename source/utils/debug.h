@@ -65,7 +65,7 @@
 #else
 
 // #define logger std::cout
-#define assert_logger std::cout
+// #define assert_logger std::cout
 
 #endif
 

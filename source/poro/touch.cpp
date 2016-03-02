@@ -19,7 +19,6 @@
  ***************************************************************************/
 
 #include "touch.h"
-#include <iostream>
 #include <algorithm>
 #include "poro_macros.h"
 

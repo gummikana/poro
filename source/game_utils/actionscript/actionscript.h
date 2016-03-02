@@ -22,8 +22,6 @@
 #ifndef INC_ACTIONSCRIPT_H
 #define INC_ACTIONSCRIPT_H
 
-#include <iostream>
-
 #include "actionscript_types.h"
 #include "eventdispatcher.h"
 #include "vector.h"
