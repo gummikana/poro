@@ -65,7 +65,8 @@ void DrawFilledBox( poro::IGraphics* graphics, const types::vector2& min_pos, co
 
 //-----------------------------------------------------------------------------
 
-void DrawHersheyText( poro::IGraphics* graphics, const std::string& text, const types::vector2& start_pos = types::vector2( 0, 0 ), float text_size = 24.f, const poro::types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ), types::camera* camera = NULL );
+// returns the width, if you just want the width pass NULL as graphics
+float DrawHersheyText( poro::IGraphics* graphics, const std::string& text, const types::vector2& start_pos = types::vector2( 0, 0 ), float text_size = 24.f, const poro::types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ), types::camera* camera = NULL );
 
 //-----------------------------------------------------------------------------
 

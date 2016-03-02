@@ -774,8 +774,9 @@ void DrawFilledBox( poro::IGraphics* graphics, const types::vector2& min_pos, co
 }
 //-----------------------------------------------------------------------------
 
-void DrawHersheyText( poro::IGraphics* graphics, const std::string& text, const types::vector2& pos, float text_size, const poro::types::fcolor& color, types::camera* camera )
+float DrawHersheyText( poro::IGraphics* graphics, const std::string& text, const types::vector2& pos, float text_size, const poro::types::fcolor& color, types::camera* camera )
 {
+	float width = 0;
 	float tx = pos.x;
 	float ty = pos.y;
 	const float scale = text_size / 24.0f;
@@ -792,31 +793,37 @@ void DrawHersheyText( poro::IGraphics* graphics, const std::string& text, const 
 		glyph = &g_simplex[(int)c*GLYPH_SIZE];
 		npts = *glyph++;
 		adv = *glyph++;
-		for (j = 0; j < npts; ++j)
+		if( graphics )
 		{
-			const char gx = glyph[j*2+0];
-			char gy = glyph[j*2+1];
-
-			if (gx == -1 && gy == -1)
+			for (j = 0; j < npts; ++j)
 			{
-				count = 0;
-				continue;
-			}
+				const char gx = glyph[j*2+0];
+				char gy = glyph[j*2+1];
 
-			gy = 24 - gy;
+				if (gx == -1 && gy == -1)
+				{
+					count = 0;
+					continue;
+				}
 
-			if (count > 0)
-			{
-				DrawLine( graphics, types::vector2( tx+px*scale, ty+py*scale ), types::vector2( tx+gx*scale, ty+gy*scale ), color, camera );
-			}
+				gy = 24 - gy;
 
-			count++;
+				if (count > 0)
+				{
+					DrawLine( graphics, types::vector2( tx+px*scale, ty+py*scale ), types::vector2( tx+gx*scale, ty+gy*scale ), color, camera );
+				}
+
+				count++;
 			
-			px = gx;
-			py = gy;
+				px = gx;
+				py = gy;
+			}
 		}
+		width += adv*scale;
 		tx += adv*scale;
 	}
+
+	return width;
 }
 
 //-----------------------------------------------------------------------------
