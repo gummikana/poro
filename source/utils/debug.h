@@ -28,6 +28,7 @@
 // hax hax hax
 #include "../../../Source/misc_utils/wizard_log.h"
 #define logger Log
+#define logger_error LogError
 
 
 //----------------- TESTING ---------------------------------------------------

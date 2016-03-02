@@ -173,10 +173,16 @@ static void ApplySpriteLoadHelperToSprite(as::Sprite* result, impl::SpriteLoadHe
 	}
 
 	TextureBuffer* buffer = GetTextureBuffer(sprite_data->filename);
-	if (buffer == NULL) return;
+	if (buffer == NULL) {
+		logger_error << "ERROR - couldn't load file: " << sprite_data->filename << "\n";
+		return;
+	}
 
 	poro::ITexture* image = buffer->texture;
-	if (image == NULL) return;
+	if (image == NULL) {
+		logger_error << "ERROR - couldn't load file: " << sprite_data->filename << "\n";
+		return;
+	}
 
 	result->SetTexture(image);
 	result->SetImageData(buffer->image_data);
@@ -409,7 +415,8 @@ void LoadSpriteTo( const std::string& filename, as::Sprite* result )
 	cassert( result );
 	if( ceng::DoesExist( filename ) == false ) 
 	{
-		logger << "ERROR - LoadSpriteTo()... file doesn't exist: " << filename << "\n";
+		logger_error << "ERROR - LoadSpriteTo()... file doesn't exist: " << filename << "\n";
+		return;
 	}
 
 	if( filename.size() >= 3 && filename.substr( filename.size() - 3 ) == "xml" )
@@ -1126,7 +1133,7 @@ void Sprite::PlayAnimation( const std::string& animation_name )
 
 	if( a == NULL )
 	{
-		logger << "Error animation not found in animation sheet: " << animation_name << "\n";
+		logger_error << "Error animation not found in animation sheet: " << animation_name << "\n";
 		mAnimationUpdater.reset( NULL );
 		return;
 	}
