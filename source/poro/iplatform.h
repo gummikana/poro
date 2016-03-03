@@ -137,6 +137,7 @@ public:
 	// + a simple PRNG randomizer to the value,  
 	// so calling this multipletimes in a row will give you different results
 	virtual int GetRandomSeed();
+	virtual void SetRandomSeed( unsigned int random_seed ) { }
 
 	// 	basically returns (unsigned int)time(NULL)
 	// this will return the same value everytime you call it

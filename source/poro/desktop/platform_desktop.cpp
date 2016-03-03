@@ -849,6 +849,11 @@ unsigned int PlatformDesktop::GetTimeNull() const
 	return mRandomSeed;
 }
 
+void PlatformDesktop::SetRandomSeed( unsigned int random_seed )
+{
+	mRandomSeed = random_seed;
+}
+
 //-----------------------------------------------------------------------------
 
 } // end o namespace poro
