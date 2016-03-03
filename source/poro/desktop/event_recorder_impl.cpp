@@ -205,9 +205,14 @@ void EventRecorderImpl::Flush()
 		std::stringstream ss;
 		if( mFirstThisFrame )
 		{
+			ss << "\n";
 			float time = Poro()->GetTime();
 			ss << mFrameCount << ", " << (int)( ( time - mFrameStartTime ) * 1000.f ) << " ms : ";
 			mFirstThisFrame = false;
+		}
+		else
+		{
+			ss << ", ";
 		}
 		
 		if( mEventBuffer.empty() ) return;
@@ -217,7 +222,6 @@ void EventRecorderImpl::Flush()
 			if( i < (int)mEventBuffer.size() - 1 ) 
 				ss << ", ";
 		}
-		ss << "\n";
 
 		file.Write( ss.str() );
 
