@@ -7,7 +7,7 @@
 #include <vector>
 #include "xml_macros.h"
 
-// #include "../../../../Source/misc_utils/simple_profiler.h"
+// #include "../../../../Source/debug/simple_profiler.h"
 
 namespace ceng { 
 #if 0
