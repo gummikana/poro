@@ -41,6 +41,8 @@ namespace network_utils
 		virtual void IO( uint8		&value ) = 0;
 		virtual void IO( uint32		&value ) = 0;
 		virtual void IO( int32		&value ) = 0;
+		virtual void IO( uint64		&value ) = 0;
+		virtual void IO( int64		&value ) = 0;
 		virtual void IO( float32	&value ) = 0;
 		virtual void IO( bool		&value ) = 0;
 		virtual void IO( types::ustring& str ) = 0;
@@ -123,6 +125,21 @@ namespace network_utils
 			mBuffer += ConvertInt32ToHex( value );
 			mBytesUsed += 4;
 		}
+
+		virtual void IO( uint64& value ) 
+		{
+			if( mHasOverflowed ) return; //stop writing when overflowed
+			mBuffer += ConvertUint64ToHex( value );
+			mBytesUsed += 8;
+		}
+
+		virtual void IO( int64& value )
+		{
+			if( mHasOverflowed ) return; //stop writing when overflowed
+			mBuffer += ConvertInt64ToHex( value );
+			mBytesUsed += 8;
+		}
+
 		
 		void IO( float32& value )
 		{
@@ -211,6 +228,22 @@ namespace network_utils
 			if( mBytesUsed + 4 > mLength ) { mHasOverflowed = true; return; }
 			value = ConvertHexToInt32( mBuffer.substr( mBytesUsed, 4 ) );
 			mBytesUsed += 4;
+		}
+
+		void IO( uint64& value )
+		{
+			if( mHasOverflowed ) return; 
+			if( mBytesUsed + 8 > mLength ) { mHasOverflowed = true; return; }
+			value = ConvertHexToUint64( mBuffer.substr( mBytesUsed, 8 ) );
+			mBytesUsed += 8;
+		}
+
+		virtual void IO( int64&	value )
+		{
+			if( mHasOverflowed ) return; 
+			if( mBytesUsed + 8 > mLength ) { mHasOverflowed = true; return; }
+			value = ConvertHexToInt64( mBuffer.substr( mBytesUsed, 8 ) );
+			mBytesUsed += 8;
 		}
 
 		void IO( float32& value )

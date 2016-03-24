@@ -44,6 +44,12 @@ namespace network_utils
 	types::ustring	ConvertInt32ToHex( int32 value );
 	int32			ConvertHexToInt32( const types::ustring& s );
 
+	types::ustring	ConvertUint64ToHex( uint64 value );
+	uint64			ConvertHexToUint64( const types::ustring& s );
+
+	types::ustring	ConvertInt64ToHex( int64 value );
+	int64			ConvertHexToInt64( const types::ustring& s );
+
 	types::ustring	FloatToHexString( float32 value );
 	float32			HexStringToFloat( const types::ustring& value );
 
