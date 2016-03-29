@@ -44,6 +44,7 @@ namespace network_utils
 		virtual void IO( uint64		&value ) = 0;
 		virtual void IO( int64		&value ) = 0;
 		virtual void IO( float32	&value ) = 0;
+		virtual void IO( double32	&value ) = 0;
 		virtual void IO( bool		&value ) = 0;
 		virtual void IO( types::ustring& str ) = 0;
 	
@@ -146,6 +147,13 @@ namespace network_utils
 			if( mHasOverflowed ) return; //stop writing when overflowed
 			mBuffer += FloatToHexString( value );
 			mBytesUsed += 4;
+		}
+		
+		void IO( double32	&value )
+		{
+			if( mHasOverflowed ) return; //stop writing when overflowed
+			mBuffer += DoubleToHexString( value );
+			mBytesUsed += 8;
 		}
 			
 		void IO( bool& value )
@@ -252,6 +260,14 @@ namespace network_utils
 			if( mBytesUsed + 4 > mLength ) { mHasOverflowed = true; return; }
 			value = HexStringToFloat( mBuffer.substr( mBytesUsed, 4 ) );
 			mBytesUsed += 4;
+		}
+
+		void IO( double32	&value )
+		{
+			if( mHasOverflowed ) return; //stop writing when overflowed
+			if( mBytesUsed + 8 > mLength ) { mHasOverflowed = true; return; }
+			value = HexStringToDouble( mBuffer.substr( mBytesUsed, 8 ) );
+			mBytesUsed += 8;
 		}
 			
 		void IO( bool& value )
