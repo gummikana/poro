@@ -337,7 +337,7 @@ bool LineIntersection( const CVector2< T >& startA, const CVector2< T >& endA,
 }
 
 // ----------------------------------------------------------------------------
-
+/*
 template< class PType >
 float DistanceFromAABB( const CVector2< PType >& point, const CVector2< PType >& aabb_min, const CVector2< PType >& aabb_max )
 {
@@ -345,7 +345,7 @@ float DistanceFromAABB( const CVector2< PType >& point, const CVector2< PType >&
 
 	float lowest = 0;
 	float temp = ceng::math::DistanceFromLineSquared( aabb_min, CVector2< PType >( aabb_max.x, aabb_min.y ), point );
-	if( temp < lowest ) lowest = temp;
+	lowest = temp;
 
 	temp = ceng::math::DistanceFromLineSquared( CVector2< PType >( aabb_max.x, aabb_min.y ), CVector2< PType >( aabb_max.x, aabb_max.y ), point );
 	if( temp < lowest ) lowest = temp;
@@ -357,6 +357,22 @@ float DistanceFromAABB( const CVector2< PType >& point, const CVector2< PType >&
 	if( temp < lowest ) lowest = temp;
 
 	return sqrtf( lowest );
+}*/
+
+template< class PType >
+float DistanceFromAABBSquared( const CVector2< PType >& pos, const CVector2< PType >& aabb_min, const CVector2< PType >& aabb_max )
+{
+	CVector2< PType > mins(
+		ceng::math::Max(aabb_min.x - pos.x, 0.f, pos.x - aabb_max.x),
+		ceng::math::Max(aabb_min.y - pos.y, 0.f, pos.y - aabb_max.y) );
+
+	return mins.LengthSquared();
+}
+
+template< class PType >
+float DistanceFromAABB( const CVector2< PType >& pos, const CVector2< PType >& aabb_min, const CVector2< PType >& aabb_max )
+{
+	return sqrtf( DistanceFromAABBSquared( pos, aabb_min, aabb_max ) );
 }
 
 // ----------------------------------------------------------------------------
