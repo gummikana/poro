@@ -48,6 +48,7 @@ namespace network_utils
 		virtual void IO( bool		&value ) = 0;
 		virtual void IO( types::ustring& str ) = 0;
 	
+#if 0
 		template< typename T >
 		void IO( std::vector< T >& vector )
 		{
@@ -66,6 +67,7 @@ namespace network_utils
 					vector[ i ] = temp_var;
 			}
 		}
+#endif
 
 #ifdef NETWORK_USE_VECTOR2
 		template< typename T >
