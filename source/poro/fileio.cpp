@@ -675,7 +675,7 @@ std::vector<std::string> FileSystem::ReadTextLines( const std::string& path )
 
 WriteStream FileSystem::OpenWrite( const std::string& path, u32 write_mode, FileLocation::Enum location )
 {
-    return mDefaultDevice->OpenWrite( location, path, write_mode );
+	return mDefaultDevice->OpenWrite( location, path, write_mode );
 }
 
 // ===

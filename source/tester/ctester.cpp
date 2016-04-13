@@ -35,7 +35,7 @@ CTester::CTester( int (*deleg)(), const std::string& name, const std::string& fi
 
 	CTester::GetSingletonPtr()->myTests.push_back( test );
 	
-	test_logger << "Registered test: " << name << "\n";
+	// test_logger << "Registered test: " << name << "\n";
 }
 
 ///////////////////////////////////////////////////////////////////////////////

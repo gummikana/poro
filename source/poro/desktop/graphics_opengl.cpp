@@ -1653,7 +1653,7 @@ unsigned char*	GraphicsOpenGL::ImageLoad( char const *filename, int *x, int *y, 
 
 int	GraphicsOpenGL::ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes )
 {
-	int   png_size_bytes;
+	int png_size_bytes;
 	unsigned char* png_memory = stbi_write_png_to_mem( (unsigned char*)data, stride_bytes, x, y, comp, &png_size_bytes );
 	if ( png_memory != 0 && png_size_bytes  > 0 )
 	{
