@@ -51,26 +51,26 @@ namespace poro {
 namespace platform_impl
 {
 	void Init();
-    void GetFiles( const std::string& full_path, std::vector<std::string>* out_files );
-    void GetDirectories( const std::string& full_path, std::vector<std::string>* out_directories );
-    std::string GetFullPath( FileLocation::Enum location, const std::string& relative_path );
-    std::string GetFullPath( FileLocation::Enum location );
-    std::string CombinePath( std::string root, std::string relative_to_root );
+	void GetFiles( const std::string& full_path, std::vector<std::string>* out_files );
+	void GetDirectories( const std::string& full_path, std::vector<std::string>* out_directories );
+	std::string GetFullPath( FileLocation::Enum location, const std::string& relative_path );
+	std::string GetFullPath( FileLocation::Enum location );
+	std::string CombinePath( std::string root, std::string relative_to_root );
 
 
 
-    struct StreamInternal
-    {
-        StreamInternal( std::string filename, bool read, StreamStatus::Enum* out_status, u32 write_mode )
-        {
-            *out_status = StreamStatus::AccessFailed;
+	struct StreamInternal
+	{
+		StreamInternal( std::string filename, bool read, StreamStatus::Enum* out_status, u32 write_mode )
+		{
+			*out_status = StreamStatus::AccessFailed;
 
 			if ( read )
 			{
 				mWriteBuffer = NULL;
-                mFile.open( filename.c_str(), std::ios::in | std::ios::binary );
+				mFile.open( filename.c_str(), std::ios::in | std::ios::binary );
 			}
-            else
+			else
 			{
 				mWriteBuffer = (char*)malloc( WRITE_BUFFER_SIZE_BYTES );
 				mWriteBufferPos = 0;
@@ -88,13 +88,13 @@ namespace platform_impl
 				}
 			}
 
-            if ( mFile.is_open() == 0 )
-                return;
+			if ( mFile.is_open() == 0 )
+				return;
 
 			*out_status = StreamStatus::NoError;
-            mSize = ceng::ReadFileSize( mFile );
-            mPosition = 0;
-        }
+			mSize = ceng::ReadFileSize( mFile );
+			mPosition = 0;
+		}
 
 		StreamInternal() : 
 			mWriteBuffer( NULL ),
@@ -105,16 +105,16 @@ namespace platform_impl
 		}
 
 		StreamStatus::Enum Read( char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read )
-        {
+		{
 			if (mFile.good() == false )
 				return StreamStatus::AccessFailed;
 
-            long read_size = std::min( mSize - mPosition, (long)buffer_capacity_bytes );
-            mPosition += read_size;
-            mFile.read( out_buffer, read_size );
-            *out_bytes_read = (u32)read_size;
+			long read_size = std::min( mSize - mPosition, (long)buffer_capacity_bytes );
+			mPosition += read_size;
+			mFile.read( out_buffer, read_size );
+			*out_bytes_read = (u32)read_size;
 			return StreamStatus::NoError;
-        }
+		}
 
 		StreamStatus::Enum ReadTextLine( std::string* out_text )
 		{
@@ -202,8 +202,8 @@ namespace platform_impl
 			mFile.flush();
 		}
 
-        void Close()
-        {
+		void Close()
+		{
 			if ( mWriteBuffer )
 			{
 				FlushWrites();
@@ -211,17 +211,17 @@ namespace platform_impl
 				free( mWriteBuffer );
 				mWriteBuffer = NULL;
 			}
-            mFile.close();
-        }
+			mFile.close();
+		}
 
 		const unsigned int WRITE_BUFFER_SIZE_BYTES = 8192;
 
-        std::fstream mFile;
+		std::fstream mFile;
 		char* mWriteBuffer;
 		u32   mWriteBufferPos;
-        long mSize;
-        long mPosition;
-    };
+		long mSize;
+		long mPosition;
+	};
 }
 
 #ifdef PORO_PLAT_WINDOWS
@@ -348,49 +348,49 @@ namespace platform_impl
 #endif
 
 #ifdef PORO_PLAT_MAC
-    // TODO: implement
+	// TODO: implement
 #endif
 
 #ifdef PORO_PLAT_LINUX
-    // TODO: implement
+	// TODO: implement
 #endif
 
 namespace impl
 {
-    // path handling
-    // thread local storage for immediate mode API
-    struct ImContext
-    {
-        ReadStream            readStream;
-        std::string           readPath;
-    };
+	// path handling
+	// thread local storage for immediate mode API
+	struct ImContext
+	{
+		ReadStream            readStream;
+		std::string           readPath;
+	};
 
-    PORO_THREAD_LOCAL ImContext* gImCtx;
+	PORO_THREAD_LOCAL ImContext* gImCtx;
 
-    void UpdateReadImContext( FileSystem* file_system, const std::string& new_path )
-    {
-        if ( gImCtx == NULL )
-            gImCtx = new ImContext();
+	void UpdateReadImContext( FileSystem* file_system, const std::string& new_path )
+	{
+		if ( gImCtx == NULL )
+			gImCtx = new ImContext();
 
-        if ( new_path != gImCtx->readPath )
-        {
-            gImCtx->readStream.~ReadStream();
-            gImCtx->readPath = new_path;
-            gImCtx->readStream = file_system->OpenRead( new_path );
-        }
-    }
+		if ( new_path != gImCtx->readPath )
+		{
+			gImCtx->readStream.~ReadStream();
+			gImCtx->readPath = new_path;
+			gImCtx->readStream = file_system->OpenRead( new_path );
+		}
+	}
 
-    void CloseReadImContext( FileSystem* file_system )
-    {
-        if ( gImCtx == NULL )
-            gImCtx = new ImContext();
+	void CloseReadImContext( FileSystem* file_system )
+	{
+		if ( gImCtx == NULL )
+			gImCtx = new ImContext();
 
-        if ( gImCtx->readPath != "" )
-        {
-            gImCtx->readStream.~ReadStream();
-            gImCtx->readPath = "";
-        }
-    }
+		if ( gImCtx->readPath != "" )
+		{
+			gImCtx->readStream.~ReadStream();
+			gImCtx->readPath = "";
+		}
+	}
 }
 
 
@@ -408,7 +408,7 @@ StreamStatus::Enum WriteStream::Write( const std::string& text )
 	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
 
 	return mStreamImpl->Write( const_cast<char*>( text.c_str() ), text.length() );
-    return StreamStatus::NoError;
+	return StreamStatus::NoError;
 }
 
 StreamStatus::Enum WriteStream::WriteLine( const std::string& text )
@@ -440,18 +440,18 @@ StreamStatus::Enum WriteStream::FlushWrites()
 
 void WriteStream::Close()
 {
-    if ( mStreamImpl )
-    {
-        mDevice->Close( this );
-        mStreamImpl->Close();
-        delete mStreamImpl;
-        mStreamImpl = NULL;
-    }
+	if ( mStreamImpl )
+	{
+		mDevice->Close( this );
+		mStreamImpl->Close();
+		delete mStreamImpl;
+		mStreamImpl = NULL;
+	}
 }
 
 WriteStream::~WriteStream()
 {
-    Close();
+	Close();
 }
 
 WriteStream& WriteStream::operator= ( const WriteStream& other )
@@ -471,7 +471,7 @@ StreamStatus::Enum ReadStream::Read( char* out_buffer, u32 buffer_capacity_bytes
 {
 	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
 
-    return mStreamImpl->Read( out_buffer, buffer_capacity_bytes, out_bytes_read );
+	return mStreamImpl->Read( out_buffer, buffer_capacity_bytes, out_bytes_read );
 }
 
 StreamStatus::Enum ReadStream::ReadWholeFile( char*& out_buffer, u32* out_bytes_read, bool add_null_terminate )
@@ -521,7 +521,7 @@ StreamStatus::Enum ReadStream::ReadTextLine( char* out_buffer, u32 buffer_capaci
 
 StreamStatus::Enum ReadStream::ReadTextLine( std::string& out_text )
 {
-    if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
+	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
 
 	return mStreamImpl->ReadTextLine( &out_text );
 }
@@ -531,32 +531,32 @@ StreamStatus::Enum ReadStream::ReadWholeTextFile( std::string& out_text )
 	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
 
 	mStreamImpl->SeekToBeginning();
-    std::stringstream text;
-    char c;
+	std::stringstream text;
+	char c;
 	// TODO! This really should be used, this is pretty slow...
-    while ( mStreamImpl->mFile.get( c ).good() )
-        text.put( c );
+	while ( mStreamImpl->mFile.get( c ).good() )
+		text.put( c );
 
-    out_text = text.str();
-    return StreamStatus::NoError;
+	out_text = text.str();
+	return StreamStatus::NoError;
 }
 
 // ===
 
 void ReadStream::Close()
 { 
-    if ( mStreamImpl )
-    {
-        mDevice->Close( this );
-        mStreamImpl->Close();
-        delete mStreamImpl;
-        mStreamImpl = NULL;
-    }
+	if ( mStreamImpl )
+	{
+		mDevice->Close( this );
+		mStreamImpl->Close();
+		delete mStreamImpl;
+		mStreamImpl = NULL;
+	}
 }
 
 ReadStream::~ReadStream()
 {
-    Close();
+	Close();
 }
 
 ReadStream& ReadStream::operator= ( const ReadStream& other )
@@ -574,78 +574,78 @@ ReadStream& ReadStream::operator= ( const ReadStream& other )
 
 ReadStream FileSystem::OpenRead( const std::string& path )
 {
-    // use first device that is able to find a matching file
-    ReadStream result = ReadStream();
-    for ( size_t i = 0; i < mDevices.size(); i++ )
-    {
-        IFileDevice* device = mDevices[i];
-        ReadStream stream = device->OpenRead( path );
-        if ( stream.mStreamImpl )
-        {
-            result = stream;
-            break;
-        }
-    }
-    return result;
+	// use first device that is able to find a matching file
+	ReadStream result = ReadStream();
+	for ( size_t i = 0; i < mDevices.size(); i++ )
+	{
+		IFileDevice* device = mDevices[i];
+		ReadStream stream = device->OpenRead( path );
+		if ( stream.mStreamImpl )
+		{
+			result = stream;
+			break;
+		}
+	}
+	return result;
 }
 
 // ===
 
 void FileSystem::OpenReadOnAllMatchingFiles( const std::string& path, std::vector<ReadStream>* out_files )
 {
-    ReadStream result = ReadStream();
-    for ( size_t i = 0; i < mDevices.size(); i++ )
-    {
-        IFileDevice* device = mDevices[ i ];
-        ReadStream stream = device->OpenRead( path );
-        if ( stream.mStreamImpl )
-            out_files->push_back( stream );
-    }
+	ReadStream result = ReadStream();
+	for ( size_t i = 0; i < mDevices.size(); i++ )
+	{
+		IFileDevice* device = mDevices[ i ];
+		ReadStream stream = device->OpenRead( path );
+		if ( stream.mStreamImpl )
+			out_files->push_back( stream );
+	}
 }
 
 // ===
 
 StreamStatus::Enum FileSystem::Read( const std::string& path, char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read )
 {
-    impl::UpdateReadImContext( this, path );
-    return impl::gImCtx->readStream.Read( out_buffer, buffer_capacity_bytes, out_bytes_read );
+	impl::UpdateReadImContext( this, path );
+	return impl::gImCtx->readStream.Read( out_buffer, buffer_capacity_bytes, out_bytes_read );
 }
 
 StreamStatus::Enum FileSystem::ReadWholeFile( const std::string& path, char*& out_buffer, u32* out_bytes_read )
 {
-    impl::UpdateReadImContext( this, path );
-    StreamStatus::Enum result = impl::gImCtx->readStream.ReadWholeFile( out_buffer, out_bytes_read, false );
-    impl::CloseReadImContext( this );
-    return result;
+	impl::UpdateReadImContext( this, path );
+	StreamStatus::Enum result = impl::gImCtx->readStream.ReadWholeFile( out_buffer, out_bytes_read, false );
+	impl::CloseReadImContext( this );
+	return result;
 }
 
 StreamStatus::Enum FileSystem::ReadWholeFileAndNullTerminate( const std::string& path, char*& out_buffer, poro::types::Uint32* out_bytes_read )
 {
-    impl::UpdateReadImContext( this, path );
-    StreamStatus::Enum result = impl::gImCtx->readStream.ReadWholeFile( out_buffer, out_bytes_read, true );
-    impl::CloseReadImContext( this );
-    return result;
+	impl::UpdateReadImContext( this, path );
+	StreamStatus::Enum result = impl::gImCtx->readStream.ReadWholeFile( out_buffer, out_bytes_read, true );
+	impl::CloseReadImContext( this );
+	return result;
 }
 
 StreamStatus::Enum FileSystem::ReadTextLine( const std::string& path, char* out_buffer, u32 buffer_capacity, u32* out_length_read )
 {
-    impl::UpdateReadImContext( this, path );
-    return impl::gImCtx->readStream.ReadTextLine( out_buffer, buffer_capacity, out_length_read );
+	impl::UpdateReadImContext( this, path );
+	return impl::gImCtx->readStream.ReadTextLine( out_buffer, buffer_capacity, out_length_read );
 }
 
 StreamStatus::Enum FileSystem::ReadTextLine( const std::string& path, std::string& out_text )
 {
-    impl::UpdateReadImContext( this, path );
-    return impl::gImCtx->readStream.ReadTextLine( out_text );
+	impl::UpdateReadImContext( this, path );
+	return impl::gImCtx->readStream.ReadTextLine( out_text );
 }
 
 StreamStatus::Enum FileSystem::ReadWholeTextFile( const std::string& path, std::string& out_text )
 {
 	impl::CloseReadImContext( this );
-    impl::UpdateReadImContext( this, path );
-    StreamStatus::Enum result = impl::gImCtx->readStream.ReadWholeTextFile( out_text );
-    impl::CloseReadImContext( this );
-    return result;
+	impl::UpdateReadImContext( this, path );
+	StreamStatus::Enum result = impl::gImCtx->readStream.ReadWholeTextFile( out_text );
+	impl::CloseReadImContext( this );
+	return result;
 }
 
 void FileSystem::ReadTextLines( const std::string& path, std::vector<std::string>& out_text_lines )
@@ -696,7 +696,7 @@ StreamStatus::Enum FileSystem::WriteWholeTextFile( const std::string& path, cons
 std::string FileSystem::GetFullPathFromRelativePath( const std::string& relative_path )
 {
 	// use first device that is able to find a matching file
-    ReadStream result = ReadStream();
+	ReadStream result = ReadStream();
 	for ( size_t i = 0; i < mDevices.size(); i++ )
 	{
 		IFileDevice* device = mDevices[ i ];
@@ -710,92 +710,92 @@ std::string FileSystem::GetFullPathFromRelativePath( const std::string& relative
 
 std::vector<std::string> FileSystem::GetFiles( FileLocation::Enum location, const std::string& path_relative_to_location )
 {
-    std::vector<std::string> result;
+	std::vector<std::string> result;
 	GetFiles( location, path_relative_to_location, &result );
-    return result;
+	return result;
 }
 
 std::vector<std::string> FileSystem::GetFiles( std::string full_path )
 {
-    std::vector<std::string> result;
+	std::vector<std::string> result;
 	GetFiles( full_path, &result );
-    return result;
+	return result;
 }
 
 std::vector<std::string> FileSystem::GetDirectories( FileLocation::Enum location, const std::string& path_relative_to_location )
 {
-    std::vector<std::string> result;
+	std::vector<std::string> result;
 	GetDirectories( location, path_relative_to_location, &result );
-    return result;
+	return result;
 }
 
 std::vector<std::string> FileSystem::GetDirectories( std::string full_path )
 {
-    std::vector<std::string> result;
-    GetDirectories( full_path, &result );
-    return result;
+	std::vector<std::string> result;
+	GetDirectories( full_path, &result );
+	return result;
 }
 
 void FileSystem::GetFiles( FileLocation::Enum location, std::vector<std::string>* out_files )
 {
-    const std::string full_path = platform_impl::GetFullPath( location );
-    platform_impl::ListFiles( full_path, out_files, false );
+	const std::string full_path = platform_impl::GetFullPath( location );
+	platform_impl::ListFiles( full_path, out_files, false );
 }
 
 void FileSystem::GetFiles( FileLocation::Enum location, const std::string& path_relative_to_location, std::vector<std::string>* out_files )
 {
-    const std::string full_path = platform_impl::GetFullPath( location, path_relative_to_location );
-    platform_impl::ListFiles( full_path, out_files, false );
+	const std::string full_path = platform_impl::GetFullPath( location, path_relative_to_location );
+	platform_impl::ListFiles( full_path, out_files, false );
 }
 
 void FileSystem::GetFiles( std::string full_path, std::vector<std::string>* out_files )
 {
-    platform_impl::ListFiles( full_path, out_files, false );
+	platform_impl::ListFiles( full_path, out_files, false );
 }
 
 void FileSystem::GetDirectories( FileLocation::Enum location, std::vector<std::string>* out_directories )
 {
-    const std::string full_path = platform_impl::GetFullPath( location );
-    platform_impl::ListFiles( full_path, out_directories, true );
+	const std::string full_path = platform_impl::GetFullPath( location );
+	platform_impl::ListFiles( full_path, out_directories, true );
 }
 
 void FileSystem::GetDirectories( FileLocation::Enum location, const std::string& path_relative_to_location, std::vector<std::string>* out_directories )
 {
-    const std::string full_path = platform_impl::GetFullPath( location, path_relative_to_location );
-    platform_impl::ListFiles( full_path, out_directories, true );
+	const std::string full_path = platform_impl::GetFullPath( location, path_relative_to_location );
+	platform_impl::ListFiles( full_path, out_directories, true );
 }
 
 void FileSystem::GetDirectories( std::string full_path, std::vector<std::string>* out_directories )
 {
-    platform_impl::ListFiles( full_path, out_directories, true );
+	platform_impl::ListFiles( full_path, out_directories, true );
 }
 
 // ===
 
 std::vector<IFileDevice*> FileSystem::GetDeviceList()
 {
-    return mDevices;
+	return mDevices;
 }
 
 void FileSystem::SetDeviceList( std::vector<IFileDevice*> devices )
 {
-    mDevices = devices;
+	mDevices = devices;
 }
 
 FileSystem::FileSystem()
 {
 	platform_impl::Init();
-    mDefaultDevice = new DiskFileDevice( FileLocation::WorkingDirectory );
+	mDefaultDevice = new DiskFileDevice( FileLocation::WorkingDirectory );
 
 	mDefaultDevice2 = new DiskFileDevice( FileLocation::WorkingDirectory );
-    mDevices.push_back( mDefaultDevice2 );
+	mDevices.push_back( mDefaultDevice2 );
 }
 
 FileSystem::~FileSystem()
 {
-    delete mDefaultDevice;
+	delete mDefaultDevice;
 	delete mDefaultDevice2;
-    mDevices.clear();
+	mDevices.clear();
 }
 
 
@@ -803,49 +803,49 @@ FileSystem::~FileSystem()
 
 DiskFileDevice::DiskFileDevice( const std::string& read_root_path_full )
 {
-    mReadRootPath = read_root_path_full;
+	mReadRootPath = read_root_path_full;
 }
 
 DiskFileDevice::DiskFileDevice( FileLocation::Enum read_location, const std::string& read_root_path_relative_to_location )
 {
-    mReadRootPath = platform_impl::GetFullPath( read_location, read_root_path_relative_to_location );
+	mReadRootPath = platform_impl::GetFullPath( read_location, read_root_path_relative_to_location );
 }
 
 // ===
 
 ReadStream DiskFileDevice::OpenRead( const std::string& path_relative_to_device_root )
 {
-    const std::string full_path = GetFullPath( path_relative_to_device_root );
+	const std::string full_path = GetFullPath( path_relative_to_device_root );
 	StreamStatus::Enum status;
-    ReadStream result;
-    result.mDevice = this;
-    result.mStreamImpl = new platform_impl::StreamInternal( full_path, true, &status, StreamWriteMode::Recreate ); // TODO: allocate from a pool
+	ReadStream result;
+	result.mDevice = this;
+	result.mStreamImpl = new platform_impl::StreamInternal( full_path, true, &status, StreamWriteMode::Recreate ); // TODO: allocate from a pool
 	if ( status != StreamStatus::NoError )
 	{
 		delete result.mStreamImpl;
 		result.mStreamImpl = NULL;
 	}
-    return result;
+	return result;
 }
 
 WriteStream DiskFileDevice::OpenWrite( FileLocation::Enum location, const std::string& path_relative_to_location, u32 write_mode )
 {
-    const std::string full_path = platform_impl::GetFullPath( location, path_relative_to_location );
+	const std::string full_path = platform_impl::GetFullPath( location, path_relative_to_location );
 	StreamStatus::Enum status;
-    WriteStream result;
-    result.mDevice = this;
-    result.mStreamImpl = new platform_impl::StreamInternal( full_path, false, &status, write_mode );// TODO: allocate from a pool
+	WriteStream result;
+	result.mDevice = this;
+	result.mStreamImpl = new platform_impl::StreamInternal( full_path, false, &status, write_mode );// TODO: allocate from a pool
 	if ( status != StreamStatus::NoError )
 	{
 		delete result.mStreamImpl;
 		result.mStreamImpl = NULL;
 	}
-    return result;
+	return result;
 }
 
 std::string DiskFileDevice::GetReadRootPath()
 {
-    return mReadRootPath;
+	return mReadRootPath;
 }
 
 std::string DiskFileDevice::GetFullPath( const std::string& path_relative_to_device_root )
@@ -854,15 +854,15 @@ std::string DiskFileDevice::GetFullPath( const std::string& path_relative_to_dev
 }
 
 // ===
-    
+	
 void DiskFileDevice::Close( WriteStream* stream )
 {
-    // do nothing
+	// do nothing
 }
 
 void DiskFileDevice::Close( ReadStream* stream )
 {
-    // do nothing
+	// do nothing
 }
 
 } // end of namespace

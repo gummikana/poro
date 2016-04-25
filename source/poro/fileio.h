@@ -134,10 +134,10 @@ namespace poro {
 	// The stream is automatically closed at the end of the scope in which it was created.
 	class ReadStream
 	{
-        friend class IFileDevice;
-        friend class FileSystem;
-        friend class DiskFileDevice;
-        friend struct poro::impl::ImContext;
+		friend class IFileDevice;
+		friend class FileSystem;
+		friend class DiskFileDevice;
+		friend struct poro::impl::ImContext;
 	public:
 		ReadStream( const ReadStream& other ) { operator=( other ); }
 		ReadStream& operator= ( const ReadStream& other );
@@ -150,18 +150,18 @@ namespace poro {
 		// Returns true if the stream was succesfully opened and has not been closed.
 		bool IsValid() { return mStreamImpl != NULL; }
 		// Close the stream and clean up all resources used by it.
-        ~ReadStream();
+		~ReadStream();
 	private:
 		StreamStatus::Enum ReadWholeFile( char*& out_buffer, poro::types::Uint32* out_bytes_read, bool add_null_terminate );
 		StreamStatus::Enum ReadWholeTextFile( std::string& out_text );
 		void Close();
-        ReadStream() { mDevice = NULL; mStreamImpl = NULL; }
-        // data
+		ReadStream() { mDevice = NULL; mStreamImpl = NULL; }
+		// data
 		IFileDevice*                   mDevice;
-        platform_impl::StreamInternal* mStreamImpl;
+		platform_impl::StreamInternal* mStreamImpl;
 	};
 
-    // ================================
+	// ================================
 
 	// FileSystem provides access to reading, writing and enumeration of files in various locations.
 	// The API is thread safe if SetDeviceList and GetDeviceList are used correctly. In normal usage scenarious they'd be called at the initialization of a program, before any file operations take place.

@@ -134,7 +134,7 @@ bool DoesExist( const std::string& filename )
 		NSString *path = [[NSString alloc] initWithCString:filename.c_str() encoding:NSMacOSRomanStringEncoding];
 		@try
 		{
-            return [[NSFileManager defaultManager] fileExistsAtPath:path]==TRUE;
+			return [[NSFileManager defaultManager] fileExistsAtPath:path]==TRUE;
 		}
 		@finally
 		{
@@ -142,12 +142,29 @@ bool DoesExist( const std::string& filename )
 		}
 #endif
 	#elif defined(CENG_PLATFORM_LINUX)
-        struct stat st;
-        if(stat(filename.c_str(),&st) != 0)
-            return false;
-    #endif
+		struct stat st;
+		if(stat(filename.c_str(),&st) != 0)
+			return false;
+	#endif
 
 	return true;
+}
+
+bool RenameFile( const std::string& file, const std::string& new_name )
+{
+#ifdef CENG_PLATFORM_WINDOWS
+	{
+		/* add | MOVEFILE_WRITE_THROUGH  if you want to make this block until the operation is done*/
+		BOOL result = MoveFileExA( file.c_str(), new_name.c_str(), MOVEFILE_REPLACE_EXISTING  );
+		if( result == 0) 
+		{
+			LogError << GetLastError() << "\n";
+		}
+		return result ? true : false;
+	}
+#endif	
+	cassert( "implementation missing");
+	return false;
 }
 
 std::string GetDateForFile( const std::string& filename )

@@ -16,6 +16,7 @@ namespace ceng
 	// so 2015.01.30 19:35:45 becomes 150130193545
 	std::string GetDateForFile( const std::string& file );
 	bool		DoesExist( const std::string& file );
+	bool		RenameFile( const std::string& file, const std::string& new_name );
 
 	void CopyFileCeng( const std::string& from, const std::string& to );
 
