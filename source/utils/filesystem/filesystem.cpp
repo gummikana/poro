@@ -158,7 +158,7 @@ bool RenameFile( const std::string& file, const std::string& new_name )
 		BOOL result = MoveFileExA( file.c_str(), new_name.c_str(), MOVEFILE_REPLACE_EXISTING  );
 		if( result == 0) 
 		{
-			LogError << GetLastError() << "\n";
+			LogError << "Rename file failed - error code: " << GetLastError() << "\n";
 		}
 		return result ? true : false;
 	}
