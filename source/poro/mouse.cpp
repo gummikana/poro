@@ -35,8 +35,8 @@ Mouse::Mouse() :
 	for( std::size_t i = 0; i < mMouseButtonsDown.size(); ++i )
 	{
 		mMouseButtonsDown[ i ] = false; 
-		mMouseButtonsJustDown[ i ] = false; 
-		mMouseButtonsJustUp[ i ] = false;
+		mMouseButtonsJustDown[ i ] = 0; 
+		mMouseButtonsJustUp[ i ] = 0;
 	}
 }
 
@@ -67,8 +67,8 @@ void Mouse::OnFrameStart()
 	// Reset the state
 	for( std::size_t i = 0; i < mMouseButtonsDown.size(); ++i )
 	{
-		mMouseButtonsJustDown[ i ] = false; 
-		mMouseButtonsJustUp[ i ] = false;
+		mMouseButtonsJustDown[ i ] = 0; 
+		mMouseButtonsJustUp[ i ] = 0;
 	}
 
 	// reset the state of mouse wheels, since they arent really buttons
@@ -90,11 +90,13 @@ void Mouse::FireMouseDownEvent( const types::vec2& pos, int button )
 	for( std::size_t i = 0; i < mMouseListeners.size(); i++ )
 		mMouseListeners[i]->MouseButtonDown( pos, button );
 
-	if( button >= 0 && button < (int)mMouseButtonsDown.size() )
-		mMouseButtonsDown[ button ] = true;
+	poro_assert( button >= 0 );
+	poro_assert( button < (int)mMouseButtonsDown.size() );
+
+	mMouseButtonsDown[ button ] = true;
 	
-	if( button >= 0 && button < (int)mMouseButtonsDown.size() )
-		mMouseButtonsJustDown[ button ] = true;
+	poro_assert( button < (int)mMouseButtonsJustDown.size() );
+	mMouseButtonsJustDown[ button ]++;
 }
 
 void Mouse::FireMouseUpEvent( const types::vec2& pos, int button )
@@ -102,11 +104,13 @@ void Mouse::FireMouseUpEvent( const types::vec2& pos, int button )
 	for( std::size_t i = 0; i < mMouseListeners.size() ; i++ )
 		mMouseListeners[i]->MouseButtonUp( pos, button );
 
-	if( button >= 0 && button < (int)mMouseButtonsDown.size() )
-		mMouseButtonsDown[ button ] = false;
+	poro_assert( button >= 0 );
+	poro_assert( button < (int)mMouseButtonsDown.size() );
+
+	mMouseButtonsDown[ button ] = false;
 	
-	if( button >= 0 && button < (int)mMouseButtonsDown.size() )
-		mMouseButtonsJustUp[ button ] = true;
+	poro_assert( button < (int)mMouseButtonsJustUp.size() );
+	mMouseButtonsJustUp[ button ]++;
 }
 //-----------------------------------------------------------------------------
 
@@ -139,6 +143,9 @@ types::vec2 Mouse::GetMousePos() const
 
 bool Mouse::IsButtonDown( int button ) const 
 {
+	poro_assert( button >= 0 );
+	poro_assert( button < (int)mMouseButtonsDown.size() );
+
 	if( button >= 0 && button < (int)mMouseButtonsDown.size() )
 		return mMouseButtonsDown[ button ];
 
@@ -147,19 +154,49 @@ bool Mouse::IsButtonDown( int button ) const
 
 bool Mouse::IsButtonJustDown( int button ) const 
 {
+	poro_assert( button >= 0 );
+	poro_assert( button < (int)mMouseButtonsJustDown.size() );
+
 	if( button >= 0 && button < (int)mMouseButtonsJustDown.size() )
-		return mMouseButtonsJustDown[ button ];
+		return ( mMouseButtonsJustDown[ button ] > 0 );
 
 	return false;
 }
 
 bool Mouse::IsButtonJustUp( int button ) const 
 {
+	poro_assert( button >= 0 );
+	poro_assert( button < (int)mMouseButtonsJustUp.size() );
+
 	if( button >= 0 && button < (int)mMouseButtonsJustUp.size() )
-		return mMouseButtonsJustUp[ button ];
+		return ( mMouseButtonsJustUp[ button ] > 0 );
 
 	return false;
 }
+
+//-----------------------------------------------------------------------------
+
+int	Mouse::GetMouseWheelJustAxis() const
+{
+	return GetButtonJustDownCount( MOUSE_BUTTON_WHEEL_DOWN ) - GetButtonJustDownCount( MOUSE_BUTTON_WHEEL_UP );
+}
+
+int	Mouse::GetButtonJustDownCount( int button ) const
+{
+	poro_assert( button >= 0 );
+	poro_assert( button < (int)mMouseButtonsJustDown.size() );
+
+	return mMouseButtonsJustDown[ button ];
+}
+
+int	Mouse::GetButtonJustUpCount( int button ) const
+{
+	poro_assert( button >= 0 );
+	poro_assert( button < (int)mMouseButtonsJustUp.size() );
+
+	return mMouseButtonsJustUp[ button ];
+}
+
 //-----------------------------------------------------------------------------
 
 } // end of namespace poro
