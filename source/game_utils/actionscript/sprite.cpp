@@ -901,6 +901,7 @@ void Sprite::RectAnimation::Update( Sprite* sprite, float dt )
 	if( mPaused ) 
 		dt = 0;
 
+	mPreviousFrame = mCurrentFrame;
 	int frame = mCurrentFrame;
 	mCurrentTime += dt;
 	if( mWaitTime > 0 ) {
@@ -946,7 +947,6 @@ void Sprite::RectAnimation::SetFrame( Sprite* sprite, int frame, bool update_any
 		// if( frame > mFrameCount && mLoop ) frame = frame % mFrameCount;
 
 		cassert( sprite );
-		mPreviousFrame = mCurrentFrame;
 		mCurrentFrame  = frame;
 		sprite->SetRect( FigureOutRectPos( mCurrentFrame ) );
 		
