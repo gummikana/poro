@@ -946,7 +946,8 @@ void Sprite::RectAnimation::SetFrame( Sprite* sprite, int frame, bool update_any
 		// if( frame > mFrameCount && mLoop ) frame = frame % mFrameCount;
 
 		cassert( sprite );
-		mCurrentFrame = frame;
+		mPreviousFrame = mCurrentFrame;
+		mCurrentFrame  = frame;
 		sprite->SetRect( FigureOutRectPos( mCurrentFrame ) );
 		
 		if( mHasNewCenterOffset ) sprite->SetCenterOffset( mCenterOffset );

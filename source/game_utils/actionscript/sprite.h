@@ -209,6 +209,7 @@ public:
 			mPaused( false ),
 			mFrameCount( 0 ),
 			mCurrentFrame( 0 ),
+			mPreviousFrame( -1 ),
 			mWidth( 0 ),
 			mHeight( 0 ),
 			mFramesPerRow( 4 ),
@@ -229,6 +230,7 @@ public:
 			mPaused(other.mPaused),
 			mFrameCount(other.mFrameCount),
 			mCurrentFrame(other.mCurrentFrame),
+			mPreviousFrame(other.mPreviousFrame),
 			mWidth(other.mWidth),
 			mHeight(other.mHeight),
 			mFramesPerRow(other.mFramesPerRow),
@@ -262,6 +264,7 @@ public:
 		bool mPaused;
 		int mFrameCount;
 		int mCurrentFrame;
+		int mPreviousFrame;
 		int mWidth;
 		int mHeight;
 		int mFramesPerRow;
