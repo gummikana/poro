@@ -34,9 +34,10 @@ namespace as {
 	typedef std::string		String;
 	typedef types::vector2	Point;
 	
+	/*
 	#define _Ptr( x ) ceng::CSmartPtr< x >
 	#define _PtrRef( x ) const ceng::CSmartPtr< x >&
-	
+	*/
 
 	namespace types {
 		using namespace ::types;
