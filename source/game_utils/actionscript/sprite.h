@@ -191,14 +191,14 @@ public:
 
 		void Serialize( ceng::CXmlFileSys* filesys )
 		{
-			XML_BindAttributeAlias( filesys, frame, "frame" );
-			XML_BindAttributeAlias( filesys, name, "sname" );
-			XML_BindAttributeAlias( filesys, probability, "probability" );
+			XML_BindAttribute( filesys, frame );
+			XML_BindAttribute( filesys, name  );
+			XML_BindAttribute( filesys, probability );
 		}
 
 		int					frame;
 		std::string			name;
-		float               probability;
+		float				probability;
 	};
 
 	struct RectAnimation
@@ -220,7 +220,9 @@ public:
 			mHasNewCenterOffset( false ),
 			mCenterOffset( 0, 0 ),
 			mLoop( true ),
-			mNextAnimation( "" )
+			mNextAnimation( "" ),
+			mChildAnimations(),
+			mEvents()
 		{
 		}
 
@@ -241,7 +243,8 @@ public:
 			mHasNewCenterOffset(other.mHasNewCenterOffset),
 			mCenterOffset(other.mCenterOffset),
 			mLoop(other.mLoop),
-			mNextAnimation(other.mNextAnimation)
+			mNextAnimation(other.mNextAnimation),
+			mEvents(other.mEvents)
 		{
 			mChildAnimations.resize(other.mChildAnimations.size());
 			for (std::size_t i = 0; i < mChildAnimations.size(); ++i)
