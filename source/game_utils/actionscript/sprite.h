@@ -180,6 +180,27 @@ public:
 		types::vector2		scale;
 	};
 
+	struct Event
+	{
+		Event() :
+			frame( 0 ),
+			name(),
+			probability( 0.0f )
+		{
+		}
+
+		void Serialize( ceng::CXmlFileSys* filesys )
+		{
+			XML_BindAttributeAlias( filesys, frame, "frame" );
+			XML_BindAttributeAlias( filesys, name, "sname" );
+			XML_BindAttributeAlias( filesys, probability, "probability" );
+		}
+
+		int					frame;
+		std::string			name;
+		float               probability;
+	};
+
 	struct RectAnimation
 	{
 		RectAnimation() :
@@ -258,6 +279,8 @@ public:
 		std::string		mNextAnimation;
 
 		std::vector< ChildAnimation* > mChildAnimations;
+
+		std::vector< Event > mEvents;
 
 		types::rect Sprite::RectAnimation::FigureOutRectPos( int frame );
 		void Update( Sprite* sprite, float dt );
