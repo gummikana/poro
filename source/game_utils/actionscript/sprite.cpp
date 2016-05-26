@@ -1002,10 +1002,10 @@ void Sprite::RectAnimation::Serialize( ceng::CXmlFileSys* filesys )
 	XML_BindAttributeAlias( filesys, mNextAnimation, "next_animation" );
 
 	ceng::VectorXmlSerializer< Sprite::ChildAnimation > serializer( mChildAnimations, "ChildAnimations" );
-
-	// TODO: bind events
-
 	serializer.Serialize( filesys );
+
+	ceng::VectorXmlSerializerObjects< Sprite::Event > event_serializer( mEvents, "Event" );
+	event_serializer.Serialize( filesys );
 }
 
 //-------------------------------------------------------------------------
