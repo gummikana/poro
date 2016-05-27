@@ -185,7 +185,8 @@ public:
 		Event() :
 			frame( 0 ),
 			name(),
-			probability( 0.0f )
+			probability( 1.0f ),
+			max_distance( 500.0f )
 		{
 		}
 
@@ -194,11 +195,13 @@ public:
 			XML_BindAttribute( filesys, frame );
 			XML_BindAttribute( filesys, name  );
 			XML_BindAttribute( filesys, probability );
+			XML_BindAttribute( filesys, max_distance );
 		}
 
 		int					frame;
 		std::string			name;
 		float				probability;
+		float               max_distance;
 	};
 
 	struct RectAnimation
