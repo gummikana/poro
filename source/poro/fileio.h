@@ -166,7 +166,7 @@ namespace poro {
 	// FileSystem provides access to reading, writing and enumeration of files in various locations.
 	// The API is thread safe if SetDeviceList and GetDeviceList are used correctly. In normal usage scenarious they'd be called at the initialization of a program, before any file operations take place.
 	// Please see the documentation of SetDeviceList and GetDeviceList for more details.
-	// Any ReadStream and WriteStream instances returned by this API should only be used ONLY in the thread in which they were created.
+	// Any ReadStream and WriteStream instances returned by this API should be used ONLY in the thread in which they were created.
 	//
 	// SetDeviceList and GetDeviceList are intended to be used to change the locations where files are searched from. This can be used for example to build a game that supports multiple mods at the same time.
 	// Each device provided via SetDeviceList is used as a "root" directory when searching for a file inside a _Read_ call.
