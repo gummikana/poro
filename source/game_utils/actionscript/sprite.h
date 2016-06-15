@@ -102,7 +102,7 @@ public:
 	void								SetTexture( Image* texture );
 	Image*								GetTexture();
 	void								SetImageData( ceng::CArray2D< Uint32 >* image_data );
-	ceng::CArray2D< Uint32 >*			GetImageData();
+	const ceng::CArray2D< Uint32 >*		GetImageData() const;
 
 	//static Image*						GetTexture( const std::string& filename );
 	//static ceng::CArray2D< Uint32 >*	GetImageData( const std::string& filename );
@@ -568,7 +568,7 @@ inline void Sprite::SetImageData( ceng::CArray2D< Uint32 >* image_data ) {
 	mImageData = image_data;
 }
 
-inline ceng::CArray2D< Uint32 >* Sprite::GetImageData() { 
+inline const ceng::CArray2D< Uint32 >* Sprite::GetImageData() const { 
 	return mImageData;
 }
 

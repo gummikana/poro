@@ -244,7 +244,7 @@ public:
 	CSafeArray< _Ty >& GetData() { return myDataArray; }
 	const CSafeArray< _Ty >& GetData() const { return myDataArray; }
 
-	CArray2D* CopyCropped( int _x, int _y, int _w, int _h)
+	CArray2D* CopyCropped( int _x, int _y, int _w, int _h) const
 	{
 		CArray2D* result = new CArray2D( _w, _h);
 
