@@ -53,6 +53,7 @@ bool IsPointInsidePolygon( const CVector2< PointType >& point, const std::vector
 bool IsPointInsidePolygon( const CVector2< int >& point, const std::vector< CVector2< int > >& polygon );
 
 bool IsPointInsidePolygon_Better( const CVector2< PointType >& point, const std::vector< CVector2< PointType > >& pgon );
+bool IsPointInsidePolygon_Better( const CVector2< PointType >& point, const CVector2< PointType >* pgon, int pgon_size );
 
 template< class Type >
 bool IsPointInsideAABB( const Type& point, const Type& rect_low, const Type& rect_high )

@@ -45,25 +45,25 @@ namespace {
 
 bool IsPointInsidePolygon( const CVector2< PointType >& point, const std::vector< CVector2< PointType > >& polygon )
 {
-    int    wn = 0;    // the winding number counter
+	int    wn = 0;    // the winding number counter
 
 	// std::vector<CPoint *>::iterator it;
 	unsigned int i = 0;
-    // loop through all edges of the polygon
-    for( i = 0; i < polygon.size()-1; i++ ) // edge from V[i] to V[i+1]
+	// loop through all edges of the polygon
+	for( i = 0; i < polygon.size()-1; i++ ) // edge from V[i] to V[i+1]
 	{
-        if( polygon[ i ].y <= point.y ) {         // start y <= pt->y
-            if( polygon[ i + 1 ].y > point.y )      // an upward crossing
-                if( isLeft( polygon[ i ], polygon[ i + 1 ], point ) > 0 )  // P left of edge
-                    ++wn;            // have a valid up intersect
-        }
-        else {                       // start y > P.y (no test needed)
-            if( polygon[ i + 1].y <= point.y )     // a downward crossing
-                if( isLeft( polygon[ i ], polygon[ i + 1 ], point ) < 0 )  // P right of edge
-                    --wn;            // have a valid down intersect
-        }
-    }
-    if ( wn==0 )
+		if( polygon[ i ].y <= point.y ) {         // start y <= pt->y
+			if( polygon[ i + 1 ].y > point.y )      // an upward crossing
+				if( isLeft( polygon[ i ], polygon[ i + 1 ], point ) > 0 )  // P left of edge
+					++wn;            // have a valid up intersect
+		}
+		else {                       // start y > P.y (no test needed)
+			if( polygon[ i + 1].y <= point.y )     // a downward crossing
+				if( isLeft( polygon[ i ], polygon[ i + 1 ], point ) < 0 )  // P right of edge
+					--wn;            // have a valid down intersect
+		}
+	}
+	if ( wn==0 )
 		return false;
 
 	return true;
@@ -71,25 +71,25 @@ bool IsPointInsidePolygon( const CVector2< PointType >& point, const std::vector
 
 bool IsPointInsidePolygon( const CVector2< int >& point, const std::vector< CVector2< int > >& polygon )
 {
-    int    wn = 0;    // the winding number counter
+	int    wn = 0;    // the winding number counter
 
 	// std::vector<CPoint *>::iterator it;
 	unsigned int i = 0;
-    // loop through all edges of the polygon
-    for( i = 0; i < polygon.size()-1; i++ ) // edge from V[i] to V[i+1]
+	// loop through all edges of the polygon
+	for( i = 0; i < polygon.size()-1; i++ ) // edge from V[i] to V[i+1]
 	{
-        if( polygon[ i ].y <= point.y ) {         // start y <= pt->y
-            if( polygon[ i + 1 ].y > point.y )      // an upward crossing
-                if( isLeft( polygon[ i ], polygon[ i + 1 ], point ) > 0 )  // P left of edge
-                    ++wn;            // have a valid up intersect
-        }
-        else {                       // start y > P.y (no test needed)
-            if( polygon[ i + 1].y <= point.y )     // a downward crossing
-                if( isLeft( polygon[ i ], polygon[ i + 1 ], point ) < 0 )  // P right of edge
-                    --wn;            // have a valid down intersect
-        }
-    }
-    if ( wn==0 )
+		if( polygon[ i ].y <= point.y ) {         // start y <= pt->y
+			if( polygon[ i + 1 ].y > point.y )      // an upward crossing
+				if( isLeft( polygon[ i ], polygon[ i + 1 ], point ) > 0 )  // P left of edge
+					++wn;            // have a valid up intersect
+		}
+		else {                       // start y > P.y (no test needed)
+			if( polygon[ i + 1].y <= point.y )     // a downward crossing
+				if( isLeft( polygon[ i ], polygon[ i + 1 ], point ) < 0 )  // P right of edge
+					--wn;            // have a valid down intersect
+		}
+	}
+	if ( wn==0 )
 		return false;
 
 	return true;
@@ -112,18 +112,23 @@ bool IsPointInsidePolygon( const CVector2< int >& point, const std::vector< CVec
 // int CrossingsTest( const std::vector< types::vector2 >& pgon, numverts, point )
 bool IsPointInsidePolygon_Better( const CVector2< PointType >& point, const std::vector< CVector2< PointType > >& pgon )
 {
-	int numverts = (int)pgon.size();
+	return IsPointInsidePolygon_Better( point, &(pgon[0]), (int)pgon.size() );
+}
+
+bool IsPointInsidePolygon_Better( const CVector2< PointType >& point, const CVector2< PointType >* pgon, int pgon_size )
+{
+	int numverts = pgon_size;
 	bool inside_flag = false;
 	bool yflag0, yflag1, xflag0;
 	// float ty, tx; // , vtx0, vtx1 ;
 
-    PointType tx = point.x ;
-    PointType ty = point.y ;
+	PointType tx = point.x ;
+	PointType ty = point.y ;
 
 	CVector2< PointType > vtx0 = pgon[numverts - 1];
 	
 /* get test bit for above/below X axis */
-    yflag0 = ( vtx0.y >= ty ) ;
+	yflag0 = ( vtx0.y >= ty ) ;
 	CVector2< PointType > vtx1 = pgon[0];
 
 	for( int j = 1; j < numverts + 1; ++j ) 
@@ -161,9 +166,9 @@ bool IsPointInsidePolygon_Better( const CVector2< PointType >& point, const std:
 			vtx1 = pgon[j];
 		else 
 			vtx1 = pgon[j - numverts];
-    }
+	}
 
-    return( inside_flag ) ;
+	return( inside_flag );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -171,14 +176,14 @@ bool IsPointInsidePolygon_Better( const CVector2< PointType >& point, const std:
 namespace {
 	void extractXAxisFromAngle( CVector2< PointType >& x, float a )
 	{
-	  x.x = -cos(a);
-	  x.y = -sin(a);
+		x.x = -cos(a);
+		x.y = -sin(a);
 	}
 
 	void extractYAxisFromAngle( CVector2< PointType >& y, float a )
 	{
-	  y.x = -sin(a);
-	  y.y = cos(a);
+		y.x = -sin(a);
+		y.y = cos(a);
 	}
 }
 
