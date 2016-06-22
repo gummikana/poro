@@ -1219,7 +1219,7 @@ std::vector< Sprite* > Sprite::FindSpritesAtPoint( const types::vector2& p )
 {
 	std::vector< Sprite* > result;
 
-    Transform t;
+	Transform t;
 	FindSpritesAtPointImpl( p, t, result );
 
 	return result;
@@ -1231,24 +1231,33 @@ void Sprite::FindSpritesAtPointImpl( const types::vector2& pos, Transform& trans
 	const types::xform& matrix = transform.GetXForm();
 	types::rect dest_rect( 0, 0, mSize.x, mSize.y );
 	if( mRect ) 
-	{ 
+	{
 		dest_rect.w = mRect->w; dest_rect.h = mRect->h; 
 	}
 
 	if( dest_rect.w != 0 && dest_rect.h != 0 )
 	{
-		std::vector< types::vector2 > polygon( 4 );
+		types::vector2 polygon[ 3 ];
 		polygon[ 0 ].Set( -mCenterOffset.x,					-mCenterOffset.y );
 		polygon[ 1 ].Set( -mCenterOffset.x,					dest_rect.h - mCenterOffset.y );
-		polygon[ 2 ].Set( dest_rect.w - mCenterOffset.x,	dest_rect.h - mCenterOffset.y );
-		polygon[ 3 ].Set( dest_rect.w - mCenterOffset.x,	-mCenterOffset.y );
-		for( int i = 0; i < (int)polygon.size(); ++i )
+		polygon[ 2 ].Set( dest_rect.w - mCenterOffset.x,	-mCenterOffset.y );
+		for( int i = 0; i < 3; ++i )
 		{
 			polygon[ i ] = ceng::math::MulWithScale( mXForm, polygon[ i ] );
 			polygon[ i ] = ceng::math::MulWithScale( matrix, polygon[ i ] );
 		}
 
-		if( ceng::math::IsPointInsidePolygon_Better( pos, polygon ) )
+		types::vector2 x_axis = polygon[1] - polygon[0];
+		types::vector2 y_axis = polygon[2] - polygon[0];
+		types::vector2 local_pos = pos - polygon[0];
+		float u = ceng::math::Dot( local_pos, x_axis );
+		float v = ceng::math::Dot( local_pos, y_axis );
+		cassert( x_axis.LengthSquared() > 0 );
+		cassert( y_axis.LengthSquared() > 0 );
+		u /= x_axis.LengthSquared();
+		v /= y_axis.LengthSquared();
+
+		if( u >= 0 && u < 1.f && v >= 0 && v < 1.f )
 			results.push_back( this );
 	}
 

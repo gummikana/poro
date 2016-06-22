@@ -53,21 +53,21 @@ __int64 counter_start_time = 0;
 
 void StartCounter()
 {
-    LARGE_INTEGER li;
-    if(!QueryPerformanceFrequency(&li))
+	LARGE_INTEGER li;
+	if(!QueryPerformanceFrequency(&li))
 		std::cout << "QueryPerformanceFrequency failed" << "\n";
 
-    cpu_frequence = double(li.QuadPart);
+	cpu_frequence = double(li.QuadPart);
 
-    QueryPerformanceCounter(&li);
-    counter_start_time = li.QuadPart;
+	QueryPerformanceCounter(&li);
+	counter_start_time = li.QuadPart;
 }
 
 double GetPreciseTime()
 {
-    LARGE_INTEGER li;
-    QueryPerformanceCounter(&li);
-    return ( double(li.QuadPart-counter_start_time)/cpu_frequence );
+	LARGE_INTEGER li;
+	QueryPerformanceCounter(&li);
+	return ( double(li.QuadPart-counter_start_time)/cpu_frequence );
 }
 
 #else
