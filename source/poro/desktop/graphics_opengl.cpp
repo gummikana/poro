@@ -1642,13 +1642,16 @@ void GraphicsOpenGL::SaveScreenshot( const std::string& filename )
 
 unsigned char*	GraphicsOpenGL::ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp )
 {
-	char*               data;
+	char* filedata = NULL;
 	poro::types::Uint32 data_size_bytes;
-	StreamStatus::Enum read_status = Poro()->GetFileSystem()->ReadWholeFile( filename, data, &data_size_bytes );
+	StreamStatus::Enum read_status = Poro()->GetFileSystem()->ReadWholeFile( filename, filedata, &data_size_bytes );
 	if ( read_status != StreamStatus::NoError )
 		return NULL;
 
-	return stbi_load_from_memory( (stbi_uc*)data, data_size_bytes, x, y, comp, req_comp );
+	unsigned char* result = stbi_load_from_memory( (stbi_uc*)filedata, data_size_bytes, x, y, comp, req_comp );
+	free( filedata );
+
+	return result;
 }
 
 int	GraphicsOpenGL::ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes )

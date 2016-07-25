@@ -32,7 +32,7 @@
 //Number of vertices that can be stored in the DrawTextureBuffer.
 //6000 = 2000 triangles = 1000 quads, since we use GL_TRIANGLES.
 #ifndef PORO_DRAW_TEXTURE_BUFFER_SIZE
-    #define PORO_DRAW_TEXTURE_BUFFER_SIZE 6000 
+	#define PORO_DRAW_TEXTURE_BUFFER_SIZE 6000 
 #endif
 
 namespace poro {
@@ -113,7 +113,7 @@ struct GraphicsSettings
 		buffered_textures( false ),
 		vsync( false ),
 		current_display( 0 )
-    {
+	{
 	}
 
 	int				window_width;
@@ -135,15 +135,15 @@ class IGraphics
 public:
 	//-------------------------------------------------------------------------
 	IGraphics() :
-        mClearBackground(true),
-        mFillColor(),
+		mClearBackground(true),
+		mFillColor(),
 		mBlendMode( BLEND_MODE::NORMAL ),
 		mBlendModes(),
 		mVertexMode( VERTEX_MODE::TRIANGLE_FAN ),
-        mVertexModes(),		
+		mVertexModes(),		
 		mMipmapMode( TEXTURE_FILTERING_MODE::LINEAR ),
 		mDrawFillMode( DRAWFILL_MODE::POLYGON )
-    {
+	{
 		mFillColor[0] = 0.f;mFillColor[1] = 0.f; mFillColor[2] = 0.f; mFillColor[3] = 1.f;
 	}
 
@@ -155,10 +155,10 @@ public:
 	virtual void				SetInternalSize( types::Float32 width, types::Float32 height )		{ poro_assert( false ); /* You have to implement this */ }
 	virtual void				SetInternalSizeAdvanced( types::Float32 left, types::Float32 right, types::Float32 bottom, types::Float32 top )	{ poro_assert( false ); /* You have to implement this */ }
 	virtual poro::types::vec2	GetInternalSize() const												{ poro_assert( false ); /* You have to implement this */ return poro::types::vec2(); }
-    virtual void				SetWindowSize( int width, int height )								{ poro_assert( false ); /* You have to implement this */ }
+	virtual void				SetWindowSize( int width, int height )								{ poro_assert( false ); /* You have to implement this */ }
 	virtual poro::types::vec2	GetWindowSize() const												{ poro_assert( false ); /* You have to implement this */ return poro::types::vec2(); }
-    virtual void				SetFullscreen( bool fullscreen )									{ poro_assert( false ); /* You have to implement this */ }
-    virtual bool				GetFullscreen()														{ poro_assert( false ); return false;/* You have to implement this */ }
+	virtual void				SetFullscreen( bool fullscreen )									{ poro_assert( false ); /* You have to implement this */ }
+	virtual bool				GetFullscreen()														{ poro_assert( false ); return false;/* You have to implement this */ }
 
 	//-------------------------------------------------------------------------
 
@@ -257,7 +257,7 @@ public:
 											const types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ), 
 											types::vec2* tex_coords = NULL, 
 											int count = 0,
-		                                    types::vec2* tex_coords2 = NULL ) { poro_assert( false && "Needs to be implemented" ); }
+											types::vec2* tex_coords2 = NULL ) { poro_assert( false && "Needs to be implemented" ); }
 
 	//-------------------------------------------------------------------------
 
@@ -295,7 +295,7 @@ public:
 	virtual int				ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes )	{ poro_assert( false && "IMPLEMENTATION NEEDED" ); return -1; }
 
 protected:
-    bool mClearBackground;
+	bool mClearBackground;
 	poro::types::fcolor mFillColor;
 	
 	BLEND_MODE::Enum mBlendMode;
@@ -304,7 +304,7 @@ protected:
 	VERTEX_MODE::Enum mVertexMode;
 	std::stack< VERTEX_MODE::Enum > mVertexModes;
 
-    TEXTURE_FILTERING_MODE::Enum mMipmapMode;
+	TEXTURE_FILTERING_MODE::Enum mMipmapMode;
 
 	int mDrawFillMode;
 };
