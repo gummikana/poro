@@ -1642,6 +1642,11 @@ void GraphicsOpenGL::SaveScreenshot( const std::string& filename )
 
 unsigned char*	GraphicsOpenGL::ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp )
 {
+	// comp might be NULL
+	poro_assert( x );
+	poro_assert( y );
+	poro_assert( filename );
+
 	char* filedata = NULL;
 	poro::types::Uint32 data_size_bytes;
 	StreamStatus::Enum read_status = Poro()->GetFileSystem()->ReadWholeFile( filename, filedata, &data_size_bytes );
@@ -1650,7 +1655,33 @@ unsigned char*	GraphicsOpenGL::ImageLoad( char const *filename, int *x, int *y, 
 
 	unsigned char* result = stbi_load_from_memory( (stbi_uc*)filedata, data_size_bytes, x, y, comp, req_comp );
 	free( filedata );
+	
+#define PORO_SWAP_RED_AND_BLUE
+#ifdef PORO_SWAP_RED_AND_BLUE
+	if( comp && *comp == 4 )
+	{
+		int width = *x;
+		int height = *y;
+		int bpp = *comp;
 
+		for( int ix = 0; ix < width; ++ix )
+		{
+			for( int iy = 0; iy < height; ++iy )
+			{
+				int i = ( iy * width ) * bpp + ix * bpp;
+				// color = ((color & 0x000000FF) << 16) | ((color & 0x00FF0000) >> 16) | (color & 0xFF00FF00);
+				/*data[ co ] << 16 |
+				data[ co+1 ] << 8 |
+				data[ co+2 ] << 0; // |*/
+
+				unsigned char temp = result[i+2];
+				result[i+2] = result[i];
+				result[i] = temp;
+			}
+		}
+	}
+#endif
+	
 	return result;
 }
 
