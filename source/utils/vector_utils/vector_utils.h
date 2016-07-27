@@ -7,6 +7,7 @@
 #include <sstream>
 #include <fstream>
 #include <assert.h>
+#include "../random/random.h"
 #include "../xml/cxmlfilesys.h"
 
 namespace ceng {
@@ -137,6 +138,15 @@ void VectorClearPointers( std::vector< T* >& container )
 	container.clear();
 }
 
+//----------------------------------------------------------------------------
+// returns random element from the vector
+template< class T >
+T VectorRandomElement( const std::vector< T >& container )
+{
+	if( container.empty() ) return T();
+	const int i = ceng::Random( 0, container.size() - 1 );
+	return container[ i ];
+}
 
 //-----------------------------------------------------------------------------
 //
