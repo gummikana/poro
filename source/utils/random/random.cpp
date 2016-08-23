@@ -27,6 +27,8 @@
 
 #include <iostream>
 
+#include <poro/poro_macros.h>
+
 namespace ceng {
 namespace {
 
@@ -72,7 +74,7 @@ void Global_LGMRandom::SetSeed( double s )
 // Algorithm ripped from Newran02C http://www.robertnz.net/nr02doc.htm
 double Global_LGMRandom::Next()
 {
-	assert( seed );
+	poro_assert( seed );
 	// m = 2147483647 = 2^31 - 1; a = 16807;
 	// 127773 = m div a; 2836 = m mod a
 	long iseed = (long)seed;
@@ -94,7 +96,7 @@ void CLGMRandom::SetSeed( double s )
 
 double CLGMRandom::Next()
 {
-	assert( seed );
+	poro_assert( seed );
 	// m = 2147483647 = 2^31 - 1; a = 16807;
 	// 127773 = m div a; 2836 = m mod a
 	long iseed = (long)seed;
