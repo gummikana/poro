@@ -159,6 +159,8 @@ public:
 	T GetRight() const	{ return x + w; }
 	T GetTop() const	{ return y; }
 	T GetBottom() const	{ return y + h; }
+	T GetCenterX() const { return x + w / T(2);  }
+	T GetCenterY() const { return y + h / T(2);  }
 
 	//-------------------------------------------------------------------------
 

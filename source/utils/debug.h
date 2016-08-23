@@ -82,6 +82,4 @@ void DEBUG_LOG( const T& what )
 	fileout.close();
 }
 
-
-
 #endif
