@@ -38,6 +38,8 @@ public:
 	void 		Draw( poro::IGraphics* graphics, as::Transform t );
 	void		Clear();
 	
+	int			DEBUG_GetParticleCount() const { return (int)myParticles.size(); }
+
 private:
 	std::vector< CParticle* > myParticles;	
 	

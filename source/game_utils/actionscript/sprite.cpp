@@ -235,6 +235,9 @@ namespace {
 		// this shouldn't be null
 		cassert(data);
 
+
+#if 1
+		// if we want to update sprite files on the fly...
 		// check if we should reload
 		std::string time_stamp = ceng::GetDateForFile(filename);
 
@@ -247,6 +250,7 @@ namespace {
 			ceng::XmlLoadFromFile((*data), filename, "Sprite");
 			data->time_stamp = time_stamp;
 		}
+#endif
 
 		return data;
 	}
