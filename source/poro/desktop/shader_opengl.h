@@ -21,6 +21,7 @@
 #ifndef INC_SHADER_OPENGL_H
 #define INC_SHADER_OPENGL_H
 
+#include <map>
 #include "../poro_types.h"
 #include "graphics_opengl.h"
 #include "texture_opengl.h"
@@ -61,8 +62,10 @@ private:
     int vertexShader;
     int fragmentShader;
 	int lastAllocatedTextureUnit;
+	std::map<std::string, int> parameterLocationCache;
 	
 	int LoadShader( const std::string& filename, bool is_vertex_shader );
+	int GetParameterLocation( const std::string& name );
 
     //const int MAX_PARAMETER_COUNT = 100;
     /*int lastSetParameterId = -1;

@@ -85,6 +85,8 @@ void ShaderOpenGL::Release()
 		glDeleteShader( fragmentShader );
 		fragmentShader = 0;
 	}
+
+	parameterLocationCache.clear();
 }
 
 void ShaderOpenGL::Enable()
@@ -103,43 +105,34 @@ void ShaderOpenGL::Disable()
 
 bool ShaderOpenGL::HasParameter( const std::string& name)
 {
-	const char *c_str = name.c_str();
-    int handle = glGetUniformLocation( program, name.c_str() );
-    return handle > -1;
+	const int location = GetParameterLocation( name.c_str() );
+    return location > -1;
 }
 
 void ShaderOpenGL::SetParameter( const std::string& name, float value )
 {
-	// TODO: cache parameter locations!
-	const char *c_str = name.c_str();
-	int location = glGetUniformLocation( program, name.c_str() );
+	const int location = GetParameterLocation( name.c_str() );
 
 	glUniform1f( location, value );
 }
 
 void ShaderOpenGL::SetParameter( const std::string& name, const types::vec2& value )
 {
-	// TODO: cache parameter locations!
-	const char *c_str = name.c_str();
-	int location = glGetUniformLocation( program, name.c_str() );
+	const int location = GetParameterLocation( name.c_str() );
 
 	glUniform2f( location, value.x, value.y );
 }
 
 void ShaderOpenGL::SetParameter( const std::string& name, const types::vec3& value )
 {
-	// TODO: cache parameter locations!
-	const char *c_str = name.c_str();
-	int location = glGetUniformLocation( program, name.c_str() );
+	const int location = GetParameterLocation( name.c_str() );
 
 	glUniform3f( location, value.x, value.y, value.z );
 }
 
 void ShaderOpenGL::SetParameter( const std::string& name, const ITexture* texture )
 {
-	// TODO: cache parameter locations!
-	const char *c_str = name.c_str();
-	int location = glGetUniformLocation( program, name.c_str() );
+	const int location = GetParameterLocation( name.c_str() );
 
 	glEnable( GL_TEXTURE_2D );
 	glUniform1i( location, lastAllocatedTextureUnit );
@@ -153,9 +146,7 @@ void ShaderOpenGL::SetParameter( const std::string& name, const ITexture* textur
 
 void ShaderOpenGL::SetParameter( const std::string& name, const ITexture3d* texture )
 {
-	// TODO: cache parameter locations!
-	const char *c_str = name.c_str();
-	int location = glGetUniformLocation( program, name.c_str() );
+	const int location = GetParameterLocation( name.c_str() );
 
 	glEnable( GL_TEXTURE_3D );
 	glUniform1i( location, lastAllocatedTextureUnit );
@@ -208,5 +199,24 @@ int ShaderOpenGL::LoadShader( const std::string& filename, bool is_vertex_shader
 
 	return shader_handle;
 }
+
+int ShaderOpenGL::GetParameterLocation( const std::string& name )
+{
+	int result;
+	
+	auto it = parameterLocationCache.find( name );
+	if ( it == parameterLocationCache.end() )
+	{
+		result = glGetUniformLocation( program, name.c_str() );
+		parameterLocationCache.insert( std::make_pair( name, result ) );
+	}
+	else
+	{
+		result = it->second;
+	}
+
+	return result;
+}
+
 
 }
