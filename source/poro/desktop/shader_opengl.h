@@ -45,6 +45,7 @@ public:
 	virtual ~ShaderOpenGL(){ Release(); }
 
 	virtual void Init( const std::string& vertex_source_filename, const std::string& fragment_source_filename ) PORO_OVERRIDE;	
+    virtual void InitFromString( const std::string& vertex_source, const std::string& fragment_source ) PORO_OVERRIDE;
 	virtual void Release() PORO_OVERRIDE;
 	virtual void Enable() PORO_OVERRIDE;
 	virtual void Disable() PORO_OVERRIDE;
@@ -65,6 +66,8 @@ private:
 	std::map<std::string, int> parameterLocationCache;
 	
 	int LoadShader( const std::string& filename, bool is_vertex_shader );
+    int LoadShaderFromString( const std::string& source, bool is_vertex_shader );
+    void Init();
 	int GetParameterLocation( const std::string& name );
 
     //const int MAX_PARAMETER_COUNT = 100;

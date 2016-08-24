@@ -32,37 +32,27 @@ void ShaderOpenGL::Init( const std::string& vertex_source_filename, const std::s
 {
 	Release();
 
-    program = glCreateProgram();
-
 	vertexShader = LoadShader( vertex_source_filename, true );
     fragmentShader = LoadShader( fragment_source_filename, false );
 
-	if (vertexShader == 0 || fragmentShader == 0)
-	{
-		Release();
-		return;
-	}
-
-    glAttachShader( program, vertexShader );
-    glAttachShader( program, fragmentShader );
-    glLinkProgram( program);
-
-    //DEBUG
-	GLint status;
-    glGetProgramiv (program, GL_LINK_STATUS, &status);
-    if (status == GL_FALSE)
-    {
-        GLint infoLogLength;
-        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
-        
-        GLchar *strInfoLog = new GLchar[infoLogLength + 1];
-        glGetProgramInfoLog(program, infoLogLength, NULL, strInfoLog);
-        fprintf(stderr, "GLSL link failure: %s\n", strInfoLog);
-        delete[] strInfoLog;
-
-		Release();
-    }
+	Init();
 }
+
+void ShaderOpenGL::InitFromString( const std::string& vertex_source, const std::string& fragment_source )
+{ 
+    Release();
+
+    vertexShader = LoadShaderFromString( vertex_source, true );
+    fragmentShader = LoadShaderFromString( fragment_source, false );
+
+    if (vertexShader == 0 || fragmentShader == 0)
+    {
+        Release();
+        return;
+    }
+
+    Init();
+}	
 
 void ShaderOpenGL::Release()
 {
@@ -200,23 +190,79 @@ int ShaderOpenGL::LoadShader( const std::string& filename, bool is_vertex_shader
 	return shader_handle;
 }
 
-int ShaderOpenGL::GetParameterLocation( const std::string& name )
+int ShaderOpenGL::LoadShaderFromString( const std::string& source, bool is_vertex_shader )
 {
-	int result;
-	
-	auto it = parameterLocationCache.find( name );
-	if ( it == parameterLocationCache.end() )
-	{
-		result = glGetUniformLocation( program, name.c_str() );
-		parameterLocationCache.insert( std::make_pair( name, result ) );
-	}
-	else
-	{
-		result = it->second;
-	}
+    const char* sources[1];
+    sources[0] = source.c_str();
 
-	return result;
+    int lengths[1];
+    lengths[0] = source.size();
+
+    int shader_handle = glCreateShader( is_vertex_shader ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER );
+    glShaderSource( shader_handle, 1, sources, lengths );
+    glCompileShader( shader_handle );
+
+    //DEBUG
+    GLint status;
+    glGetShaderiv(shader_handle, GL_COMPILE_STATUS, &status);
+    if (status == GL_FALSE)
+    {
+        GLint infoLogLength;
+        glGetShaderiv(shader_handle, GL_INFO_LOG_LENGTH, &infoLogLength);
+
+        GLchar *strInfoLog = new GLchar[infoLogLength + 1];
+        glGetShaderInfoLog(shader_handle, infoLogLength, NULL, strInfoLog);
+
+
+        fprintf(stderr, "GLSL compile failure:\n%s\n", strInfoLog);
+        delete[] strInfoLog;
+
+        isCompiledAndLinked = false;
+    }
+
+    return shader_handle;
 }
 
+void ShaderOpenGL::Init()
+{
+    program = glCreateProgram();
+    glAttachShader( program, vertexShader );
+    glAttachShader( program, fragmentShader );
+    glLinkProgram( program);
+
+    //DEBUG
+    GLint status;
+    glGetProgramiv (program, GL_LINK_STATUS, &status);
+    if (status == GL_FALSE)
+    {
+        GLint infoLogLength;
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
+
+        GLchar *strInfoLog = new GLchar[infoLogLength + 1];
+        glGetProgramInfoLog(program, infoLogLength, NULL, strInfoLog);
+        fprintf(stderr, "GLSL link failure: %s\n", strInfoLog);
+        delete[] strInfoLog;
+
+        Release();
+    }
+}
+
+int ShaderOpenGL::GetParameterLocation( const std::string& name )
+{
+    int result;
+
+    auto it = parameterLocationCache.find( name );
+    if ( it == parameterLocationCache.end() )
+    {
+        result = glGetUniformLocation( program, name.c_str() );
+        parameterLocationCache.insert( std::make_pair( name, result ) );
+    }
+    else
+    {
+        result = it->second;
+    }
+
+    return result;
+}
 
 }

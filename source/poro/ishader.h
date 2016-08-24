@@ -35,6 +35,7 @@ public:
 	virtual ~IShader() { }
 
 	virtual void Init( const std::string& vertex_source_filename, const std::string& fragment_source_filename ) { }	
+    virtual void InitFromString( const std::string& vertex_source, const std::string& fragment_source ) { }	
 	virtual void Release() { }
 	virtual void Enable() { }
 	virtual void Disable() { }
