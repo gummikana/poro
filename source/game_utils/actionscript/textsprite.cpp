@@ -56,6 +56,7 @@ as::TextSprite* LoadTextSprite( const std::string& font_file )
 {
 	as::TextSprite* mTextSprite = new as::TextSprite;
 	LoadTextSpriteTo( font_file, mTextSprite );
+	mTextSprite->SetFilename( font_file );
 	return mTextSprite;
 }
 
