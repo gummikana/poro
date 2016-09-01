@@ -120,6 +120,13 @@ void ShaderOpenGL::SetParameter( const std::string& name, const types::vec3& val
 	glUniform3f( location, value.x, value.y, value.z );
 }
 
+void ShaderOpenGL::SetParameter( const std::string& name, float x, float y, float z, float w )
+{
+	const int location = GetParameterLocation( name.c_str() );
+
+	glUniform4f( location, x, y, z, w );
+}
+
 void ShaderOpenGL::SetParameter( const std::string& name, const ITexture* texture )
 {
 	const int location = GetParameterLocation( name.c_str() );
