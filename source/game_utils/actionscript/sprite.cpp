@@ -146,6 +146,69 @@ struct SpriteLoadHelper
 
 		ceng::VectorXmlSerializer< as::impl::SpriteLoadHelper > child_sprite_serializer(child_sprites, "Sprite");
 		child_sprite_serializer.Serialize(filesys);
+
+        std::string	hotspots_filename;
+        XML_BindAttributeAlias(filesys, hotspots_filename, "hotspots_filename");
+
+        std::vector< Sprite::Hotspot > hotspots;
+        ceng::VectorXmlSerializerObjects< Sprite::Hotspot > hotspot_serializer(hotspots, "Hotspot");
+        hotspot_serializer.Serialize( filesys );
+
+        // load hotspots
+        if ( hotspots_filename.empty() == false )
+        {
+            ceng::CArray2D<uint32> hotspots_image;
+            LoadImage( hotspots_filename, hotspots_image );
+            for ( const auto rect_animation : rect_animations )
+            {
+                for ( const auto& hotspot_config : hotspots )
+                {
+                    auto hotspot = Sprite::ResolvedHotspot();
+                    hotspot.name = hotspot_config.name;
+                    rect_animation->mHotspots.push_back( hotspot );
+                }
+
+                for ( int frame = 0; frame < rect_animation->mFrameCount; frame++ )
+                {
+                    types::rect rect = rect_animation->FigureOutRectPos( frame );
+                    types::ivector2 min( (int)rect.x, (int)rect.y );
+                    types::ivector2 max( (int)rect.x + (int)rect.w, (int)rect.y + (int)rect.h );
+
+                    min.x = ceng::math::Min( min.x, hotspots_image.GetWidth() );
+                    min.y = ceng::math::Min( min.y, hotspots_image.GetHeight() );
+                    max.x = ceng::math::Min( max.x, hotspots_image.GetWidth() );
+                    max.y = ceng::math::Min( max.y, hotspots_image.GetHeight() );
+
+                    for ( int y = min.y; y<max.y; y++ )
+                    {
+                        for ( int x = min.x; x < max.x; x++ )
+                        {
+                            const uint32 color = hotspots_image.At( x, y);
+                            int hotspots_found_this_frame = 0;
+                            if ( color != 0 )
+                            {
+                                int hotspot_i = 0;
+                                for ( const auto& hotspot_config : hotspots )
+                                {
+                                    const uint32 color2 = hotspot_config.color;
+                                    if ( ( color & color2 ) == color2 )
+                                    {
+                                        rect_animation->mHotspots[hotspot_i].positions.emplace_back( types::ivector2( x, y ) - min );
+                                        if ( ++hotspots_found_this_frame == hotspots.size() )
+                                        {
+                                            x = max.x; // all hotspots found, jump to next frame
+                                            y = max.y;
+                                        }
+                                    }
+
+                                    hotspot_i++;
+                                }
+                            }
+                        } // x
+                    } // y
+                } // frames
+            } // rect anims
+        }
 	}
 };
 
@@ -1151,6 +1214,30 @@ void Sprite::SetAnimationFrame(int frame)
 {
 	if( mAnimationUpdater.get() ) mAnimationUpdater->SetFrame( frame );
 	if( mRectAnimation ) mRectAnimation->SetFrame( this, frame, false );
+}
+//-----------------------------------------------------------------------------
+
+types::ivector2 Sprite::GetHotspot( const std::string& name )
+{
+    types::ivector2 result( 0, 0 );
+
+    if ( auto rect_animation = GetRectAnimation() )
+    {
+        for ( auto& hotspot : rect_animation->mHotspots )
+        {
+            if ( hotspot.name == name )
+            {
+                int frame =  rect_animation->mCurrentFrame;
+                if ( frame < (int)hotspot.positions.size() )
+                {
+                    result = hotspot.positions[ frame ];
+                }
+                break;
+            }
+        }
+    }
+
+    return result;
 }
 //-----------------------------------------------------------------------------
 
