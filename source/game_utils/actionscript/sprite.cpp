@@ -179,12 +179,13 @@ struct SpriteLoadHelper
 					max.x = ceng::math::Min( max.x, hotspots_image.GetWidth() );
 					max.y = ceng::math::Min( max.y, hotspots_image.GetHeight() );
 
+					int hotspots_found_this_frame = 0;
+
 					for ( int y = min.y; y<max.y; y++ )
 					{
 						for ( int x = min.x; x < max.x; x++ )
 						{
 							const uint32 color = hotspots_image.At( x, y);
-							int hotspots_found_this_frame = 0;
 							if ( color != 0 )
 							{
 								int hotspot_i = 0;
