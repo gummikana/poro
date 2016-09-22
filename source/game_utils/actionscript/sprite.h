@@ -367,7 +367,7 @@ public:
 	bool IsAnimationPlaying() const;
 	void SetAnimationFrame( int frame );
 
-    types::ivector2 GetHotspot( const std::string& name );
+    types::vector2 GetHotspot( const std::string& name );
 
 	//-------------------------------------------------------------------------
 

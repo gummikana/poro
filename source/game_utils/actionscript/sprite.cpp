@@ -1217,9 +1217,9 @@ void Sprite::SetAnimationFrame(int frame)
 }
 //-----------------------------------------------------------------------------
 
-types::ivector2 Sprite::GetHotspot( const std::string& name )
+types::vector2 Sprite::GetHotspot( const std::string& name )
 {
-    types::ivector2 result( 0, 0 );
+    types::vector2 result = -GetCenterOffset();
 
     if ( auto rect_animation = GetRectAnimation() )
     {
@@ -1229,9 +1229,8 @@ types::ivector2 Sprite::GetHotspot( const std::string& name )
             {
                 int frame =  rect_animation->mCurrentFrame;
                 if ( frame < (int)hotspot.positions.size() )
-                {
-                    result = hotspot.positions[ frame ];
-                }
+                    result += types::vector2( hotspot.positions[ frame ] );
+
                 break;
             }
         }
