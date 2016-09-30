@@ -188,12 +188,14 @@ public:
 			XML_BindAttribute( filesys, name  );
 			XML_BindAttribute( filesys, probability );
 			XML_BindAttribute( filesys, max_distance );
+			XML_BindAttribute( filesys, on_finished );
 		}
 
 		int	        frame = 0;
 		std::string	name = "";
 		float       probability = 1.0f;
 		float       max_distance = 500.0f;
+		bool        on_finished = false;
 	};
 
     struct Hotspot
