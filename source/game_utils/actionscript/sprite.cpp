@@ -1136,7 +1136,9 @@ void Sprite::PlayRectAnimation( const std::string& name )
 			mRectAnimations[ i ]->mKillMe = false;
 			SetRectAnimation( mRectAnimations[ i ] );
 			// add so that the rect animation doesn't flash for 1 frame
+			const bool mFinishedTemp = mHasAnimationFinished;
 			Update( 0 );
+			mHasAnimationFinished = mFinishedTemp;
 			return;
 		}
 	}
@@ -1153,9 +1155,8 @@ void Sprite::PauseRectAnimation()
 bool Sprite::IsRectAnimationPlaying() const
 {
 	if( mRectAnimation == NULL ) return false;
-	if( mRectAnimation->mLoop ) return true;
-	if( mHasAnimationFinished )
-		return false;
+	if( mHasAnimationFinished )  return false;
+	if( mRectAnimation->mLoop )  return true;
 
 	return true;
 }
