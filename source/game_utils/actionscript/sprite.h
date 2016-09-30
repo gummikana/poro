@@ -386,6 +386,8 @@ public:
 	
 	poro::IGraphicsBuffer*		GetAlphaBuffer( poro::IGraphics* graphics );
 
+	bool mHasAnimationFinished;
+
 protected:
 
 	void FindSpritesAtPointImpl( const types::vector2& pos, Transform& transform, std::vector< Sprite* >& results );

@@ -565,7 +565,8 @@ Sprite::Sprite() :
 	mRect( NULL ),
 	mRectAnimation( NULL ),
 	mAnimations( NULL ),
-	mAnimationUpdater( NULL )
+	mAnimationUpdater( NULL ),
+	mHasAnimationFinished( false )
 {
 	mColor[ 0 ] = 1.f;
 	mColor[ 1 ] = 1.f;
@@ -916,6 +917,8 @@ bool Sprite::IsOutsideSreen(poro::IGraphics* graphics, const poro::types::vec2* 
 
 void Sprite::Update( float dt )
 {
+	mHasAnimationFinished = false;
+
 	if( mRectAnimation ) 
 		mRectAnimation->Update( this, dt );
 
@@ -976,16 +979,22 @@ void Sprite::RectAnimation::Update( Sprite* sprite, float dt )
 		while( mCurrentTime >= mWaitTime ) {
 			mCurrentTime -= mWaitTime;
 			frame++;
-			if( frame >= mFrameCount) {
-				if( mLoop ) {
+			if( frame >= mFrameCount) 
+			{
+				if( mLoop ) 
+				{
 					frame = 0;
-				} else {
-					if( mNextAnimation.empty() == false ) {
+				}
+				else 
+				{
+					sprite->mHasAnimationFinished = true;
+
+					if( mNextAnimation.empty() == false ) 
+					{
 						sprite->PlayRectAnimation( mNextAnimation );
 						return;
 					}
 				}
-
 			}
 		}
 	}
@@ -1145,7 +1154,7 @@ bool Sprite::IsRectAnimationPlaying() const
 {
 	if( mRectAnimation == NULL ) return false;
 	if( mRectAnimation->mLoop ) return true;
-	if( mRectAnimation->mCurrentFrame >= mRectAnimation->mFrameCount - 1 ) 
+	if( mHasAnimationFinished )
 		return false;
 
 	return true;
