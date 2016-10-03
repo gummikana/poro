@@ -1155,6 +1155,16 @@ void Sprite::PauseRectAnimation()
 bool Sprite::IsRectAnimationPlaying() const
 {
 	if( mRectAnimation == NULL ) return false;
+	if( mRectAnimation->mLoop )  return true;
+	if( mRectAnimation->mCurrentFrame >= mRectAnimation->mFrameCount - 1 ) return false;
+
+	return true;
+}
+//-----------------------------------------------------------------------------
+
+bool Sprite::HasRectAnimationJustFinished() const
+{
+	if( mRectAnimation == NULL ) return false;
 	if( mHasAnimationFinished )  return false;
 	if( mRectAnimation->mLoop )  return true;
 

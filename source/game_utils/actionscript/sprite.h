@@ -356,6 +356,7 @@ public:
 	void PauseRectAnimation();
 
 	bool IsRectAnimationPlaying() const;
+	bool HasRectAnimationJustFinished() const;
 	bool HasRectAnimation( const std::string& name ) const;
 
 	std::string GetRectAnimationName() const;
