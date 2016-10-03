@@ -1165,10 +1165,10 @@ bool Sprite::IsRectAnimationPlaying() const
 bool Sprite::HasRectAnimationJustFinished() const
 {
 	if( mRectAnimation == NULL ) return false;
-	if( mHasAnimationFinished )  return false;
-	if( mRectAnimation->mLoop )  return true;
+	if( mHasAnimationFinished )  return true;
+	if( mRectAnimation->mLoop )  return false;
 
-	return true;
+	return false;
 }
 //-----------------------------------------------------------------------------
 
