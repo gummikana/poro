@@ -267,6 +267,19 @@ public:
 			{
 				++tokenizer->at;
 			}
+			else if( StringMatch( tokenizer, "<!--" ) )
+			{
+				// this should be before the other one since  <! can start before us
+				tokenizer->at += 4;
+				while( tokenizer->at[0] && StringMatch( tokenizer, "-->" ) == false )
+				{
+					++tokenizer->at;
+				}
+
+				if( StringMatch( tokenizer, "-->") )
+					tokenizer->at += 3;
+
+			}
 			else if( tokenizer->at[0] == '<' && tokenizer->at[1] == '!' )
 			{
 				tokenizer->at += 2;
@@ -288,18 +301,6 @@ public:
 
 				if( StringMatch( tokenizer, "?>") )
 					tokenizer->at += 2;
-			}
-			else if( StringMatch( tokenizer, "<!--" ) )
-			{
-				tokenizer->at += 4;
-				while( tokenizer->at[0] && StringMatch( tokenizer, "-->" ) == false )
-				{
-					++tokenizer->at;
-				}
-
-				if( StringMatch( tokenizer, "-->") )
-					tokenizer->at += 3;
-
 			}
 			else
 			{
