@@ -432,6 +432,7 @@ public:
 					{
 						element_ended = true;
 						parsing_element_start = false;
+						++tokenizer->at;
 					}
 				}
 				break;
