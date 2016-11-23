@@ -187,7 +187,7 @@ std::string CastToString( const T& var )
 template< class T >
 T CastFromString( const std::string& str )
 {
-	T result;
+	T result = T();
 	std::stringstream ss( str );
 	ss.operator>>( result );
 	return result;
