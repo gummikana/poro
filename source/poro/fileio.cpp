@@ -38,14 +38,6 @@
 typedef poro::types::Uint32 u32;
 
 
-#ifdef PORO_PLAT_WINDOWS
-	#ifdef PORO_CONSERVATIVE
-	#define PORO_THREAD_LOCAL 
-	#else
-	#define PORO_THREAD_LOCAL __declspec(thread)
-	#endif
-#endif
-
 namespace poro {
 
 namespace platform_impl
@@ -512,7 +504,7 @@ StreamStatus::Enum ReadStream::ReadTextLine( char* out_buffer, u32 buffer_capaci
 	if ( status != StreamStatus::NoError )
 		return status;
 
-	int len = std::min( buffer_capacity, text.length() );
+	int len = std::min( (size_t)buffer_capacity, text.length() );
 	for ( int i = 0; i < len; i++ )
 		out_buffer[ i ] = text[ i ];
 

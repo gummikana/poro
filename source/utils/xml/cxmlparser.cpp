@@ -59,7 +59,7 @@ static char* ReadWholeFile( const char* filename )
 	}
 	
 	char* result = NULL;
-	size_t result_size = 0;
+	poro::types::Uint32 result_size = 0;
 	file_system->ReadWholeFileAndNullTerminate( filename, result, &result_size );
 
 	if ( delete_file_system )

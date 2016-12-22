@@ -35,6 +35,14 @@
 #  define poro_assert cassert
 #  define PORO_OVERRIDE override
 
+#ifdef PORO_PLAT_WINDOWS
+	#ifdef PORO_CONSERVATIVE
+		#define PORO_THREAD_LOCAL 
+	#else
+		#define PORO_THREAD_LOCAL __declspec(thread)
+	#endif
+#endif
+
 #else
 
 #  define poro_logger std::cout

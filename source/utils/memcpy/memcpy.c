@@ -345,6 +345,8 @@ void *fast_memcpy(void *dest, const void *src, size_t count)
 	return dest;
 }
 
+
+#ifndef _WIN64
 //************************************************************************/
 // this is copied over from http://stackoverflow.com/questions/1715224/very-fast-memcpy-for-image-processing
 // Apparently it's by William Chan  http://williamchan.ca/portfolio/assembly/ssememcpy/
@@ -392,3 +394,4 @@ void X_aligned_memcpy_sse2(void* dest, const void* src, const unsigned long size
     //loop_copy_end:
   }
 }
+#endif
