@@ -19,12 +19,13 @@ namespace ceng
 	bool		RenameFile( const std::string& file, const std::string& new_name );
 
 	void CopyFileCeng( const std::string& from, const std::string& to );
+	void MoveFileCeng( const std::string& from, const std::string& to );
 
 	long ReadFileSize( std::fstream& file );
 	long ReadFileSize( const std::string& file );
 
 	//format=0(or undefined) Don't format, format=1 Unix(NL), format=2 Windows(CR+NL)
-    void ReadFileToBuffer( const std::string& filename, CSafeArray< char, long >& buffer, int format=0 ); 
+	void ReadFileToBuffer( const std::string& filename, CSafeArray< char, long >& buffer, int format=0 ); 
 	
 	// every line is a separate element in the vector
 	void ReadFileToVector( const std::string& filename, std::vector< std::string >& output );		

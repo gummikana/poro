@@ -425,7 +425,8 @@ std::string MakeUniqueFilename( const std::string& file, const std::string& exte
 void CopyFileCeng( const std::string& from, const std::string& to )
 {
 #ifdef CENG_PLATFORM_WINDOWS
-	CopyFile( from.c_str(), to.c_str(), false );
+	int CopyFile_result = CopyFile( from.c_str(), to.c_str(), false );
+	cassert( CopyFile_result != 0 );
 #else
 	std::ifstream  src( from.c_str() );
 	std::ofstream  dst( to.c_str() );
@@ -449,5 +450,16 @@ void CopyFileCeng( const std::string& from, const std::string& to )
     fclose(dest);
 	*/
 }
+
+void MoveFileCeng( const std::string& from, const std::string& to )
+{
+#ifdef CENG_PLATFORM_WINDOWS
+	int MoveFile_result = MoveFile( from.c_str(), to.c_str() );
+	cassert( MoveFile_result != 0 );
+#else
+	cassert( false && "IMPLEMENTATION NEEDED!" );
+#endif
+}
+
 
 } // end o namespace ceng
