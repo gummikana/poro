@@ -158,7 +158,7 @@ bool RenameFile( const std::string& file, const std::string& new_name )
 		BOOL result = MoveFileExA( file.c_str(), new_name.c_str(), MOVEFILE_REPLACE_EXISTING  );
 		if( result == 0) 
 		{
-			LogError << "Rename file failed - error code: " << GetLastError() << "\n";
+			LogError << "RenameFile(" << file << ", " << new_name << ") failed - error code: " << GetLastError() << "\n";
 		}
 		return result ? true : false;
 	}
@@ -426,7 +426,11 @@ void CopyFileCeng( const std::string& from, const std::string& to )
 {
 #ifdef CENG_PLATFORM_WINDOWS
 	int CopyFile_result = CopyFile( from.c_str(), to.c_str(), false );
-	cassert( CopyFile_result != 0 );
+
+	if( CopyFile_result == 0) 
+	{
+		LogError << "CopyFileCeng(" << from << ", " << to << ") file failed - error code: " << GetLastError() << "\n";
+	}
 #else
 	std::ifstream  src( from.c_str() );
 	std::ofstream  dst( to.c_str() );
@@ -455,7 +459,11 @@ void MoveFileCeng( const std::string& from, const std::string& to )
 {
 #ifdef CENG_PLATFORM_WINDOWS
 	int MoveFile_result = MoveFile( from.c_str(), to.c_str() );
-	cassert( MoveFile_result != 0 );
+
+	if( MoveFile_result == 0) 
+	{
+		LogError << "MoveFileCeng(" << from << ", " << to << ") file failed - error code: " << GetLastError() << "\n";
+	}
 #else
 	cassert( false && "IMPLEMENTATION NEEDED!" );
 #endif
