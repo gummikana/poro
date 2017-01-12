@@ -63,12 +63,10 @@ void SetRandomSeeds( int random_seed )
 ///////////////////////////////////////////////////////////////////////////////
 
 double Global_LGMRandom::seed = 0;
-double Global_LGMRandom::iseed = 0;
 
 void Global_LGMRandom::SetSeed( double s )
 {
 	seed = s;
-	iseed = 0;
 }
 
 // Algorithm ripped from Newran02C http://www.robertnz.net/nr02doc.htm
@@ -90,7 +88,6 @@ double Global_LGMRandom::Next()
 void CLGMRandom::SetSeed( double s )
 {
 	seed = s;
-	iseed = 0;
 	Next();
 }
 
@@ -109,17 +106,17 @@ double CLGMRandom::Next()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static int g_seed;
+static int g_seed = 0;
 
 void set_fastrand_seed( int seed ) {
 	g_seed = seed ^ 13 - 1;
 }
 
 int fastrand() { 
-  g_seed = (214013*g_seed+2531011); 
-  return (g_seed>>16)&0x7FFF; 
+	g_seed = (214013*g_seed+2531011); 
+	return (g_seed>>16)&0x7FFF; 
 
-  // return ceng::Global_LGMRandom::Random( 0, 0x7FFF );
+	// return ceng::Global_LGMRandom::Random( 0, 0x7FFF );
 } 
 
 ///////////////////////////////////////////////////////////////////////////////

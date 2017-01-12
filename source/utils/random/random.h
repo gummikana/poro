@@ -148,7 +148,6 @@ public:
 	}
 
 	static double seed;
-	static double iseed;
 };
 
 //-----------------------------------------------------------------------------
@@ -158,7 +157,7 @@ class CLGMRandom
 public:
 	void SetSeed( double seed );
 
-	CLGMRandom() : seed( 0 ), iseed( 0 ) { }
+	CLGMRandom() : seed( 0 ) { }
 	CLGMRandom( double seed ) { SetSeed( seed ); }
 
 	double operator()() 
@@ -180,7 +179,6 @@ public:
 	}
 
 	double seed;
-	double iseed;
 };
 
 //-----------------------------------------------------------------------------
