@@ -16,6 +16,8 @@ namespace easing {
 Back::EaseIn Back::easeIn;
 Back::EaseOut Back::easeOut;
 Back::EaseInOut Back::easeInOut;
+ceng::CLGMRandom mRandom( 42589 );
+
 
 float Back::impl_easeIn (float t,float b , float c, float d) {
 	float s = 1.70158f;
@@ -269,10 +271,10 @@ float PetriHacks::DimishingShakeBack::f( float x ) { return ( ( cos( x * 3.1415f
 float PetriHacks::DimishingShake::f( float x ) { return ( ( cos( x * 3.1415f ) + 1 ) * 0.5f )  * sin( x * 30.0f ) + x; }
 
 // Randomf, just gives you a ceng::math::Randomf(0,1) as a result
-float PetriHacks:: Randomf::f( float x ) { return ceng::Randomf( 0.f, 1.f ); }
+float PetriHacks:: Randomf::f( float x ) { return mRandom.Randomf( 0.f, 1.f ); }
 
 // BooleanRandom, returns 0 or 1 randomly
-float PetriHacks:: BooleanRandom::f( float x ) { return (float)ceng::Random( 0, 1 ); }
+float PetriHacks:: BooleanRandom::f( float x ) { return (float)mRandom.Random( 0, 1 ); }
 
 
 PetriHacks::SinGoTo2AndBack		PetriHacks::sinGoTo2AndBack;
