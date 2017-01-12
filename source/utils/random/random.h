@@ -178,6 +178,16 @@ public:
 		return low+(int)((double)(high-low + 1)*(double)Next() );
 	}
 
+	int RandomSafe( int range0, int range1 )
+	{
+		return Random( range0 < range1 ? range0 : range1, range0 > range1 ? range0 : range1 );
+	}
+
+	float RandomfSafe( float range0, float range1 )
+	{
+		return Randomf( range0 < range1 ? range0 : range1, range0 > range1 ? range0 : range1 );
+	}
+
 	double seed;
 };
 
