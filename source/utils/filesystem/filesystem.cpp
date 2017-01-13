@@ -455,6 +455,7 @@ void CopyFileCeng( const std::string& from, const std::string& to )
 	*/
 }
 
+
 void MoveFileCeng( const std::string& from, const std::string& to )
 {
 #ifdef CENG_PLATFORM_WINDOWS
@@ -468,6 +469,17 @@ void MoveFileCeng( const std::string& from, const std::string& to )
 	cassert( false && "IMPLEMENTATION NEEDED!" );
 #endif
 }
+
+void DeleteFileCeng( const std::string& filepath )
+{
+	int DeleteFile_result = DeleteFile( filepath.c_str() );
+
+	if( DeleteFile_result == 0) 
+	{
+		LogError << "DeleteFileCeng(" << filepath << ") file failed - error code: " << GetLastError() << "\n";
+	}
+}
+
 
 
 } // end o namespace ceng

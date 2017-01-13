@@ -20,6 +20,7 @@ namespace ceng
 
 	void CopyFileCeng( const std::string& from, const std::string& to );
 	void MoveFileCeng( const std::string& from, const std::string& to );
+	void DeleteFileCeng( const std::string& filepath );
 
 	long ReadFileSize( std::fstream& file );
 	long ReadFileSize( const std::string& file );
@@ -47,6 +48,8 @@ namespace ceng
 
 	// example MakeUniqueFilename( "test", "png" ) returns "test", if it's free
 	std::string MakeUniqueFilename( const std::string& file, const std::string& extension );
+
+
 
 } // end o namespace ceng
 
