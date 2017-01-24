@@ -296,6 +296,7 @@ namespace platform_impl
 		}
 
 		static bool IsSeparator( char c ) { return c == '\\' ||c == '/'; }
+
 		static char GetSeparator( const std::string& path )
 		{
 			for( std::size_t i = 0; i < path.size(); ++i )
@@ -457,6 +458,7 @@ WriteStream& WriteStream::operator= ( const WriteStream& other )
 	return *this;
 }
 
+
 // === ReadStream ================================
 
 StreamStatus::Enum ReadStream::Read( char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read )
@@ -561,6 +563,7 @@ ReadStream& ReadStream::operator= ( const ReadStream& other )
 	other2.mStreamImpl = NULL;
 	return *this;
 }
+
 
 // === FileSystem ================================
 
@@ -826,7 +829,7 @@ WriteStream DiskFileDevice::OpenWrite( FileLocation::Enum location, const std::s
 	StreamStatus::Enum status;
 	WriteStream result;
 	result.mDevice = this;
-	result.mStreamImpl = new platform_impl::StreamInternal( full_path, false, &status, write_mode );// TODO: allocate from a pool
+	result.mStreamImpl = new platform_impl::StreamInternal( full_path, false, &status, write_mode ); // TODO: allocate from a pool
 	if ( status != StreamStatus::NoError )
 	{
 		delete result.mStreamImpl;

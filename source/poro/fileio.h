@@ -236,9 +236,9 @@ namespace poro {
 		void                     GetDirectories( std::string full_path, std::vector<std::string>* out_directories );
 
 		// === initialization API ===
-		// Get the list of file devices currently in use. NOTE: this shouldn't be called while any file operations started via this API are in progress. Only devices created by the user should be destroyed by the user.
+		// Get the list of file devices currently available NOTE: this shouldn't be called while any file operations started via this API are in progress. Only devices created by the user should be destroyed by the user.
 		std::vector<IFileDevice*> GetDeviceList();
-		// set the list of file devices currently in use. NOTE: this shouldn't be called while any file operations started via this API are in progress.
+		// set the list of file devices currently available. NOTE: this shouldn't be called while any file operations started via this API are in progress.
 		void SetDeviceList( std::vector<IFileDevice*> devices );
 
         FileSystem();
