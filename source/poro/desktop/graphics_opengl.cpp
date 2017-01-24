@@ -1409,8 +1409,15 @@ void GraphicsOpenGL::DrawQuads( float* vertices, int vertex_count, float* tex_co
 	glPopMatrix();
 }
 
-void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture, const poro::types::fcolor& color, types::vec2* tex_coords, int count, types::vec2* tex_coords2 )
+void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture, const poro::types::fcolor& color, types::vec2* tex_coords, int count, types::vec2* tex_coords2, types::vec2* tex_coords3 )
 {
+	struct Vertice
+	{
+		float x, y;
+		float uv0_x, uv0_y, uv0_z, uv0_w;
+		float uv1_x, uv1_y;
+	};
+
 	TextureOpenGL* texture;
 	if( itexture != NULL )
 	{
@@ -1428,7 +1435,6 @@ void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const 
 	vertices[ 3 ].x = (float) (position.x + size.x);
 	vertices[ 3 ].y = (float) (position.y + size.y);
 
-
 	if( itexture != NULL )
 	{
 		Uint32 tex = texture->mTexture;
@@ -1443,6 +1449,7 @@ void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const 
 	glEnable(GL_BLEND);
 	glColor4f( color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
 	glBegin( GL_TRIANGLE_STRIP );
 
 	for( int i = 0; i < 4; i++)
@@ -1455,6 +1462,9 @@ void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const 
 					glTexCoord4f( vertices[i].x / texture->GetWidth(), vertices[i].y / texture->GetHeight(), vertices[i].x / texture->GetWidth(), vertices[i].y / texture->GetHeight() );
 				else
 					glTexCoord2f( vertices[i].x / texture->GetWidth(), vertices[i].y / texture->GetHeight() );
+
+				if ( tex_coords3 )
+					glMultiTexCoord2f( GL_TEXTURE1, vertices[ i ].x / texture->GetWidth(), vertices[ i ].y / texture->GetHeight() );
 			}
 			else
 			{
@@ -1462,6 +1472,9 @@ void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const 
 					glTexCoord4f( tex_coords[i].x / texture->GetWidth(), tex_coords[i].y / texture->GetHeight(), tex_coords2[i].x / texture->GetWidth(), tex_coords2[i].y / texture->GetHeight() );
 				else
 					glTexCoord2f( tex_coords[i].x / texture->GetWidth(), tex_coords[i].y / texture->GetHeight() );
+
+				if ( tex_coords3 )
+					glMultiTexCoord2f( GL_TEXTURE1, tex_coords3[ i ].x / texture->GetWidth(), tex_coords3[ i ].y / texture->GetHeight() );
 			}
 		}
 		else
@@ -1470,21 +1483,132 @@ void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const 
 				glTexCoord4f( tex_coords[i].x, tex_coords[i].y, tex_coords2[i].x, tex_coords2[i].y );
 			else
 				glTexCoord2f( tex_coords[i].x, tex_coords[i].y );
+
+			if ( tex_coords3 )
+				glMultiTexCoord2f( GL_TEXTURE1, tex_coords3[ i ].x, tex_coords3[ i ].y );
 		}
 
-		glVertex2f(vertices[ i ].x, vertices[ i ].y );
+		glVertex2f( vertices[ i ].x, vertices[ i ].y );
 	}
 	
 	glEnd();
-	glDisable(GL_BLEND);
 
+	/*static Vertice vertices[ 4 ];
+
+	vertices[ 0 ].x = (float) position.x;
+	vertices[ 0 ].y = (float) position.y;
+	vertices[ 1 ].x = (float) position.x;
+	vertices[ 1 ].y = (float) (position.y + size.y);
+	vertices[ 2 ].x = (float) (position.x + size.x);
+	vertices[ 2 ].y = (float) position.y;
+	vertices[ 3 ].x = (float) (position.x + size.x);
+	vertices[ 3 ].y = (float) (position.y + size.y);
+
+	vertices[ 0 ].uv0_x = 0.25f;
+	vertices[ 0 ].uv0_y = 0.5f;
+	vertices[ 1 ].uv0_x = 0.25f;
+	vertices[ 1 ].uv0_y = 0.5f;
+	vertices[ 2 ].uv0_x = 0.25f;
+	vertices[ 2 ].uv0_y = 0.5f;
+	vertices[ 3 ].uv0_x = 0.25f;
+	vertices[ 3 ].uv0_y = 0.5f;
+
+	vertices[ 0 ].uv1_x = 0.75f;
+	vertices[ 0 ].uv1_y = 0.75f;
+	vertices[ 1 ].uv1_x = 0.75f;
+	vertices[ 1 ].uv1_y = 0.75f;
+	vertices[ 2 ].uv1_x = 0.75f;
+	vertices[ 2 ].uv1_y = 0.75f;
+	vertices[ 3 ].uv1_x = 0.75f;
+	vertices[ 3 ].uv1_y = 0.75f;
+
+	for ( int i = 0; i < 4; i++ )
+	{
+		Vertice& v = vertices[ i ];
+
+		if ( itexture != NULL )
+		{
+			if ( tex_coords == NULL || i >= count )
+			{
+				if ( tex_coords2 )
+				{
+					v.uv0_x = vertices[ i ].x / texture->GetWidth();
+					v.uv0_y = vertices[ i ].y / texture->GetHeight();
+					v.uv0_z = vertices[ i ].x / texture->GetWidth();
+					v.uv0_w = vertices[ i ].y / texture->GetHeight();
+				}
+				else
+				{
+					v.uv0_x = vertices[ i ].x / texture->GetWidth();
+					v.uv0_y = vertices[ i ].y / texture->GetHeight();
+				}
+			}
+			else
+			{
+				if ( tex_coords2 )
+				{
+					v.uv0_x = tex_coords[ i ].x / texture->GetWidth();
+					v.uv0_y = tex_coords[ i ].y / texture->GetHeight();
+					v.uv0_z = tex_coords2[ i ].x / texture->GetWidth();
+					v.uv0_w = tex_coords2[ i ].y / texture->GetHeight();
+				}
+				else
+				{
+					v.uv0_x = vertices[ i ].x / texture->GetWidth();
+					v.uv0_y = vertices[ i ].y / texture->GetHeight();
+				}
+			}
+		}
+		else
+		{
+			if ( tex_coords2 )
+			{
+				v.uv0_x = tex_coords[ i ].x;
+				v.uv0_y = tex_coords[ i ].y;
+				v.uv0_z = tex_coords2[ i ].x;
+				v.uv0_w = tex_coords2[ i ].y;
+			}
+			else
+			{
+				v.uv0_x = tex_coords[ i ].x;
+				v.uv0_y = tex_coords[ i ].y;
+			}
+		}
+
+		v.uv1_x = 0.1f;
+		v.uv1_x = 0.9f;
+	}
+
+	// upload data to opengl, draw it
+	glEnableClientState( GL_VERTEX_ARRAY );
+	glVertexPointer( 2, GL_FLOAT, sizeof( Vertice ), &vertices[ 0 ].x );
+
+	glClientActiveTexture( GL_TEXTURE0 );
+	glEnableClientState( GL_TEXTURE_COORD_ARRAY );
+	glTexCoordPointer( 4, GL_FLOAT, sizeof( Vertice ), &vertices[ 0 ].uv0_x );
+
+	glClientActiveTexture( GL_TEXTURE1 );
+	glEnableClientState( GL_TEXTURE_COORD_ARRAY );
+	glTexCoordPointer( 2, GL_FLOAT, sizeof( Vertice ), &vertices[ 0 ].uv1_x );
+
+	glDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );*/
+
+	// ---
 	if( itexture != NULL )
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
 
+	glDisable(GL_BLEND);
 	glDisable(GL_TEXTURE_2D);
+
+	// clean up
+	/*glDisableClientState( GL_VERTEX_ARRAY );
+	glClientActiveTexture( GL_TEXTURE0 );
+	glDisableClientState( GL_TEXTURE_COORD_ARRAY );
+	glClientActiveTexture( GL_TEXTURE1 );
+	glDisableClientState( GL_TEXTURE_COORD_ARRAY );*/
 }
 
 //=============================================================================
