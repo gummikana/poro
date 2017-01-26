@@ -57,7 +57,7 @@ public:
 
 	static void InitMasks();
 
-	CColorFloat( float r = 0, float g = 0, float b = 0, float a = 1.f ) :
+	explicit CColorFloat( float r = 0, float g = 0, float b = 0, float a = 1.f ) :
 		r( r ),
 		g( g ),
 		b( b ),
@@ -319,7 +319,7 @@ public:
 	typedef unsigned char uint8;
 	static void InitMasks();
 
-	CColorUint8( uint8 r = 0, uint8 g = 0, uint8 b = 0, uint8 a = 255 ) :
+	explicit CColorUint8( uint8 r = 0, uint8 g = 0, uint8 b = 0, uint8 a = 255 ) :
 		r( r ),
 		g( g ),
 		b( b ),
