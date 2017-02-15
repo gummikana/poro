@@ -78,7 +78,7 @@ IPlatform * IPlatform::Instance()
 }
 
 
-void IPlatform::Init(IApplication* application, const GraphicsSettings& settings)
+void IPlatform::Init( IApplication* application, const GraphicsSettings& settings, AppConfig* config )
 {
 	mApplication = application;
 
@@ -86,6 +86,8 @@ void IPlatform::Init(IApplication* application, const GraphicsSettings& settings
 		mInternalWidth = (types::Float32)settings.window_width;
 	if( mInternalHeight == 0.f )
 		mInternalHeight = (types::Float32)settings.window_height;
+
+	mAppConfig = config;
 }
 
 void IPlatform::Destroy()
@@ -111,6 +113,11 @@ void IPlatform::SetApplication(IApplication* application){
 
 IApplication* IPlatform::GetApplication(){
 	return mApplication;
+}
+
+AppConfig* IPlatform::GetApplicationConfig() const
+{
+	return mAppConfig;
 }
 
 

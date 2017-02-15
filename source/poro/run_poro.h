@@ -72,7 +72,7 @@ struct AppConfig
 //=============================================================================
 
 template< typename AppType >
-int RunPoro( const AppConfig& conf = AppConfig()  )
+int RunPoro( AppConfig& conf = AppConfig()  )
 {
     poro::IPlatform::Instance()->SetWorkingDir();
 
@@ -87,7 +87,7 @@ int RunPoro( const AppConfig& conf = AppConfig()  )
 		poro_assert( poro );
 	    
         // initialize the platform:
-        poro->Init( app.get(), conf.graphics_settings );
+        poro->Init( app.get(), conf.graphics_settings, &conf );
 
         // recording things
 		if( conf.do_a_playback == false )

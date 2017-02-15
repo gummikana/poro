@@ -46,7 +46,7 @@ public:
 	virtual ~PlatformDesktop();
 
 	// platform setup
-	virtual void Init( IApplication* application, const GraphicsSettings& settings );
+	virtual void Init( IApplication* application, const GraphicsSettings& settings, AppConfig* config );
 	virtual void Exit();
 
 	virtual void StartMainLoop();

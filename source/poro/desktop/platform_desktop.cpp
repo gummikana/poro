@@ -399,13 +399,13 @@ PlatformDesktop::~PlatformDesktop()
 }
 //-----------------------------------------------------------------------------
 
-void PlatformDesktop::Init( IApplication* application, const GraphicsSettings& settings ) 
+void PlatformDesktop::Init( IApplication* application, const GraphicsSettings& settings, AppConfig* config ) 
 {
 	int w = settings.window_width;
 	int h = settings.window_height;
 	bool fullscreen = settings.fullscreen;
 
-	IPlatform::Init( application, settings);
+	IPlatform::Init( application, settings, config );
 	mRandomSeed = (unsigned int)time(NULL);
 
 	{

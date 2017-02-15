@@ -39,6 +39,7 @@ namespace poro
 	class FileSystem;
 
 	struct GraphicsSettings;
+	struct AppConfig;
 }
 
 //=============================================================================
@@ -66,7 +67,7 @@ public:
 	// you set the mInternalWidth and mInternalHeight to proper sizes if they
 	// haven't been set already!
 	// mInternalWidth is 0 if nobody has set it by hand same goes for mInternalHeight
-	virtual void Init( IApplication* application, const GraphicsSettings& graphics_settings );
+	virtual void Init( IApplication* application, const GraphicsSettings& graphics_settings, AppConfig* config );
 	virtual void Exit() { }
 
 	virtual void StartMainLoop() = 0;
@@ -143,6 +144,9 @@ public:
 	// this will return the same value everytime you call it
 	virtual unsigned int GetTimeNull() const = 0;
 
+	// other
+	virtual AppConfig* GetApplicationConfig() const;
+
 private:
 
 	static IPlatform* gInstance;
@@ -156,6 +160,7 @@ protected:
 
 	// the game:
 	IApplication* mApplication;
+	AppConfig* mAppConfig;
 	types::Float32 mInternalWidth;
 	types::Float32 mInternalHeight;
 
