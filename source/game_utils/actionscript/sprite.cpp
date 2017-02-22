@@ -114,7 +114,7 @@ struct SpriteLoadHelper
 	float			angle;
 	std::string		default_animation;
 	
-	std::vector< Sprite::RectAnimation* > rect_animations;
+	std::vector< const Sprite::RectAnimation* > rect_animations;
 	std::vector< SpriteLoadHelper* > child_sprites;
 
 	// impl time_stamp
@@ -141,7 +141,8 @@ struct SpriteLoadHelper
 		XML_BindAttributeAlias(filesys, color[2], "color_b");
 		XML_BindAttributeAlias(filesys, color[3], "color_a");
 
-		ceng::VectorXmlSerializer< Sprite::RectAnimation > rect_serializer(rect_animations, "RectAnimation");
+		std::vector< Sprite::RectAnimation* > temp_rect_animations;
+		ceng::VectorXmlSerializer< Sprite::RectAnimation > rect_serializer(temp_rect_animations, "RectAnimation");
 		rect_serializer.Serialize(filesys);
 
 		ceng::VectorXmlSerializer< as::impl::SpriteLoadHelper > child_sprite_serializer(child_sprites, "Sprite");
@@ -159,7 +160,7 @@ struct SpriteLoadHelper
 		{
 			ceng::CArray2D<uint32> hotspots_image;
 			LoadImage( hotspots_filename, hotspots_image );
-			for ( const auto rect_animation : rect_animations )
+			for ( const auto rect_animation : temp_rect_animations )
 			{
 				for ( const auto& hotspot_config : hotspots )
 				{
@@ -209,6 +210,13 @@ struct SpriteLoadHelper
 					} // y
 				} // frames
 			} // rect anims
+		} // if hotspots_filename.empty() == false
+
+		// apply to rect animations
+		rect_animations.resize( temp_rect_animations.size() );
+		for( size_t i  = 0; i < rect_animations.size(); ++i )
+		{
+			rect_animations[i] = temp_rect_animations[i];
 		}
 	}
 };
@@ -218,13 +226,13 @@ struct SpriteLoadHelper
 static void ApplySpriteLoadHelperToSprite(as::Sprite* result, impl::SpriteLoadHelper* sprite_data)
 {
 	// we need to duplicate rect_animations
-	std::vector< as::Sprite::RectAnimation* > rect_animations(sprite_data->rect_animations.size());
+	/*std::vector< const as::Sprite::RectAnimation* > rect_animations(sprite_data->rect_animations.size());
 	for (std::size_t i = 0; i < rect_animations.size(); ++i)
 	{
 		rect_animations[i] = new as::Sprite::RectAnimation(*(sprite_data->rect_animations[i]));
-	}
+	}*/
 
-	result->SetRectAnimations(rect_animations);
+	result->SetRectAnimations(sprite_data->rect_animations);
 	result->SetCenterOffset(sprite_data->offset);
 	result->SetScale(sprite_data->scale.x, sprite_data->scale.y);
 	result->SetName(sprite_data->name);
@@ -578,15 +586,6 @@ Sprite::~Sprite()
 {
 	// for debug reasons
 	if( mClearTweens ) GTweenClearSpriteOfTweens( this );
-
-	/*if( mRectAnimation && mRectAnimation->mKillMe ) 
-		delete mRectAnimation;*/
-	
-	/*if( mRectAnimations.empty() == false )
-	{
-		int break_me = 1;
-	}*/
-	ceng::VectorClearPointers( mRectAnimations );
 
 	mRectAnimation = NULL;
 
@@ -960,7 +959,7 @@ void Sprite::MoveCenterTo( const types::vector2& p ) {
 
 //=============================================================================
 
-types::rect Sprite::RectAnimation::FigureOutRectPos( int frame )
+types::rect Sprite::RectAnimation::FigureOutRectPos( int frame ) const
 {
 	int y_pos = (int)( frame / mFramesPerRow );
 	int x_pos = frame % mFramesPerRow;
@@ -973,18 +972,24 @@ types::rect Sprite::RectAnimation::FigureOutRectPos( int frame )
 		(float)mHeight );
 }
 
-void Sprite::RectAnimation::Update( Sprite* sprite, float dt )
+void Sprite::RectAnimation::Update( Sprite* sprite, float dt ) const
 {
-	if( mPaused ) 
+	// mPaused
+	// mPreviousFrame
+	// mCurrentTime
+	// mCurrentFrame
+
+	as::Sprite::RectAnimationData* data = &(sprite->mRectAnimationData);
+	if( data->mPaused ) 
 		dt = 0;
 
-	mPreviousFrame = mCurrentFrame;
-	int frame = mCurrentFrame;
-	mCurrentTime += dt;
+	data->mPreviousFrame = data->mCurrentFrame;
+	int frame = data->mCurrentFrame;
+	data->mCurrentTime += dt;
 	if( mWaitTime > 0 ) {
-		while( mCurrentTime >= mWaitTime ) {
-			mCurrentTime -= mWaitTime;
-			frame++;
+		while( data->mCurrentTime >= mWaitTime ) {
+			data->mCurrentTime -= mWaitTime;
+			++frame;
 			if( frame >= mFrameCount) 
 			{
 				if( mLoop ) 
@@ -1008,9 +1013,10 @@ void Sprite::RectAnimation::Update( Sprite* sprite, float dt )
 	SetFrame( sprite, frame, false );
 }
 	
-void Sprite::RectAnimation::SetFrame( Sprite* sprite, int frame, bool update_anyhow )
+void Sprite::RectAnimation::SetFrame( Sprite* sprite, int frame, bool update_anyhow ) const
 {
 	// is at the end
+	as::Sprite::RectAnimationData* data = &(sprite->mRectAnimationData);
 	if( frame >= mFrameCount && mLoop == false ) 
 	{
 		if( mNextAnimation.empty() == false ) 
@@ -1024,14 +1030,13 @@ void Sprite::RectAnimation::SetFrame( Sprite* sprite, int frame, bool update_any
 
 	// --- figure the frame --
 
-	if( frame == 0 || 
-	   frame != mCurrentFrame || update_anyhow ) 
+	if( frame == 0 || frame != data->mCurrentFrame || update_anyhow ) 
 	{
 		// if( frame > mFrameCount && mLoop ) frame = frame % mFrameCount;
 
 		cassert( sprite );
-		mCurrentFrame  = frame;
-		sprite->SetRect( FigureOutRectPos( mCurrentFrame ) );
+		data->mCurrentFrame  = frame;
+		sprite->SetRect( FigureOutRectPos( data->mCurrentFrame ) );
 		
 		if( mHasNewCenterOffset ) sprite->SetCenterOffset( mCenterOffset );
 
@@ -1094,33 +1099,22 @@ void Sprite::RectAnimation::Serialize( ceng::CXmlFileSys* filesys )
 
 //-------------------------------------------------------------------------
 
-void Sprite::SetRectAnimation( RectAnimation* animation )
+void Sprite::SetRectAnimation( const RectAnimation* animation )
 {
-	if( mRectAnimation != animation && mRectAnimation && mRectAnimation->mKillMe ) {
-		delete mRectAnimation;
-		mRectAnimation = NULL;
-	}
-
-	if( mRectAnimation )
-		mRectAnimation->mCurrentFrame = 0;
-
 	mRectAnimation = animation;
-	mRectAnimation->mPaused = false;
+	mRectAnimationData.mPaused = false;
+	if( mRectAnimation )
+	{
+		mRectAnimationData.mWaitTime = mRectAnimation->mWaitTime;
+		mRectAnimationData.mCurrentFrame = 0;
+		mRectAnimationData.mPreviousFrame = -1;
+		mRectAnimationData.mCurrentTime = 0;
+	}
+	
 }
 //-------------------------------------------------------------------------
 
-Sprite::RectAnimation* Sprite::GetRectAnimation() 
-{ 
-	return mRectAnimation;
-}
-
-const Sprite::RectAnimation* Sprite::GetRectAnimation() const
-{ 
-	return mRectAnimation;
-}
-//-----------------------------------------------------------------------------
-
-void Sprite::SetRectAnimations( const std::vector< RectAnimation* >& animations ) 
+void Sprite::SetRectAnimations( const std::vector< const RectAnimation* >& animations ) 
 {
 	mRectAnimations = animations;
 }
@@ -1130,7 +1124,7 @@ void Sprite::PlayRectAnimation( const std::string& name )
 {
 	if( mRectAnimation && mRectAnimation->mName == name )
 	{
-		mRectAnimation->mPaused = false;
+		mRectAnimationData.mPaused = false;
 		return;
 	}
 
@@ -1139,7 +1133,6 @@ void Sprite::PlayRectAnimation( const std::string& name )
 		cassert( mRectAnimations[ i ] );
 		if( mRectAnimations[ i ]->mName == name ) 
 		{
-			mRectAnimations[ i ]->mKillMe = false;
 			SetRectAnimation( mRectAnimations[ i ] );
 			// add so that the rect animation doesn't flash for 1 frame
 			const bool mFinishedTemp = mHasAnimationFinished;
@@ -1154,7 +1147,7 @@ void Sprite::PlayRectAnimation( const std::string& name )
 void Sprite::PauseRectAnimation()
 {
 	if( mRectAnimation ) 
-		mRectAnimation->mPaused = true;
+		mRectAnimationData.mPaused = true;
 }
 //-----------------------------------------------------------------------------
 
@@ -1162,7 +1155,7 @@ bool Sprite::IsRectAnimationPlaying() const
 {
 	if( mRectAnimation == NULL ) return false;
 	if( mRectAnimation->mLoop )  return true;
-	if( mRectAnimation->mCurrentFrame >= mRectAnimation->mFrameCount - 1 ) return false;
+	if( mRectAnimationData.mCurrentFrame >= mRectAnimation->mFrameCount - 1 ) return false;
 
 	return true;
 }
@@ -1172,7 +1165,8 @@ bool Sprite::HasRectAnimationJustFinished() const
 {
 	if( mRectAnimation == NULL ) return false;
 	if( mHasAnimationFinished )  return true;
-	if( mRectAnimation->mLoop )  return false;
+	// this is unneeded
+	// if( mRectAnimation->mLoop )  return false; 
 
 	return false;
 }
@@ -1244,26 +1238,26 @@ void Sprite::SetAnimationFrame(int frame)
 }
 //-----------------------------------------------------------------------------
 
-types::vector2 Sprite::GetHotspot( const std::string& name )
+types::vector2 Sprite::GetHotspot( const std::string& name ) const
 {
-    types::vector2 result = -GetCenterOffset();
+	types::vector2 result = -GetCenterOffset();
 
-    if ( auto rect_animation = GetRectAnimation() )
-    {
-        for ( auto& hotspot : rect_animation->mHotspots )
-        {
-            if ( hotspot.name == name )
-            {
-                int frame =  rect_animation->mCurrentFrame;
-                if ( frame < (int)hotspot.positions.size() )
-                    result += types::vector2( hotspot.positions[ frame ] );
+	if ( auto rect_animation = GetRectAnimation() )
+	{
+		for ( auto& hotspot : rect_animation->mHotspots )
+		{
+			if ( hotspot.name == name )
+			{
+				const int frame =  mRectAnimationData.mCurrentFrame;
+				if ( frame < (int)hotspot.positions.size() )
+					result += types::vector2( hotspot.positions[ frame ] );
 
-                break;
-            }
-        }
-    }
+				break;
+			}
+		}
+	}
 
-    return result;
+	return result;
 }
 //-----------------------------------------------------------------------------
 

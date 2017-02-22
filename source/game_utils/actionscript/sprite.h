@@ -251,18 +251,13 @@ public:
 	{
 		RectAnimation() :
 			mName( "unknown" ),
-			mKillMe( true ),
-			mPaused( false ),
 			mFrameCount( 0 ),
-			mCurrentFrame( 0 ),
-			mPreviousFrame( -1 ),
 			mWidth( 0 ),
 			mHeight( 0 ),
 			mFramesPerRow( 4 ),
 			mPositionX( 0 ),
 			mPositionY( 0 ),
 			mWaitTime( 0 ),
-			mCurrentTime( 0 ),
 			mHasNewCenterOffset( false ),
 			mCenterOffset( 0, 0 ),
 			mLoop( true ),
@@ -275,18 +270,13 @@ public:
 
 		RectAnimation(const RectAnimation& other) :
 			mName(other.mName),
-			mKillMe(other.mKillMe),
-			mPaused(other.mPaused),
 			mFrameCount(other.mFrameCount),
-			mCurrentFrame(other.mCurrentFrame),
-			mPreviousFrame(other.mPreviousFrame),
 			mWidth(other.mWidth),
 			mHeight(other.mHeight),
 			mFramesPerRow(other.mFramesPerRow),
 			mPositionX(other.mPositionX),
 			mPositionY(other.mPositionY),
 			mWaitTime(other.mWaitTime),
-			mCurrentTime(other.mCurrentTime),
 			mHasNewCenterOffset(other.mHasNewCenterOffset),
 			mCenterOffset(other.mCenterOffset),
 			mLoop(other.mLoop),
@@ -302,12 +292,8 @@ public:
 		}
 
 		std::string mName;
-		bool		mKillMe;
 
-		bool mPaused;
 		int mFrameCount;
-		int mCurrentFrame;
-		int mPreviousFrame;
 		int mWidth;
 		int mHeight;
 		int mFramesPerRow;
@@ -316,7 +302,6 @@ public:
 		int mPositionY;
 
 		float mWaitTime;
-		float mCurrentTime;
 
 		bool			mHasNewCenterOffset;
 		types::vector2	mCenterOffset;
@@ -329,19 +314,28 @@ public:
 		std::vector< Event > mEvents;
 		std::vector< ResolvedHotspot > mHotspots;
 
-		types::rect Sprite::RectAnimation::FigureOutRectPos( int frame );
-		void Update( Sprite* sprite, float dt );
-		void SetFrame( Sprite* sprite, int frame, bool update_anyhow );
+		types::rect FigureOutRectPos( int frame ) const;
+		void Update( Sprite* sprite, float dt ) const;
+		void SetFrame( Sprite* sprite, int frame, bool update_anyhow ) const;
 
 		void Serialize( ceng::CXmlFileSys* filesys );
 	};
 
-	//-------------------------------------------------------------------------
+	struct RectAnimationData
+	{
+		bool mPaused = false;
+		int mPreviousFrame = -1;
+		int mCurrentFrame = 0;
+		float mCurrentTime = 0;
+		float mWaitTime = 0;
+	};
 
-	void					SetRectAnimation( RectAnimation* animation );
-	RectAnimation*			GetRectAnimation();
+	//-------------------------------------------------------------------------
+	RectAnimationData* GetRectAnimationData();
+
+	void					SetRectAnimation( const RectAnimation* animation );
 	const RectAnimation*	GetRectAnimation() const;
-	void					SetRectAnimations( const std::vector< RectAnimation* >& animations );
+	void					SetRectAnimations( const std::vector< const RectAnimation* >& animations );
 	
 	// looks in mRectAnimations for a rect animation with the name
 	void PlayRectAnimation( const std::string& name );
@@ -362,7 +356,7 @@ public:
 	bool IsAnimationPlaying() const;
 	void SetAnimationFrame( int frame );
 
-    types::vector2 GetHotspot( const std::string& name );
+	types::vector2 GetHotspot( const std::string& name ) const;
 
 	//-------------------------------------------------------------------------
 
@@ -412,11 +406,13 @@ protected:
 	types::rect*				mRect;
 
 	// animation stuff
-	RectAnimation*							mRectAnimation;
 	Animations*								mAnimations;
 	std::auto_ptr< SpriteAnimationUpdater >	mAnimationUpdater;
-	std::vector< RectAnimation* >			mRectAnimations;
-	
+
+	const RectAnimation*					mRectAnimation;
+	RectAnimationData						mRectAnimationData;
+	std::vector< const RectAnimation* >		mRectAnimations;
+
 	// filename
 	std::string								mFilename;
 };
@@ -667,6 +663,14 @@ inline const std::string& Sprite::GetFilename() const {
 
 inline void Sprite::SetFilename( const std::string& filename ) {
 	mFilename = filename;
+}
+
+inline const Sprite::RectAnimation* Sprite::GetRectAnimation() const { 
+	return mRectAnimation;
+}
+
+inline Sprite::RectAnimationData* Sprite::GetRectAnimationData() {
+	return &mRectAnimationData;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
