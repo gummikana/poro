@@ -335,7 +335,7 @@ public:
 
 	void					SetRectAnimation( const RectAnimation* animation );
 	const RectAnimation*	GetRectAnimation() const;
-	void					SetRectAnimations( const std::vector< const RectAnimation* >& animations );
+	void					SetRectAnimations( std::vector< const RectAnimation >* animations );
 	
 	// looks in mRectAnimations for a rect animation with the name
 	void PlayRectAnimation( const std::string& name );
@@ -411,7 +411,7 @@ protected:
 
 	const RectAnimation*					mRectAnimation;
 	RectAnimationData						mRectAnimationData;
-	std::vector< const RectAnimation* >		mRectAnimations;
+	std::vector< const RectAnimation >*		mRectAnimations;
 
 	// filename
 	std::string								mFilename;

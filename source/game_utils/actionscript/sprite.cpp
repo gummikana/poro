@@ -78,7 +78,6 @@ struct SpriteLoadHelper
 
 	~SpriteLoadHelper()
 	{
-		ceng::VectorClearPointers(rect_animations);
 		ceng::VectorClearPointers(child_sprites);
 	}
 
@@ -95,7 +94,7 @@ struct SpriteLoadHelper
 		angle = 0;
 		default_animation = "";
 
-		ceng::VectorClearPointers(rect_animations);
+		rect_animations.clear();
 		ceng::VectorClearPointers(child_sprites);
 	}
 
@@ -114,7 +113,7 @@ struct SpriteLoadHelper
 	float			angle;
 	std::string		default_animation;
 	
-	std::vector< const Sprite::RectAnimation* > rect_animations;
+	std::vector< const Sprite::RectAnimation > rect_animations;
 	std::vector< SpriteLoadHelper* > child_sprites;
 
 	// impl time_stamp
@@ -141,8 +140,8 @@ struct SpriteLoadHelper
 		XML_BindAttributeAlias(filesys, color[2], "color_b");
 		XML_BindAttributeAlias(filesys, color[3], "color_a");
 
-		std::vector< Sprite::RectAnimation* > temp_rect_animations;
-		ceng::VectorXmlSerializer< Sprite::RectAnimation > rect_serializer(temp_rect_animations, "RectAnimation");
+		std::vector< Sprite::RectAnimation > temp_rect_animations;
+		ceng::VectorXmlSerializerObjects< Sprite::RectAnimation > rect_serializer(temp_rect_animations, "RectAnimation");
 		rect_serializer.Serialize(filesys);
 
 		ceng::VectorXmlSerializer< as::impl::SpriteLoadHelper > child_sprite_serializer(child_sprites, "Sprite");
@@ -160,18 +159,18 @@ struct SpriteLoadHelper
 		{
 			ceng::CArray2D<uint32> hotspots_image;
 			LoadImage( hotspots_filename, hotspots_image );
-			for ( const auto rect_animation : temp_rect_animations )
+			for ( auto& rect_animation : temp_rect_animations )
 			{
 				for ( const auto& hotspot_config : hotspots )
 				{
 					auto hotspot = Sprite::ResolvedHotspot();
 					hotspot.name = hotspot_config.name;
-					rect_animation->mHotspots.push_back( hotspot );
+					rect_animation.mHotspots.push_back( hotspot );
 				}
 
-				for ( int frame = 0; frame < rect_animation->mFrameCount; frame++ )
+				for ( int frame = 0; frame < rect_animation.mFrameCount; frame++ )
 				{
-					types::rect rect = rect_animation->FigureOutRectPos( frame );
+					types::rect rect = rect_animation.FigureOutRectPos( frame );
 					types::ivector2 min( (int)rect.x, (int)rect.y );
 					types::ivector2 max( (int)rect.x + (int)rect.w, (int)rect.y + (int)rect.h );
 
@@ -195,7 +194,7 @@ struct SpriteLoadHelper
 									const uint32 color2 = hotspot_config.color;
 									if ( ( color & color2 ) == color2 )
 									{
-										rect_animation->mHotspots[hotspot_i].positions.emplace_back( types::ivector2( x, y ) - min );
+										rect_animation.mHotspots[hotspot_i].positions.emplace_back( types::ivector2( x, y ) - min );
 										if ( ++hotspots_found_this_frame == hotspots.size() )
 										{
 											x = max.x; // all hotspots found, jump to next frame
@@ -232,7 +231,7 @@ static void ApplySpriteLoadHelperToSprite(as::Sprite* result, impl::SpriteLoadHe
 		rect_animations[i] = new as::Sprite::RectAnimation(*(sprite_data->rect_animations[i]));
 	}*/
 
-	result->SetRectAnimations(sprite_data->rect_animations);
+	result->SetRectAnimations( &(sprite_data->rect_animations) );
 	result->SetCenterOffset(sprite_data->offset);
 	result->SetScale(sprite_data->scale.x, sprite_data->scale.y);
 	result->SetName(sprite_data->name);
@@ -241,7 +240,7 @@ static void ApplySpriteLoadHelperToSprite(as::Sprite* result, impl::SpriteLoadHe
 	if (sprite_data->default_animation.empty() == false)
 	{
 		result->PlayAnimation(sprite_data->default_animation);
-		result->Update(0);
+		// result->Update(0);
 	}
 
 	TextureBuffer* buffer = GetTextureBuffer(sprite_data->filename);
@@ -571,6 +570,7 @@ Sprite::Sprite() :
 	mDead( false ),
 	mVisible( true ),
 	mRect( NULL ),
+	mRectAnimations( NULL ),
 	mRectAnimation( NULL ),
 	mAnimations( NULL ),
 	mAnimationUpdater( NULL ),
@@ -1114,7 +1114,7 @@ void Sprite::SetRectAnimation( const RectAnimation* animation )
 }
 //-------------------------------------------------------------------------
 
-void Sprite::SetRectAnimations( const std::vector< const RectAnimation* >& animations ) 
+void Sprite::SetRectAnimations( std::vector< const RectAnimation >* animations ) 
 {
 	mRectAnimations = animations;
 }
@@ -1128,12 +1128,15 @@ void Sprite::PlayRectAnimation( const std::string& name )
 		return;
 	}
 
-	for( std::size_t i = 0; i < mRectAnimations.size(); ++i ) 
+	if( mRectAnimations == NULL ) 
+		return;
+
+	for( std::size_t i = 0; i < mRectAnimations->size(); ++i ) 
 	{
-		cassert( mRectAnimations[ i ] );
-		if( mRectAnimations[ i ]->mName == name ) 
+		auto anim = &(mRectAnimations->at(i));
+		if( anim->mName == name ) 
 		{
-			SetRectAnimation( mRectAnimations[ i ] );
+			SetRectAnimation( anim );
 			// add so that the rect animation doesn't flash for 1 frame
 			const bool mFinishedTemp = mHasAnimationFinished;
 			Update( 0 );
@@ -1176,10 +1179,12 @@ bool Sprite::HasRectAnimation( const std::string& name ) const
 {
 	if( mRectAnimation && mRectAnimation->mName == name ) return true;
 
-	for( std::size_t i = 0; i < mRectAnimations.size(); ++i ) 
+	if( mRectAnimations == NULL ) 
+		return false;
+
+	for( std::size_t i = 0; i < mRectAnimations->size(); ++i ) 
 	{
-		cassert( mRectAnimations[ i ] );
-		if( mRectAnimations[ i ]->mName == name ) 
+		if( mRectAnimations->at(i).mName == name ) 
 			return true;
 	}
 
