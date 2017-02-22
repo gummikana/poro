@@ -579,9 +579,15 @@ Sprite::~Sprite()
 	// for debug reasons
 	if( mClearTweens ) GTweenClearSpriteOfTweens( this );
 
-	if( mRectAnimation && mRectAnimation->mKillMe ) 
-		delete mRectAnimation;
+	/*if( mRectAnimation && mRectAnimation->mKillMe ) 
+		delete mRectAnimation;*/
 	
+	/*if( mRectAnimations.empty() == false )
+	{
+		int break_me = 1;
+	}*/
+	ceng::VectorClearPointers( mRectAnimations );
+
 	mRectAnimation = NULL;
 
 	delete mAlphaMask;
