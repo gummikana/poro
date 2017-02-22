@@ -1033,7 +1033,7 @@ void Sprite::RectAnimation::SetFrame( Sprite* sprite, int frame, bool update_any
 		// find the animations with the frame
 		for( std::size_t i = 0; i < mChildAnimations.size(); ++i )
 		{
-			const ChildAnimation* child_anim = mChildAnimations[ i ];
+			const ChildAnimation* child_anim = &(mChildAnimations[ i ]);
 			cassert( child_anim );
 			if( child_anim->frame == frame ) 
 			{
@@ -1079,7 +1079,7 @@ void Sprite::RectAnimation::Serialize( ceng::CXmlFileSys* filesys )
 
 	XML_BindAttributeAlias( filesys, mNextAnimation, "next_animation" );
 
-	ceng::VectorXmlSerializer< Sprite::ChildAnimation > serializer( mChildAnimations, "ChildAnimations" );
+	ceng::VectorXmlSerializerObjects< Sprite::ChildAnimation > serializer( mChildAnimations, "ChildAnimations" );
 	serializer.Serialize( filesys );
 
 	ceng::VectorXmlSerializerObjects< Sprite::Event > event_serializer( mEvents, "Event" );

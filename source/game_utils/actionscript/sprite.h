@@ -191,61 +191,61 @@ public:
 			XML_BindAttribute( filesys, on_finished );
 		}
 
-		int	        frame = 0;
+		int			frame = 0;
 		std::string	name = "";
-		float       probability = 1.0f;
-		float       max_distance = 500.0f;
-		bool        on_finished = false;
+		float		probability = 1.0f;
+		float		max_distance = 500.0f;
+		bool		on_finished = false;
 	};
 
-    struct Hotspot
-    {
-        void Serialize( ceng::CXmlFileSys* filesys )
-        {
-            SerializeColor( filesys, color, "color" );
-            XML_BindAttribute( filesys, name );
-        }
+	struct Hotspot
+	{
+		void Serialize( ceng::CXmlFileSys* filesys )
+		{
+			SerializeColor( filesys, color, "color" );
+			XML_BindAttribute( filesys, name );
+		}
 
-        uint32      color = 0;
-        std::string name = "";
+		uint32      color = 0;
+		std::string name = "";
 
-    private:
-        template< class T >
-        inline void SWAP_RED_AND_BLUE( T& color ) 
-        {
-            color = ((color & 0x000000FF) << 16) | ((color & 0x00FF0000) >> 16) | (color & 0xFF00FF00);
-        }
+	private:
+		template< class T >
+		inline void SWAP_RED_AND_BLUE( T& color ) 
+		{
+			color = ((color & 0x000000FF) << 16) | ((color & 0x00FF0000) >> 16) | (color & 0xFF00FF00);
+		}
 
-        inline std::string CastToColorString( uint32 what )
-        {
-            SWAP_RED_AND_BLUE( what );
-            std::stringstream ss;
-            ss << std::hex << ( what );
-            return ss.str();
-        }
+		inline std::string CastToColorString( uint32 what )
+		{
+			SWAP_RED_AND_BLUE( what );
+			std::stringstream ss;
+			ss << std::hex << ( what );
+			return ss.str();
+		}
 
-        inline uint32 CastFromColorString( const std::string& str )
-        {
-            uint32 result;
-            std::stringstream ss( str );
-            ss >> std::hex >> ( result );
-            SWAP_RED_AND_BLUE( result );
-            return result;
-        }
+		inline uint32 CastFromColorString( const std::string& str )
+		{
+			uint32 result;
+			std::stringstream ss( str );
+			ss >> std::hex >> ( result );
+			SWAP_RED_AND_BLUE( result );
+			return result;
+		}
 
-        void SerializeColor( ceng::CXmlFileSys* filesys, uint32& color, const std::string& alias )
-        {
-            std::string scolor = CastToColorString( color );
-            XML_BindAttributeAlias( filesys, scolor, alias );
-            color = CastFromColorString( scolor );
-        }
-    };
+		void SerializeColor( ceng::CXmlFileSys* filesys, uint32& color, const std::string& alias )
+		{
+			std::string scolor = CastToColorString( color );
+			XML_BindAttributeAlias( filesys, scolor, alias );
+			color = CastFromColorString( scolor );
+		}
+	};
 
-    struct ResolvedHotspot
-    {
-        std::string name;
-        std::vector<types::ivector2> positions;
-    };
+	struct ResolvedHotspot
+	{
+		std::string name;
+		std::vector<types::ivector2> positions;
+	};
 
 	struct RectAnimation
 	{
@@ -269,7 +269,7 @@ public:
 			mNextAnimation( "" ),
 			mChildAnimations(),
 			mEvents(),
-            mHotspots()
+			mHotspots()
 		{
 		}
 
@@ -291,22 +291,14 @@ public:
 			mCenterOffset(other.mCenterOffset),
 			mLoop(other.mLoop),
 			mNextAnimation(other.mNextAnimation),
+			mChildAnimations(other.mChildAnimations),
 			mEvents(other.mEvents),
-            mHotspots(other.mHotspots)
+			mHotspots(other.mHotspots)
 		{
-			mChildAnimations.resize(other.mChildAnimations.size());
-			for (std::size_t i = 0; i < mChildAnimations.size(); ++i)
-			{
-				mChildAnimations[i] = new ChildAnimation(*(other.mChildAnimations[i]));
-			}
 		}
 
 		~RectAnimation()
 		{
-			for( std::size_t i = 0; i < mChildAnimations.size(); ++i ) 
-				delete mChildAnimations[ i ];
-
-			mChildAnimations.clear();
 		}
 
 		std::string mName;
@@ -332,10 +324,10 @@ public:
 
 		std::string		mNextAnimation;
 
-		std::vector< ChildAnimation* > mChildAnimations;
+		std::vector< ChildAnimation > mChildAnimations;
 
 		std::vector< Event > mEvents;
-        std::vector< ResolvedHotspot > mHotspots;
+		std::vector< ResolvedHotspot > mHotspots;
 
 		types::rect Sprite::RectAnimation::FigureOutRectPos( int frame );
 		void Update( Sprite* sprite, float dt );
