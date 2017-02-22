@@ -986,9 +986,9 @@ void Sprite::RectAnimation::Update( Sprite* sprite, float dt ) const
 	data->mPreviousFrame = data->mCurrentFrame;
 	int frame = data->mCurrentFrame;
 	data->mCurrentTime += dt;
-	if( mWaitTime > 0 ) {
-		while( data->mCurrentTime >= mWaitTime ) {
-			data->mCurrentTime -= mWaitTime;
+	if( data->mWaitTime > 0 ) {
+		while( data->mCurrentTime >= data->mWaitTime ) {
+			data->mCurrentTime -= data->mWaitTime;
 			++frame;
 			if( frame >= mFrameCount) 
 			{
