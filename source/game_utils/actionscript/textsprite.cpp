@@ -243,16 +243,6 @@ void TextSprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transfo
 	if( mVisible == false )
 		return;
 
-	// if we have an alpha mask we set it up drawing with it
-	if( mAlphaMask )
-	{
-		if( mAlphaMask->GetScaleX() == 0 || 
-			mAlphaMask->GetScaleY() == 0 )
-			return;
-	}
-
-	//------------------------------------
-
 	const types::xform		m_xform = mXForm;
 	const types::vector2	m_centerpos = mCenterOffset;
 

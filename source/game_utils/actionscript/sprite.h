@@ -143,10 +143,6 @@ public:
 	void			SetName( const std::string& name )	{ mName = name; }
 	std::string		GetName() const						{ return mName; }
 
-	void	SetAlphaMask( Sprite* alpha_mask );
-	Sprite*	GetAlphaMask();
-
-	
 	//-------------------------------------------------------------------------
 	struct ChildAnimation
 	{
@@ -373,8 +369,6 @@ public:
 	
 	//-------------------------------------------------------------------------
 	
-	poro::IGraphicsBuffer*		GetAlphaBuffer( poro::IGraphics* graphics );
-
 	bool mHasAnimationFinished;
 
 protected:
@@ -385,8 +379,6 @@ protected:
 	
 
 	bool						mClearTweens;
-	Sprite*						mAlphaMask;
-	poro::IGraphicsBuffer*		mAlphaBuffer;
 
 	poro::BLEND_MODE::Enum		mBlendMode;
 

@@ -527,8 +527,8 @@ void LoadSpriteTo( const std::string& filename, as::Sprite* result )
 
 //-----------------------------------------------------------------------------
 
-int Sprite::culled_this_frame;
-int Sprite::rendered_this_frame;
+int Sprite::culled_this_frame = 0;
+int Sprite::rendered_this_frame = 0;
 
 //-----------------------------------------------------------------------------
 
@@ -556,10 +556,8 @@ bool PreloadSprite( const std::string& filename )
 Sprite::Sprite() : 
 	DisplayObjectContainer(),
 	mClearTweens( true ),
-	mAlphaMask( NULL ),
-	mAlphaBuffer( NULL ),
 	mBlendMode( poro::BLEND_MODE::NORMAL ),
-	mName( "" ),
+	mName(),
 	mTexture( NULL ),
 	mImageData( NULL ),
 	mSize( 0, 0 ),
@@ -588,9 +586,6 @@ Sprite::~Sprite()
 	if( mClearTweens ) GTweenClearSpriteOfTweens( this );
 
 	mRectAnimation = NULL;
-
-	delete mAlphaMask;
-	mAlphaMask = NULL;
 
 	delete mRect;
 	mRect = NULL;
@@ -641,68 +636,12 @@ void Sprite::Clear()
 
 //-----------------------------------------------------------------------------
 
-poro::IGraphicsBuffer* Sprite::GetAlphaBuffer( poro::IGraphics* graphics )
-{
-	if( mAlphaBuffer == NULL )
-	{
-		cassert( graphics );
-		cassert( GetTextureSize().x > 0 );
-		cassert( GetTextureSize().y > 0 );
-		mAlphaBuffer = graphics->CreateGraphicsBuffer( (int)GetTextureSize().x, (int)GetTextureSize().y );
-
-		if( mAlphaBuffer == NULL )
-			return NULL;
-	}
-
-	cassert( mAlphaBuffer );
-	cassert( GetTextureSize().x > 0 );
-	cassert( GetTextureSize().y > 0 );
-	mAlphaBuffer->SetGraphicsBufferScale( 
-		poro::IPlatform::Instance()->GetInternalWidth() / GetTextureSize().x, 
-		poro::IPlatform::Instance()->GetInternalHeight() / GetTextureSize().y );
-
-	return mAlphaBuffer;
-}
-
 void Sprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& transform ) 
 { 
 	// cull clearly invisible sprites
 	if( mVisible == false || this->GetScaleX() == 0 || this->GetScaleY() == 0 )
 		return;
 
-#ifdef PORO_GRAPHICS_API_OLD
-	// no idea what this monster is doing but can we just get rid of it, ok?
-	poro::IGraphicsBuffer* alpha_buffer = NULL;
-	poro::IGraphics* ex_graphics = NULL;
-	// if we have an alpha mask we set it up drawing with it
-	if( mAlphaMask )
-	{
-		if( mAlphaMask->GetScaleX() == 0 || mAlphaMask->GetScaleY() == 0 )
-			return;
-
-		alpha_buffer = mAlphaMask->GetAlphaBuffer( graphics );
-		if( alpha_buffer )
-		{
-			// the alpha mask is the child of the mask of the other
-			types::xform orign;
-			std::vector< float > orig_color( 4 );
-			for( int i = 0; i < 4; ++i ) orig_color[ i ] = 1.f;
-			transform.PushXFormButDontMultiply( orign, orig_color );
-			types::xform x = ceng::math::Mul( GetXForm(), mAlphaMask->GetXForm() );
-			
-			types::xform o;
-			x = ceng::math::MulT( x, o );
-			x.position += mAlphaMask->GetCenterOffset(); 
-			transform.PushXForm( x, orig_color );	
-
-
-			alpha_buffer->BeginRendering();
-			ex_graphics = graphics;
-			graphics = alpha_buffer;
-		}
-	}
-#endif
-	
 	if( mRect ) 
 		DrawRect( *mRect, graphics, camera, transform );  
 	else 
@@ -710,25 +649,6 @@ void Sprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& 
 	
 	// draw all children
 	DrawChildren( graphics, camera, transform );
-
-#if PORO_GRAPHICS_API_OLD
-	if( mAlphaMask && alpha_buffer ) 
-	{
-		cassert( ex_graphics );
-		alpha_buffer->EndRendering();
-		transform.PopXForm();
-		transform.PopXForm();
-
-		graphics = ex_graphics;
-	}
-	
-	if( mAlphaMask )
-	{
-		transform.PushXForm( mXForm, mColor );
-		mAlphaMask->Draw( graphics, camera, transform );
-		transform.PopXForm();
-	}
-#endif
 }
 //-----------------------------------------------------------------------------
 
@@ -777,7 +697,7 @@ void Sprite::DrawChildren( poro::IGraphics* graphics, types::camera* camera, Tra
 
 void Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const Transform& transform )
 {
-	if( mTexture == NULL && mAlphaBuffer == NULL )
+	if( mTexture == NULL )
 		return;
 
 	static poro::types::vec2 temp_verts[ 4 ];
@@ -806,26 +726,6 @@ void Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 		temp_verts[ 3 ].y = (float)0 - mCenterOffset.y;
 		temp_verts[ 2 ].x = (float)dest_rect.w - mCenterOffset.x;
 		temp_verts[ 2 ].y = (float)dest_rect.h - mCenterOffset.y;
-
-#if PORO_GRAPHICS_API_OLD
-		if( mAlphaBuffer ) { 
-			types::rect alpha_rect( 0, 0, 0, 0 );
-
-			alpha_rect.w = (float)mAlphaBuffer->GetTexture()->GetWidth();
-			alpha_rect.h = (float)mAlphaBuffer->GetTexture()->GetHeight();
-
-			alpha_rect.w = dest_rect.w;
-			alpha_rect.h = dest_rect.h;
-			alpha_tex_coords[ 0 ].x = alpha_rect.x;
-			alpha_tex_coords[ 0 ].y = alpha_rect.y;
-			alpha_tex_coords[ 1 ].x = alpha_rect.x;
-			alpha_tex_coords[ 1 ].y = alpha_rect.y + alpha_rect.h;
-			alpha_tex_coords[ 3 ].x = alpha_rect.x + alpha_rect.w;
-			alpha_tex_coords[ 3 ].y = alpha_rect.y;
-			alpha_tex_coords[ 2 ].x = alpha_rect.x + alpha_rect.w;
-			alpha_tex_coords[ 2 ].y = alpha_rect.y + alpha_rect.h;
-		}
-#endif
 
 		for( int i = 0; i < 4; ++i )
 		{
@@ -858,15 +758,7 @@ void Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 		tex_coords[ 2 ].x = dest_rect.x + dest_rect.w;
 		tex_coords[ 2 ].y = dest_rect.y + dest_rect.h;
 
-		if( mAlphaBuffer ) 
-		{
-			graphics->DrawTextureWithAlpha( mTexture, temp_verts, tex_coords, 4, color_me,
-				mAlphaBuffer->GetTexture(), temp_verts, alpha_tex_coords, color_me );
-		}
-		else
-		{
-			graphics->DrawTexture( mTexture, temp_verts, tex_coords, 4, color_me );
-		}
+		graphics->DrawTexture( mTexture, temp_verts, tex_coords, 4, color_me );
 
 		if( mBlendMode != poro::BLEND_MODE::NORMAL )
 			graphics->PopBlendMode();
@@ -942,7 +834,6 @@ void Sprite::Update( float dt )
 		}
 	}
 
-	if( mAlphaMask ) mAlphaMask->Update( dt );
 }
 //=============================================================================
 
@@ -1318,16 +1209,6 @@ types::vector2 Sprite::MultiplyByParentXForm( const types::vector2& p ) const
 		return result;
 	else 
 		return parent->MultiplyByParentXForm( result );
-}
-//-----------------------------------------------------------------------------
-
-void Sprite::SetAlphaMask( Sprite* alpha_mask )	{ 
-	mAlphaMask = alpha_mask; 
-	return;
-}
-
-Sprite*	Sprite::GetAlphaMask() { 
-	return mAlphaMask; 
 }
 //-----------------------------------------------------------------------------
 

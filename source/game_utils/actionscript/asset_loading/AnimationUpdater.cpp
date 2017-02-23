@@ -41,7 +41,7 @@ void AnimationUpdater::SetFrame( int frame_i )
 	cassert( animation );
 	cassert( sprite_container );
 
-	if( animation->mask.empty() == false && sprite_container->GetAlphaMask() == NULL )
+	/*if( animation->mask.empty() == false )
 	{
 		// apply alpha_mask
 		as::Sprite* alpha_mask = sprite_container->GetChildByName( animation->mask );
@@ -65,9 +65,7 @@ void AnimationUpdater::SetFrame( int frame_i )
 		sprite_container->addChild( alpha_mask );
 		sprite_container->SetAlphaMask( NULL );
 
-	}
-
-
+	}*/
 
 	std::vector< impl::Part* >& parts = animation->parts;
 	for( std::size_t i = 0; i < parts.size(); ++i )
