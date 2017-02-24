@@ -877,25 +877,29 @@ void Sprite::RectAnimation::Update( Sprite* sprite, float dt ) const
 	data->mPreviousFrame = data->mCurrentFrame;
 	int frame = data->mCurrentFrame;
 	data->mCurrentTime += dt;
-	if( data->mWaitTime > 0 ) {
-		while( data->mCurrentTime >= data->mWaitTime ) {
-			data->mCurrentTime -= data->mWaitTime;
-			++frame;
-			if( frame >= mFrameCount) 
-			{
-				if( mLoop ) 
-				{
-					frame = 0;
-				}
-				else 
-				{
-					sprite->mHasAnimationFinished = true;
 
-					if( mNextAnimation.empty() == false ) 
-					{
-						sprite->PlayRectAnimation( mNextAnimation );
-						return;
-					}
+	if( data->mWaitTime > 0 && data->mCurrentTime >= data->mWaitTime )
+	{
+		float frames = ( data->mCurrentTime / data->mWaitTime );
+		int iframes = (int)floor( frames );
+		data->mCurrentTime  -= iframes * data->mWaitTime;
+		frame += iframes;
+		if( frame >= mFrameCount) 
+		{
+			if( mLoop ) 
+			{
+				cassert( mFrameCount > 0 );
+				frame = frame % mFrameCount;
+			}
+			else 
+			{
+				sprite->mHasAnimationFinished = true;
+				frame = mFrameCount - 1;
+
+				if( mNextAnimation.empty() == false ) 
+				{
+					sprite->PlayRectAnimation( mNextAnimation );
+					return;
 				}
 			}
 		}
