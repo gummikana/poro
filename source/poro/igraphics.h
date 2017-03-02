@@ -74,6 +74,7 @@ namespace BLEND_MODE
 		ADDITIVE = 1,
 		ADDITIVE_ADDITIVEALPHA = 2,
 		NORMAL_ADDITIVEALPHA = 3,
+		ZERO_ADDITIVEALPHA = 4,
 		SCREEN = ADDITIVE, // DEPRECATED: this has been left here for legacy reasons but should've never been called 'screen'.
 	};
 }

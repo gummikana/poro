@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  * Copyright (c) 2010 Petri Purho, Dennis Belfrage
  *
@@ -125,21 +125,30 @@ namespace {
 		glEnable(GL_TEXTURE_2D);
 
 		glEnable(GL_BLEND);
-		if( blend_mode == BLEND_MODE::NORMAL ) {
-			glColor4f(color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
+
+		if( blend_mode == BLEND_MODE::NORMAL ) 
+		{
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		} else if ( blend_mode == BLEND_MODE::ADDITIVE ) {
-			glColor4f(color[0], color[1], color[2], color[3]);
+		} 
+		else if ( blend_mode == BLEND_MODE::ADDITIVE ) 
+		{
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		} else if ( blend_mode == BLEND_MODE::ADDITIVE_ADDITIVEALPHA ) {
-			glColor4f(color[0], color[1], color[2], color[3]);
+		} 
+		else if ( blend_mode == BLEND_MODE::ADDITIVE_ADDITIVEALPHA ) 
+		{
 			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE );
-		} else if ( blend_mode == BLEND_MODE::NORMAL_ADDITIVEALPHA ) {
+		}
+		else if ( blend_mode == BLEND_MODE::ZERO_ADDITIVEALPHA ) 
+		{
+			glBlendFuncSeparate( GL_ZERO, GL_ONE, GL_ONE, GL_ONE );
+		} 
+		else if ( blend_mode == BLEND_MODE::NORMAL_ADDITIVEALPHA ) 
+		{
 			glColor4f(color[0], color[1], color[2], color[3]);
 			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE );
 		}
 
-
+		// ---
 		glColor4f(color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
 
 		glBegin( vertex_mode );
@@ -153,8 +162,8 @@ namespace {
 		glDisable(GL_BLEND);
 		glDisable(GL_TEXTURE_2D);
 
-		if (blend_mode == BLEND_MODE::NORMAL_ADDITIVEALPHA)
-			glBlendEquation(GL_FUNC_ADD);
+		//if (blend_mode == BLEND_MODE::NORMAL_ADDITIVEALPHA)
+		//	glBlendEquation(GL_FUNC_ADD);
 	}
 
 	//================================================================
@@ -1089,6 +1098,7 @@ void GraphicsOpenGL::DrawTexture( ITexture* itexture, float x, float y, float w,
 
 void GraphicsOpenGL::DrawTexture( ITexture* itexture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color )
 {
+	// --
 	poro_assert( count <= 8 );
 
 	if( itexture == NULL )
@@ -1119,12 +1129,10 @@ void GraphicsOpenGL::DrawTexture( ITexture* itexture, types::vec2* vertices, typ
 		vert[i].ty = texture->mUv[ 1 ] + ( tex_coords[i].y * y_text_conv );
 	}
 
-
 	if( mUseDrawTextureBuffering && mDrawTextureBuffered )
 		mDrawTextureBuffered->BufferedDrawSprite( texture, vert, color, count, GetGLVertexMode(mVertexMode), mBlendMode );
 	else
 		drawsprite( texture, vert, color, count, GetGLVertexMode(mVertexMode), mBlendMode );
-
 }
 
 //-----------------------------------------------------------------------------
