@@ -144,8 +144,11 @@ namespace {
 		} 
 		else if ( blend_mode == BLEND_MODE::NORMAL_ADDITIVEALPHA ) 
 		{
-			glColor4f(color[0], color[1], color[2], color[3]);
 			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE );
+		}
+		else if ( blend_mode == BLEND_MODE::ADDITIVE_ZEROALPHA )
+		{
+			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE );
 		}
 
 		// ---
