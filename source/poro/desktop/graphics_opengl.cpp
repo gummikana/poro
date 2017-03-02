@@ -126,29 +126,30 @@ namespace {
 
 		glEnable(GL_BLEND);
 
-		if( blend_mode == BLEND_MODE::NORMAL ) 
+		switch ( blend_mode )
 		{
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		} 
-		else if ( blend_mode == BLEND_MODE::ADDITIVE ) 
-		{
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		} 
-		else if ( blend_mode == BLEND_MODE::ADDITIVE_ADDITIVEALPHA ) 
-		{
-			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE );
-		}
-		else if ( blend_mode == BLEND_MODE::ZERO_ADDITIVEALPHA ) 
-		{
-			glBlendFuncSeparate( GL_ZERO, GL_ONE, GL_ONE, GL_ONE );
-		} 
-		else if ( blend_mode == BLEND_MODE::NORMAL_ADDITIVEALPHA ) 
-		{
-			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE );
-		}
-		else if ( blend_mode == BLEND_MODE::ADDITIVE_ZEROALPHA )
-		{
-			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE );
+			case BLEND_MODE::NORMAL:
+				glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+				break;
+			case BLEND_MODE::ADDITIVE:
+				glBlendFunc( GL_SRC_ALPHA, GL_ONE );
+				break;
+			case BLEND_MODE::ADDITIVE_ADDITIVEALPHA:
+				glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE );
+				break;
+			case BLEND_MODE::ZERO_ADDITIVEALPHA:
+				glBlendFuncSeparate( GL_ZERO, GL_ONE, GL_ONE, GL_ONE );
+				break;
+			case BLEND_MODE::NORMAL_ADDITIVEALPHA:
+				glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE );
+				break;
+			case BLEND_MODE::ADDITIVE_ZEROALPHA:
+				glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE );
+				break;
+
+			default: 
+				cassert( false && "Invalid enum value" ); 
+				break;
 		}
 
 		// ---
