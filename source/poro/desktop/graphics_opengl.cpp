@@ -1369,16 +1369,33 @@ void GraphicsOpenGL::DrawQuads( float* vertices, int vertex_count, float* tex_co
 	glPushMatrix();
 	
 	glEnable(GL_BLEND);
-	if( mBlendMode == BLEND_MODE::NORMAL ) {
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	} else if ( mBlendMode == BLEND_MODE::ADDITIVE ) {
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	} else if ( mBlendMode == BLEND_MODE::ADDITIVE_ADDITIVEALPHA ) {
-		glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE );
-	} else if ( mBlendMode == BLEND_MODE::NORMAL_ADDITIVEALPHA ) {
-		glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE );
+
+	switch ( mBlendMode )
+	{
+		case BLEND_MODE::NORMAL:
+			glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+			break;
+		case BLEND_MODE::ADDITIVE:
+			glBlendFunc( GL_SRC_ALPHA, GL_ONE );
+			break;
+		case BLEND_MODE::ADDITIVE_ADDITIVEALPHA:
+			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE );
+			break;
+		case BLEND_MODE::ZERO_ADDITIVEALPHA:
+			glBlendFuncSeparate( GL_ZERO, GL_ONE, GL_ONE, GL_ONE );
+			break;
+		case BLEND_MODE::NORMAL_ADDITIVEALPHA:
+			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE );
+			break;
+		case BLEND_MODE::ADDITIVE_ZEROALPHA:
+			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE );
+			break;
+
+		default:
+			cassert( false && "Invalid enum value" );
+			break;
 	}
-	
+
 	// glTexCoordPointer(2, GL_FLOAT, 0, NULL);
 	Uint32 tex = 0;
 	if( texture )
@@ -1388,7 +1405,6 @@ void GraphicsOpenGL::DrawQuads( float* vertices, int vertex_count, float* tex_co
 		glBindTexture(GL_TEXTURE_2D, tex);
 		glEnable(GL_TEXTURE_2D);
 	}
-
 
 	if( colors )
 	{
