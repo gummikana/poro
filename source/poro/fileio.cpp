@@ -324,7 +324,7 @@ namespace platform_impl
 				prev = c;
 			}
 
-			// ideally we would use this but because we won't because winapi designers are horrible people.
+			// ideally we would use this but WinAPI wants more
 			//if ( PathIsRelative( relative_to_root.c_str() ) == false )
 			//	return relative_to_root;
 			if( root.size() > 1 && IsSeparator( root.back() ) && IsSeparator( relative_to_root[0] ) ) 

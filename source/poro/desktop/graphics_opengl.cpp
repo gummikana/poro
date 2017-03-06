@@ -1273,8 +1273,6 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 		const float xPlatformScale = 1.f;
 		const float yPlatformScale = 1.f;
 
-		
-
 		poro_assert( vertCount * 2 <= max_buffer_size );
 
 		int o = -1;
