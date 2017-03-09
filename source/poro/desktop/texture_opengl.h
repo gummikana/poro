@@ -105,6 +105,13 @@ public:
 		coord2.y = mUv[ 3 ];
 	}
 
+    // ------------------------------------
+
+    int GetDataWidth()  { return mWidth; }
+    int GetDataHeight() { return mHeight; }
+
+    // ------------------------------------
+    
 	types::Uint32	mTexture;
 	int				mWidth;
 	int				mHeight;

@@ -415,7 +415,7 @@ namespace {
 		return "";
 	}
 
-	TextureOpenGL* LoadTextureForReal( const types::string& filename, bool store_raw_pixel_data )
+	TextureOpenGL* LoadTexture_Impl( const types::string& filename, bool store_raw_pixel_data )
 	{
 		TextureOpenGL* result = NULL;
 		
@@ -454,7 +454,7 @@ namespace {
 
 	//-----------------------------------------------------------------------------
 
-	TextureOpenGL* CreateTextureForReal(int width,int height)
+	TextureOpenGL* CreateTexture_Impl(int width,int height)
 	{
 		TextureOpenGL* result = NULL;
 		
@@ -474,12 +474,17 @@ namespace {
 		return result;
 	}
 
-	void SetTextureDataForReal(TextureOpenGL* texture, void* data)
+	void SetTextureData_Impl(TextureOpenGL* texture, void* data, int x, int y, int w, int h)
 	{
+        cassert( x >= 0 );
+        cassert( y >= 0 );
+        cassert( x+w <= texture->GetDataWidth() );
+        cassert( y+h <= texture->GetDataHeight() );
+
 		// update the texture image:
 		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, (GLuint)texture->mTexture);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, texture->mWidth, texture->mHeight, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		glDisable(GL_TEXTURE_2D);
 	}
 
@@ -856,7 +861,7 @@ void GraphicsOpenGL::ResetWindow()
 
 ITexture* GraphicsOpenGL::CreateTexture( int width, int height )
 {
-	return CreateTextureForReal(width,height);
+	return CreateTexture_Impl(width,height);
 }
 
 ITexture* GraphicsOpenGL::CloneTexture( ITexture* other )
@@ -866,7 +871,14 @@ ITexture* GraphicsOpenGL::CloneTexture( ITexture* other )
 
 void GraphicsOpenGL::SetTextureData( ITexture* texture, void* data )
 {
-	SetTextureDataForReal( dynamic_cast< TextureOpenGL* >( texture ), data );
+    TextureOpenGL* texture_opengl = dynamic_cast< TextureOpenGL* >( texture );
+	SetTextureData_Impl( texture_opengl, data, 0, 0, texture_opengl->GetWidth(), texture_opengl->GetHeight() );
+}
+
+void GraphicsOpenGL::SetTextureData( ITexture* texture, void* data, int x, int y, int w, int h )
+{
+    TextureOpenGL* texture_opengl = dynamic_cast< TextureOpenGL* >( texture );
+    SetTextureData_Impl( texture_opengl, data, x, y, w, h );
 }
 
 ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename )
@@ -878,7 +890,7 @@ ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename )
 
 ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename, bool store_raw_pixel_data )
 {
-	ITexture* result = LoadTextureForReal( filename, store_raw_pixel_data );
+	ITexture* result = LoadTexture_Impl( filename, store_raw_pixel_data );
 	
 	if( result == NULL )
 		poro_logger << "Couldn't load image: " << filename << "\n";
