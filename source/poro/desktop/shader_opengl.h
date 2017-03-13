@@ -53,6 +53,7 @@ public:
 	virtual void SetParameter( const std::string& name, float value ) PORO_OVERRIDE;
 	virtual void SetParameter( const std::string& name, const types::vec2& value ) PORO_OVERRIDE;
 	virtual void SetParameter( const std::string& name, const types::vec3& value ) PORO_OVERRIDE;
+	virtual void SetParameter( const std::string& name, const types::vec2& value_xy, types::vec2& value_zw ) PORO_OVERRIDE;
 	virtual void SetParameter( const std::string& name, float x, float y, float z, float w ) PORO_OVERRIDE;
 	virtual void SetParameter( const std::string& name, const ITexture* texture ) PORO_OVERRIDE;
 	virtual void SetParameter( const std::string& name, const ITexture3d* texture ) PORO_OVERRIDE;
