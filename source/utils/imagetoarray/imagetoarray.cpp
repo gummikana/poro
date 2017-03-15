@@ -4,6 +4,7 @@
 #include <poro/igraphics.h>
 #include <utils/color/ccolor.h>
 #include <utils/debug.h>
+#include "c:\Projects\FallingEverything\Source\debug\simple_profiler.h"
 
 
 //-----------------------------------------------------------------------------
@@ -11,8 +12,8 @@ void LoadImage( const std::string& filename, ceng::CArray2D< poro::types::Uint32
 {
 	using namespace imagetoarray;
 
+	// Cacheing this is a bit silly, use LoadImageConst for cached version
 	TempTexture* surface = GetTexture(filename);
-
 	if( surface == NULL || surface->data == NULL )
 	{
 		logger_error << "LoadImage() - Failed to load image: " << filename << "\n";
@@ -23,11 +24,36 @@ void LoadImage( const std::string& filename, ceng::CArray2D< poro::types::Uint32
 
 	if( surface )
 	{
-		for( int y = 0; y < surface->h; ++y )
+		int i = 0;
+		const int bpp = 4;
+		auto data = surface->data;
+		uint32 color = 0;
+		if (include_alpha)
 		{
-			for( int x = 0; x < surface->w; ++x )
+			for (int y = 0; y < surface->h; ++y)
 			{
-				out_array2d.Rand( x, y ) = GetPixel( surface, x, y, include_alpha );
+				for (int x = 0; x < surface->w; ++x)
+				{
+					/*int co = (y * surface->width) * bpp + x * bpp;
+					cassert(co == i);*/
+
+					color = data[i+0] << 16 | data[i+1] << 8 | data[i+2] << 0 | data[i+3] << 24;
+					i += 4;
+					out_array2d.Rand(x, y) = color;
+					// cassert( color == surface->GetPixel( x, y, include_alpha ) );
+				}
+			}
+		}
+		else
+		{
+			for (int y = 0; y < surface->h; ++y)
+			{
+				for (int x = 0; x < surface->w; ++x)
+				{
+					color = data[i+0] << 16 | data[i+1] << 8 | data[i+2] << 0;
+					i += 4;
+					out_array2d.Rand(x, y) = color;
+				}
 			}
 		}
 	}
