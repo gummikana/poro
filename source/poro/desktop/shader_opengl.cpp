@@ -164,6 +164,7 @@ bool ShaderOpenGL::GetIsCompiledAndLinked() const
 
 int ShaderOpenGL::LoadShader( const std::string& filename, bool is_vertex_shader )
 {
+	// TODO( Petri ): glCreateShader crashes on old graphics drivers
 	CharBufferAutoFree text;
 	StreamStatus::Enum read_status = Poro()->GetFileSystem()->ReadWholeFile( filename, text.memory, &text.size_bytes );
 	if ( read_status != StreamStatus::NoError )
