@@ -74,6 +74,8 @@ namespace BLEND_MODE
 		ADDITIVE = 1,
 		ADDITIVE_ADDITIVEALPHA = 2,
 		NORMAL_ADDITIVEALPHA = 3,
+		ZERO_ADDITIVEALPHA = 4,
+		ADDITIVE_ZEROALPHA = 5,
 		SCREEN = ADDITIVE, // DEPRECATED: this has been left here for legacy reasons but should've never been called 'screen'.
 	};
 }
@@ -174,6 +176,7 @@ public:
 	void				SetTextureData(ITexture* texture, unsigned char* data ){ SetTextureData(texture, (void*)data ); }
 	void				SetTextureData(ITexture* texture, float* data ){ SetTextureData(texture, (void*)data ); }
 	virtual void		SetTextureData(ITexture* texture, void* data );
+    virtual void		SetTextureData(ITexture* texture, void* data, int x, int y, int w, int h );
 
 	virtual ITexture*	LoadTexture( const types::string& filename ) = 0;
 	virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data ) = 0;
@@ -347,6 +350,11 @@ inline ITexture* IGraphics::CreateTexture( int width, int height ) {
 inline void IGraphics::SetTextureData( ITexture* texture, void* data ) {
 	// If this fails, it means you have not implemented set texture data
 	poro_assert( false );
+}
+
+inline void IGraphics::SetTextureData( ITexture* texture, void* data, int x, int y, int w, int h ) {
+    // If this fails, it means you have not implemented set texture data
+    poro_assert( false );
 }
 
 inline ITexture3d* IGraphics::LoadTexture3d( const types::string& filename ) {

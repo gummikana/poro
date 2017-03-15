@@ -63,6 +63,7 @@ public:
 	virtual ITexture*	CreateTexture( int width, int height ) PORO_OVERRIDE;
 	virtual ITexture*	CloneTexture( ITexture* other ) PORO_OVERRIDE;
 	virtual void		SetTextureData(ITexture* texture, void* data ) PORO_OVERRIDE;
+    virtual void		SetTextureData(ITexture* texture, void* data, int x, int y, int w, int h ) PORO_OVERRIDE;
 	virtual ITexture*	LoadTexture( const types::string& filename ) PORO_OVERRIDE;
 	virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data ) PORO_OVERRIDE;
 	virtual void		DestroyTexture( ITexture* texture ) PORO_OVERRIDE;

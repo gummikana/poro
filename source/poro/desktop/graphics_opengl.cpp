@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  * Copyright (c) 2010 Petri Purho, Dennis Belfrage
  *
@@ -125,21 +125,34 @@ namespace {
 		glEnable(GL_TEXTURE_2D);
 
 		glEnable(GL_BLEND);
-		if( blend_mode == BLEND_MODE::NORMAL ) {
-			glColor4f(color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		} else if ( blend_mode == BLEND_MODE::ADDITIVE ) {
-			glColor4f(color[0], color[1], color[2], color[3]);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		} else if ( blend_mode == BLEND_MODE::ADDITIVE_ADDITIVEALPHA ) {
-			glColor4f(color[0], color[1], color[2], color[3]);
-			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE );
-		} else if ( blend_mode == BLEND_MODE::NORMAL_ADDITIVEALPHA ) {
-			glColor4f(color[0], color[1], color[2], color[3]);
-			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE );
+
+		switch ( blend_mode )
+		{
+			case BLEND_MODE::NORMAL:
+				glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+				break;
+			case BLEND_MODE::ADDITIVE:
+				glBlendFunc( GL_SRC_ALPHA, GL_ONE );
+				break;
+			case BLEND_MODE::ADDITIVE_ADDITIVEALPHA:
+				glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE );
+				break;
+			case BLEND_MODE::ZERO_ADDITIVEALPHA:
+				glBlendFuncSeparate( GL_ZERO, GL_ONE, GL_ONE, GL_ONE );
+				break;
+			case BLEND_MODE::NORMAL_ADDITIVEALPHA:
+				glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE );
+				break;
+			case BLEND_MODE::ADDITIVE_ZEROALPHA:
+				glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE );
+				break;
+
+			default: 
+				cassert( false && "Invalid enum value" ); 
+				break;
 		}
 
-
+		// ---
 		glColor4f(color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
 
 		glBegin( vertex_mode );
@@ -153,8 +166,8 @@ namespace {
 		glDisable(GL_BLEND);
 		glDisable(GL_TEXTURE_2D);
 
-		if (blend_mode == BLEND_MODE::NORMAL_ADDITIVEALPHA)
-			glBlendEquation(GL_FUNC_ADD);
+		//if (blend_mode == BLEND_MODE::NORMAL_ADDITIVEALPHA)
+		//	glBlendEquation(GL_FUNC_ADD);
 	}
 
 	//================================================================
@@ -402,7 +415,7 @@ namespace {
 		return "";
 	}
 
-	TextureOpenGL* LoadTextureForReal( const types::string& filename, bool store_raw_pixel_data )
+	TextureOpenGL* LoadTexture_Impl( const types::string& filename, bool store_raw_pixel_data )
 	{
 		TextureOpenGL* result = NULL;
 		
@@ -441,7 +454,7 @@ namespace {
 
 	//-----------------------------------------------------------------------------
 
-	TextureOpenGL* CreateTextureForReal(int width,int height)
+	TextureOpenGL* CreateTexture_Impl(int width,int height)
 	{
 		TextureOpenGL* result = NULL;
 		
@@ -461,12 +474,17 @@ namespace {
 		return result;
 	}
 
-	void SetTextureDataForReal(TextureOpenGL* texture, void* data)
+	void SetTextureData_Impl(TextureOpenGL* texture, void* data, int x, int y, int w, int h)
 	{
+        cassert( x >= 0 );
+        cassert( y >= 0 );
+        cassert( x+w <= texture->GetDataWidth() );
+        cassert( y+h <= texture->GetDataHeight() );
+
 		// update the texture image:
 		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, (GLuint)texture->mTexture);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, texture->mWidth, texture->mHeight, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		glDisable(GL_TEXTURE_2D);
 	}
 
@@ -843,7 +861,7 @@ void GraphicsOpenGL::ResetWindow()
 
 ITexture* GraphicsOpenGL::CreateTexture( int width, int height )
 {
-	return CreateTextureForReal(width,height);
+	return CreateTexture_Impl(width,height);
 }
 
 ITexture* GraphicsOpenGL::CloneTexture( ITexture* other )
@@ -853,7 +871,14 @@ ITexture* GraphicsOpenGL::CloneTexture( ITexture* other )
 
 void GraphicsOpenGL::SetTextureData( ITexture* texture, void* data )
 {
-	SetTextureDataForReal( dynamic_cast< TextureOpenGL* >( texture ), data );
+    TextureOpenGL* texture_opengl = dynamic_cast< TextureOpenGL* >( texture );
+	SetTextureData_Impl( texture_opengl, data, 0, 0, texture_opengl->GetWidth(), texture_opengl->GetHeight() );
+}
+
+void GraphicsOpenGL::SetTextureData( ITexture* texture, void* data, int x, int y, int w, int h )
+{
+    TextureOpenGL* texture_opengl = dynamic_cast< TextureOpenGL* >( texture );
+    SetTextureData_Impl( texture_opengl, data, x, y, w, h );
 }
 
 ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename )
@@ -865,7 +890,7 @@ ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename )
 
 ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename, bool store_raw_pixel_data )
 {
-	ITexture* result = LoadTextureForReal( filename, store_raw_pixel_data );
+	ITexture* result = LoadTexture_Impl( filename, store_raw_pixel_data );
 	
 	if( result == NULL )
 		poro_logger << "Couldn't load image: " << filename << "\n";
@@ -1089,6 +1114,7 @@ void GraphicsOpenGL::DrawTexture( ITexture* itexture, float x, float y, float w,
 
 void GraphicsOpenGL::DrawTexture( ITexture* itexture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color )
 {
+	// --
 	poro_assert( count <= 8 );
 
 	if( itexture == NULL )
@@ -1119,12 +1145,10 @@ void GraphicsOpenGL::DrawTexture( ITexture* itexture, types::vec2* vertices, typ
 		vert[i].ty = texture->mUv[ 1 ] + ( tex_coords[i].y * y_text_conv );
 	}
 
-
 	if( mUseDrawTextureBuffering && mDrawTextureBuffered )
 		mDrawTextureBuffered->BufferedDrawSprite( texture, vert, color, count, GetGLVertexMode(mVertexMode), mBlendMode );
 	else
 		drawsprite( texture, vert, color, count, GetGLVertexMode(mVertexMode), mBlendMode );
-
 }
 
 //-----------------------------------------------------------------------------
@@ -1261,8 +1285,6 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 		const float xPlatformScale = 1.f;
 		const float yPlatformScale = 1.f;
 
-		
-
 		poro_assert( vertCount * 2 <= max_buffer_size );
 
 		int o = -1;
@@ -1357,16 +1379,33 @@ void GraphicsOpenGL::DrawQuads( float* vertices, int vertex_count, float* tex_co
 	glPushMatrix();
 	
 	glEnable(GL_BLEND);
-	if( mBlendMode == BLEND_MODE::NORMAL ) {
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	} else if ( mBlendMode == BLEND_MODE::ADDITIVE ) {
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	} else if ( mBlendMode == BLEND_MODE::ADDITIVE_ADDITIVEALPHA ) {
-		glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE );
-	} else if ( mBlendMode == BLEND_MODE::NORMAL_ADDITIVEALPHA ) {
-		glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE );
+
+	switch ( mBlendMode )
+	{
+		case BLEND_MODE::NORMAL:
+			glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+			break;
+		case BLEND_MODE::ADDITIVE:
+			glBlendFunc( GL_SRC_ALPHA, GL_ONE );
+			break;
+		case BLEND_MODE::ADDITIVE_ADDITIVEALPHA:
+			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE );
+			break;
+		case BLEND_MODE::ZERO_ADDITIVEALPHA:
+			glBlendFuncSeparate( GL_ZERO, GL_ONE, GL_ONE, GL_ONE );
+			break;
+		case BLEND_MODE::NORMAL_ADDITIVEALPHA:
+			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE );
+			break;
+		case BLEND_MODE::ADDITIVE_ZEROALPHA:
+			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE );
+			break;
+
+		default:
+			cassert( false && "Invalid enum value" );
+			break;
 	}
-	
+
 	// glTexCoordPointer(2, GL_FLOAT, 0, NULL);
 	Uint32 tex = 0;
 	if( texture )
@@ -1376,7 +1415,6 @@ void GraphicsOpenGL::DrawQuads( float* vertices, int vertex_count, float* tex_co
 		glBindTexture(GL_TEXTURE_2D, tex);
 		glEnable(GL_TEXTURE_2D);
 	}
-
 
 	if( colors )
 	{

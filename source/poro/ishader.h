@@ -43,6 +43,7 @@ public:
 	virtual void SetParameter( const std::string& name, float value ) { }
 	virtual void SetParameter( const std::string& name, const types::vec2& value ) { }
 	virtual void SetParameter( const std::string& name, const types::vec3& value ) { }
+	virtual void SetParameter( const std::string& name, const types::vec2& value_xy, types::vec2& value_zw ) { }
 	virtual void SetParameter( const std::string& name, float x, float y, float z, float w ) { }
 	virtual void SetParameter( const std::string& name, const ITexture* texture ) { }
 	virtual void SetParameter( const std::string& name, const ITexture3d* texture ) { }
