@@ -126,6 +126,7 @@ public:
 	void		SetClearTweens( bool value )	{ mClearTweens = value; }
 	bool		GetClearTweens() const			{ return mClearTweens; }
 
+	inline int	GetLastFrameRendered() const { return mLastFrameRendered; }
 
 	virtual void Draw( poro::IGraphics* graphics, types::camera* camera, Transform& transform );
 protected:
@@ -391,6 +392,8 @@ protected:
 	types::vector2				mCenterOffset;
 	types::xform				mXForm;
 	int							mZ;
+
+	int							mLastFrameRendered;
 
 	std::vector< float >		mColor;
 	bool						mDead;

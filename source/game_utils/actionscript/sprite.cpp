@@ -564,6 +564,7 @@ Sprite::Sprite() :
 	mCenterOffset( 0, 0 ),
 	mXForm(),
 	mZ( 100 ),
+	mLastFrameRendered( -1 ),
 	mColor( 4 ),
 	mDead( false ),
 	mVisible( true ),
@@ -744,6 +745,8 @@ void Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 	//#ifdef _DEBUG
 		rendered_this_frame++;
 	//#endif
+
+		mLastFrameRendered = Poro()->GetFrameNum();
 
 		// blend mode
 		if( mBlendMode != poro::BLEND_MODE::NORMAL )
