@@ -56,6 +56,9 @@ int RandomSafe(int low, int high);
 //! Returns a number in float
 float Randomf( float low, float high );
 
+//! Returns a number in double
+double Randomd( double low, double high );
+
 // Does a check,  that low is low, and high is high
 float RandomfSafe(float low, float high);
 
@@ -140,6 +143,11 @@ public:
 	static float Randomf( float low, float high )
 	{
 		return low+((high-low)*(float)Next() );
+	}
+
+	static double Randomd( double low, double high )
+	{
+		return low+((high-low)*Next() );
 	}
 
 	static int Random( int low, int high )

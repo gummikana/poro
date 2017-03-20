@@ -147,6 +147,18 @@ float Randomf( float low, float high )
 #endif
 }
 
+//! Returns a number in double
+double Randomd( double low, double high )
+{
+#if defined(CENG_USE_FAST_RAND)
+	return low+((high-low)*((double)fastrand() / (double)RAND_MAX) );
+#elif defined(CENG_USE_C_RAND)
+	return low+((high-low)*((double)std::rand() / (double)RAND_MAX) );
+#else
+	return ceng::Global_LGMRandom::Randomd( low, high );
+#endif
+}
+
 // Does a check,  that low is low, and high is high
 int RandomSafe(int low, int high)
 {
