@@ -44,7 +44,7 @@ namespace network_utils
 		virtual void IO( uint64		&value ) = 0;
 		virtual void IO( int64		&value ) = 0;
 		virtual void IO( float32	&value ) = 0;
-		virtual void IO( double32	&value ) = 0;
+		virtual void IO( double64	&value ) = 0;
 		virtual void IO( bool		&value ) = 0;
 		virtual void IO( types::ustring& str ) = 0;
 	
@@ -151,7 +151,7 @@ namespace network_utils
 			mBytesUsed += 4;
 		}
 		
-		void IO( double32	&value )
+		void IO( double64	&value )
 		{
 			if( mHasOverflowed ) return; //stop writing when overflowed
 			mBuffer += DoubleToHexString( value );
@@ -264,7 +264,7 @@ namespace network_utils
 			mBytesUsed += 4;
 		}
 
-		void IO( double32	&value )
+		void IO( double64	&value )
 		{
 			if( mHasOverflowed ) return; //stop writing when overflowed
 			if( mBytesUsed + 8 > mLength ) { mHasOverflowed = true; return; }

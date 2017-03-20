@@ -157,9 +157,9 @@ namespace network_utils
 		return ConvertUint32ToHex( ConvertBits< uint32, float32 >( value ) );
 	}
 
-	types::ustring DoubleToHexString( double32 value ) 
+	types::ustring DoubleToHexString( double64 value ) 
 	{
-		return ConvertUint64ToHex( ConvertBits< uint64, double32 >( value ) );
+		return ConvertUint64ToHex( ConvertBits< uint64, double64 >( value ) );
 	}
 
 	//-------------------------------------------------------------------------
@@ -169,9 +169,9 @@ namespace network_utils
 		return ConvertBits< float32, uint32 >( ConvertHexToUint32( value ) );
 	}
 	
-	double32 HexStringToDouble( const types::ustring& value )
+	double64 HexStringToDouble( const types::ustring& value )
 	{
-		return ConvertBits< double32, uint64 >( ConvertHexToUint64( value ) );
+		return ConvertBits< double64, uint64 >( ConvertHexToUint64( value ) );
 	}
 
 	//-------------------------------------------------------------------------

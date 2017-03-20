@@ -53,8 +53,8 @@ namespace network_utils
 	types::ustring	FloatToHexString( float32 value );
 	float32			HexStringToFloat( const types::ustring& value );
 
-	types::ustring	DoubleToHexString( double32 value );
-	double32		HexStringToDouble( const types::ustring& value );
+	types::ustring	DoubleToHexString( double64 value );
+	double64		HexStringToDouble( const types::ustring& value );
 
 	//-------------------------------------------------------------------------
 
