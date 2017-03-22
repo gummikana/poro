@@ -35,6 +35,10 @@
 #include <math.h>
 #include "../staticarray/cstaticarray.h"
 
+// for clamp
+#include "../math/math_functions.h"
+
+
 //! Color class
 /*! A basic color class that thinks that each color component is a 8 bit integer
 	between [0 - 255]
@@ -266,6 +270,29 @@ public:
 		a32 = GetA8() << AShift;
 
 		return r32 | g32 | b32 | a32;
+	}
+
+	uint32 Get32Safe() const
+	{
+		using namespace ceng::math;
+		uint32 r32, g32, b32, a32;
+		
+		r32 = Clamp( (int)(r * 255.f), 0, 255 ) << RShift;
+		g32 = Clamp( (int)(g * 255.f), 0, 255 ) << GShift;
+		b32 = Clamp( (int)(b * 255.f), 0, 255 ) << BShift;
+		a32 = Clamp( (int)(a * 255.f), 0, 255 ) << AShift;
+
+		return r32 | g32 | b32 | a32;
+	}
+
+	// debug function that checks if all the values are within range 0-1
+	bool IsValid() const
+	{
+		if( r < 0.f || r > 1.f ) return false;
+		if( g < 0.f || g > 1.f ) return false;
+		if( b < 0.f || b > 1.f ) return false;
+		if( a < 0.f || a > 1.f ) return false;
+		return true;
 	}
 
 	//=========================================================================
