@@ -1447,6 +1447,70 @@ void GraphicsOpenGL::DrawQuads( float* vertices, int vertex_count, float* tex_co
 	glPopMatrix();
 }
 
+
+void GraphicsOpenGL::DrawQuads( Vertex_PosFloat2_ColorUint32* vertices, int vertex_count )
+{
+	glPushMatrix();
+
+	glEnable( GL_BLEND );
+
+	switch ( mBlendMode )
+	{
+	case BLEND_MODE::NORMAL:
+		glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+		break;
+	case BLEND_MODE::ADDITIVE:
+		glBlendFunc( GL_SRC_ALPHA, GL_ONE );
+		break;
+	case BLEND_MODE::ADDITIVE_ADDITIVEALPHA:
+		glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE );
+		break;
+	case BLEND_MODE::ZERO_ADDITIVEALPHA:
+		glBlendFuncSeparate( GL_ZERO, GL_ONE, GL_ONE, GL_ONE );
+		break;
+	case BLEND_MODE::NORMAL_ADDITIVEALPHA:
+		glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE );
+		break;
+	case BLEND_MODE::ADDITIVE_ZEROALPHA:
+		glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE );
+		break;
+
+	default:
+		cassert( false && "Invalid enum value" );
+		break;
+	}
+
+	// draw
+	static uint32 vbo_handle = 0;
+	if ( vbo_handle == 0 )
+	{
+		glGenBuffers( 1, &vbo_handle );
+	}
+
+	const int POSITION_SIZE = sizeof( float ) * 2;
+	const int COLOR_SIZE = sizeof( uint32 );
+
+	glBindBuffer( GL_ARRAY_BUFFER, vbo_handle );
+	glBufferData( GL_ARRAY_BUFFER, (POSITION_SIZE+COLOR_SIZE) * vertex_count, vertices, GL_DYNAMIC_DRAW );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo_handle );
+
+	glEnableClientState( GL_VERTEX_ARRAY );
+	glVertexPointer( 2, GL_FLOAT, sizeof(Vertex_PosFloat2_ColorUint32), NULL );
+
+	glEnableClientState( GL_COLOR_ARRAY );
+	glColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( Vertex_PosFloat2_ColorUint32 ), (GLvoid*)POSITION_SIZE );
+
+	glDrawArrays( GL_QUADS, 0, vertex_count );
+
+	// ---
+	glDisableClientState( GL_VERTEX_ARRAY );
+	glDisableClientState( GL_COLOR_ARRAY );
+	glBindBuffer( GL_ARRAY_BUFFER, NULL );
+
+	glDisable( GL_BLEND );
+	glPopMatrix();
+}
+
 void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture, const poro::types::fcolor& color, types::vec2* tex_coords, int count, types::vec2* tex_coords2, types::vec2* tex_coords3 )
 {
 	struct Vertice

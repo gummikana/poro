@@ -100,6 +100,13 @@ namespace DRAWFILL_MODE
 	};
 };
 
+struct Vertex_PosFloat2_ColorUint32
+{
+	float x;
+	float y;
+	uint32 color;
+};
+
 
 //-----------------------------
 
@@ -276,6 +283,7 @@ public:
 	virtual void DestroyGraphicsBuffer(IGraphicsBuffer* buffer) { }
 	virtual void DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) { }
 	virtual void DrawQuads( float* vertices, int vertex_count, float* tex_coords, float* colors, ITexture* texture ) { }
+	virtual void DrawQuads( Vertex_PosFloat2_ColorUint32* vertices, int vertex_count ) { }
 
 	//-------------------------------------------------------------------------
 
