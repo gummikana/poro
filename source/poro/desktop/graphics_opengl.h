@@ -114,6 +114,7 @@ public:
 	virtual void		DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) PORO_OVERRIDE;
 	virtual void		DrawQuads( float* vertices, int vertex_count, float* tex_coords, float* colors, ITexture* texture ) PORO_OVERRIDE;
 	virtual void        DrawQuads( Vertex_PosFloat2_ColorUint32* vertices, int vertex_count ) PORO_OVERRIDE;
+	virtual void		DrawQuads( Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, int vertex_count, ITexture* texture ) PORO_OVERRIDE;
 	virtual void		DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture,  const types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ), types::vec2* tex_coords = NULL, int count = 0, types::vec2* tex_coords2 = NULL, types::vec2* tex_coords3 = NULL ) PORO_OVERRIDE;
 	
 	//-------------------------------------------------------------------------
@@ -164,6 +165,8 @@ private:
 	class					DrawTextureBuffered;
 	DrawTextureBuffered*	mDrawTextureBuffered;
 	bool					mUseDrawTextureBuffering;
+
+	uint32 mDynamicVboHandle = 0;
 
 };
 

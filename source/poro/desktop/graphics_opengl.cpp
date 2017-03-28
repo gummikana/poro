@@ -736,6 +736,10 @@ bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::
 		poro_logger << "Error: " << glewGetErrorString(glew_err) << "\n";
 	}
 #endif
+
+	cassert( mDynamicVboHandle == 0 );
+	glGenBuffers( 1, &mDynamicVboHandle );
+
 	return 1;
 }
 //-----------------------------------------------------------------------------
@@ -1377,7 +1381,6 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 void GraphicsOpenGL::DrawQuads( float* vertices, int vertex_count, float* tex_coords, float* colors, ITexture* texture )
 {
 	glPushMatrix();
-	
 	glEnable(GL_BLEND);
 
 	switch ( mBlendMode )
@@ -1406,7 +1409,6 @@ void GraphicsOpenGL::DrawQuads( float* vertices, int vertex_count, float* tex_co
 			break;
 	}
 
-	// glTexCoordPointer(2, GL_FLOAT, 0, NULL);
 	Uint32 tex = 0;
 	if( texture )
 	{
@@ -1447,57 +1449,45 @@ void GraphicsOpenGL::DrawQuads( float* vertices, int vertex_count, float* tex_co
 	glPopMatrix();
 }
 
-
 void GraphicsOpenGL::DrawQuads( Vertex_PosFloat2_ColorUint32* vertices, int vertex_count )
 {
 	glPushMatrix();
-
 	glEnable( GL_BLEND );
 
 	switch ( mBlendMode )
 	{
-	case BLEND_MODE::NORMAL:
-		glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-		break;
-	case BLEND_MODE::ADDITIVE:
-		glBlendFunc( GL_SRC_ALPHA, GL_ONE );
-		break;
-	case BLEND_MODE::ADDITIVE_ADDITIVEALPHA:
-		glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE );
-		break;
-	case BLEND_MODE::ZERO_ADDITIVEALPHA:
-		glBlendFuncSeparate( GL_ZERO, GL_ONE, GL_ONE, GL_ONE );
-		break;
-	case BLEND_MODE::NORMAL_ADDITIVEALPHA:
-		glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE );
-		break;
-	case BLEND_MODE::ADDITIVE_ZEROALPHA:
-		glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE );
-		break;
+		case BLEND_MODE::NORMAL:
+			glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+			break;
+		case BLEND_MODE::ADDITIVE:
+			glBlendFunc( GL_SRC_ALPHA, GL_ONE );
+			break;
+		case BLEND_MODE::ADDITIVE_ADDITIVEALPHA:
+			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE );
+			break;
+		case BLEND_MODE::ZERO_ADDITIVEALPHA:
+			glBlendFuncSeparate( GL_ZERO, GL_ONE, GL_ONE, GL_ONE );
+			break;
+		case BLEND_MODE::NORMAL_ADDITIVEALPHA:
+			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE );
+			break;
+		case BLEND_MODE::ADDITIVE_ZEROALPHA:
+			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE );
+			break;
 
-	default:
-		cassert( false && "Invalid enum value" );
-		break;
-	}
-
-	// draw
-	static uint32 vbo_handle = 0;
-	if ( vbo_handle == 0 )
-	{
-		glGenBuffers( 1, &vbo_handle );
+		default:
+			cassert( false && "Invalid enum value" );
+			break;
 	}
 
 	const int POSITION_SIZE = sizeof( float ) * 2;
-	const int COLOR_SIZE = sizeof( uint32 );
-
-	glBindBuffer( GL_ARRAY_BUFFER, vbo_handle );
-	glBufferData( GL_ARRAY_BUFFER, (POSITION_SIZE+COLOR_SIZE) * vertex_count, vertices, GL_DYNAMIC_DRAW );
-	glBindBuffer( GL_ARRAY_BUFFER, vbo_handle );
 
 	glEnableClientState( GL_VERTEX_ARRAY );
-	glVertexPointer( 2, GL_FLOAT, sizeof(Vertex_PosFloat2_ColorUint32), NULL );
-
 	glEnableClientState( GL_COLOR_ARRAY );
+	glBindBuffer( GL_ARRAY_BUFFER, mDynamicVboHandle );
+	glBufferData( GL_ARRAY_BUFFER, sizeof( Vertex_PosFloat2_ColorUint32 ) * vertex_count, vertices, GL_DYNAMIC_DRAW );
+
+	glVertexPointer( 2, GL_FLOAT, sizeof(Vertex_PosFloat2_ColorUint32), NULL );
 	glColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( Vertex_PosFloat2_ColorUint32 ), (GLvoid*)POSITION_SIZE );
 
 	glDrawArrays( GL_QUADS, 0, vertex_count );
@@ -1505,7 +1495,74 @@ void GraphicsOpenGL::DrawQuads( Vertex_PosFloat2_ColorUint32* vertices, int vert
 	// ---
 	glDisableClientState( GL_VERTEX_ARRAY );
 	glDisableClientState( GL_COLOR_ARRAY );
+	glBindBuffer( GL_ARRAY_BUFFER, 0 );
+
+	glDisable( GL_BLEND );
+	glPopMatrix();
+}
+
+void GraphicsOpenGL::DrawQuads( Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, int vertex_count, ITexture* texture )
+{
+	glPushMatrix();
+
+	glEnable( GL_BLEND );
+
+	switch ( mBlendMode )
+	{
+		case BLEND_MODE::NORMAL:
+			glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+			break;
+		case BLEND_MODE::ADDITIVE:
+			glBlendFunc( GL_SRC_ALPHA, GL_ONE );
+			break;
+		case BLEND_MODE::ADDITIVE_ADDITIVEALPHA:
+			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE );
+			break;
+		case BLEND_MODE::ZERO_ADDITIVEALPHA:
+			glBlendFuncSeparate( GL_ZERO, GL_ONE, GL_ONE, GL_ONE );
+			break;
+		case BLEND_MODE::NORMAL_ADDITIVEALPHA:
+			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE );
+			break;
+		case BLEND_MODE::ADDITIVE_ZEROALPHA:
+			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE );
+			break;
+
+		default:
+			cassert( false && "Invalid enum value" );
+			break;
+	}
+
+	if ( texture )
+	{
+		poro::TextureOpenGL* otexture = static_cast< poro::TextureOpenGL* >(texture);
+		glBindTexture( GL_TEXTURE_2D, otexture->mTexture );
+		glEnable( GL_TEXTURE_2D );
+	}
+
+	const int POSITION_SIZE = sizeof( float ) * 2;
+	const int TEXCOORD_SIZE = sizeof( float ) * 2;
+
+	glEnableClientState( GL_VERTEX_ARRAY );
+	glEnableClientState( GL_TEXTURE_COORD_ARRAY );
+	glEnableClientState( GL_COLOR_ARRAY );
+	glBindBuffer( GL_ARRAY_BUFFER, mDynamicVboHandle );
+	glBufferData( GL_ARRAY_BUFFER, sizeof( Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ) * vertex_count, vertices, GL_DYNAMIC_DRAW );
+
+	glVertexPointer( 2, GL_FLOAT, sizeof( Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), NULL );
+	glTexCoordPointer( 2, GL_FLOAT, sizeof( Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), (GLvoid*)POSITION_SIZE );
+	glColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), (GLvoid*)(POSITION_SIZE+TEXCOORD_SIZE) );
+
+	glDrawArrays( GL_QUADS, 0, vertex_count );
+
+	// ---
+	glDisableClientState( GL_VERTEX_ARRAY );
+	glDisableClientState( GL_TEXTURE_COORD_ARRAY );
+	glDisableClientState( GL_COLOR_ARRAY );
 	glBindBuffer( GL_ARRAY_BUFFER, NULL );
+
+	if ( texture )
+		glDisable( GL_TEXTURE_2D );
 
 	glDisable( GL_BLEND );
 	glPopMatrix();
