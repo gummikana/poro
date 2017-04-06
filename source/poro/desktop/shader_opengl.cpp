@@ -33,25 +33,25 @@ void ShaderOpenGL::Init( const std::string& vertex_source_filename, const std::s
 	Release();
 
 	vertexShader = LoadShader( vertex_source_filename, true );
-    fragmentShader = LoadShader( fragment_source_filename, false );
+	fragmentShader = LoadShader( fragment_source_filename, false );
 
 	Init();
 }
 
 void ShaderOpenGL::InitFromString( const std::string& vertex_source, const std::string& fragment_source )
 { 
-    Release();
+	Release();
 
-    vertexShader = LoadShaderFromString( vertex_source, true );
-    fragmentShader = LoadShaderFromString( fragment_source, false );
+	vertexShader = LoadShaderFromString( vertex_source, true );
+	fragmentShader = LoadShaderFromString( fragment_source, false );
 
-    if (vertexShader == 0 || fragmentShader == 0)
-    {
-        Release();
-        return;
-    }
+	if (vertexShader == 0 || fragmentShader == 0)
+	{
+		Release();
+		return;
+	}
 
-    Init();
+	Init();
 }	
 
 void ShaderOpenGL::Release()
@@ -82,61 +82,62 @@ void ShaderOpenGL::Release()
 void ShaderOpenGL::Enable()
 {
 	lastAllocatedTextureUnit = 2;
-    glUseProgram( program );
+	glUseProgram( program );
 }
 
 void ShaderOpenGL::Disable()
 {
 	lastAllocatedTextureUnit = 2;
-    glUseProgram( 0 );
+	glUseProgram( 0 );
 	glDisable( GL_TEXTURE_2D );
 	glDisable( GL_TEXTURE_3D );
 }
 
 bool ShaderOpenGL::HasParameter( const std::string& name)
 {
-	const int location = GetParameterLocation( name.c_str() );
-    return location > -1;
+	const int location = GetParameterLocation( name );
+	return location > -1;
 }
 
 void ShaderOpenGL::SetParameter( const std::string& name, float value )
 {
-	const int location = GetParameterLocation( name.c_str() );
+	const int location = GetParameterLocation( name );
 
 	glUniform1f( location, value );
 }
 
 void ShaderOpenGL::SetParameter( const std::string& name, const types::vec2& value )
 {
-	const int location = GetParameterLocation( name.c_str() );
+	const int location = GetParameterLocation( name );
 
 	glUniform2f( location, value.x, value.y );
 }
 
 void ShaderOpenGL::SetParameter( const std::string& name, const types::vec3& value )
 {
-	const int location = GetParameterLocation( name.c_str() );
+	const int location = GetParameterLocation( name );
 
 	glUniform3f( location, value.x, value.y, value.z );
 }
 
 void ShaderOpenGL::SetParameter( const std::string& name, const types::vec2& value_xy, types::vec2& value_zw )
 {
-	const int location = GetParameterLocation( name.c_str() );
+	const int location = GetParameterLocation( name );
 
 	glUniform4f( location, value_xy.x, value_xy.y, value_zw.x, value_zw.y );
 }
 
 void ShaderOpenGL::SetParameter( const std::string& name, float x, float y, float z, float w )
 {
-	const int location = GetParameterLocation( name.c_str() );
+	const int location = GetParameterLocation( name );
 
 	glUniform4f( location, x, y, z, w );
 }
 
 void ShaderOpenGL::SetParameter( const std::string& name, const ITexture* texture )
 {
-	const int location = GetParameterLocation( name.c_str() );
+	poro_assert( texture );
+	const int location = GetParameterLocation( name );
 
 	glEnable( GL_TEXTURE_2D );
 	glUniform1i( location, lastAllocatedTextureUnit );
@@ -150,7 +151,8 @@ void ShaderOpenGL::SetParameter( const std::string& name, const ITexture* textur
 
 void ShaderOpenGL::SetParameter( const std::string& name, const ITexture3d* texture )
 {
-	const int location = GetParameterLocation( name.c_str() );
+	poro_assert( texture );
+	const int location = GetParameterLocation( name );
 
 	glEnable( GL_TEXTURE_3D );
 	glUniform1i( location, lastAllocatedTextureUnit );
@@ -186,98 +188,98 @@ int ShaderOpenGL::LoadShader( const std::string& filename, bool is_vertex_shader
 
 	//DEBUG
 	GLint status;
-    glGetShaderiv(shader_handle, GL_COMPILE_STATUS, &status);
-    if (status == GL_FALSE)
-    {
-        GLint infoLogLength;
-        glGetShaderiv(shader_handle, GL_INFO_LOG_LENGTH, &infoLogLength);
-        
-        GLchar *strInfoLog = new GLchar[infoLogLength + 1];
-        glGetShaderInfoLog(shader_handle, infoLogLength, NULL, strInfoLog);
-        
-        
-        fprintf(stderr, "GLSL compile failure:\n%s\n", strInfoLog);
-        delete[] strInfoLog;
+	glGetShaderiv(shader_handle, GL_COMPILE_STATUS, &status);
+	if (status == GL_FALSE)
+	{
+		GLint infoLogLength;
+		glGetShaderiv(shader_handle, GL_INFO_LOG_LENGTH, &infoLogLength);
+		
+		GLchar *strInfoLog = new GLchar[infoLogLength + 1];
+		glGetShaderInfoLog(shader_handle, infoLogLength, NULL, strInfoLog);
+		
+		
+		fprintf(stderr, "GLSL compile failure:\n%s\n", strInfoLog);
+		delete[] strInfoLog;
 
 		isCompiledAndLinked = false;
-    }
+	}
 
 	return shader_handle;
 }
 
 int ShaderOpenGL::LoadShaderFromString( const std::string& source, bool is_vertex_shader )
 {
-    const char* sources[1];
-    sources[0] = source.c_str();
+	const char* sources[1];
+	sources[0] = source.c_str();
 
-    int lengths[1];
-    lengths[0] = source.size();
+	int lengths[1];
+	lengths[0] = source.size();
 
-    int shader_handle = glCreateShader( is_vertex_shader ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER );
-    glShaderSource( shader_handle, 1, sources, lengths );
-    glCompileShader( shader_handle );
+	int shader_handle = glCreateShader( is_vertex_shader ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER );
+	glShaderSource( shader_handle, 1, sources, lengths );
+	glCompileShader( shader_handle );
 
-    //DEBUG
-    GLint status;
-    glGetShaderiv(shader_handle, GL_COMPILE_STATUS, &status);
-    if (status == GL_FALSE)
-    {
-        GLint infoLogLength;
-        glGetShaderiv(shader_handle, GL_INFO_LOG_LENGTH, &infoLogLength);
+	//DEBUG
+	GLint status;
+	glGetShaderiv(shader_handle, GL_COMPILE_STATUS, &status);
+	if (status == GL_FALSE)
+	{
+		GLint infoLogLength;
+		glGetShaderiv(shader_handle, GL_INFO_LOG_LENGTH, &infoLogLength);
 
-        GLchar *strInfoLog = new GLchar[infoLogLength + 1];
-        glGetShaderInfoLog(shader_handle, infoLogLength, NULL, strInfoLog);
+		GLchar *strInfoLog = new GLchar[infoLogLength + 1];
+		glGetShaderInfoLog(shader_handle, infoLogLength, NULL, strInfoLog);
 
 
-        fprintf(stderr, "GLSL compile failure:\n%s\n", strInfoLog);
-        delete[] strInfoLog;
+		fprintf(stderr, "GLSL compile failure:\n%s\n", strInfoLog);
+		delete[] strInfoLog;
 
-        isCompiledAndLinked = false;
-    }
+		isCompiledAndLinked = false;
+	}
 
-    return shader_handle;
+	return shader_handle;
 }
 
 void ShaderOpenGL::Init()
 {
-    program = glCreateProgram();
-    glAttachShader( program, vertexShader );
-    glAttachShader( program, fragmentShader );
-    glLinkProgram( program);
+	program = glCreateProgram();
+	glAttachShader( program, vertexShader );
+	glAttachShader( program, fragmentShader );
+	glLinkProgram( program);
 
-    //DEBUG
-    GLint status;
-    glGetProgramiv (program, GL_LINK_STATUS, &status);
-    if (status == GL_FALSE)
-    {
-        GLint infoLogLength;
-        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
+	//DEBUG
+	GLint status;
+	glGetProgramiv (program, GL_LINK_STATUS, &status);
+	if (status == GL_FALSE)
+	{
+		GLint infoLogLength;
+		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
 
-        GLchar *strInfoLog = new GLchar[infoLogLength + 1];
-        glGetProgramInfoLog(program, infoLogLength, NULL, strInfoLog);
-        fprintf(stderr, "GLSL link failure: %s\n", strInfoLog);
-        delete[] strInfoLog;
+		GLchar *strInfoLog = new GLchar[infoLogLength + 1];
+		glGetProgramInfoLog(program, infoLogLength, NULL, strInfoLog);
+		fprintf(stderr, "GLSL link failure: %s\n", strInfoLog);
+		delete[] strInfoLog;
 
-        Release();
-    }
+		Release();
+	}
 }
 
 int ShaderOpenGL::GetParameterLocation( const std::string& name )
 {
-    int result;
+	int result;
 
-    auto it = parameterLocationCache.find( name );
-    if ( it == parameterLocationCache.end() )
-    {
-        result = glGetUniformLocation( program, name.c_str() );
-        parameterLocationCache.insert( std::make_pair( name, result ) );
-    }
-    else
-    {
-        result = it->second;
-    }
+	auto it = parameterLocationCache.find( name );
+	if ( it == parameterLocationCache.end() )
+	{
+		result = glGetUniformLocation( program, name.c_str() );
+		parameterLocationCache.insert( std::make_pair( name, result ) );
+	}
+	else
+	{
+		result = it->second;
+	}
 
-    return result;
+	return result;
 }
 
 }
