@@ -161,6 +161,10 @@ public:
 	T GetBottom() const	{ return y + h; }
 	T GetCenterX() const { return x + w / T(2);  }
 	T GetCenterY() const { return y + h / T(2);  }
+    template< class T2 >
+    T2 GetCornerMin() const { return T2( x, y );  }
+    template< class T2 >
+    T2 GetCornerMax() const { return T2( x + w, y + h );  }
 
 	//-------------------------------------------------------------------------
 
