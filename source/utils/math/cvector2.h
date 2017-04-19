@@ -151,12 +151,12 @@ public:
 
 	//=========================================================================
 
-	Type LengthSquared() const
+	inline Type LengthSquared() const
 	{
 		return ( x * x + y * y );
 	}
 
-	float Length() const
+	inline float Length() const
 	{
 		return sqrtf( (float)LengthSquared() );
 	}
@@ -175,23 +175,19 @@ public:
 	// ripped from:
 	// http://forums.indiegamer.com/showthread.php?t=10459
 
-	Type Angle() const 
+	inline float Angle() const 
 	{
-		CVector2< Type > normal = Normalize();
-		Type angle = atan2( normal.y, normal.x );
-
-		return angle;
+		const float l = Length();
+		if( l == 0 ) return 0;
+		return (float)atan2( ((float)y) / l, ((float)x) / l );
 	}
 
-	Type Angle( const CVector2< Type >& x ) const
+	inline float Angle( const CVector2< Type >& v2 ) const
 	{
-		Type dot = Dot( *this, x );
-		Type cross = Cross( *this, x );
+		Type dot = Dot( *this, v2 );
+		Type cross = Cross( *this, v2 );
 		
-		// angle between segments
-		Type angle = (Type) atan2( cross, dot );
-
-		return angle;
+		return (float)atan2( (float)cross, (float)dot );
 	}
 
 	CVector2< Type >& Rotate( Type angle_rad ) 
