@@ -107,6 +107,25 @@ bool VectorRemove( std::vector< T >& container, const T& element )
 }
 
 
+// the standard way of removing an element by swapping it with the last and popping the last
+// stops at the first instance from the back of the vector, use VectorRemoveAll to remove duplicates as well
+// returns true if found an element, false if none was found
+template< class T >
+bool VectorRemoveBackwards( std::vector< T >& container, const T& element )
+{
+	for( int i = ((int)container.size()) - 1; i >= 0; --i ) 
+	{
+		if( container[ i ] == element ) {
+			container[ i ] = container[ container.size() - 1 ];
+			container.pop_back();
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
 template< class T >
 bool VectorRemoveAll( std::vector< T >& container, const T& element )
 {
