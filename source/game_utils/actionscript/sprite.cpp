@@ -186,13 +186,20 @@ struct SpriteLoadHelper
 						for ( int x = min.x; x < max.x; x++ )
 						{
 							const uint32 color = hotspots_image.At( x, y);
-							if ( color != 0 )
+							if ( (color & 0xFF000000)>0 )
 							{
 								int hotspot_i = 0;
 								for ( const auto& hotspot_config : hotspots )
 								{
 									const uint32 color2 = hotspot_config.color;
-									if ( ( color & color2 ) == color2 )
+									uint32 mask = 0;
+									{
+										mask |= (color2 & 0x00FF0000)>0 ? 0x00FF0000 : 0;
+										mask |= (color2 & 0x0000FF00)>0 ? 0x0000FF00 : 0;
+										mask |= (color2 & 0x000000FF)>0 ? 0x000000FF : 0;
+									}
+
+									if ( ( color & mask ) == color2 )
 									{
 										rect_animation.mHotspots[hotspot_i].positions.emplace_back( types::ivector2( x, y ) - min );
 										if ( ++hotspots_found_this_frame == hotspots.size() )
