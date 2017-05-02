@@ -104,6 +104,7 @@ namespace network_utils
 		{
 			// buffer=buf; length=size; bytesUsed=0; bHasOverflowed=false;
 			mLength = 1024;
+			mBuffer.reserve( 1024 );
 			mBytesUsed = 0;
 			mHasOverflowed = false;
 		}
