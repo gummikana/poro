@@ -400,7 +400,7 @@ StreamStatus::Enum WriteStream::Write( const std::string& text )
 {
 	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
 
-	return mStreamImpl->Write( const_cast<char*>( text.c_str() ), text.length() );
+	return mStreamImpl->Write( text.c_str(), text.length() );
 	return StreamStatus::NoError;
 }
 
@@ -408,7 +408,7 @@ StreamStatus::Enum WriteStream::WriteLine( const std::string& text )
 {
 	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
 
-	StreamStatus::Enum status = mStreamImpl->Write( const_cast<char*>( text.c_str() ), text.length() );
+	StreamStatus::Enum status = mStreamImpl->Write( text.c_str(), text.length() );
 	if ( status != StreamStatus::NoError )
 		return status;
 	return mStreamImpl->WriteLineEnding();
