@@ -181,11 +181,6 @@ inline FileSystem* PlatformDesktop::GetFileSystem() {
 }
 
 // ---
-inline void PlatformDesktop::SetFrameRate( int targetRate, bool fixed_time_step ) {
-	// mFrameRate = targetRate;
-	mOneFrameShouldLast = 1.0 / (types::Double32)targetRate;
-	mFixedTimeStep = fixed_time_step;
-}
 
 inline int PlatformDesktop::GetFrameRate() {
 	return mFrameRate;

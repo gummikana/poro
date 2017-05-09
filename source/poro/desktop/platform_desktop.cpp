@@ -44,6 +44,8 @@
 
 #include "../fileio.h"
 
+// #define PORO_FPS_30_MODE
+
 namespace {
 
 #ifdef PORO_PLAT_WINDOWS
@@ -363,6 +365,7 @@ namespace poro {
 
 const int PORO_WINDOWS_JOYSTICK_COUNT = 8;
 
+
 //-----------------------------------------------------------------------------
 
 PlatformDesktop::PlatformDesktop() :
@@ -482,6 +485,17 @@ void PlatformDesktop::Destroy()
 }
 //-----------------------------------------------------------------------------
 
+void PlatformDesktop::SetFrameRate( int targetRate, bool fixed_time_step ) 
+{
+	mOneFrameShouldLast = 1.0 / (types::Double32)targetRate;
+	mFixedTimeStep = fixed_time_step;
+
+	#ifdef PORO_FPS_30_MODE
+	mOneFrameShouldLast = mOneFrameShouldLast * 2;
+	#endif
+}
+
+//-----------------------------------------------------------------------------
 void PlatformDesktop::StartMainLoop() 
 {
 	mRunning = true;
@@ -563,6 +577,10 @@ void PlatformDesktop::SingleLoop()
 	poro_assert( mGraphics );
 
 	types::Double32 dt = mOneFrameShouldLast;
+	#ifdef PORO_FPS_30_MODE
+	dt = dt * 0.5;
+	#endif
+
 	if( mFixedTimeStep == false )
 	{
 		static types::Double32 last_time_update_called = 0;
