@@ -1923,6 +1923,21 @@ void GraphicsOpenGL::SaveScreenshot( const std::string& filename )
 	SaveScreenshot( filename, 0, 0, (int)mViewportSize.x, (int)mViewportSize.y );
 }
 
+int GraphicsOpenGL::CaptureScreenshot( unsigned char* data, int max_size )
+{
+	const int bpp = 3;
+	const int pixels_size = bpp * (int)mViewportSize.x * (int)mViewportSize.y;
+	poro_assert( max_size >= pixels_size );
+
+	if( data == NULL )
+		return pixels_size;
+
+	// read the whole image into a buffer, since this crashes with unspecified sizes
+	glReadPixels( (int)mViewportOffset.x, (int)mViewportOffset.y, (int)mViewportSize.x, (int)mViewportSize.y, GL_RGB, GL_UNSIGNED_BYTE, data );
+
+	return pixels_size;	
+}
+
 unsigned char*	GraphicsOpenGL::ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp )
 {
 	// comp might be NULL

@@ -141,6 +141,7 @@ public:
 
 	void SaveScreenshot( const std::string& filename );
 	void SaveScreenshot( const std::string& filename, int x, int y, int w, int h );
+	int CaptureScreenshot( unsigned char* data, int max_size );
 
 	//-------------------------------------------------------------------------
 	virtual unsigned char*	ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp ) PORO_OVERRIDE;

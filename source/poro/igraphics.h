@@ -308,6 +308,7 @@ public:
 	// Save screen (only supports .png format)
 	virtual void SaveScreenshot( const std::string& filename )								{ poro_assert( false && "IMPLEMENTATION NEEDED" ); }
 	virtual void SaveScreenshot( const std::string& filename, int x, int y, int w, int h )	{ poro_assert( false && "IMPLEMENTATION NEEDED" ); }
+	virtual int CaptureScreenshot( unsigned char* data, int max_size )						{ poro_assert( false && "IMPLEMENTATION NEEDED" ); return 0; }
 
 	//-------------------------------------------------------------------------
 	// Methods for loading and saving images to a pixel buffer
