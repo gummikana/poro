@@ -44,39 +44,39 @@ namespace ceng {
 std::vector <std::string> Split( const std::string& _separator, std::string _string, bool include_empty )
 {
 
-    std::vector <std::string> array;
+	std::vector <std::string> array;
 
-    size_t position;
-    
-    // we will find the position of first of the separators
-    position = _string.find( _separator );
-    
-    // We will loop true this until there are no separators left
-    // in _string
-    while ( position != _string.npos )
-    {
-    
-        // This thing here checks that we dont push empty strings
-        // to the array
-        if ( position != 0 )
-            array.push_back( _string.substr( 0, position ) );
+	size_t position;
+	
+	// we will find the position of first of the separators
+	position = _string.find( _separator );
+	
+	// We will loop true this until there are no separators left
+	// in _string
+	while ( position != _string.npos )
+	{
+	
+		// This thing here checks that we dont push empty strings
+		// to the array
+		if ( position != 0 )
+			array.push_back( _string.substr( 0, position ) );
 		else if( include_empty )
 			array.push_back( "" );
 
-        // When the cutted part is pushed into the array we
-        // remove it and the separator from the _string
-        _string.erase( 0, position + _separator.length() );
+		// When the cutted part is pushed into the array we
+		// remove it and the separator from the _string
+		_string.erase( 0, position + _separator.length() );
 
-        // And the we look for a new place for the _separator
-        position = _string.find( _separator );
-    }
+		// And the we look for a new place for the _separator
+		position = _string.find( _separator );
+	}
 
-    // We will push the rest of the stuff in to the array
-    if ( include_empty || _string.empty() == false )
-        array.push_back( _string );
+	// We will push the rest of the stuff in to the array
+	if ( include_empty || _string.empty() == false )
+		array.push_back( _string );
 
-    // Then we'll just return the array
-    return array;
+	// Then we'll just return the array
+	return array;
 }
 
 //=============================================================================
@@ -85,32 +85,32 @@ std::vector <std::string> Split( const std::string& _separator, std::string _str
 std::vector <std::string> Split( const std::string& _separator, std::string _string, int _limit )
 {
 
-    std::vector <std::string> array;
+	std::vector <std::string> array;
 
-    size_t position;
-    position = _string.find( _separator );
+	size_t position;
+	position = _string.find( _separator );
 
-    // The only diffrence is here
-    int count = 0;  
+	// The only diffrence is here
+	int count = 0;  
 
-    // and in this while loop the count <= _limit
-    while ( position != _string.npos &&  count < _limit - 1 )
-    {
-    
-        if ( position != 0 )
-            array.push_back( _string.substr( 0, position ) );
+	// and in this while loop the count <= _limit
+	while ( position != _string.npos &&  count < _limit - 1 )
+	{
+	
+		if ( position != 0 )
+			array.push_back( _string.substr( 0, position ) );
 
-        _string.erase( 0, position + _separator.length() );
+		_string.erase( 0, position + _separator.length() );
 
-        position = _string.find( _separator );
+		position = _string.find( _separator );
 
-        // And here
-        count++;
-    }
-    if ( _string.empty() == false )
-        array.push_back( _string );
+		// And here
+		count++;
+	}
+	if ( _string.empty() == false )
+		array.push_back( _string );
 
-    return array;
+	return array;
 }
 
 //=============================================================================
@@ -118,38 +118,38 @@ std::vector <std::string> Split( const std::string& _separator, std::string _str
 std::vector<std::string> StringSplit( const std::string& _separator, std::string _string )
 {
 
-    std::vector <std::string> array;
+	std::vector <std::string> array;
 
-    size_t position;
+	size_t position;
 	
-    // we will find the position of first of the separators
-    position = StringFind( _separator, _string );
+	// we will find the position of first of the separators
+	position = StringFind( _separator, _string );
 
 	
 	// We will loop true this until there are no separators left
-    // in _string
-    while ( position != _string.npos )
-    {
-    
-        // This thing here checks that we dont push empty strings
-        // to the array
-        if ( position != 0 )
-            array.push_back( _string.substr( 0, position ) );
+	// in _string
+	while ( position != _string.npos )
+	{
+	
+		// This thing here checks that we dont push empty strings
+		// to the array
+		if ( position != 0 )
+			array.push_back( _string.substr( 0, position ) );
 
-        // When the cutted part is pushed into the array we
-        // remove it and the separator from the _string
-        _string.erase( 0, position + _separator.length() );
+		// When the cutted part is pushed into the array we
+		// remove it and the separator from the _string
+		_string.erase( 0, position + _separator.length() );
 
-        // And the we look for a new place for the _separator
-        position = StringFind( _separator, _string );
-    }
+		// And the we look for a new place for the _separator
+		position = StringFind( _separator, _string );
+	}
 
-    // We will push the rest of the stuff in to the array
-    if ( _string.empty() == false )
-        array.push_back( _string );
+	// We will push the rest of the stuff in to the array
+	if ( _string.empty() == false )
+		array.push_back( _string );
 
-    // Then we'll just return the array
-    return array;
+	// Then we'll just return the array
+	return array;
 
 
 }
@@ -159,32 +159,32 @@ std::vector<std::string> StringSplit( const std::string& _separator, std::string
 std::vector <std::string> StringSplit( const std::string& _separator, std::string _string, int _limit )
 {
 
-    std::vector <std::string> array;
+	std::vector <std::string> array;
 
-    size_t position;
-    position = StringFind( _separator, _string );
+	size_t position;
+	position = StringFind( _separator, _string );
 
-    // The only diffrence is here
-    int count = 0;  
+	// The only diffrence is here
+	int count = 0;  
 
-    // and in this while loop the count <= _limit
-    while ( position != _string.npos &&  count < _limit - 1 )
-    {
-    
-        if ( position != 0 )
-            array.push_back( _string.substr( 0, position ) );
+	// and in this while loop the count <= _limit
+	while ( position != _string.npos &&  count < _limit - 1 )
+	{
+	
+		if ( position != 0 )
+			array.push_back( _string.substr( 0, position ) );
 
-        _string.erase( 0, position + _separator.length() );
+		_string.erase( 0, position + _separator.length() );
 
-        position = StringFind( _separator, _string );
+		position = StringFind( _separator, _string );
 
-        // And here
-        count++;
-    }
-    if ( _string.empty() == false )
-        array.push_back( _string );
+		// And here
+		count++;
+	}
+	if ( _string.empty() == false )
+		array.push_back( _string );
 
-    return array;
+	return array;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -351,14 +351,14 @@ std::string RemoveQuotes( std::string line )
 
 std::string Uppercase( const std::string& _string )
 {
-    std::string return_value;
+	std::string return_value;
 
-    for ( unsigned int i = 0; i < _string.size(); i++ )
-    {
-        return_value += toupper( _string[ i ] );
-    }
+	for ( unsigned int i = 0; i < _string.size(); i++ )
+	{
+		return_value += toupper( _string[ i ] );
+	}
 
-    return return_value;
+	return return_value;
 
 }
 
@@ -366,14 +366,14 @@ std::string Uppercase( const std::string& _string )
 
 std::string Lowercase( const std::string& _string )
 {
-    std::string return_value;
+	std::string return_value;
 
-    for ( unsigned int i = 0; i < _string.size(); i++ )
-    {
-        return_value += tolower( _string[ i ] );
-    }
+	for ( unsigned int i = 0; i < _string.size(); i++ )
+	{
+		return_value += tolower( _string[ i ] );
+	}
 
-    return return_value;
+	return return_value;
 
 }
 
