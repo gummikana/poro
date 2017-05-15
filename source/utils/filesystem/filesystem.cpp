@@ -343,12 +343,12 @@ void ReadFileToVector( const std::string& filename, std::vector< std::string >& 
 {
 	std::ifstream ifile(filename.c_str());
 
-    while( ifile.good() ) 
+	while( ifile.good() ) 
 	{
-        std::string line;
-        std::getline(ifile, line);
+		std::string line;
+		std::getline(ifile, line);
 		output.push_back( line );
-    }
+	}
 
 	ifile.close();
 }
@@ -372,7 +372,7 @@ std::string GetParentPath( const std::string& path )
 	if( pos == path.npos )
 		return "";
 
-    std::string result = path.substr( 0, pos );
+	std::string result = path.substr( 0, pos );
 	return result;
 }
 
