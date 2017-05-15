@@ -744,6 +744,12 @@ bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::
 }
 //-----------------------------------------------------------------------------
 
+void GraphicsOpenGL::SetCaption( const types::string& capt )
+{
+	poro_assert( mSDLWindow );
+	SDL_SetWindowTitle( mSDLWindow, capt.c_str() );
+}
+
 void GraphicsOpenGL::SetInternalSize( types::Float32 width, types::Float32 height )
 {
 	if( mGlContextInitialized )

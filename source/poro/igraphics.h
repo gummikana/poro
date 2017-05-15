@@ -169,6 +169,7 @@ public:
 
 	bool						Init( int width, int height, bool fullscreen, const types::string& caption, const GraphicsSettings& settings );
 	virtual bool				Init( int width, int height, bool fullscreen, const types::string& caption ) = 0;
+	virtual void				SetCaption( const types::string& caption ) 							{ poro_assert( false ); /* implement for this platform*/ }
 	virtual void				SetInternalSize( types::Float32 width, types::Float32 height )		{ poro_assert( false ); /* You have to implement this */ }
 	virtual void				SetInternalSizeAdvanced( types::Float32 left, types::Float32 right, types::Float32 bottom, types::Float32 top )	{ poro_assert( false ); /* You have to implement this */ }
 	virtual poro::types::vec2	GetInternalSize() const												{ poro_assert( false ); /* You have to implement this */ return poro::types::vec2(); }
@@ -191,7 +192,7 @@ public:
 	void				SetTextureData(ITexture* texture, unsigned char* data ){ SetTextureData(texture, (void*)data ); }
 	void				SetTextureData(ITexture* texture, float* data ){ SetTextureData(texture, (void*)data ); }
 	virtual void		SetTextureData(ITexture* texture, void* data );
-    virtual void		SetTextureData(ITexture* texture, void* data, int x, int y, int w, int h );
+	virtual void		SetTextureData(ITexture* texture, void* data, int x, int y, int w, int h );
 
 	virtual ITexture*	LoadTexture( const types::string& filename ) = 0;
 	virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data ) = 0;
@@ -207,14 +208,14 @@ public:
 
 	virtual void		BeginRendering() = 0;
 	virtual void		EndRendering() = 0;
-    virtual void		SetClearBackground( bool clear ) { mClearBackground = clear; }
+	virtual void		SetClearBackground( bool clear ) { mClearBackground = clear; }
 
 	//-------------------------------------------------------------------------
-    
+	
 	virtual void SetMipmapMode( TEXTURE_FILTERING_MODE::Enum mode ){ mMipmapMode = mode;}
 	virtual int GetMipmapMode(){ return mMipmapMode; }
 	
-    //-------------------------------------------------------------------------
+	//-------------------------------------------------------------------------
 
 	virtual void PushBlendMode( BLEND_MODE::Enum blend_mode );
 	virtual void PopBlendMode();
@@ -225,22 +226,22 @@ public:
 	virtual void PopVertexMode();
 
 	//-------------------------------------------------------------------------
-    
+	 
 	// DrawTextureBuffer
-    // The DrawTextureBuffer works so that consecutive calls to DrawTexture are buffered. 
-    // The buffer is automatically flushed using a single draw call when one of the following things happen:
-    // - The used texture changes.
-    // - The used color changes.
-    // - The used blendmode changes.
-    // - EndRendering() is called.
-    // - Any other Draw function ecept the two DrawTexture() functions are called.
-    // - The buffer is full.
-    // - Turinging of the buffering.
-    
-    virtual void SetDrawTextureBuffering( bool buffering ) {}
+	// The DrawTextureBuffer works so that consecutive calls to DrawTexture are buffered. 
+	// The buffer is automatically flushed using a single draw call when one of the following things happen:
+	// - The used texture changes.
+	// - The used color changes.
+	// - The used blendmode changes.
+	// - EndRendering() is called.
+	// - Any other Draw function ecept the two DrawTexture() functions are called.
+	// - The buffer is full.
+	// - Turinging of the buffering.
+	
+	virtual void SetDrawTextureBuffering( bool buffering ) {}
 	virtual bool GetDrawTextureBuffering() const { return false; }
 	
-    //-------------------------------------------------------------------------
+	//-------------------------------------------------------------------------
 
 	virtual void DrawTexture( ITexture* texture,
 										types::Float32 x, 
@@ -371,8 +372,8 @@ inline void IGraphics::SetTextureData( ITexture* texture, void* data ) {
 }
 
 inline void IGraphics::SetTextureData( ITexture* texture, void* data, int x, int y, int w, int h ) {
-    // If this fails, it means you have not implemented set texture data
-    poro_assert( false );
+	// If this fails, it means you have not implemented set texture data
+	poro_assert( false );
 }
 
 inline ITexture3d* IGraphics::LoadTexture3d( const types::string& filename ) {

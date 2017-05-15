@@ -44,6 +44,7 @@ public:
 	//-------------------------------------------------------------------------
 
 	virtual bool				Init( int width, int height, bool fullscreen, const types::string& caption ) PORO_OVERRIDE;
+	virtual void				SetCaption( const types::string& caption ) PORO_OVERRIDE;
 	virtual void				SetInternalSize( types::Float32 width, types::Float32 height ) PORO_OVERRIDE;
 	virtual void				SetInternalSizeAdvanced( types::Float32 left, types::Float32 right, types::Float32 bottom, types::Float32 top ) PORO_OVERRIDE;
 	virtual poro::types::vec2	GetInternalSize() const PORO_OVERRIDE;
@@ -63,7 +64,7 @@ public:
 	virtual ITexture*	CreateTexture( int width, int height ) PORO_OVERRIDE;
 	virtual ITexture*	CloneTexture( ITexture* other ) PORO_OVERRIDE;
 	virtual void		SetTextureData(ITexture* texture, void* data ) PORO_OVERRIDE;
-    virtual void		SetTextureData(ITexture* texture, void* data, int x, int y, int w, int h ) PORO_OVERRIDE;
+	virtual void		SetTextureData(ITexture* texture, void* data, int x, int y, int w, int h ) PORO_OVERRIDE;
 	virtual ITexture*	LoadTexture( const types::string& filename ) PORO_OVERRIDE;
 	virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data ) PORO_OVERRIDE;
 	virtual void		DestroyTexture( ITexture* texture ) PORO_OVERRIDE;
@@ -113,7 +114,7 @@ public:
 	virtual void		DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth, float width, bool loop ) PORO_OVERRIDE;
 	virtual void		DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) PORO_OVERRIDE;
 	virtual void		DrawQuads( float* vertices, int vertex_count, float* tex_coords, float* colors, ITexture* texture ) PORO_OVERRIDE;
-	virtual void        DrawQuads( Vertex_PosFloat2_ColorUint32* vertices, int vertex_count ) PORO_OVERRIDE;
+	virtual void		DrawQuads( Vertex_PosFloat2_ColorUint32* vertices, int vertex_count ) PORO_OVERRIDE;
 	virtual void		DrawQuads( Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, int vertex_count, ITexture* texture ) PORO_OVERRIDE;
 	virtual void		DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture,  const types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ), types::vec2* tex_coords = NULL, int count = 0, types::vec2* tex_coords2 = NULL, types::vec2* tex_coords3 = NULL ) PORO_OVERRIDE;
 	
