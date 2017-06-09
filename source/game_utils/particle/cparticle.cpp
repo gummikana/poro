@@ -81,13 +81,15 @@ bool CParticle::Update( float dt )
 		myParticleHacks[ i ]->Update( this, dt );
 	}
 
-	mySprite->Update( dt );
+	// mySprite->Update( dt );
 
 	return true;
 }
 
 void CParticle::Draw( poro::IGraphics* graphics, as::Transform& t )
 {
+	// this is never called!
 	if( !myDead && myDelay <= 0 ) 
 		as::DrawSprite( mySprite, graphics, NULL, t );
+
 }
