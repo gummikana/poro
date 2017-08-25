@@ -186,6 +186,7 @@ public:
 			XML_BindAttribute( filesys, probability );
 			XML_BindAttribute( filesys, max_distance );
 			XML_BindAttribute( filesys, on_finished );
+			XML_BindAttribute( filesys, check_physics_material );
 		}
 
 		int			frame = 0;
@@ -193,6 +194,7 @@ public:
 		float		probability = 1.0f;
 		float		max_distance = 500.0f;
 		bool		on_finished = false;
+		bool		check_physics_material = false;
 	};
 
 	struct Hotspot
