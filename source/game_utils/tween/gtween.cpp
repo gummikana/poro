@@ -31,7 +31,7 @@ void UpdateGTweens( float dt )
 	if( update_list.empty() ) 
 		return;
 
-	std::list< GTween* > release_us;
+	std::vector< GTween* > release_us;
 
 	GTween* tween = NULL;
 	for( std::list< GTween* >::iterator i = update_list.begin(); i != update_list.end();  )
@@ -47,28 +47,23 @@ void UpdateGTweens( float dt )
 	}
 
 	// release the dead tweens
-	for( std::list< GTween* >::iterator i = release_us.begin();
-		i != release_us.end(); ++i )
-	{
-		tween = *i;
+	for ( auto& tween : release_us )
 		delete tween;
-	}
 }
 
 void KillGTweens()
 {
 	std::list< GTween* >& update_list = ceng::CAutoList< GTween >::GetList();
 
+	std::vector< GTween* > release_us;
+
 	for ( std::list< GTween* >::iterator i = update_list.begin(); i != update_list.end(); )
 	{
-		GTween* tween = *i;
-		++i;
-		cassert( tween );
-
-		delete tween;
+		release_us.push_back( *i );
 	}
 
-	update_list.clear();
+	for ( auto& tween : release_us )
+		delete tween;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
