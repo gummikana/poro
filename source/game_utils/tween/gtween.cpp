@@ -56,10 +56,12 @@ void KillGTweens()
 	std::list< GTween* >& update_list = ceng::CAutoList< GTween >::GetList();
 
 	std::vector< GTween* > release_us;
+	release_us.reserve( update_list.size() );
 
 	for ( std::list< GTween* >::iterator i = update_list.begin(); i != update_list.end(); )
 	{
 		release_us.push_back( *i );
+		++i;
 	}
 
 	for ( auto& tween : release_us )
