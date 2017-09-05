@@ -146,6 +146,9 @@ public:
 	void SetName( const std::string& name );
 	std::string GetName() const;
 
+protected:
+	void* mExtraPointer;
+
 private:
 	void RemoveDuplicateInterpolators( const std::string& name );
 	

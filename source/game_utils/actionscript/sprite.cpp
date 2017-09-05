@@ -591,7 +591,8 @@ Sprite::Sprite() :
 Sprite::~Sprite()
 {
 	// for debug reasons
-	if( mClearTweens ) GTweenClearSpriteOfTweens( this );
+	if( mClearTweens )
+		GTweenClearSpriteOfTweens( this );
 
 	mRectAnimation = NULL;
 

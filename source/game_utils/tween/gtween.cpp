@@ -47,8 +47,8 @@ void UpdateGTweens( float dt )
 	}
 
 	// release the dead tweens
-	for ( auto& tween : release_us )
-		delete tween;
+	for ( auto tweeny : release_us )
+		delete tweeny;
 }
 
 void KillGTweens()
@@ -64,7 +64,7 @@ void KillGTweens()
 		++i;
 	}
 
-	for ( auto& tween : release_us )
+	for ( auto tween : release_us )
 		delete tween;
 }
 
@@ -85,7 +85,8 @@ GTween::GTween() :
 	mKillMeAutomatically( false ),
 	mMathFunc( NULL ),
 	mName(),
-	mUserData()
+	mUserData(),
+	mExtraPointer( NULL )
 {
 }
 
@@ -106,7 +107,8 @@ GTween::GTween( float duration, bool auto_kill ) :
 	mKillMeAutomatically( auto_kill ),
 	mMathFunc( NULL ),
 	mName(),
-	mUserData()
+	mUserData(),
+	mExtraPointer( NULL )
 {
 }
 //-----------------------------------------------------------------------------
@@ -373,6 +375,9 @@ bool GTween::ClearPointer( void* pointer )
 			++i;
 		}
 	}
+
+	if ( mExtraPointer == pointer )
+		mExtraPointer = NULL;
 
 	return result;
 }

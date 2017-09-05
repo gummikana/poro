@@ -181,15 +181,22 @@ namespace {
 	class SpriteAutoKiller : public GTween
 	{
 	public:
-		SpriteAutoKiller( float duration, as::Sprite* sprite ) : GTween( duration, true ), mSprite( sprite ) { }
+		SpriteAutoKiller( float duration, as::Sprite* sprite ) : GTween( duration, true )
+		{
+			mExtraPointer = sprite;
+		}
 
 		~SpriteAutoKiller()
 		{
-			delete mSprite;
-			mSprite = NULL;
+			if ( mExtraPointer )
+			{
+				if ( auto sprite = static_cast<as::Sprite*>( mExtraPointer ) )
+				{
+					delete sprite;
+					mExtraPointer = NULL;
+				}
+			}
 		}
-
-		as::Sprite* mSprite;
 	};
 }
 
