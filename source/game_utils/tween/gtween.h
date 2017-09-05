@@ -44,6 +44,7 @@
 //-----------------------------------------------------------------------------
 // updates all gtweens and removes the dead gtweens from the list as well
 void UpdateGTweens( float dt );
+void KillGTweens();
 
 //-----------------------------------------------------------------------------
 

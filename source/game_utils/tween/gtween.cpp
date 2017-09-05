@@ -55,6 +55,22 @@ void UpdateGTweens( float dt )
 	}
 }
 
+void KillGTweens()
+{
+	std::list< GTween* >& update_list = ceng::CAutoList< GTween >::GetList();
+
+	for ( std::list< GTween* >::iterator i = update_list.begin(); i != update_list.end(); )
+	{
+		GTween* tween = *i;
+		++i;
+		cassert( tween );
+
+		delete tween;
+	}
+
+	update_list.clear();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 GTween::GTween() :
