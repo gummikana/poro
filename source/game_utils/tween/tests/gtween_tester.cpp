@@ -148,9 +148,9 @@ int GTween_Test()
 		tween->SetDuration( 1.f );
 		tween->SetAutoKill( true );
 
-		test_assert( ceng::CAutoList< GTween >::GetList().size() == 1 );
+		test_assert( ceng::CAutoList< GTween >::GetList()->size() == 1 );
 		UpdateGTweens( 2.f );
-		test_assert( ceng::CAutoList< GTween >::GetList().size() == 0 );
+		test_assert( ceng::CAutoList< GTween >::GetList()->size() == 0 );
 	}
 
 	// compare pointers
