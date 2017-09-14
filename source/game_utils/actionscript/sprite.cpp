@@ -113,7 +113,7 @@ struct SpriteLoadHelper
 	float			angle;
 	std::string		default_animation;
 	
-	std::vector< const Sprite::RectAnimation > rect_animations;
+	std::vector< Sprite::RectAnimation > rect_animations;
 	std::vector< SpriteLoadHelper* > child_sprites;
 
 	// impl time_stamp
@@ -238,7 +238,7 @@ static void ApplySpriteLoadHelperToSprite(as::Sprite* result, impl::SpriteLoadHe
 		rect_animations[i] = new as::Sprite::RectAnimation(*(sprite_data->rect_animations[i]));
 	}*/
 
-	result->SetRectAnimations( &(sprite_data->rect_animations) );
+	result->SetRectAnimations( &sprite_data->rect_animations );
 	result->SetCenterOffset(sprite_data->offset);
 	result->SetScale(sprite_data->scale.x, sprite_data->scale.y);
 	result->SetName(sprite_data->name);
@@ -1020,7 +1020,7 @@ void Sprite::SetRectAnimation( const RectAnimation* animation )
 }
 //-------------------------------------------------------------------------
 
-void Sprite::SetRectAnimations( std::vector< const RectAnimation >* animations ) 
+void Sprite::SetRectAnimations( std::vector< RectAnimation >* animations ) 
 {
 	mRectAnimations = animations;
 }
