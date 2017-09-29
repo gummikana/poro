@@ -185,6 +185,10 @@ float ChooseRandom( float a, float b )
 	return ( Random( 0, 1 ) == 0 ) ? a : b;
 }
 
+bool RandomBool( int chance_of_true )
+{
+	return Random( 1, 100 ) <= chance_of_true;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -65,6 +65,9 @@ float RandomfSafe(float low, float high);
 // returns either a or b with a 50% chance for each
 float ChooseRandom( float a, float b );
 
+// returns true with the given chance [0,100]
+bool RandomBool( int chance_of_true = 50 );
+
 //-----------------------------------------------------------------------------
 // Here's some stats that produced by a quick testing of the speed of the 
 // Random algorithms. The tests were run on MSVC2008 
