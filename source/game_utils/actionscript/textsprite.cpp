@@ -49,7 +49,9 @@ void LoadTextSpriteTo( const std::string& font_file, as::TextSprite* mTextSprite
 	}
 
 	mTextSprite->SetFont( font );
-	mTextSprite->SetColor( 0, 0, 0 );
+
+	mTextSprite->SetColor( font->GetDefaultColor()[0], font->GetDefaultColor()[1], font->GetDefaultColor()[2] );
+	mTextSprite->SetAlpha( font->GetDefaultColor()[3] );
 }
 
 as::TextSprite* LoadTextSprite( const std::string& font_file )
