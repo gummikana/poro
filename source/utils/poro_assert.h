@@ -18,6 +18,10 @@
 		// prints the assert and crashes
 #		define cassert(cond) if( !(cond)) { printf("Assert failed: (%s) in %s at line %d\n", (#cond), __FILE__, __LINE__); std::time_t cassert_now = std::time(0); tm *ltm = std::localtime(&cassert_now); FILE* outf = fopen("log_asserts.txt", "a");fprintf(outf, "%d, %d, %d - %d:%d\n", ( 1900 + ltm->tm_year ), (1 + ltm->tm_mon), ltm->tm_mday, ltm->tm_hour, ltm->tm_min  );fprintf(outf, "Assert failed: (%s) in %s at line %d\n", (#cond), __FILE__, __LINE__);fclose(outf); int* _break_me_ = 0; (*_break_me_) = 7337; }
 
+
+// writes to a file log_asserts.txt when and continues the execution
+// #		define cassert(cond) if( !(cond)) { printf("Assert failed: (%s) in %s at line %d\n", (#cond), __FILE__, __LINE__); std::time_t cassert_now = std::time(0); tm *ltm = std::localtime(&cassert_now); FILE* outf = fopen("log_asserts.txt", "a");fprintf(outf, "%d, %d, %d - %d:%d\n", ( 1900 + ltm->tm_year ), (1 + ltm->tm_mon), ltm->tm_mday, ltm->tm_hour, ltm->tm_min  );fprintf(outf, "Assert failed: (%s) in %s at line %d\n", (#cond), __FILE__, __LINE__);fclose(outf); /*int* _break_me_ = 0; (*_break_me_) = 7337;*/ LogError << "Assert failed: (" << (#cond) << ") in " << __FILE__ << " at line " << __LINE__ << "\n"; }
+
 //  #define cassert(cond) ((void)0)
 
 #	endif
