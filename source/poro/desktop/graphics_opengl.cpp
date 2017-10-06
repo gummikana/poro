@@ -1866,18 +1866,20 @@ void GraphicsOpenGL::FlushDrawTextureBuffer()
 }
 //=============================================================================
 
+
 void GraphicsOpenGL::SaveScreenshot( const std::string& filename, int pos_x, int pos_y, int w, int h )
 {
 	int width = (int)mViewportSize.x;
 	int height = (int)mViewportSize.y;
 
-	const int bpp = 4;
+	const int bpp = 3;
 
 	static unsigned char* pixels = new unsigned char[ bpp * (int)mViewportSize.x * (int)mViewportSize.y ];
 	const int pixels_size = bpp * (int)mViewportSize.x * (int)mViewportSize.y;
 
-	// read the whole image into a buffer, since this crashes with unspecified sizes
-	glReadPixels( (int)mViewportOffset.x, (int)mViewportOffset.y, (int)mViewportSize.x, (int)mViewportSize.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+	// this is needed for GL_RGB
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+	glReadPixels( (int)mViewportOffset.x, (int)mViewportOffset.y, (int)mViewportSize.x, (int)mViewportSize.y, GL_RGB, GL_UNSIGNED_BYTE, pixels);
 
 	// need to flip the pixels
 	for( int x = 0; x < width * bpp; ++x ) 
@@ -1890,7 +1892,6 @@ void GraphicsOpenGL::SaveScreenshot( const std::string& filename, int pos_x, int
 		}
 	}
 	
-
 	unsigned char* other_pixels = pixels;
 
 	// copy to other buffer
@@ -1919,9 +1920,8 @@ void GraphicsOpenGL::SaveScreenshot( const std::string& filename, int pos_x, int
 	if ( ImageSave( filename.c_str(), w, h, bpp, other_pixels, w * bpp ) == 0 )
 		poro_logger << "Error SaveScreenshot() - couldn't write to file: " << filename << "\n";
 
-	if( other_pixels != pixels ) delete [] other_pixels;
-	// no need to release the static pixels
-	// delete [] pixels;	
+	if( other_pixels != pixels ) 
+		delete [] other_pixels;
 }
 
 void GraphicsOpenGL::SaveScreenshot( const std::string& filename )
@@ -1939,6 +1939,7 @@ int GraphicsOpenGL::CaptureScreenshot( unsigned char* data, int max_size )
 		return pixels_size;
 
 	// read the whole image into a buffer, since this crashes with unspecified sizes
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 	glReadPixels( (int)mViewportOffset.x, (int)mViewportOffset.y, (int)mViewportSize.x, (int)mViewportSize.y, GL_RGB, GL_UNSIGNED_BYTE, data );
 
 	return pixels_size;	
