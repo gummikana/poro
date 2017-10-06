@@ -24,15 +24,14 @@
 #include "platform_defs.h"
 #include "poro_types.h"
 
-#include <assert.h>
 #include <iostream>
 
 #ifdef PORO_PLAT_WINDOWS
 
-#include "../utils/poro_assert.h"
+#		define vc_could_fix_its_assert(cond) if( !(cond)) { printf("Assert failed: (%s) in %s at line %d\n", (#cond), __FILE__, __LINE__); int* _break_me_ = 0; (*_break_me_) = 7337; }
 
 #  define poro_logger std::cout
-#  define poro_assert cassert
+#  define poro_assert vc_could_fix_its_assert
 #  define PORO_OVERRIDE override
 
 #ifdef PORO_PLAT_WINDOWS
@@ -44,6 +43,8 @@
 #endif
 
 #else
+
+#include <assert.h>
 
 #  define poro_logger std::cout
 #  define poro_assert assert
