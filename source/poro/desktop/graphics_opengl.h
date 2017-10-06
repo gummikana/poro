@@ -52,7 +52,8 @@ public:
 	virtual poro::types::vec2	GetWindowSize() const PORO_OVERRIDE;
 	virtual void				SetFullscreen(bool fullscreen) PORO_OVERRIDE;
 	virtual bool				GetFullscreen() PORO_OVERRIDE { return mFullscreen; }
-	
+	virtual poro::types::vec2	GetViewPortSize() PORO_OVERRIDE { return mViewportSize; }
+
 	//-------------------------------------------------------------------------
 
 	virtual void		SetSettings( const GraphicsSettings& settings ) PORO_OVERRIDE;

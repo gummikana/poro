@@ -177,6 +177,7 @@ public:
 	virtual poro::types::vec2	GetWindowSize() const												{ poro_assert( false ); /* You have to implement this */ return poro::types::vec2(); }
 	virtual void				SetFullscreen( bool fullscreen )									{ poro_assert( false ); /* You have to implement this */ }
 	virtual bool				GetFullscreen()														{ poro_assert( false ); return false;/* You have to implement this */ }
+	virtual poro::types::vec2	GetViewPortSize()													{ poro_assert( false ); return poro::types::vec2(0,0); /* You have to implement this */ }
 
 	//-------------------------------------------------------------------------
 
