@@ -567,17 +567,46 @@ std::string ConvertToAlphaNumeric( const std::string& who )
 
 std::string ConvertCamelCaseToUnderscoreCase( const std::string& _string )
 {
-	std::string return_value;
+	std::string result;
+	result.reserve( _string.size() );
 
 	for (unsigned int i = 0; i < _string.size(); i++)
 	{
 		if (i != 0 && isupper(_string[i]))
-			return_value += '_';
+			result += '_';
 
-		return_value += tolower(_string[i]);
+		result += tolower(_string[i]);
 	}
 
-	return return_value;
+	return result;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+std::string ConvertFirstCharactersOfWordsToUpperCase( const std::string& _string )
+{
+	std::string result;
+	result.reserve( _string.size() );
+
+	bool next_character_is_capital = true;
+	for ( unsigned int i = 0; i < _string.size(); i++ )
+	{
+		char c = _string[i];
+
+		if ( c == ' ' )
+		{
+			next_character_is_capital = true;
+		}
+		else if ( next_character_is_capital )
+		{
+			c = toupper( c );
+			next_character_is_capital = false;
+		}
+
+		result += c;
+	}
+
+	return result;
 
 }
 

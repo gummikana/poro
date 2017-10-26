@@ -170,6 +170,9 @@ std::string ConvertToAlphaNumeric( const std::string& who );
 //! converts "SomeString" to "some_string"
 std::string ConvertCamelCaseToUnderscoreCase(const std::string& _string);
 
+// ! converts "some string_stuff" to "Some String_stuff"
+std::string ConvertFirstCharactersOfWordsToUpperCase( const std::string& _string );
+
 //-----------------------------------------------------------------------------
 
 //! Just a helper utility to save some code lines
