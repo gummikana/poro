@@ -173,6 +173,9 @@ std::string ConvertCamelCaseToUnderscoreCase(const std::string& _string);
 // ! converts "some string_stuff" to "Some String_stuff"
 std::string ConvertFirstCharactersOfWordsToUpperCase( const std::string& _string );
 
+// ! allocates a char array and copies the contents of the given string to it. the resulting char* is null-terminated. you have to call delete[] on the return value when done with it
+char* CreateCStringCopy( const std::string& _string );
+
 //-----------------------------------------------------------------------------
 
 //! Just a helper utility to save some code lines

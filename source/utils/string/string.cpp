@@ -612,5 +612,15 @@ std::string ConvertFirstCharactersOfWordsToUpperCase( const std::string& _string
 
 ///////////////////////////////////////////////////////////////////////////////
 
+char* CreateCStringCopy( const std::string& _string )
+{
+	char* copy = new char[_string.size() + 1];
+	std::copy( _string.begin(), _string.end(), copy );
+	copy[_string.size()] = '\0';
+	return copy;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 } // end of namespace ceng
  
