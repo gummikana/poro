@@ -191,9 +191,9 @@ std::string CastToString( const T& var )
 //! Just a helper utility to save some code lines,
 //! casts a string to a variable
 template< class T >
-T CastFromString( const std::string& str )
+T CastFromString( const std::string& str, T default_value = T() )
 {
-	T result = T();
+	T result = default_value;
 	std::stringstream ss( str );
 	ss.operator>>( result );
 	return result;
