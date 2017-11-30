@@ -242,6 +242,13 @@ public:
 		return low+((high-low)*((float)((mSeed>>16)&0x7FFF) / (float)0x7FFF) );
 	}
 
+	// 
+	inline double Next()
+	{
+		mSeed = (214013*mSeed+2531011); 
+		return (double)((1.f)*((float)((mSeed>>16)&0x7FFF) / (float)0x7FFF) );
+	}
+
 	int mSeed;
 };
 
