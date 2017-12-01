@@ -167,6 +167,19 @@ T VectorRandomElement( const std::vector< T >& container )
 	return container[ i ];
 }
 
+//----------------------------------------------------------------------------
+// shuffles the vector elements
+template< class T >
+void VectorShuffle( std::vector< T >& array, unsigned int seed )
+{
+	ceng::CLGMRandom randomizer( (double)seed );
+	for( int i = (int)array.size() - 1; i >= 0; --i )
+	{
+		int j = randomizer.Random( 0, i );
+		std::swap( array[i], array[j] );
+	}
+}
+
 //-----------------------------------------------------------------------------
 //
 // ArgsToVector
