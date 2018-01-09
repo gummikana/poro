@@ -38,7 +38,7 @@ namespace ceng {
 namespace math {
 
 //=============================================================================
-const float pi = 3.1415926f;
+const float pi = 3.14159265f;
 
 //-----------------------------------------------------------------------------
 // returns a rounded value, if the value is less than 0, rounds it "down"
