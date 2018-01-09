@@ -4,7 +4,6 @@
 #include <poro/igraphics.h>
 #include <utils/color/ccolor.h>
 #include <utils/debug.h>
-#include "c:\Projects\FallingEverything\Source\debug\simple_profiler.h"
 
 
 //-----------------------------------------------------------------------------
