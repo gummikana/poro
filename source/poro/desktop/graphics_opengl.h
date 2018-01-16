@@ -45,6 +45,8 @@ public:
 
 	virtual bool				Init( int width, int height, bool fullscreen, const types::string& caption ) PORO_OVERRIDE;
 	virtual void				SetCaption( const types::string& caption ) PORO_OVERRIDE;
+	virtual void				SetIcon( const std::string& icon_bmp_file );
+
 	virtual void				SetInternalSize( types::Float32 width, types::Float32 height ) PORO_OVERRIDE;
 	virtual void				SetInternalSizeAdvanced( types::Float32 left, types::Float32 right, types::Float32 bottom, types::Float32 top ) PORO_OVERRIDE;
 	virtual poro::types::vec2	GetInternalSize() const PORO_OVERRIDE;

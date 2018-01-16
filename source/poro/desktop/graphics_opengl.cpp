@@ -750,6 +750,17 @@ void GraphicsOpenGL::SetCaption( const types::string& capt )
 	SDL_SetWindowTitle( mSDLWindow, capt.c_str() );
 }
 
+void GraphicsOpenGL::SetIcon( const std::string& icon_bmp_file )
+{
+	poro_assert( mSDLWindow );
+	SDL_Surface* icon_surface = SDL_LoadBMP( icon_bmp_file.c_str() );
+	
+	if( icon_surface )
+		SDL_SetWindowIcon(mSDLWindow, icon_surface);
+
+}
+//-----------------------------------------------------------------------------
+
 void GraphicsOpenGL::SetInternalSize( types::Float32 width, types::Float32 height )
 {
 	if( mGlContextInitialized )

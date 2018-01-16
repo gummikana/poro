@@ -115,10 +115,14 @@ int RunPoro( AppConfig& conf = AppConfig()  )
 		poro->SetFrameRate( conf.framerate );
 
 		// internal size stuff
-			poro->SetInternalSize( (float)conf.internal_size_w, (float)conf.internal_size_h );
+        poro->SetInternalSize( (float)conf.internal_size_w, (float)conf.internal_size_h );
 		
 		if( poro->GetGraphics() )
+        {
 			poro->GetGraphics()->SetSettings( conf.graphics_settings );
+            if( conf.graphics_settings.icon_bmp.empty() == false )
+                poro->GetGraphics()->SetIcon( conf.graphics_settings.icon_bmp );
+        }
 
 	
 		// now start the actual app

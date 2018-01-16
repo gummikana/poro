@@ -137,6 +137,7 @@ struct GraphicsSettings
 	int				window_height;
 	bool			fullscreen;
 	types::string	caption;
+	types::string   icon_bmp;
 
 	bool textures_resize_to_power_of_two;
 	bool textures_fix_alpha_channel;
@@ -170,6 +171,7 @@ public:
 	bool						Init( int width, int height, bool fullscreen, const types::string& caption, const GraphicsSettings& settings );
 	virtual bool				Init( int width, int height, bool fullscreen, const types::string& caption ) = 0;
 	virtual void				SetCaption( const types::string& caption ) 							{ poro_assert( false ); /* implement for this platform*/ }
+	virtual void				SetIcon( const types::string& bmp_icon )							{ poro_assert( false ); /* implement for this platform*/ }
 	virtual void				SetInternalSize( types::Float32 width, types::Float32 height )		{ poro_assert( false ); /* You have to implement this */ }
 	virtual void				SetInternalSizeAdvanced( types::Float32 left, types::Float32 right, types::Float32 bottom, types::Float32 top )	{ poro_assert( false ); /* You have to implement this */ }
 	virtual poro::types::vec2	GetInternalSize() const												{ poro_assert( false ); /* You have to implement this */ return poro::types::vec2(); }

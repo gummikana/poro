@@ -48,6 +48,7 @@
 #include "../string/string.h"
 
 #include "../debug.h"
+
 namespace ceng {
 
 namespace {
@@ -169,6 +170,7 @@ bool RenameFile( const std::string& file, const std::string& new_name )
 
 std::string GetDateForFile( const std::string& filename )
 {
+
 	std::string result;
 	#ifdef CENG_PLATFORM_WINDOWS
 	struct _finddata_t c_file;
@@ -458,6 +460,7 @@ void CopyFileCeng( const std::string& from, const std::string& to )
 
 void MoveFileCeng( const std::string& from, const std::string& to )
 {
+
 #ifdef CENG_PLATFORM_WINDOWS
 	int MoveFile_result = MoveFile( from.c_str(), to.c_str() );
 
@@ -472,6 +475,7 @@ void MoveFileCeng( const std::string& from, const std::string& to )
 
 void DeleteFileCeng( const std::string& filepath )
 {
+
 	int DeleteFile_result = DeleteFile( filepath.c_str() );
 
 	if( DeleteFile_result == 0) 
