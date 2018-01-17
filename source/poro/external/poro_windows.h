@@ -14,12 +14,16 @@
 #include <Shlobj.h>
 #include <Pathcch.h>
 #include <io.h>
+
+// to open dialogs
+#include <commdlg.h>
+
 //#include <Shlwapi.h>
 
 #undef LoadImage
 #undef SendMessage
 #undef GetMessage
-
+#undef DrawText
 
 
 #endif
