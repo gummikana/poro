@@ -148,7 +148,7 @@ namespace {
 				break;
 
 			default: 
-				cassert( false && "Invalid enum value" ); 
+				poro_assert( false && "Invalid enum value" ); 
 				break;
 		}
 
@@ -476,10 +476,10 @@ namespace {
 
 	void SetTextureData_Impl(TextureOpenGL* texture, void* data, int x, int y, int w, int h)
 	{
-        cassert( x >= 0 );
-        cassert( y >= 0 );
-        cassert( x+w <= texture->GetDataWidth() );
-        cassert( y+h <= texture->GetDataHeight() );
+		poro_assert( x >= 0 );
+		poro_assert( y >= 0 );
+		poro_assert( x+w <= texture->GetDataWidth() );
+		poro_assert( y+h <= texture->GetDataHeight() );
 
 		// update the texture image:
 		glEnable(GL_TEXTURE_2D);
@@ -737,7 +737,7 @@ bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::
 	}
 #endif
 
-	cassert( mDynamicVboHandle == 0 );
+	poro_assert( mDynamicVboHandle == 0 );
 	glGenBuffers( 1, &mDynamicVboHandle );
 
 	return 1;
@@ -1422,7 +1422,7 @@ void GraphicsOpenGL::DrawQuads( float* vertices, int vertex_count, float* tex_co
 			break;
 
 		default:
-			cassert( false && "Invalid enum value" );
+			poro_assert( false && "Invalid enum value" );
 			break;
 	}
 
@@ -1493,7 +1493,7 @@ void GraphicsOpenGL::DrawQuads( Vertex_PosFloat2_ColorUint32* vertices, int vert
 			break;
 
 		default:
-			cassert( false && "Invalid enum value" );
+			poro_assert( false && "Invalid enum value" );
 			break;
 	}
 
@@ -1546,7 +1546,7 @@ void GraphicsOpenGL::DrawQuads( Vertex_PosFloat2_TexCoordFloat2_ColorUint32* ver
 			break;
 
 		default:
-			cassert( false && "Invalid enum value" );
+			poro_assert( false && "Invalid enum value" );
 			break;
 	}
 
