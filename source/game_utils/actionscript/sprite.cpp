@@ -536,6 +536,7 @@ void LoadSpriteTo( const std::string& filename, as::Sprite* result )
 
 int Sprite::culled_this_frame = 0;
 int Sprite::rendered_this_frame = 0;
+int Sprite::total_sprites = 0;
 
 //-----------------------------------------------------------------------------
 
@@ -586,6 +587,10 @@ Sprite::Sprite() :
 	mColor[ 1 ] = 1.f;
 	mColor[ 2 ] = 1.f;
 	mColor[ 3 ] = 1.f;
+
+	#ifdef WIZARD_DEBUG
+		total_sprites++;
+	#endif
 }
 
 Sprite::~Sprite()
@@ -605,6 +610,10 @@ Sprite::~Sprite()
 	mFather = NULL;
 
 	Clear();
+
+	#ifdef WIZARD_DEBUG
+		total_sprites--;
+	#endif
 }
 //-----------------------------------------------------------------------------
 

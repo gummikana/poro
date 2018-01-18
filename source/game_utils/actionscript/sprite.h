@@ -56,6 +56,7 @@ class Sprite : public DisplayObjectContainer
 public:
 	static int culled_this_frame;
 	static int rendered_this_frame;
+	static int total_sprites;
 
 	typedef poro::ITexture Image;
 
