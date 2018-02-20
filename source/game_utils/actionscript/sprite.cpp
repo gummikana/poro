@@ -232,7 +232,7 @@ struct SpriteLoadHelper
 static void ApplySpriteLoadHelperToSprite(as::Sprite* result, impl::SpriteLoadHelper* sprite_data)
 {
 	// we need to duplicate rect_animations
-	/*std::vector< const as::Sprite::RectAnimation* > rect_animations(sprite_data->rect_animations.size());
+	/*std::vector< as::Sprite::RectAnimation* > rect_animations(sprite_data->rect_animations.size());
 	for (std::size_t i = 0; i < rect_animations.size(); ++i)
 	{
 		rect_animations[i] = new as::Sprite::RectAnimation(*(sprite_data->rect_animations[i]));
@@ -1184,7 +1184,7 @@ types::vector2 Sprite::GetHotspot( const std::string& name ) const
 types::vector2 Sprite::GetScreenPosition() const
 {
 	types::vector2 result( 0, 0 );
-	std::vector< const DisplayObjectContainer* > parents;
+	std::vector< DisplayObjectContainer* > parents;
 	getParentTree( parents );
 
 	types::xform xform;
@@ -1206,7 +1206,7 @@ types::vector2 Sprite::GetScreenPosition() const
 types::vector2 Sprite::TransformWithAllParents( const types::vector2& mouse_pos ) const
 {
 	types::vector2 result( 0, 0 );
-	std::vector< const DisplayObjectContainer* > parents;
+	std::vector< DisplayObjectContainer* > parents;
 	getParentTree( parents );
 
 	types::xform xform;

@@ -193,9 +193,9 @@ DisplayObjectContainer::ChildList& DisplayObjectContainer::GetRawChildren()
 }
 //-----------------------------------------------------------------------------
 
-void DisplayObjectContainer::getParentTree( std::vector< const DisplayObjectContainer* >& parents_tree ) const
+void DisplayObjectContainer::getParentTree( std::vector< DisplayObjectContainer* >& parents_tree ) const
 {
-	parents_tree.push_back( this );
+	parents_tree.push_back( const_cast<DisplayObjectContainer*>( this ) );
 	if( getParent() )
 		getParent()->getParentTree( parents_tree );
 }
