@@ -27,7 +27,10 @@ public:
 	virtual unsigned int GetRandomSeed();
 	
 	//-------------------------------------------------------------------------
-	
+
+	// window events
+	virtual void FireWindowFocusEvent( bool is_focused );
+
 	// keyboard events
 	virtual void FireKeyDownEvent( int button, types::charset unicode );
 	virtual void FireKeyUpEvent( int button, types::charset unicode );

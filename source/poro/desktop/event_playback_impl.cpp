@@ -276,7 +276,10 @@ void EventPlaybackImpl::DoAnEventFromString( const std::string& event_string )
 	
 
 	// switch( type ) 
-	if( type == "mm" ) {
+	if ( type == "wf" ) {
+		FireWindowFocusEvent( ParseSafely< bool >( pieces, 1 ) );
+	}
+	else if( type == "mm" ) {
 		FireMouseMoveEvent( types::Vec2( ParseSafely< float >( pieces, 1 ), ParseSafely< float >( pieces, 2 ) ) );
 	} 
 	else if( type == "md" ) {

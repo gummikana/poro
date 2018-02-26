@@ -655,6 +655,21 @@ void PlatformDesktop::HandleEvents()
 			}
 			break;
 
+			case SDL_WINDOWEVENT:
+			{
+				switch ( event.window.event )
+				{
+					case SDL_WINDOWEVENT_FOCUS_GAINED:
+						mEventRecorder->FireWindowFocusEvent( true );
+						break;
+
+					case SDL_WINDOWEVENT_FOCUS_LOST:
+						mEventRecorder->FireWindowFocusEvent( false );
+						break;
+				}
+			}
+			break;
+
 			case SDL_QUIT:
 				mRunning = 0;
 			break;

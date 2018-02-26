@@ -7,6 +7,7 @@
 #include "touch.h"
 #include "joystick.h"
 #include "iplatform.h"
+#include "iapplication.h"
 
 namespace poro {
 
@@ -24,6 +25,11 @@ unsigned int EventRecorder::GetRandomSeed()
 	return mRandomSeed; 
 }
 	
+// window events
+void EventRecorder::FireWindowFocusEvent( bool has_focus ) {
+	Poro()->GetApplication()->WindowFocusChanged( has_focus );
+}
+
 // keyboard events
 void EventRecorder::FireKeyDownEvent( int button, types::charset unicode ) {
 	if( mKeyboard ) mKeyboard->FireKeyDownEvent( button, unicode );
