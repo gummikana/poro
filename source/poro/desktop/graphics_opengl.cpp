@@ -826,16 +826,20 @@ void GraphicsOpenGL::ResetWindow()
 	// mFullscreen = true;
 		
 	if( mFullscreen ){
+		// for real fullscreen
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+		// flags = SDL_WINDOW_FULLSCREEN;
 		window_width = (int)mDesktopWidth;
 		window_height = (int)mDesktopHeight;
 	} else {
 		window_width = mWindowWidth;
 		window_height = mWindowHeight;
-			
 	#ifdef _DEBUG
 		flags |= SDL_WINDOW_RESIZABLE;
 	#endif
+
+		flags = 0;
+		// 0 = windowed mode
 	}
 
 	mGlContextInitialized = true;
