@@ -87,7 +87,7 @@ public:
 
 	// goes up the tree for as long it can, adding each parent to the end of the array
 	// so the highest parent is the last in the array
-	void getParentTree( std::vector< DisplayObjectContainer* >& parents_tree ) const;
+	void getParentTree( std::vector< DisplayObjectContainer* >& parents_tree );
 
 	//-------------------------------------------------------------------------
 

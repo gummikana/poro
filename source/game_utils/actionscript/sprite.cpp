@@ -1181,7 +1181,7 @@ types::vector2 Sprite::GetHotspot( const std::string& name ) const
 }
 //-----------------------------------------------------------------------------
 
-types::vector2 Sprite::GetScreenPosition() const
+types::vector2 Sprite::GetScreenPosition()
 {
 	types::vector2 result( 0, 0 );
 	std::vector< DisplayObjectContainer* > parents;
@@ -1203,7 +1203,7 @@ types::vector2 Sprite::GetScreenPosition() const
 }
 //-----------------------------------------------------------------------------
 
-types::vector2 Sprite::TransformWithAllParents( const types::vector2& mouse_pos ) const
+types::vector2 Sprite::TransformWithAllParents( const types::vector2& mouse_pos )
 {
 	types::vector2 result( 0, 0 );
 	std::vector< DisplayObjectContainer* > parents;

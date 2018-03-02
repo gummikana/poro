@@ -63,7 +63,7 @@ public:
 
 	typedef typename _A::reference						reference;
 	typedef typename _A::const_reference				const_reference;
-	typedef typename CArray2D< _Ty, _Container, _A >	self;
+	typedef typename _Ty								container_type;
 
 	class CArray2DHelper
 	{
@@ -241,8 +241,8 @@ public:
 
 	bool Empty() const { return myDataArray.empty(); }
 
-	CSafeArray< _Ty >& GetData() { return myDataArray; }
-	const CSafeArray< _Ty >& GetData() const { return myDataArray; }
+	_Container& GetData() { return myDataArray; }
+	const _Container& GetData() const { return myDataArray; }
 
 	CArray2D* CopyCropped( int _x, int _y, int _w, int _h) const
 	{

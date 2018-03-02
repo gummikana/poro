@@ -52,7 +52,10 @@ public:
 	void SetJoystick( Joystick* joystick )  { mJoystick = joystick; }
 	
 	//-------------------------------------------------------------------------
-	
+
+	// window events
+	virtual void FireWindowFocusEvent( bool has_focus );
+
 	// keyboard events
 	virtual void FireKeyDownEvent( int button, types::charset unicode );
 	virtual void FireKeyUpEvent( int button, types::charset unicode );

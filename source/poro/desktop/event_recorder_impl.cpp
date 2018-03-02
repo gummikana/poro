@@ -73,6 +73,18 @@ unsigned int EventRecorderImpl::GetRandomSeed()
 
 //=============================================================================	
 // keyboard events
+void EventRecorderImpl::FireWindowFocusEvent( bool is_focused )
+{
+	EventRecorder::FireWindowFocusEvent( is_focused );
+
+	std::stringstream ss;
+	ss << "wf " << is_focused;
+	mEventBuffer.push_back( ss.str() );
+	Flush();
+}
+
+//=============================================================================	
+// keyboard events
 void EventRecorderImpl::FireKeyDownEvent( int button, types::charset unicode ) {
 	EventRecorder::FireKeyDownEvent( button, unicode );
 

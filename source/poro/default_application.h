@@ -25,6 +25,8 @@ public:
 	virtual void	Init();
 	virtual void	Exit();
 
+	virtual void	WindowFocusChanged( bool has_focus ) { }
+
 	//-------------------------------------------------------------------------
 
 	virtual void MouseMove(const poro::types::vec2& pos) { }
