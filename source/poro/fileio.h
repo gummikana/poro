@@ -88,9 +88,6 @@ namespace poro {
         virtual WriteStream OpenWrite( FileLocation::Enum location, const std::string& read_path_relative_to_location, poro::types::Uint32 write_mode = StreamWriteMode::Enum::Recreate ) = 0;
         virtual std::string GetReadRootPath() = 0;
 		virtual std::string GetFullPath( const std::string& path_relative_to_device_root ) = 0;
-	protected:
-        virtual void Close( WriteStream* stream ) = 0;
-        virtual void Close( ReadStream* stream ) = 0;
 	};
 
     // ================================
@@ -262,9 +259,6 @@ namespace poro {
         virtual WriteStream   OpenWrite( FileLocation::Enum location, const std::string& path_relative_to_location, poro::types::Uint32 write_mode = StreamWriteMode::Enum::Recreate ) override;
         virtual std::string   GetReadRootPath() override;
 		virtual std::string   GetFullPath( const std::string& path_relative_to_device_root ) override;
-    protected:
-        virtual void Close( WriteStream* stream ) override;
-        virtual void Close( ReadStream* stream ) override;
     private:
         std::string mReadRootPath;
 	};

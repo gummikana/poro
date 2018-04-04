@@ -435,7 +435,6 @@ void WriteStream::Close()
 {
 	if ( mStreamImpl )
 	{
-		mDevice->Close( this );
 		mStreamImpl->Close();
 		delete mStreamImpl;
 		mStreamImpl = NULL;
@@ -541,7 +540,6 @@ void ReadStream::Close()
 { 
 	if ( mStreamImpl )
 	{
-		mDevice->Close( this );
 		mStreamImpl->Close();
 		delete mStreamImpl;
 		mStreamImpl = NULL;
@@ -846,18 +844,6 @@ std::string DiskFileDevice::GetReadRootPath()
 std::string DiskFileDevice::GetFullPath( const std::string& path_relative_to_device_root )
 {
 	return platform_impl::CombinePath( mReadRootPath, path_relative_to_device_root );
-}
-
-// ===
-	
-void DiskFileDevice::Close( WriteStream* stream )
-{
-	// do nothing
-}
-
-void DiskFileDevice::Close( ReadStream* stream )
-{
-	// do nothing
 }
 
 } // end of namespace
