@@ -317,7 +317,7 @@ namespace {
 #if 1
 		// if we want to update sprite files on the fly...
 		// check if we should reload
-		std::string time_stamp = ceng::GetDateForFile(filename);
+		std::string time_stamp = Poro()->GetFileSystem()->GetDateForFile(filename);
 
 		// reload (or load for the first time)
 		if (data->time_stamp != time_stamp)
@@ -380,7 +380,7 @@ namespace {
 
 			if ( image == NULL ) return NULL;
 
-			std::string time_stamp = ceng::GetDateForFile(filename);
+			std::string time_stamp = Poro()->GetFileSystem()->GetDateForFile(filename);
 
 			TextureBuffer* data = new TextureBuffer( image, NULL, time_stamp );
 			mTextureBuffer[ filename ] = data;
@@ -390,7 +390,7 @@ namespace {
 		{
 			// if check the timestamp
 
-			std::string time_stamp = ceng::GetDateForFile(filename);
+			std::string time_stamp = Poro()->GetFileSystem()->GetDateForFile(filename);
 			if( i->second->time_stamp != time_stamp ) 
 			{
 				// debug reasons
@@ -440,7 +440,7 @@ void PreloadTexture( const std::string& filename )
 	{
 		poro::IGraphics* graphics = poro::IPlatform::Instance()->GetGraphics();
 		poro::ITexture* image = graphics->LoadTexture( filename );
-		std::string time_stamp = ceng::GetDateForFile(filename);
+		std::string time_stamp = Poro()->GetFileSystem()->GetDateForFile(filename);
 
 		TextureBuffer* data = new TextureBuffer( image, NULL, time_stamp );
 		mTextureBuffer[ filename ] = data;
@@ -496,7 +496,7 @@ void LoadSpriteTo( const std::string& filename, as::Sprite* result )
 {
 	cassert( result );
 
-	if( ceng::DoesExist( filename ) == false ) 
+	if( Poro()->GetFileSystem()->DoesExist( filename ) == false ) 
 	{
 		logger_error << "ERROR - LoadSpriteTo()... file doesn't exist: " << filename << "\n";
 		return;
