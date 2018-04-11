@@ -232,6 +232,12 @@ namespace poro {
 		// Get a list of directories at the location specified by 'full_path'.
 		void                     GetDirectories( std::string full_path, std::vector<std::string>* out_directories );
 
+		// returns true if file at 'relative_path' exists in some of the file devices
+		bool DoesExist( const std::string& path_relative_to_device_root );
+
+		// 
+		std::string GetDateForFile( const std::string& path_relative_to_device_root );
+
 		// === initialization API ===
 		// Get the list of file devices currently available NOTE: this shouldn't be called while any file operations started via this API are in progress. Only devices created by the user should be destroyed by the user.
 		std::vector<IFileDevice*> GetDeviceList();

@@ -232,12 +232,18 @@ namespace platform_impl
 			struct _finddata_t file_info;
 			int file_handle;
 			std::string find_path = CombinePath( full_path, "*.*" );
-			// find first file...
+
 			if( (file_handle = _findfirst( find_path.c_str(), &file_info )) != -1 )
 			{
-				do {
-					if( (file_info.attrib & _A_SUBDIR ) )
+				int i = 0;
+				do 
+				{
+					i++;
+					if( (file_info.attrib & _A_SUBDIR) )
 					{
+						if ( i < 3 )
+							continue;
+
 						if( list_directories ) 
 							out_files->push_back( CombinePath( full_path, file_info.name ) );
 					}
@@ -246,8 +252,9 @@ namespace platform_impl
 						if( list_directories == false ) 
 							out_files->push_back( CombinePath( full_path, file_info.name ) );
 					}
+				} 
+				while( _findnext( file_handle, &file_info ) == 0 );
 
-				} while( _findnext( file_handle, &file_info ) == 0 );
 				_findclose( file_handle );
 			}
 			else
@@ -569,16 +576,17 @@ ReadStream FileSystem::OpenRead( const std::string& path )
 {
 	// use first device that is able to find a matching file
 	ReadStream result = ReadStream();
-	for ( size_t i = 0; i < mDevices.size(); i++ )
+
+	for ( auto& device : mDevices )
 	{
-		IFileDevice* device = mDevices[i];
 		ReadStream stream = device->OpenRead( path );
-		if ( stream.mStreamImpl )
+		if ( stream.IsValid() )
 		{
 			result = stream;
 			break;
 		}
 	}
+
 	return result;
 }
 
@@ -587,11 +595,11 @@ ReadStream FileSystem::OpenRead( const std::string& path )
 void FileSystem::OpenReadOnAllMatchingFiles( const std::string& path, std::vector<ReadStream>* out_files )
 {
 	ReadStream result = ReadStream();
-	for ( size_t i = 0; i < mDevices.size(); i++ )
+
+	for ( auto& device : mDevices )
 	{
-		IFileDevice* device = mDevices[ i ];
 		ReadStream stream = device->OpenRead( path );
-		if ( stream.mStreamImpl )
+		if ( stream.IsValid() )
 			out_files->push_back( stream );
 	}
 }
@@ -761,6 +769,43 @@ void FileSystem::GetDirectories( FileLocation::Enum location, const std::string&
 void FileSystem::GetDirectories( std::string full_path, std::vector<std::string>* out_directories )
 {
 	platform_impl::ListFiles( full_path, out_directories, true );
+}
+
+// --
+
+bool FileSystem::DoesExist( const std::string& path_relative_to_device_root )
+{
+	bool result = false;
+
+	for ( auto& device : mDevices )
+	{
+		ReadStream stream = device->OpenRead( path_relative_to_device_root );
+		if ( stream.IsValid() )
+		{
+			result = true;
+			break;
+		}
+	}
+
+	return result;
+}
+
+std::string FileSystem::GetDateForFile( const std::string& path_relative_to_device_root )
+{
+	bool result = false;
+
+	for ( auto& device : mDevices )
+	{
+		ReadStream stream = device->OpenRead( path_relative_to_device_root );
+		if ( stream.IsValid() )
+		{
+			const auto full_path = device->GetFullPath( path_relative_to_device_root );
+			return ceng::GetDateForFile( full_path );
+		}
+
+	}
+
+	return "";
 }
 
 // ===
