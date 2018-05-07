@@ -606,6 +606,13 @@ void FileSystem::OpenReadOnAllMatchingFiles( const std::string& path, std::vecto
 
 // ===
 
+void FileSystem::RemoveFile( const std::string& relative_path, FileLocation::Enum location )
+{
+	mDefaultDevice->RemoveFile( location, relative_path );
+}
+
+// ===
+
 StreamStatus::Enum FileSystem::Read( const std::string& path, char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read )
 {
 	impl::UpdateReadImContext( this, path );
@@ -889,6 +896,13 @@ std::string DiskFileDevice::GetReadRootPath()
 std::string DiskFileDevice::GetFullPath( const std::string& path_relative_to_device_root )
 {
 	return platform_impl::CombinePath( mReadRootPath, path_relative_to_device_root );
+}
+
+void DiskFileDevice::RemoveFile( FileLocation::Enum location, const std::string& path_relative_to_location )
+{
+	const std::string full_path = platform_impl::GetFullPath( location, path_relative_to_location );
+
+	ceng::DeleteFileCeng( full_path );
 }
 
 } // end of namespace

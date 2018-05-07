@@ -88,6 +88,7 @@ namespace poro {
         virtual WriteStream OpenWrite( FileLocation::Enum location, const std::string& read_path_relative_to_location, poro::types::Uint32 write_mode = StreamWriteMode::Enum::Recreate ) = 0;
         virtual std::string GetReadRootPath() = 0;
 		virtual std::string GetFullPath( const std::string& path_relative_to_device_root ) = 0;
+		virtual void		RemoveFile( FileLocation::Enum location, const std::string& path_relative_to_location ) = 0;
 	};
 
     // ================================
@@ -177,6 +178,8 @@ namespace poro {
 		// Open all files matching 'relative_path'. File is looked up from each FileDevice in current device list, starting with the first device. Device list can be modified using GetDeviceList and SetDeviceList.
 		void       OpenReadOnAllMatchingFiles( const std::string& relative_path, std::vector<ReadStream>* out_files );
 
+		void RemoveFile( const std::string& relative_path, FileLocation::Enum location = FileLocation::UserDocumentsDirectory );
+
 		// === immediate mode reading api ===
 		// Read 'buffer_capacity_bytes' bytes from the file in 'relative_path' to 'out_buffer'. Actual number of bytes read is written to 'out_bytes_read'
 		StreamStatus::Enum		 Read             ( const std::string& relative_path, char* out_buffer, poro::types::Uint32 buffer_capacity_bytes, poro::types::Uint32* out_bytes_read );
@@ -261,10 +264,12 @@ namespace poro {
 		DiskFileDevice( const std::string& read_root_path_full );
 		DiskFileDevice( FileLocation::Enum read_location, const std::string& read_root_path_relative_to_location = "" );
 
-        virtual ReadStream    OpenRead( const std::string& path_relative_to_device_root ) override;
-        virtual WriteStream   OpenWrite( FileLocation::Enum location, const std::string& path_relative_to_location, poro::types::Uint32 write_mode = StreamWriteMode::Enum::Recreate ) override;
-        virtual std::string   GetReadRootPath() override;
-		virtual std::string   GetFullPath( const std::string& path_relative_to_device_root ) override;
+        virtual ReadStream  OpenRead( const std::string& path_relative_to_device_root ) override;
+        virtual WriteStream	OpenWrite( FileLocation::Enum location, const std::string& path_relative_to_location, poro::types::Uint32 write_mode = StreamWriteMode::Enum::Recreate ) override;
+        virtual std::string	GetReadRootPath() override;
+		virtual std::string	GetFullPath( const std::string& path_relative_to_device_root ) override;
+		virtual void		RemoveFile( FileLocation::Enum location, const std::string& path_relative_to_location );
+
     private:
         std::string mReadRootPath;
 	};
