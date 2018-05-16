@@ -122,15 +122,15 @@ bool Mouse::IsCursorVisible() const
 
 void Mouse::HideCursor()
 {
-	SetCursorVisiblity( false );
+	SetCursorVisibility( false );
 }
 
 void Mouse::ShowCursor()
 {
-	SetCursorVisiblity( true );
+	SetCursorVisibility( true );
 }
 
-void Mouse::SetCursorVisiblity( bool show_cursor )
+void Mouse::SetCursorVisibility( bool show_cursor )
 {
 	mCursorVisible = show_cursor;
 }
