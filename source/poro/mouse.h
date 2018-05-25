@@ -55,7 +55,7 @@ public:
 	virtual bool IsCursorVisible() const;
 	virtual void HideCursor();
 	virtual void ShowCursor();
-	virtual void SetCursorVisiblity( bool show_cursor );
+	virtual void SetCursorVisibility( bool show_cursor );
 
 	virtual types::vec2 GetMousePos() const;
 	virtual bool		IsButtonDown( int button ) const;

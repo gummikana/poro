@@ -23,9 +23,9 @@
 
 namespace poro {
 
-void MouseImpl::SetCursorVisiblity( bool show_cursor )
+void MouseImpl::SetCursorVisibility( bool show_cursor )
 {
-	Mouse::SetCursorVisiblity( show_cursor );
+	Mouse::SetCursorVisibility( show_cursor );
 
 	int value = show_cursor?SDL_ENABLE:SDL_DISABLE;
 

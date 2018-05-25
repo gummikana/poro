@@ -31,7 +31,7 @@ public:
 	MouseImpl() : Mouse() {}
 	virtual ~MouseImpl() {}
 	
-	virtual void SetCursorVisiblity( bool show_cursor );
+	virtual void SetCursorVisibility( bool show_cursor );
 };
 
 } // end of namespace poro

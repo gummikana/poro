@@ -32,6 +32,7 @@
 #ifndef INC_CCOLOR_H
 #define INC_CCOLOR_H
 
+#include <SDL.h>
 #include <math.h>
 #include "../staticarray/cstaticarray.h"
 
@@ -50,6 +51,25 @@
 namespace ceng {
 
 
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+		#define CENG_COLOR_RMask 0xFF000000 
+		#define CENG_COLOR_GMask 0x00FF0000 
+		#define CENG_COLOR_BMask 0x0000FF00 
+		#define CENG_COLOR_AMask 0x000000FF 
+		#define CENG_COLOR_RShift 24 
+		#define CENG_COLOR_GShift 16 
+		#define CENG_COLOR_BShift 8 
+		#define CENG_COLOR_AShift 0 
+#else
+		#define CENG_COLOR_RMask  0x000000FF
+		#define CENG_COLOR_GMask  0x0000FF00
+		#define CENG_COLOR_BMask  0x00FF0000
+		#define CENG_COLOR_AMask  0xFF000000
+		#define CENG_COLOR_RShift 0
+		#define CENG_COLOR_GShift 8
+		#define CENG_COLOR_BShift 16
+		#define CENG_COLOR_AShift 24
+#		endif
 
 
 class CColorFloat
@@ -59,8 +79,6 @@ public:
 	typedef unsigned int uint32;
 	typedef unsigned char uint8;
 
-	static void InitMasks();
-
 	explicit CColorFloat( float r = 0, float g = 0, float b = 0, float a = 1.f ) :
 		r( r ),
 		g( g ),
@@ -68,7 +86,6 @@ public:
 		a( a ),
 		multiplied_with_alpha( false )
 	{
-		InitMasks();
 	}
 
 	CColorFloat( const CColorFloat& other ) : 
@@ -78,14 +95,12 @@ public:
 		a( other.a ),
 		multiplied_with_alpha( false )
 	{
-		InitMasks();
 	}
 
 
 	CColorFloat( const uint32 clor ) :
 		multiplied_with_alpha( false )
 	{
-		InitMasks();
 		Set32( clor );	
 	}
 	
@@ -244,45 +259,30 @@ public:
 		SetA( (float)(a / 255.f) );
 	}
 
-	void Set32( const uint32& color ) 
+	inline void Set32( const uint32& color ) 
 	{
-		uint32 r32, g32, b32, a32;
-		
-		r32 = color & RMask;
-		g32 = color & GMask;
-		b32 = color & BMask;
-		a32 = color & AMask;
-
-		r = ( r32 >> RShift ) / 255.f;
-		g = ( g32 >> GShift ) / 255.f;
-		b = ( b32 >> BShift ) / 255.f;
-		a = ( a32 >> AShift ) / 255.f;
+		r = ( ( color & CENG_COLOR_RMask ) >> CENG_COLOR_RShift ) / 255.f;
+		g = ( ( color & CENG_COLOR_GMask ) >> CENG_COLOR_GShift ) / 255.f;
+		b = ( ( color & CENG_COLOR_BMask ) >> CENG_COLOR_BShift ) / 255.f;
+		a = ( ( color & CENG_COLOR_AMask ) >> CENG_COLOR_AShift ) / 255.f;
 	}
 
-	// BUGBUG: Chechk should the return be r32 | g32 | b32 | a32 !?
-	uint32 Get32() const
+	inline uint32 Get32() const
 	{
-		uint32 r32, g32, b32, a32;
 		
-		r32 = GetR8() << RShift;
-		g32 = GetG8() << GShift;
-		b32 = GetB8() << BShift;
-		a32 = GetA8() << AShift;
-
-		return r32 | g32 | b32 | a32;
+		return (GetR8() << CENG_COLOR_RShift |
+				GetG8() << CENG_COLOR_GShift |
+				GetB8() << CENG_COLOR_BShift |
+				GetA8() << CENG_COLOR_AShift );
 	}
 
 	uint32 Get32Safe() const
 	{
 		using namespace ceng::math;
-		uint32 r32, g32, b32, a32;
-		
-		r32 = Clamp( (int)(r * 255.f), 0, 255 ) << RShift;
-		g32 = Clamp( (int)(g * 255.f), 0, 255 ) << GShift;
-		b32 = Clamp( (int)(b * 255.f), 0, 255 ) << BShift;
-		a32 = Clamp( (int)(a * 255.f), 0, 255 ) << AShift;
-
-		return r32 | g32 | b32 | a32;
+		return ( Clamp( (int)(r * 255.f), 0, 255 ) << CENG_COLOR_RShift |
+				Clamp( (int)(g * 255.f), 0, 255 ) << CENG_COLOR_GShift |
+				Clamp( (int)(b * 255.f), 0, 255 ) << CENG_COLOR_BShift |
+				Clamp( (int)(a * 255.f), 0, 255 ) << CENG_COLOR_AShift );
 	}
 
 	// debug function that checks if all the values are within range 0-1
@@ -319,21 +319,6 @@ public:
 	float	a;	/*!<	The alpha component of this color	*/
 
 	bool multiplied_with_alpha;
-private:
-
-	static bool masks_initialized;
-
-public:
-	static uint32	RMask;
-	static uint32	GMask;
-	static uint32	BMask;
-	static uint32	AMask;
-	
-	static uint8  RShift;
-	static uint8  GShift;
-	static uint8  BShift;
-	static uint8  AShift;
-	
 };
 
 //-----------------------------------------------------------------------------
@@ -344,7 +329,6 @@ public:
 
 	typedef unsigned int uint32;
 	typedef unsigned char uint8;
-	static void InitMasks();
 
 	explicit CColorUint8( uint8 r = 0, uint8 g = 0, uint8 b = 0, uint8 a = 255 ) :
 		r( r ),
@@ -352,7 +336,6 @@ public:
 		b( b ),
 		a( a )
 	{
-		InitMasks();
 	}
 
 	CColorUint8( const CColorUint8& other ) : 
@@ -361,13 +344,11 @@ public:
 	  b( other.b ),
 	  a( other.a )
 	{
-		InitMasks();
 	}
 
 
 	CColorUint8( const uint32 clor )
 	{
-		InitMasks();
 		Set32( clor );	
 	}
 	
@@ -477,7 +458,6 @@ public:
 
 	uint8& operator[]( int i )
 	{
-		static uint8 dump_me = 0;
 		switch( i ) 
 		{
 		case 0:
@@ -489,6 +469,8 @@ public:
 		case 3:
 			return a;
 		default:
+			poro_assert( false && "case default fail" );
+			static uint8 dump_me = 0;
 			return dump_me;
 		}
 	}
@@ -532,29 +514,21 @@ public:
 		SetA( (uint8)(a * 255.f) );
 	}
 
-	void Set32( const uint32& color ) 
+	inline void Set32( const uint32& color ) 
 	{
-		uint32 r32, g32, b32, a32;
-		
-		r32 = color & RMask;
-		g32 = color & GMask;
-		b32 = color & BMask;
-		a32 = color & AMask;
-
-		r = ( r32 >> RShift );
-		g = ( g32 >> GShift );
-		b = ( b32 >> BShift );
-		a = ( a32 >> AShift );
+		r = ( (color & CENG_COLOR_RMask ) >> CENG_COLOR_RShift );
+		g = ( (color & CENG_COLOR_GMask ) >> CENG_COLOR_GShift );
+		b = ( (color & CENG_COLOR_BMask ) >> CENG_COLOR_BShift );
+		a = ( (color & CENG_COLOR_AMask ) >> CENG_COLOR_AShift );
 	}
 
-	// BUGBUG: Chechk should the return be r32 | g32 | b32 | a32 !?
-	uint32 Get32() const
+	inline uint32 Get32() const
 	{
 		return 
-			( r << RShift ) |
-			( g << GShift ) | 
-			( b << BShift ) | 
-			( a << AShift ); 
+			( r << CENG_COLOR_RShift ) |
+			( g << CENG_COLOR_GShift ) | 
+			( b << CENG_COLOR_BShift ) | 
+			( a << CENG_COLOR_AShift ); 
 		/*uint32 r32, g32, b32, a32;
 		
 		r32 = GetR8() << RShift;
@@ -571,22 +545,6 @@ public:
 	uint8	g;	/*!<	The green component of this color	*/
 	uint8	b;	/*!<	The blue component of this color	*/
 	uint8	a;	/*!<	The alpha component of this color	*/
-
-private:
-
-	static bool masks_initialized;
-public:
-
-	static uint32	RMask;
-	static uint32	GMask;
-	static uint32	BMask;
-	static uint32	AMask;
-	
-	static uint8  RShift;
-	static uint8  GShift;
-	static uint8  BShift;
-	static uint8  AShift;
-	
 };
 
 //-----------------------------------------------------------------------------
