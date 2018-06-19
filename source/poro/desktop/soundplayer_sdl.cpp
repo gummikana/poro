@@ -19,6 +19,10 @@
  ***************************************************************************/
 
 #include "soundplayer_sdl.h"
+
+#include "../platform_defs.h"
+#ifdef PORO_USE_SDL_MIXER
+
 #include "sound_sdl.h"
 #include "../poro_macros.h"
 #include "../iplatform.h"
@@ -110,3 +114,4 @@ void SoundPlayerSDL::Stop( ISound* isound )
 }
 
 } // end o namespace poro
+#endif // PORO_USE_SDL_MIXER

@@ -431,8 +431,10 @@ void PlatformDesktop::Init( IApplication* application, const GraphicsSettings& s
 	mGraphics->SetSettings( settings );
 	mGraphics->Init(w, h, fullscreen, settings.caption);
 
+#ifdef PORO_USE_SDL_MIXER
 	mSoundPlayer = new SoundPlayerSDL;
 	mSoundPlayer->Init();
+#endif
 
     mFileSystem = new FileSystem;
 
