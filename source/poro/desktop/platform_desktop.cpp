@@ -461,7 +461,9 @@ void PlatformDesktop::Destroy()
 	delete mGraphics;
 	mGraphics = NULL;
 
+#ifdef PORO_USE_SDL_MIXER
 	delete mSoundPlayer;
+#endif
 	mSoundPlayer = NULL;
 
 	delete mMouse;

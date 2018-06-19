@@ -38,9 +38,12 @@
 
 	#include <CoreFoundation/CoreFoundation.h>
 	#include <SDL.h>
-	#include <SDL_mixer.h>
 	#include <GLEW/GLEW.h>
 	#include <GLUT/glut.h>
+
+#ifdef PORO_USE_SDL_MIXER
+	#include <SDL_mixer.h>
+#endif // PORO_USE_SDL_MIXER
 
 #endif
 
@@ -49,11 +52,14 @@
 #ifdef PORO_PLAT_LINUX
 
 	#include <SDL.h>
-	#include <SDL_mixer.h>
 	#include <GL/glew.h>
 	#include <GL/freeglut.h>
 	#include <GL/gl.h>
 	#include <GL/glu.h>
+
+#ifdef PORO_USE_SDL_MIXER
+	#include <SDL_mixer.h>
+#endif // PORO_USE_SDL_MIXER
 
 #endif
 
@@ -67,13 +73,18 @@
 	#pragma comment( lib, "glew32.lib" )
 
 	/*
+	// PLEASE USE poro_windows.h instead
 	#	ifdef _MSC_VER
 	#		include <windows.h>	// needed to get GL stuff to work
 	#	endif
 	*/
+	
 	#include <SDL.h>
-	#include <sdl_mixer.h>
 	#include <GL/glew.h>
+
+#ifdef PORO_USE_SDL_MIXER
+	#include <SDL_mixer.h>
+#endif // PORO_USE_SDL_MIXER
 
 #endif
 
