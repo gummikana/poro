@@ -469,7 +469,7 @@ public:
 		case 3:
 			return a;
 		default:
-			poro_assert( false && "case default fail" );
+			cassert( false && "case default fail" );
 			static uint8 dump_me = 0;
 			return dump_me;
 		}
