@@ -395,6 +395,8 @@ PlatformDesktop::PlatformDesktop() :
 {
 	StartCounter();
 	TestSDL_Keycodes();
+
+	mFileSystem = new FileSystem;
 }
 
 PlatformDesktop::~PlatformDesktop()
@@ -436,7 +438,6 @@ void PlatformDesktop::Init( IApplication* application, const GraphicsSettings& s
 	mSoundPlayer->Init();
 #endif
 
-    mFileSystem = new FileSystem;
 
 	mMouse = new MouseImpl;
 	mKeyboard = new Keyboard;
