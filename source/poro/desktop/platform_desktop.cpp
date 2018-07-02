@@ -395,6 +395,8 @@ PlatformDesktop::PlatformDesktop() :
 {
 	StartCounter();
 	TestSDL_Keycodes();
+
+	mFileSystem = new FileSystem;
 }
 
 PlatformDesktop::~PlatformDesktop()
@@ -431,10 +433,11 @@ void PlatformDesktop::Init( IApplication* application, const GraphicsSettings& s
 	mGraphics->SetSettings( settings );
 	mGraphics->Init(w, h, fullscreen, settings.caption);
 
+#ifdef PORO_USE_SDL_MIXER
 	mSoundPlayer = new SoundPlayerSDL;
 	mSoundPlayer->Init();
+#endif
 
-    mFileSystem = new FileSystem;
 
 	mMouse = new MouseImpl;
 	mKeyboard = new Keyboard;
@@ -459,7 +462,9 @@ void PlatformDesktop::Destroy()
 	delete mGraphics;
 	mGraphics = NULL;
 
+#ifdef PORO_USE_SDL_MIXER
 	delete mSoundPlayer;
+#endif
 	mSoundPlayer = NULL;
 
 	delete mMouse;

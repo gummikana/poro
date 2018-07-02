@@ -55,7 +55,7 @@ public:
 	virtual void Destroy();
 
 	// window / screen
-	virtual void    SetWindowSize( int width, int height );
+	virtual void	SetWindowSize( int width, int height );
 	virtual int		GetWidth();
 	virtual int		GetHeight();
 
@@ -65,7 +65,7 @@ public:
 	virtual void			SetApplication( IApplication* application );
 	virtual IGraphics*		GetGraphics();
 	virtual ISoundPlayer*	GetSoundPlayer();
-    virtual FileSystem*     GetFileSystem();
+	virtual FileSystem*		GetFileSystem();
 
 	// controllers
 	virtual Mouse*			GetMouse();
@@ -75,10 +75,10 @@ public:
 	virtual Joystick*		GetJoystick( int n );
 
 	// timers
-	virtual void	        SetFrameRate( int targetRate, bool fixed_timestep = true );
-	virtual int	            GetFrameRate();
-	virtual int		        GetFrameNum();
-	virtual void	        Sleep( types::Double32 seconds );
+	virtual void			SetFrameRate( int targetRate, bool fixed_timestep = true );
+	virtual int				GetFrameRate();
+	virtual int				GetFrameNum();
+	virtual void			Sleep( types::Double32 seconds );
 	virtual void			SetSleepingMode( int sleep_mode );
 	virtual types::Double32 GetUpTime();
 	virtual void			SetPrintFramerate( bool fps );
@@ -124,13 +124,17 @@ protected:
 	int								mHeight;
 	EventRecorder*					mEventRecorder;
 	MouseImpl*						mMouse;
-	Keyboard*					    mKeyboard;
+	Keyboard*						mKeyboard;
 	Touch*							mTouch;
 	std::vector< JoystickImpl* >	mJoysticks;
-	SoundPlayerSDL*		            mSoundPlayer;
-    FileSystem*                     mFileSystem;
-	bool						    mRunning;
-	types::vec2					    mMousePos;
+#ifdef PORO_USE_SDL_MIXER
+	SoundPlayerSDL*					mSoundPlayer;
+#else
+	ISoundPlayer*					mSoundPlayer;
+#endif
+	FileSystem*						mFileSystem;
+	bool							mRunning;
+	types::vec2						mMousePos;
 	int								mSleepingMode;
 	bool							mPrintFramerate;
 	poro::types::string				mWorkingDir;
@@ -143,7 +147,7 @@ private:
 //-------------------------- inlined functions -------------------------------------
 
 inline void PlatformDesktop::Exit() {
-    mRunning = false;
+	mRunning = false;
 }
 
 inline int PlatformDesktop::GetWidth() { 
@@ -177,7 +181,7 @@ inline int	PlatformDesktop::GetJoystickCount() const  {
 
 // ---
 inline FileSystem* PlatformDesktop::GetFileSystem() {
-    return mFileSystem;
+	return mFileSystem;
 }
 
 // ---

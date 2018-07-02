@@ -21,6 +21,7 @@
 #ifndef INC_PLATFORM_DEFS
 #define INC_PLATFORM_DEFS
 
+// #define PORO_USE_SDL_MIXER
 
 #ifdef __APPLE__
 	#include "TargetConditionals.h"

@@ -21,10 +21,14 @@
 #ifndef INC_SOUNDPLAYER_SDL_H
 #define INC_SOUNDPLAYER_SDL_H
 
+#include "../platform_defs.h"
+#ifdef PORO_USE_SDL_MIXER
+
 #include "../isoundplayer.h"
 #include "../libraries.h"
 
 namespace poro {
+
 
 class SoundPlayerSDL : public ISoundPlayer
 {
@@ -48,4 +52,5 @@ private:
 
 } // end o namespace poro
 
+#endif // PORO_USE_SDL_MIXER
 #endif

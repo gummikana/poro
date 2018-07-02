@@ -179,7 +179,7 @@ public:
 	{
 		const float l = Length();
 		if( l == 0 ) return 0;
-		return (float)atan2( ((float)y) / l, ((float)x) / l );
+		return (float)atan2f( ((float)y) / l, ((float)x) / l );
 	}
 
 	inline float Angle( const CVector2< Type >& v2 ) const
@@ -187,19 +187,19 @@ public:
 		Type dot = Dot( *this, v2 );
 		Type cross = Cross( *this, v2 );
 		
-		return (float)atan2( (float)cross, (float)dot );
+		return (float)atan2f( (float)cross, (float)dot );
 	}
 
-	CVector2< Type >& Rotate( Type angle_rad ) 
+	CVector2< Type >& Rotate( float angle_rad ) 
 	{
 		Type tx = x;
-		x = (Type)x * (Type)cos(angle_rad) - y * (Type)sin(angle_rad);
-		y = (Type)tx * (Type)sin(angle_rad) + y * (Type)cos(angle_rad);
+		x = (Type)((((float)x) * (float)cosf(angle_rad)) - ((float)y * (float)sinf(angle_rad)));
+		y = (Type)((((float)tx) * (float)sinf(angle_rad)) + ((float)y * (float)cosf(angle_rad)));
 
 		return *this;
 	}
 
-	CVector2< Type >& Rotate( const CVector2< Type >& centre, Type angle_rad )
+	CVector2< Type >& Rotate( const CVector2< Type >& centre, float angle_rad )
 	{
 		CVector2< Type > D = *this - centre;
 		D.Rotate( angle_rad );

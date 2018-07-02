@@ -240,12 +240,18 @@ CXmlNode* XmlConvertFrom( T& from, const std::string& name )
 
 	return return_node;
 }
-    
-    template< class T >
-    CXmlNode* TEMP_XmlConvertFrom( T& from, const std::string& name ) 
-    {
-        return XmlConvertFrom( from, name );
-    }
+
+template< class T >
+CXmlNode* TEMP_XmlConvertFrom( T& from, const std::string& name ) 
+{
+	return XmlConvertFrom( from, name );
+}
+
+template< class T >
+void TEMP_XmlConvertTo( CXmlNode* from, T& to )
+{
+	return XmlConvertTo( from, to );
+}
 
 
 }
