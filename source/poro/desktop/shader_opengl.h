@@ -68,7 +68,7 @@ private:
 	std::map<std::string, int> parameterLocationCache;
 	
 	int LoadShader( const std::string& filename, bool is_vertex_shader );
-    int LoadShaderFromString( const std::string& source, bool is_vertex_shader );
+	int LoadShaderFromString( const char* source, const int source_length, bool is_vertex_shader );
     void Init();
 	int GetParameterLocation( const std::string& name );
 

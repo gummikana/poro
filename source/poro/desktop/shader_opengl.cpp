@@ -42,8 +42,8 @@ void ShaderOpenGL::InitFromString( const std::string& vertex_source, const std::
 { 
 	Release();
 
-	vertexShader = LoadShaderFromString( vertex_source, true );
-	fragmentShader = LoadShaderFromString( fragment_source, false );
+	vertexShader = LoadShaderFromString( vertex_source.c_str(), vertex_source.size(), true );
+	fragmentShader = LoadShaderFromString( fragment_source.c_str(), fragment_source.size(), false );
 
 	if (vertexShader == 0 || fragmentShader == 0)
 	{
@@ -182,41 +182,13 @@ int ShaderOpenGL::LoadShader( const std::string& filename, bool is_vertex_shader
 		return 0;
 	}
 
-	int shader_handle = glCreateShader( is_vertex_shader ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER );
-	glShaderSource( shader_handle, 1, (const char**)&text.memory, (int*)&text.size_bytes );
-	glCompileShader( shader_handle );
-
-	//DEBUG
-	GLint status;
-	glGetShaderiv(shader_handle, GL_COMPILE_STATUS, &status);
-	if (status == GL_FALSE)
-	{
-		GLint infoLogLength;
-		glGetShaderiv(shader_handle, GL_INFO_LOG_LENGTH, &infoLogLength);
-		
-		GLchar *strInfoLog = new GLchar[infoLogLength + 1];
-		glGetShaderInfoLog(shader_handle, infoLogLength, NULL, strInfoLog);
-		
-		
-		fprintf(stderr, "GLSL compile failure:\n%s\n", strInfoLog);
-		delete[] strInfoLog;
-
-		isCompiledAndLinked = false;
-	}
-
-	return shader_handle;
+	return LoadShaderFromString( text.memory, text.size_bytes, is_vertex_shader );
 }
 
-int ShaderOpenGL::LoadShaderFromString( const std::string& source, bool is_vertex_shader )
+int ShaderOpenGL::LoadShaderFromString( const char* source, const int source_length, bool is_vertex_shader )
 {
-	const char* sources[1];
-	sources[0] = source.c_str();
-
-	int lengths[1];
-	lengths[0] = source.size();
-
 	int shader_handle = glCreateShader( is_vertex_shader ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER );
-	glShaderSource( shader_handle, 1, sources, lengths );
+	glShaderSource( shader_handle, 1, &source, &source_length );
 	glCompileShader( shader_handle );
 
 	//DEBUG
