@@ -33,6 +33,8 @@ public:
 
 	virtual int GetWidth() const = 0;
 	virtual int GetHeight() const = 0;
+	virtual int GetDataWidth() const = 0;
+	virtual int GetDataHeight() const = 0;
 	
 	virtual void SetUVCoords( float x1, float y1, float x2, float y2 ) {
 		poro_assert( false );

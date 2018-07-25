@@ -107,8 +107,8 @@ public:
 
     // ------------------------------------
 
-    int GetDataWidth()  { return mWidth; }
-    int GetDataHeight() { return mHeight; }
+    virtual int GetDataWidth() const PORO_OVERRIDE { return mWidth; }
+    virtual int GetDataHeight() const PORO_OVERRIDE { return mHeight; }
 
     // ------------------------------------
     
