@@ -99,7 +99,6 @@ public:
 	virtual types::vector2 GetSize() const;
 	virtual types::vector2 GetTextureSize() const;
 	
-
 	void								SetTexture( Image* texture );
 	Image*								GetTexture();
 	void								SetImageData( ceng::CArray2D< Uint32 >* image_data );
@@ -126,6 +125,8 @@ public:
 
 	void		SetClearTweens( bool value )	{ mClearTweens = value; }
 	bool		GetClearTweens() const			{ return mClearTweens; }
+
+	void		SetShader( poro::IShader* shader ) { mShader = shader;  }
 
 	inline int	GetLastFrameRendered() const { return mLastFrameRendered; }
 
@@ -404,13 +405,15 @@ protected:
 
 	types::rect*				mRect;
 
+	poro::IShader*				mShader;
+
 	// animation stuff
 	Animations*								mAnimations;
 	std::auto_ptr< SpriteAnimationUpdater >	mAnimationUpdater;
 
 	const RectAnimation*					mRectAnimation;
 	RectAnimationData						mRectAnimationData;
-	std::vector< RectAnimation >*		mRectAnimations;
+	std::vector< RectAnimation >*			mRectAnimations;
 
 	// filename
 	std::string								mFilename;

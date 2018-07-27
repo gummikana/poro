@@ -26,6 +26,7 @@
 #include "../../poro/iplatform.h"
 #include "../../poro/igraphics.h"
 #include "../../poro/igraphics_buffer.h"
+#include "../../poro/ishader.h"
 
 #include "../../utils/singleton/csingletonptr.h"
 #include "../../utils/math/point_inside.h"
@@ -577,6 +578,7 @@ Sprite::Sprite() :
 	mDead( false ),
 	mVisible( true ),
 	mRect( NULL ),
+	mShader( NULL ),
 	mRectAnimations( NULL ),
 	mRectAnimation( NULL ),
 	mAnimations( NULL ),
@@ -778,8 +780,18 @@ void Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 		tex_coords[ 2 ].x = dest_rect.x + dest_rect.w;
 		tex_coords[ 2 ].y = dest_rect.y + dest_rect.h;
 
+		// ---
+		graphics->SetShader( mShader );
+		if ( mShader )
+		{
+			mShader->SetParameter( "tex", mTexture );
+			mShader->SetParameter( "tex_size", poro::types::vec2( (float)mTexture->GetDataWidth(), (float)mTexture->GetDataHeight() ) );
+		}
+
 		graphics->DrawTexture( mTexture, temp_verts, tex_coords, 4, color_me );
 
+		graphics->SetShader( NULL );
+		
 		if( mBlendMode != poro::BLEND_MODE::NORMAL )
 			graphics->PopBlendMode();
 

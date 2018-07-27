@@ -985,6 +985,7 @@ void GraphicsOpenGL::SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPIN
 
 	glBindTexture( GL_TEXTURE_2D, 0 );
 }
+
 //=============================================================================
 
 ITexture3d* GraphicsOpenGL::LoadTexture3d( const types::string& filename )
@@ -1079,6 +1080,30 @@ void GraphicsOpenGL::DestroyTexture3d( ITexture3d* itexture )
 
 //=============================================================================
 
+void GraphicsOpenGL::BeginRendering()
+{
+	if ( mClearBackground ) {
+		glClearColor( mFillColor[0],
+			mFillColor[1],
+			mFillColor[2],
+			mFillColor[3] );
+
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	}
+}
+
+void GraphicsOpenGL::EndRendering()
+{
+	_EndRendering();
+	FlushDrawTextureBuffer();
+	SDL_GL_SwapWindow( mSDLWindow );
+
+	// std::cout << "DrawCalls:" << drawcalls << "\n";
+	// drawcalls=0;
+}
+
+//=============================================================================
+
 void GraphicsOpenGL::DrawTexture( ITexture* itexture, float x, float y, float w, float h, const types::fcolor& color, float rotation )
 {
 	if( itexture == NULL )
@@ -1135,7 +1160,6 @@ void GraphicsOpenGL::DrawTexture( ITexture* itexture, float x, float y, float w,
 	PopVertexMode();
 
 }
-//=============================================================================
 
 void GraphicsOpenGL::DrawTexture( ITexture* itexture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color )
 {
@@ -1175,8 +1199,6 @@ void GraphicsOpenGL::DrawTexture( ITexture* itexture, types::vec2* vertices, typ
 	else
 		drawsprite( texture, vert, color, count, GetGLVertexMode(mVertexMode), mBlendMode );
 }
-
-//-----------------------------------------------------------------------------
 
 void GraphicsOpenGL::DrawTextureWithAlpha(
 		ITexture* itexture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color,
@@ -1233,28 +1255,6 @@ void GraphicsOpenGL::DrawTextureWithAlpha(
 
 //=============================================================================
 
-void GraphicsOpenGL::BeginRendering()
-{
-	if( mClearBackground){
-		glClearColor( mFillColor[ 0 ],
-			mFillColor[ 1 ],
-			mFillColor[ 2 ],
-			mFillColor[ 3 ] );
-
-		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-	}
-}
-
-void GraphicsOpenGL::EndRendering()
-{
-	FlushDrawTextureBuffer();
-	// std::cout << "DrawCalls:" << drawcalls << "\n";
-	// drawcalls=0;
-	SDL_GL_SwapWindow(mSDLWindow);
-}
-
-//=============================================================================
-
 void GraphicsOpenGL::DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth, float width, bool loop )
 {
 	//float xPlatformScale, yPlatformScale;
@@ -1285,8 +1285,6 @@ void GraphicsOpenGL::DrawLines( const std::vector< poro::types::vec2 >& vertices
 
 	glDisable(GL_BLEND);
 }
-
-//-----------------------------------------------------------------------------
 
 void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color )
 {
@@ -1870,6 +1868,20 @@ void GraphicsOpenGL::DestroyRenderTexture(IRenderTexture* buffer)
 IShader* GraphicsOpenGL::CreateShader()
 {
 	return new ShaderOpenGL();
+}
+
+void GraphicsOpenGL::SetShader( IShader* shader )
+{
+	if ( shader != mCurrentShader )
+	{
+		if ( mCurrentShader )
+			mCurrentShader->Disable();
+
+		mCurrentShader = shader;
+
+		if ( shader )
+			shader->Enable();
+	}
 }
 
 //=============================================================================

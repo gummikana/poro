@@ -134,6 +134,7 @@ public:
 	//-------------------------------------------------------------------------
 
 	virtual IShader* CreateShader() PORO_OVERRIDE;
+	virtual void SetShader( IShader* shader ) PORO_OVERRIDE;
 
 	//-------------------------------------------------------------------------
 

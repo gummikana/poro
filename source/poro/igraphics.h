@@ -28,6 +28,7 @@
 #include "poro_macros.h"
 #include "itexture.h"
 #include "itexture3d.h"
+#include "ishader.h"
 
 //Number of vertices that can be stored in the DrawTextureBuffer.
 //6000 = 2000 triangles = 1000 quads, since we use GL_TRIANGLES.
@@ -152,15 +153,7 @@ class IGraphics
 {
 public:
 	//-------------------------------------------------------------------------
-	IGraphics() :
-		mClearBackground(true),
-		mFillColor(),
-		mBlendMode( BLEND_MODE::NORMAL ),
-		mBlendModes(),
-		mVertexMode( VERTEX_MODE::TRIANGLE_FAN ),
-		mVertexModes(),		
-		mMipmapMode( TEXTURE_FILTERING_MODE::LINEAR ),
-		mDrawFillMode( DRAWFILL_MODE::POLYGON )
+	IGraphics()
 	{
 		mFillColor[0] = 0.f;mFillColor[1] = 0.f; mFillColor[2] = 0.f; mFillColor[3] = 1.f;
 	}
@@ -202,6 +195,7 @@ public:
 	virtual void		DestroyTexture( ITexture* texture ) = 0;
 	virtual void		SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode ) = 0;
 	virtual void		SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum mode ) = 0;
+
 	//-------------------------------------------------------------------------
 	
 	virtual ITexture3d*	LoadTexture3d( const types::string& filename );
@@ -286,6 +280,11 @@ public:
 
 	virtual void DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth, float width, bool loop = false ) { }
 	virtual void DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) { DrawLines( vertices, color, false, 1.f, true ); }
+	virtual void DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) { }
+	virtual void DrawQuads( float* vertices, int vertex_count, float* tex_coords, float* colors, ITexture* texture ) { }
+	virtual void DrawQuads( Vertex_PosFloat2_ColorUint32* vertices, int vertex_count ) { }
+	virtual void DrawQuads( Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, int vertex_count, ITexture* texture ) { }
+
 	//-------------------------------------------------------------------------
 
 	virtual void SetDrawFillMode( int drawfill_mode )	{ mDrawFillMode = drawfill_mode; }
@@ -293,10 +292,6 @@ public:
 
 	virtual IGraphicsBuffer* CreateGraphicsBuffer( int width, int height ) { return NULL; }
 	virtual void DestroyGraphicsBuffer(IGraphicsBuffer* buffer) { }
-	virtual void DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) { }
-	virtual void DrawQuads( float* vertices, int vertex_count, float* tex_coords, float* colors, ITexture* texture ) { }
-	virtual void DrawQuads( Vertex_PosFloat2_ColorUint32* vertices, int vertex_count ) { }
-	virtual void DrawQuads( Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, int vertex_count, ITexture* texture ) { }
 
 	//-------------------------------------------------------------------------
 
@@ -306,6 +301,7 @@ public:
 	//-------------------------------------------------------------------------
 
 	virtual IShader* CreateShader() { return NULL; }
+	virtual void SetShader( IShader* shader ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
 
 	//-------------------------------------------------------------------------
 
@@ -321,18 +317,27 @@ public:
 	virtual int				ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes )	{ poro_assert( false && "IMPLEMENTATION NEEDED" ); return -1; }
 
 protected:
-	bool mClearBackground;
-	poro::types::fcolor mFillColor;
+	void _EndRendering()
+	{
+		if ( mCurrentShader )
+			mCurrentShader->Disable();
+		mCurrentShader = NULL;
+	}
+
+	bool mClearBackground = true;
+	poro::types::fcolor mFillColor = poro::types::fcolor();
 	
-	BLEND_MODE::Enum mBlendMode;
+	BLEND_MODE::Enum mBlendMode = BLEND_MODE::NORMAL;
 	std::stack< BLEND_MODE::Enum > mBlendModes;
 	
-	VERTEX_MODE::Enum mVertexMode;
+	VERTEX_MODE::Enum mVertexMode = VERTEX_MODE::TRIANGLE_FAN;
 	std::stack< VERTEX_MODE::Enum > mVertexModes;
 
-	TEXTURE_FILTERING_MODE::Enum mMipmapMode;
+	TEXTURE_FILTERING_MODE::Enum mMipmapMode = TEXTURE_FILTERING_MODE::LINEAR;
 
-	int mDrawFillMode;
+	int mDrawFillMode = DRAWFILL_MODE::POLYGON;
+
+	IShader* mCurrentShader = NULL;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
