@@ -249,9 +249,13 @@ public:
 		CArray2D* result = new CArray2D( _w, _h);
 
 		int x, y;
-		for ( y = _y; y < _y + _h; y++ )
+
+		const int _xmax = ceng::math::Min( _x + _w, myWidth );
+		const int _ymax = ceng::math::Min( _y + _h, myHeight );
+
+		for ( y = _y; y < _ymax; y++ )
 		{
-			for ( x = _x; x < _x + _w; x++ )
+			for ( x = _x; x < _xmax; x++ )
 			{
 				result->myDataArray[ ( ( y - _y ) * _w ) + ( x - _x ) ] = At( x, y );
 			}

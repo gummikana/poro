@@ -22,7 +22,7 @@
 #ifndef INC_DISPLAYOBJECTCONTAINER_H
 #define INC_DISPLAYOBJECTCONTAINER_H
 
-#include <list>
+#include <vector>
 #include "eventdispatcher.h"
 
 namespace as { 
@@ -34,7 +34,7 @@ namespace as {
 class DisplayObjectContainer : public EventDispatcher
 {
 public:
-	typedef std::list< DisplayObjectContainer* > ChildList;
+	typedef std::vector< DisplayObjectContainer* > ChildList;
 	
 	//-------------------------------------------------------------------------
 

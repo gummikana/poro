@@ -33,7 +33,7 @@
 #include <cstdio>
 #include <cstdarg>
 
-#include <list>
+#include <vector>
 #include <algorithm>
 
 
@@ -53,7 +53,7 @@ public:
 
 	void RemoveListener( ILogListener* listener )
 	{
-		std::list< ILogListener* >::iterator i = std::find( myListeners.begin(), myListeners.end(), listener );
+		std::vector< ILogListener* >::iterator i = std::find( myListeners.begin(), myListeners.end(), listener );
 
 		if( i != myListeners.end() )
 			myListeners.erase( i );
@@ -61,7 +61,7 @@ public:
 
 	void WriteLine( const std::string& line, CLog::LogType line_type )
 	{
-		std::list< ILogListener* >::iterator i = myListeners.begin();
+		std::vector< ILogListener* >::iterator i = myListeners.begin();
 		
 		for( ; i != myListeners.end(); ++i )
 		{
@@ -69,7 +69,7 @@ public:
 		}
 	}
 
-	std::list< ILogListener* > myListeners;
+	std::vector< ILogListener* > myListeners;
 	CLogListenerForFile*	   myFileLogger;
 
 };

@@ -201,11 +201,11 @@ bool IsPointInsideRect( const TPoint& point, const TRect& rect )
 }
 
 template< class TRect >
-void RectAddToList( std::list< TRect >& list, TRect rect )
+void RectAddToList( std::vector< TRect >& list, TRect rect )
 {
 	if ( list.empty() ) { list.push_back( rect ); return; }
 
-	typename std::list<TRect>::iterator i;
+	typename std::vector<TRect>::iterator i;
 	TRect rect_2;
 	TRect rect_3;
 
@@ -361,70 +361,6 @@ void RectBooleanConst( const TRect& first, const TRect& second, std::vector< TRe
 		left_overs.push_back( TRect( first.x + first.w, active.y, ( active.x + active.w ) - ( first.x + first.w ), active.h ) );
 		active.w -= ( active.x + active.w ) - ( first.x + first.w );
 	}
-
-	
-
-}
-
-template< class TRect >
-void RectBooleanConst( const TRect& first, const TRect& second, std::list< TRect >& left_overs )
-{
-
-	/*
-	// If the second is bigge we cannot do a thing
-	if ( second.x <= first.x && second.x + second.w >= first.x + first.w &&
-		 second.y <= first.y && second.y + second.h >= first.y + first.h )
-	{
-		return;
-	}
-
-	// First well check if the second is inside the first
-	if ( first.x <= second.x && first.x + first.w >= second.x + second.w &&
-		first.y <= second.y && first.y + first.h >= second.y + second.h )
-	{
-		types::rectMakeEmpty( second );
-		return;
-	}
-	*/
-	
-	//types::rect Leftovers( second );
-	TRect active( second );
-	// std::vector< types::rect > left_overs;
-
-	// Vertical motherfuckers
-	if ( active.y < first.y )
-	{
-		left_overs.push_back( TRect( active.x, active.y, active.w, first.y - active.y ) );
-		active.h -= ( first.y - active.y );
-		active.y = first.y;
-	}
-
-	if ( active.y + active.h >= first.y + first.h )
-	{
-		// assert( false && "This gets called" );
-		left_overs.push_back( TRect( active.x, first.y + first.h, active.w, ( active.y + active.h ) - ( first.y + first.h ) ) );
-		active.h -= ( active.y + active.h ) - ( first.y + first.h );
-	}
-
-	// Horizontal motherfuckerss
-	// Then lets try to crack this mother fucker
-	if ( active.x < first.x ) // this means that most left wont ever hit the target
-	{
-		left_overs.push_back( TRect( active.x, active.y, first.x - active.x, active.h ) );
-		active.w -= ( first.x - active.x );
-		active.x = first.x;
-	}
-
-	if ( active.x + active.w >= first.x + first.w ) // this means that most of the right wont ever hit the target
-	{
-		// assert( false && "This gets called" );
-		left_overs.push_back( TRect( first.x + first.w, active.y, ( active.x + active.w ) - ( first.x + first.w ), active.h ) );
-		active.w -= ( active.x + active.w ) - ( first.x + first.w );
-	}
-	
-	// left_overs.push_back( active );
-	
-
 }
 
 template< class TRect, class TPoint >

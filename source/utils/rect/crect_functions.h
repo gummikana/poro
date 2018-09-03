@@ -64,7 +64,6 @@
 #define INC_CRECT_FUNCTIONS_H
 
 #include <vector>
-#include <list>
 
 
 #ifdef _MSC_VER
@@ -97,7 +96,7 @@ bool IsPointInsideRect( const TPoint& point, const TRect& rect )
 
 //! Adds a rect to a rect so that no rect is on top of any other rect in that list
 template< class TRect >
-void	RectAddToList( std::list< TRect >& list, TRect rect );
+void	RectAddToList( std::vector< TRect >& list, TRect rect );
 
 
 //! Clamps the rect inside the borders, moves the rect so it doesn't go outside
@@ -129,10 +128,6 @@ void	RectBoolean( TRect& first, TRect& second, TRect& third  );
 //! this chops the second into pieces around the first rect and pushes those pieces to left_overs
 template< class TRect >
 void RectBooleanConst( const TRect& first, const TRect& second, std::vector< TRect >& left_overs );
-
-//! this chops the second into pieces around the first rect and pushes those pieces to left_overs
-template< class TRect >
-void RectBooleanConst( const TRect& first, const TRect& second, std::list< TRect >& left_overs );
 
 //! Finds cross points of two rects and pushes them in to the vector. Uses CRectFindCrossPointsLine()
 //! for finding the crosspoints

@@ -235,7 +235,7 @@ bool DisplayObjectContainer::SendChildToBack( DisplayObjectContainer* child )
 		return false;
 
 	mChildren.erase( i );
-	mChildren.push_front( child );	
+	mChildren.insert( mChildren.begin(), child );
 	return true;
 }
 

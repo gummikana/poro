@@ -1299,14 +1299,11 @@ void Sprite::FindSpritesAtPointImpl( const types::vector2& pos, Transform& trans
 
 	transform.PushXForm( mXForm, mColor );
 
-	std::list< DisplayObjectContainer* >::iterator i;
-	Sprite* current = NULL;
-
-	for( i = mChildren.begin(); i != mChildren.end(); ++i )
+	for ( auto& child : mChildren )
 	{
-		if( (*i)->GetSpriteType() == this->GetSpriteType() )
+		if( child->GetSpriteType() == this->GetSpriteType() )
 		{			
-			current = dynamic_cast< Sprite* >(*i);
+			auto current = dynamic_cast< Sprite* >( child );
 			cassert( current );
 			if( current == NULL || current->IsSpriteDead() )
 				continue;

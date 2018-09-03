@@ -4,7 +4,7 @@
 #pragma warning(disable:4786)
 
 #include <string>
-#include <list>
+#include <vector>
 
 #include "../safearray/csafearray.h"
 

@@ -23,7 +23,6 @@
 #define INC_SPRITE_H
 
 #include <vector>
-#include <list>
 #include <string>
 
 #include "../../poro/igraphics.h"
@@ -437,14 +436,14 @@ struct Transform
 	
 	void PushXFormButDontMultiply( const types::xform& xform,  const std::vector< float >& color )
 	{
-		mQueue.push_front( mTop );
+		mQueue.push_back( mTop );
 		mTop.xform = xform;
 		mTop.color = color;
 	}
 
 	void PushXForm( const types::xform& xform, const std::vector< float >& color )
 	{
-		mQueue.push_front( mTop );
+		mQueue.push_back( mTop );
 		mTop.xform = ceng::math::Mul( mTop.xform, xform );
 		MulColor( mTop.color, color );
 	}
@@ -453,8 +452,8 @@ struct Transform
 	{
 		if( mQueue.empty() == false )
 		{
-			mTop = mQueue.front();
-			mQueue.pop_front();
+			mTop = mQueue.back();
+			mQueue.pop_back();
 		}
 	}
 
@@ -475,13 +474,8 @@ struct Transform
 	const types::xform&				GetXForm() const { return mTop.xform; }
 	const std::vector< float >&		GetColor() const { return mTop.color; }
 
-	/*
-	types::xform mXForm;
-	std::list< types::xform > mXFormQueue;
-	*/
-
 	TransformHelper mTop;
-	std::list< TransformHelper > mQueue;
+	std::vector< TransformHelper > mQueue;
 	
 };
 

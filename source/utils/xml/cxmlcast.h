@@ -96,23 +96,6 @@ void XmlSerializeToContainer( CXmlFileSys* from, std::vector< T >& to, const std
 	}
 }
 
-template< class T >
-void XmlSerializeToContainer( CXmlFileSys* from, std::list< T >& to, const std::string& name )
-{
-	T tmp;
-
-	CXmlNode* node = from->GetNode();
-	int i = 0;
-	for( i = 0; i < node->GetChildCount(); i++ )
-	{
-		if( node->GetChild( i )->GetName() == name )
-		{
-			XmlConvertTo( node->GetChild( i ), tmp );
-
-			to.push_back( tmp );
-		}
-	}
-}
 
 //! Used to convert stl container to CXmlFileSys
 //! ( using the insert( to.end(), element ) conversion )
