@@ -22,6 +22,8 @@
 #define INC_PORO_MOUSE_IMPL_H
 
 #include "../mouse.h"
+struct SDL_Cursor;
+
 
 namespace poro {
 
@@ -31,7 +33,10 @@ public:
 	MouseImpl() : Mouse() {}
 	virtual ~MouseImpl() {}
 	
-	virtual void SetCursorVisibility( bool show_cursor );
+	virtual void SetCursorVisibility( bool show_cursor ) override;
+	virtual void SetCursor( const char* image_rgba8, int width, int height, int center_offset_x, int center_offset_y ) override;
+
+	SDL_Cursor* mCursor = NULL;
 };
 
 } // end of namespace poro

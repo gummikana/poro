@@ -32,5 +32,29 @@ void MouseImpl::SetCursorVisibility( bool show_cursor )
 	SDL_ShowCursor( value  );
 }
 
+void MouseImpl::SetCursor( const char* image_rgba8, int width, int height, int center_offset_x, int center_offset_y )
+{
+	#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+		int rmask = 0xff000000;
+		int gmask = 0x00ff0000;
+		int bmask = 0x0000ff00;
+		int amask = 0x000000ff;
+	#else // little endian, like x86
+		int rmask = 0x000000ff;
+		int gmask = 0x0000ff00;
+		int bmask = 0x00ff0000;
+		int amask = 0xff000000;
+	#endif
+
+	if ( mCursor )
+		SDL_FreeCursor( mCursor );
+
+	auto surface = SDL_CreateRGBSurfaceFrom( (void*)image_rgba8, width, height, 32, width * 4, rmask, gmask, bmask, amask );
+	mCursor = SDL_CreateColorCursor( surface, center_offset_x, center_offset_y );
+	SDL_SetCursor( mCursor );
+
+	SDL_FreeSurface( surface );
+}
+
 
 } // end of namespace poro

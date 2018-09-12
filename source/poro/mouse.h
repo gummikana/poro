@@ -56,6 +56,7 @@ public:
 	virtual void HideCursor();
 	virtual void ShowCursor();
 	virtual void SetCursorVisibility( bool show_cursor );
+	virtual void SetCursor( const char* image_rgba8, int width, int height, int center_offset_x, int center_offset_y ) = 0;
 
 	virtual types::vec2 GetMousePos() const;
 	virtual bool		IsButtonDown( int button ) const;
