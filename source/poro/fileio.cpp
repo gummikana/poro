@@ -50,7 +50,6 @@ namespace platform_impl
 	std::string CombinePath( std::string root, std::string relative_to_root );
 
 
-
 	struct StreamInternal
 	{
 		StreamInternal( std::string filename, bool read, StreamStatus::Enum* out_status, u32 write_mode )
@@ -268,6 +267,16 @@ namespace platform_impl
 			// TODO:
 		}*/
 
+
+		void NormalizeSeparators( std::string& path )
+		{
+			for ( size_t i = 0; i < path.size(); i++ )
+			{
+				if ( path[i] == '\\' )
+					path[i] = '/';
+			}
+		}
+
 		std::string GetFullPath( FileLocation::Enum location, const std::string& relative_path )
 		{
 			std::string a = GetFullPath( location );
@@ -296,22 +305,20 @@ namespace platform_impl
 			}
 		
 			// clean the path
-			std::replace( result.begin(), result.end(), '\\', '/' );
+			NormalizeSeparators( result );
 			if ( result[ result.length() - 1 ] != '/' )
 				result = result + '/';
 			return result;
 		}
 
-		static bool IsSeparator( char c ) { return c == '\\' ||c == '/'; }
+		static bool IsSeparator( char c )
+		{
+			return c == '\\' ||c == '/';
+		}
 
 		static char GetSeparator( const std::string& path )
 		{
-			for( std::size_t i = 0; i < path.size(); ++i )
-			{
-				if(path[i] == '\\' ) return '\\';
-				if(path[i] == '/' ) return '/';
-			}
-			return '\\';
+			return '/';
 		}
 
 		std::string CombinePath( std::string root, std::string relative_to_root )
@@ -342,7 +349,9 @@ namespace platform_impl
 			
 			poro_assert( IsSeparator( root.back() ) || IsSeparator( relative_to_root[0] ));
 
-			return root + relative_to_root;
+			auto result = root + relative_to_root;
+			NormalizeSeparators( result );
+			return result;
 		}
 	}
 #endif
