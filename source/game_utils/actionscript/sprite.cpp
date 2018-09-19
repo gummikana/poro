@@ -315,10 +315,14 @@ namespace {
 		cassert(data);
 
 
-#if 1
+#ifdef WIZARD_HOT_LOAD_ENABLED
 		// if we want to update sprite files on the fly...
 		// check if we should reload
 		std::string time_stamp = Poro()->GetFileSystem()->GetDateForFile(filename);
+		// logger << "WIZARD_HOT_LOAD_ENABLED!\n";
+#else
+		std::string time_stamp = "d";	// debug 
+#endif
 
 		// reload (or load for the first time)
 		if (data->time_stamp != time_stamp)
@@ -329,7 +333,6 @@ namespace {
 			ceng::XmlLoadFromFile((*data), filename, "Sprite");
 			data->time_stamp = time_stamp;
 		}
-#endif
 
 		return data;
 	}
