@@ -225,6 +225,95 @@ struct SpriteLoadHelper
 		{
 			rect_animations[i] = temp_rect_animations[i];
 		}
+
+		// #ifdef DEBUG
+		DEBUG_CheckForLeaks();
+	}
+
+	// DEBUG - checks if there are pixels that are too close to the rect animations
+	bool DEBUG_CheckOutsideRect( const ceng::CArray2D< uint32 >& image, const types::rect& frect )
+	{
+		types::irect rect;
+		rect.x = (int)frect.x;
+		rect.y = (int)frect.y;
+		rect.w = (int)frect.w;
+		rect.h = (int)frect.h;
+		bool result = true;
+		for( int x = rect.x - 1; x <= rect.x + rect.w; ++x )
+		{
+			int y = rect.y - 1;
+			if( image.IsValid( x, y ) && 
+				(image.Rand( x, y ) & 0xFF000000) != 0 )
+			{
+				logger << "Leaking rect at: " << filename << " - at " << x << ", " << y << "\n";
+				result = false;
+			}
+
+			y = rect.y + rect.h;
+			if( image.IsValid( x, y ) && 
+				(image.Rand( x, y ) & 0xFF000000) != 0 )
+			{
+				logger << "Leaking rect at: " << filename << " - at " << x << ", " << y << "\n";
+				result = false;
+			}
+		}
+
+		for( int y = rect.y - 1; y <= rect.y + rect.h; ++y )
+		{
+			int x = rect.x - 1;
+			if( image.IsValid( x, y ) && 
+				(image.Rand( x, y ) & 0xFF000000) != 0 )
+			{
+				logger << "Leaking rect at: " << filename << " - at " << x << ", " << y << "\n";
+				result = false;
+			}
+
+			x = rect.x + rect.w;
+			if( image.IsValid( x, y ) && 
+				(image.Rand( x, y ) & 0xFF000000) != 0 )
+			{
+				logger << "Leaking rect at: " << filename << " - at " << x << ", " << y << "\n";
+				result = false;
+			}
+		}
+
+		return result;
+	}
+
+	void DEBUG_CheckForLeaks()
+	{
+		ceng::CArray2D< uint32 > image;
+		LoadImage( filename, image );
+
+		std::sort( rect_animations.begin(), rect_animations.end(), []( const as::Sprite::RectAnimation& a, const as::Sprite::RectAnimation& b ) {return a.FigureOutRectPos(0).y < b.FigureOutRectPos(0).y; } );
+
+		/*std::vector< int > broken_rect_animations; 
+		int widest_animation = 0;
+		int highest_framecount = 0;
+		*/
+		// check out stuff
+		for( size_t i = 0; i < rect_animations.size(); ++i )
+		{
+			as::Sprite::RectAnimation r = rect_animations[i];
+			for( int j = 0; j < r.mFrameCount; ++j )
+			{
+
+				if( DEBUG_CheckOutsideRect( image, r.FigureOutRectPos( j ) ) == false )
+				{
+					/*
+					broken_rect_animations.push_back( (int)i );
+					if( r.mFrameCount * r.mWidth > widest_animation )
+						widest_animation = r.mFrameCount * r.mWidth;
+
+					if( r.mFrameCount > highest_framecount )
+						highest_framecount = r.mFrameCount;
+					*/
+				}
+			}		
+		}
+
+		// fix these to a new image
+
 	}
 };
 
@@ -332,6 +421,11 @@ namespace {
 
 			ceng::XmlLoadFromFile((*data), filename, "Sprite");
 			data->time_stamp = time_stamp;
+
+			if( true )
+			{
+				// check fi the sprite leaks
+			}
 		}
 
 		return data;
@@ -887,6 +981,7 @@ void Sprite::MoveCenterTo( const types::vector2& p ) {
 
 types::rect Sprite::RectAnimation::FigureOutRectPos( int frame ) const
 {
+	cassert( mFramesPerRow != 0 );
 	int y_pos = (int)( frame / mFramesPerRow );
 	int x_pos = frame % mFramesPerRow;
 

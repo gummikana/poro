@@ -254,7 +254,7 @@ public:
 			mFrameCount( 0 ),
 			mWidth( 0 ),
 			mHeight( 0 ),
-			mFramesPerRow( 4 ),
+			mFramesPerRow( 9999 ),
 			mPositionX( 0 ),
 			mPositionY( 0 ),
 			mWaitTime( 0 ),
