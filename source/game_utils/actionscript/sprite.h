@@ -315,6 +315,8 @@ public:
 		std::vector< ResolvedHotspot > mHotspots;
 
 		types::rect FigureOutRectPos( int frame ) const;
+		types::irect FigureOutIRectPos( int frame ) const;
+		
 		void Update( Sprite* sprite, float dt ) const;
 		void SetFrame( Sprite* sprite, int frame, bool update_anyhow ) const;
 

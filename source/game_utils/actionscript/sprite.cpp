@@ -141,7 +141,7 @@ struct SpriteLoadHelper
 		XML_BindAttributeAlias(filesys, color[2], "color_b");
 		XML_BindAttributeAlias(filesys, color[3], "color_a");
 
-		std::vector< Sprite::RectAnimation > temp_rect_animations;
+		std::vector< Sprite::RectAnimation > temp_rect_animations = rect_animations;
 		ceng::VectorXmlSerializerObjects< Sprite::RectAnimation > rect_serializer(temp_rect_animations, "RectAnimation");
 		rect_serializer.Serialize(filesys);
 
@@ -156,7 +156,7 @@ struct SpriteLoadHelper
 		hotspot_serializer.Serialize( filesys );
 
 		// load hotspots
-		if ( hotspots_filename.empty() == false )
+		if ( filesys->IsReading() && hotspots_filename.empty() == false )
 		{
 			ceng::CArray2D<uint32> hotspots_image;
 			LoadImage( hotspots_filename, hotspots_image );
@@ -220,24 +220,23 @@ struct SpriteLoadHelper
 		} // if hotspots_filename.empty() == false
 
 		// apply to rect animations
-		rect_animations.resize( temp_rect_animations.size() );
-		for( size_t i  = 0; i < rect_animations.size(); ++i )
-		{
-			rect_animations[i] = temp_rect_animations[i];
-		}
+		rect_animations = temp_rect_animations;
 
 		// #ifdef DEBUG
-		DEBUG_CheckForLeaks();
+		/*if( filesys->IsReading() )
+			DEBUG_CheckForLeaks();
+			*/
 	}
 
 	// DEBUG - checks if there are pixels that are too close to the rect animations
-	bool DEBUG_CheckOutsideRect( const ceng::CArray2D< uint32 >& image, const types::rect& frect )
+	bool DEBUG_CheckOutsideRect( const ceng::CArray2D< uint32 >& image, const types::irect& rect )
 	{
-		types::irect rect;
+		/*types::irect rect;
 		rect.x = (int)frect.x;
 		rect.y = (int)frect.y;
 		rect.w = (int)frect.w;
 		rect.h = (int)frect.h;
+		*/
 		bool result = true;
 		for( int x = rect.x - 1; x <= rect.x + rect.w; ++x )
 		{
@@ -279,6 +278,39 @@ struct SpriteLoadHelper
 
 		return result;
 	}
+	
+	void DEBUG_Blit( const ceng::CArray2D< uint32 >& src_image, const types::irect& src_rect, ceng::CArray2D< uint32 >& dest_image, const types::irect& dest_rect, const std::string& debug_filename )
+	{
+		for( int y = 0; y < src_rect.h; ++y )
+		{
+			for( int x = 0; x < src_rect.w; ++x )
+			{
+				int src_x = x + src_rect.x;
+				int src_y = y + src_rect.y;
+
+				int dest_x = x + dest_rect.x;
+				int dest_y = y + dest_rect.y;
+
+				cassert( dest_image.IsValid( dest_x, dest_y ) );
+				// cassert(src_image.IsValid( src_x, src_y ) );
+				if( src_image.IsValid( src_x, src_y ) == false)
+				{
+					logger << "Error - image( " << debug_filename << ") is too tiny for all the frames\n";
+				}
+				else
+				{
+					dest_image.Rand( dest_x, dest_y ) = src_image.Rand( src_x, src_y );
+				}
+			}
+		}
+		/*
+		for( int y = src_rect.y; y < src_rect.y; )
+		for( int x = src_rect.x; x < src_rect.x + src_rect.w; ++x )
+		{
+
+		}
+		*/
+	}
 
 	void DEBUG_CheckForLeaks()
 	{
@@ -287,32 +319,82 @@ struct SpriteLoadHelper
 
 		std::sort( rect_animations.begin(), rect_animations.end(), []( const as::Sprite::RectAnimation& a, const as::Sprite::RectAnimation& b ) {return a.FigureOutRectPos(0).y < b.FigureOutRectPos(0).y; } );
 
-		/*std::vector< int > broken_rect_animations; 
-		int widest_animation = 0;
-		int highest_framecount = 0;
-		*/
+		std::vector< int > broken_rect_animations; 
+		
 		// check out stuff
 		for( size_t i = 0; i < rect_animations.size(); ++i )
 		{
 			as::Sprite::RectAnimation r = rect_animations[i];
+			bool is_broken = false;
 			for( int j = 0; j < r.mFrameCount; ++j )
 			{
-
-				if( DEBUG_CheckOutsideRect( image, r.FigureOutRectPos( j ) ) == false )
-				{
-					/*
-					broken_rect_animations.push_back( (int)i );
-					if( r.mFrameCount * r.mWidth > widest_animation )
-						widest_animation = r.mFrameCount * r.mWidth;
-
-					if( r.mFrameCount > highest_framecount )
-						highest_framecount = r.mFrameCount;
-					*/
-				}
+				types::irect temp_r = r.FigureOutIRectPos( j );
+				if( DEBUG_CheckOutsideRect( image, r.FigureOutIRectPos( j ) ) == false )
+					ceng::VectorAddUnique( broken_rect_animations, (int)i );
 			}		
 		}
 
 		// fix these to a new image
+		if( broken_rect_animations.empty() == false )
+		{
+			int new_width = 0;
+			int new_height = 0;
+
+			// figure out the width, height
+			int extra_offset_y = 0;
+
+			for( size_t i = 0; i < rect_animations.size(); ++i )
+			{
+				as::Sprite::RectAnimation r = rect_animations[i];
+				bool is_broken = ceng::VectorContains( broken_rect_animations, (int)i );
+				as::Sprite::RectAnimation new_r = r;
+				new_r.mPositionY = r.mPositionY + extra_offset_y;
+				if( is_broken )
+				{
+					new_r.mWidth++;
+					new_r.mHeight++;
+					extra_offset_y++;
+				}
+
+				for( int j = 0; j < r.mFrameCount; ++j )
+				{
+					new_width = ceng::math::Max( new_width, new_r.FigureOutIRectPos( j ).GetRight() );
+					new_height = ceng::math::Max( new_height, new_r.FigureOutIRectPos( j ).GetBottom() );
+				}
+			}
+
+
+			ceng::CArray2D< uint32 > new_image( new_width, new_height );
+			std::vector< as::Sprite::RectAnimation > new_rect_animations;
+
+			extra_offset_y = 0;
+			for( size_t i = 0; i < rect_animations.size(); ++i )
+			{
+				as::Sprite::RectAnimation r = rect_animations[i];
+				bool is_broken = ceng::VectorContains( broken_rect_animations, (int)i );
+				as::Sprite::RectAnimation new_r = r;
+				new_r.mPositionY = r.mPositionY + extra_offset_y;
+				if( is_broken )
+				{
+					new_r.mWidth++;
+					new_r.mHeight++;
+					extra_offset_y++;
+				}
+
+				for( int j = 0; j < r.mFrameCount; ++j )
+				{
+					DEBUG_Blit( image, r.FigureOutIRectPos( j ), new_image, new_r.FigureOutIRectPos( j ), filename );
+				}
+
+				new_rect_animations.push_back( new_r );
+			}
+
+			// TODO( Petri ): Write the output for this
+			rect_animations = new_rect_animations;
+			SaveImage( "temptemp/new_gfx/" + ceng::GetFilename( filename ), new_image );
+			std::string xml_outfilename = "temptemp/new_gfx/" + ceng::GetFilename( ceng::GetWithoutExtension( filename ) ) + ".xml";
+			ceng::XmlSaveToFile( *this, xml_outfilename, "Sprite", true );
+		}
 
 	}
 };
@@ -981,6 +1063,7 @@ void Sprite::MoveCenterTo( const types::vector2& p ) {
 
 types::rect Sprite::RectAnimation::FigureOutRectPos( int frame ) const
 {
+	cassert( frame >= 0 );
 	cassert( mFramesPerRow != 0 );
 	int y_pos = (int)( frame / mFramesPerRow );
 	int x_pos = frame % mFramesPerRow;
@@ -992,6 +1075,22 @@ types::rect Sprite::RectAnimation::FigureOutRectPos( int frame ) const
 		(float)mWidth, 
 		(float)mHeight );
 }
+
+types::irect Sprite::RectAnimation::FigureOutIRectPos( int frame ) const
+{
+	cassert( frame >= 0 );
+	cassert( mFramesPerRow != 0 );
+	int y_pos = (int)( frame / mFramesPerRow );
+	int x_pos = frame % mFramesPerRow;
+
+	return 
+		types::irect( 
+		(int)( mPositionX + x_pos * mWidth ), 
+		(int)( mPositionY + y_pos * mHeight ), 
+		(int)mWidth, 
+		(int)mHeight );
+}
+
 
 void Sprite::RectAnimation::Update( Sprite* sprite, float dt ) const
 {
