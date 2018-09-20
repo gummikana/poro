@@ -255,6 +255,7 @@ public:
 			mWidth( 0 ),
 			mHeight( 0 ),
 			mFramesPerRow( 9999 ),
+			mShrinkByOnePixel( false ),
 			mPositionX( 0 ),
 			mPositionY( 0 ),
 			mWaitTime( 0 ),
@@ -274,6 +275,7 @@ public:
 			mWidth(other.mWidth),
 			mHeight(other.mHeight),
 			mFramesPerRow(other.mFramesPerRow),
+			mShrinkByOnePixel(other.mShrinkByOnePixel),
 			mPositionX(other.mPositionX),
 			mPositionY(other.mPositionY),
 			mWaitTime(other.mWaitTime),
@@ -297,6 +299,7 @@ public:
 		int mWidth;
 		int mHeight;
 		int mFramesPerRow;
+		bool mShrinkByOnePixel;
 
 		int mPositionX;
 		int mPositionY;
