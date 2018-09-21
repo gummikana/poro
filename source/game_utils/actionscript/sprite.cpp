@@ -71,6 +71,13 @@ namespace
 namespace impl {
 
 std::vector< std::string > DEBUG_SavedImages;
+std::map< std::string, 
+	std::pair<
+		std::vector< as::Sprite::RectAnimation >,
+		std::vector< as::Sprite::RectAnimation >
+		>
+> DEBUG_RectAnimations;
+
 
 struct SpriteLoadHelper
 {
@@ -115,116 +122,193 @@ struct SpriteLoadHelper
 	types::vector2	position;
 	float			angle;
 	std::string		default_animation;
-	std::string		hotspots_filename;
 
 	std::vector< Sprite::RectAnimation > rect_animations;
 	std::vector< SpriteLoadHelper* > child_sprites;
 
+#ifdef DEBUG_SPRITES
+	// these are kept around for saving these out
+	std::string	hotspots_filename;
+	std::vector< Sprite::Hotspot > hotspots;
+	std::string	xml_filename;
+#endif
+
 	// impl time_stamp
 	std::string		time_stamp;
-	std::string		xml_filename;
 
 	void SpriteLoadHelper::Serialize(ceng::CXmlFileSys* filesys)
 	{
-		// XML_BindAttributeAlias(filesys, is_text, "is_text");
-		XML_BindAttributeAlias(filesys, filename, "filename");
-		XML_BindAttributeAlias(filesys, name, "name");
-		XML_BindAttributeAlias(filesys, offset.x, "offset_x");
-		XML_BindAttributeAlias(filesys, offset.y, "offset_y");
-		XML_BindAttributeAlias(filesys, scale.x, "scale_x");
-		XML_BindAttributeAlias(filesys, scale.y, "scale_y");
+#ifdef DEBUG_SPRITES
 
-		XML_BindAttributeAlias(filesys, position.x, "position_x");
-		XML_BindAttributeAlias(filesys, position.y, "position_y");
-		XML_BindAttributeAlias(filesys, angle, "angle");
-
-		XML_BindAttributeAlias(filesys, default_animation, "default_animation");
-
-		XML_BindAttributeAlias(filesys, color[0], "color_r");
-		XML_BindAttributeAlias(filesys, color[1], "color_g");
-		XML_BindAttributeAlias(filesys, color[2], "color_b");
-		XML_BindAttributeAlias(filesys, color[3], "color_a");
-
-		std::vector< Sprite::RectAnimation > temp_rect_animations = rect_animations;
-		ceng::VectorXmlSerializerObjects< Sprite::RectAnimation > rect_serializer(temp_rect_animations, "RectAnimation");
-		rect_serializer.Serialize(filesys);
-
-		ceng::VectorXmlSerializer< as::impl::SpriteLoadHelper > child_sprite_serializer(child_sprites, "Sprite");
-		child_sprite_serializer.Serialize(filesys);
-
-		XML_BindAttributeAlias(filesys, hotspots_filename, "hotspots_filename");
-
-		std::vector< Sprite::Hotspot > hotspots;
-		ceng::VectorXmlSerializerObjects< Sprite::Hotspot > hotspot_serializer(hotspots, "Hotspot");
-		hotspot_serializer.Serialize( filesys );
-
-		// load hotspots
-		if ( filesys->IsReading() && hotspots_filename.empty() == false )
+		if( filesys->IsWriting() )
 		{
-			ceng::CArray2D<uint32> hotspots_image;
-			LoadImage( hotspots_filename, hotspots_image );
-			for ( auto& rect_animation : temp_rect_animations )
+			SpriteLoadHelper default_values;
+			default_values.Init();
+
+
+			if( filename != default_values.filename )
+				XML_BindAttributeAlias(filesys, filename, "filename");
+
+			if( name != default_values.name )
+				XML_BindAttributeAlias(filesys, name, "name");
+
+			if( offset.x != default_values.offset.x ||  
+				offset.y != default_values.offset.y )
 			{
-				for ( const auto& hotspot_config : hotspots )
+				XML_BindAttributeAlias(filesys, offset.x, "offset_x");
+				XML_BindAttributeAlias(filesys, offset.y, "offset_y");
+			}
+
+			if( scale.x != default_values.scale.x ||  
+				scale.y != default_values.scale.y )
+			{
+				XML_BindAttributeAlias(filesys, scale.x, "scale_x");
+				XML_BindAttributeAlias(filesys, scale.y, "scale_y");
+			}
+
+			if( position.x != default_values.position.x ||  
+				position.y != default_values.position.y )
+			{
+				XML_BindAttributeAlias(filesys, position.x, "position_x");
+				XML_BindAttributeAlias(filesys, position.y, "position_y");
+			}
+
+			if( angle != default_values.angle )
+				XML_BindAttributeAlias(filesys, angle, "angle");
+
+			if( default_animation != default_values.default_animation )
+				XML_BindAttributeAlias(filesys, default_animation, "default_animation");
+
+
+			if( color[0] != default_values.color[0] ||  
+				color[1] != default_values.color[1] ||
+				color[2] != default_values.color[2] ||
+				color[3] != default_values.color[3] )
+			{
+				XML_BindAttributeAlias(filesys, color[0], "color_r");
+				XML_BindAttributeAlias(filesys, color[1], "color_g");
+				XML_BindAttributeAlias(filesys, color[2], "color_b");
+				XML_BindAttributeAlias(filesys, color[3], "color_a");
+			}
+
+			std::vector< Sprite::RectAnimation > temp_rect_animations = rect_animations;
+			ceng::VectorXmlSerializerObjects< Sprite::RectAnimation > rect_serializer(temp_rect_animations, "RectAnimation");
+			rect_serializer.Serialize(filesys);
+
+			ceng::VectorXmlSerializer< as::impl::SpriteLoadHelper > child_sprite_serializer(child_sprites, "Sprite");
+			child_sprite_serializer.Serialize(filesys);
+
+			if( hotspots_filename != default_values.hotspots_filename)
+				XML_BindAttributeAlias(filesys, hotspots_filename, "hotspots_filename");
+
+			// std::vector< Sprite::Hotspot > hotspots;
+			ceng::VectorXmlSerializerObjects< Sprite::Hotspot > hotspot_serializer(hotspots, "Hotspot");
+			hotspot_serializer.Serialize( filesys );
+
+			return;
+		}
+#endif
+
+		{
+			// XML_BindAttributeAlias(filesys, is_text, "is_text");
+			XML_BindAttributeAlias(filesys, filename, "filename");
+			XML_BindAttributeAlias(filesys, name, "name");
+			XML_BindAttributeAlias(filesys, offset.x, "offset_x");
+			XML_BindAttributeAlias(filesys, offset.y, "offset_y");
+			XML_BindAttributeAlias(filesys, scale.x, "scale_x");
+			XML_BindAttributeAlias(filesys, scale.y, "scale_y");
+
+			XML_BindAttributeAlias(filesys, position.x, "position_x");
+			XML_BindAttributeAlias(filesys, position.y, "position_y");
+			XML_BindAttributeAlias(filesys, angle, "angle");
+
+			XML_BindAttributeAlias(filesys, default_animation, "default_animation");
+
+			XML_BindAttributeAlias(filesys, color[0], "color_r");
+			XML_BindAttributeAlias(filesys, color[1], "color_g");
+			XML_BindAttributeAlias(filesys, color[2], "color_b");
+			XML_BindAttributeAlias(filesys, color[3], "color_a");
+
+			std::vector< Sprite::RectAnimation > temp_rect_animations = rect_animations;
+			ceng::VectorXmlSerializerObjects< Sprite::RectAnimation > rect_serializer(temp_rect_animations, "RectAnimation");
+			rect_serializer.Serialize(filesys);
+
+			ceng::VectorXmlSerializer< as::impl::SpriteLoadHelper > child_sprite_serializer(child_sprites, "Sprite");
+			child_sprite_serializer.Serialize(filesys);
+
+			XML_BindAttributeAlias(filesys, hotspots_filename, "hotspots_filename");
+
+			// std::vector< Sprite::Hotspot > hotspots;
+			ceng::VectorXmlSerializerObjects< Sprite::Hotspot > hotspot_serializer(hotspots, "Hotspot");
+			hotspot_serializer.Serialize( filesys );
+
+			// load hotspots
+			if ( filesys->IsReading() && hotspots_filename.empty() == false )
+			{
+				ceng::CArray2D<uint32> hotspots_image;
+				LoadImage( hotspots_filename, hotspots_image );
+				for ( auto& rect_animation : temp_rect_animations )
 				{
-					auto hotspot = Sprite::ResolvedHotspot();
-					hotspot.name = hotspot_config.name;
-					rect_animation.mHotspots.push_back( hotspot );
-				}
-
-				for ( int frame = 0; frame < rect_animation.mFrameCount; frame++ )
-				{
-					types::rect rect = rect_animation.FigureOutRectPos( frame );
-					types::ivector2 min( (int)rect.x, (int)rect.y );
-					types::ivector2 max( (int)rect.x + (int)rect.w, (int)rect.y + (int)rect.h );
-
-					min.x = ceng::math::Min( min.x, hotspots_image.GetWidth() );
-					min.y = ceng::math::Min( min.y, hotspots_image.GetHeight() );
-					max.x = ceng::math::Min( max.x, hotspots_image.GetWidth() );
-					max.y = ceng::math::Min( max.y, hotspots_image.GetHeight() );
-
-					int hotspots_found_this_frame = 0;
-
-					for ( int y = min.y; y<max.y; y++ )
+					for ( const Sprite::Hotspot& hotspot_config : hotspots )
 					{
-						for ( int x = min.x; x < max.x; x++ )
+						Sprite::ResolvedHotspot hotspot;
+						hotspot.name = hotspot_config.name;
+						rect_animation.mHotspots.push_back( hotspot );
+					}
+
+					for ( int frame = 0; frame < rect_animation.mFrameCount; frame++ )
+					{
+						types::rect rect = rect_animation.FigureOutRectPos( frame );
+						types::ivector2 min( (int)rect.x, (int)rect.y );
+						types::ivector2 max( (int)rect.x + (int)rect.w, (int)rect.y + (int)rect.h );
+
+						min.x = ceng::math::Min( min.x, hotspots_image.GetWidth() );
+						min.y = ceng::math::Min( min.y, hotspots_image.GetHeight() );
+						max.x = ceng::math::Min( max.x, hotspots_image.GetWidth() );
+						max.y = ceng::math::Min( max.y, hotspots_image.GetHeight() );
+
+						int hotspots_found_this_frame = 0;
+
+						for ( int y = min.y; y<max.y; y++ )
 						{
-							const uint32 color = hotspots_image.At( x, y);
-							if ( (color & 0xFF000000)>0 )
+							for ( int x = min.x; x < max.x; x++ )
 							{
-								int hotspot_i = 0;
-								for ( const auto& hotspot_config : hotspots )
+								const uint32 color = hotspots_image.At( x, y);
+								if ( (color & 0xFF000000)>0 )
 								{
-									const uint32 color2 = hotspot_config.color;
-									uint32 mask = 0;
+									int hotspot_i = 0;
+									for ( const auto& hotspot_config : hotspots )
 									{
-										mask |= (color2 & 0x00FF0000)>0 ? 0x00FF0000 : 0;
-										mask |= (color2 & 0x0000FF00)>0 ? 0x0000FF00 : 0;
-										mask |= (color2 & 0x000000FF)>0 ? 0x000000FF : 0;
-									}
-
-									if ( ( color & mask ) == color2 )
-									{
-										rect_animation.mHotspots[hotspot_i].positions.emplace_back( types::ivector2( x, y ) - min );
-										if ( ++hotspots_found_this_frame == hotspots.size() )
+										const uint32 color2 = hotspot_config.color;
+										uint32 mask = 0;
 										{
-											x = max.x; // all hotspots found, jump to next frame
-											y = max.y;
+											mask |= (color2 & 0x00FF0000)>0 ? 0x00FF0000 : 0;
+											mask |= (color2 & 0x0000FF00)>0 ? 0x0000FF00 : 0;
+											mask |= (color2 & 0x000000FF)>0 ? 0x000000FF : 0;
 										}
+
+										if ( ( color & mask ) == color2 )
+										{
+											rect_animation.mHotspots[hotspot_i].positions.emplace_back( types::ivector2( x, y ) - min );
+											if ( ++hotspots_found_this_frame == hotspots.size() )
+											{
+												x = max.x; // all hotspots found, jump to next frame
+												y = max.y;
+											}
+										}
+
+										hotspot_i++;
 									}
-
-									hotspot_i++;
 								}
-							}
-						} // x
-					} // y
-				} // frames
-			} // rect anims
-		} // if hotspots_filename.empty() == false
+							} // x
+						} // y
+					} // frames
+				} // rect anims
+			} // if hotspots_filename.empty() == false
 
-		// apply to rect animations
-		rect_animations = temp_rect_animations;
-
+			// apply to rect animations
+			rect_animations = temp_rect_animations;
+		}
 		// #ifdef DEBUG
 		if( filesys->IsReading() ) // && xml_filename == "data/enemies_gfx/barfer.xml" )
 			DEBUG_CheckForLeaks();
@@ -339,11 +423,40 @@ struct SpriteLoadHelper
 
 	}
 
+	// std::map< std::string, std::pair< as::Sprite::RectAni
 
 	void DEBUG_CheckForLeaks()
 	{
-		if( ceng::VectorContains( DEBUG_SavedImages, filename ) )
+		if( ceng::ContainsString( "data/entities/verlet_chains", filename ) )
+		{
+			logger << "Skipping verlet - " << filename << "\n";
 			return;
+		}
+
+		if( ceng::VectorContains( DEBUG_SavedImages, filename ) )
+		{
+			if( ceng::VectorContains( DEBUG_SavedImages, xml_filename ) == false )
+			{
+				logger << "Warning! XML FILE: " << xml_filename << " it reuses png: " << filename << "\n";
+
+				std::sort( rect_animations.begin(), rect_animations.end(), []( const as::Sprite::RectAnimation& a, const as::Sprite::RectAnimation& b ) {return a.FigureOutRectPos(0).y < b.FigureOutRectPos(0).y; } );
+
+				if( ceng::VectorCompare( DEBUG_RectAnimations[ filename ].first, rect_animations ) )
+				{
+					rect_animations = DEBUG_RectAnimations[ filename ].second;
+					std::string xml_outfilename = xml_filename;
+					ceng::XmlSaveToFile( *this, xml_outfilename, "Sprite", true );
+					DEBUG_SavedImages.push_back( xml_filename );
+					return;
+				}
+				else
+				{
+					logger_error << "ERROR! XML FILE: " << xml_filename << " it reuses png: " << filename << " and we couldn't fix it by replacing rect animations! Needs to be fixed by hand\n";
+					return;
+				}
+			}
+			return;
+		}
 
 		ceng::CArray2D< uint32 > image;
 		LoadImage( filename, image );
@@ -430,8 +543,8 @@ struct SpriteLoadHelper
 				if( new_rect_animation_positions.find( y_pos) == new_rect_animation_positions.end() )
 				{
 					int lowest_point = 0;
-					for( size_t j = 0; j < new_rect_animations.size(); ++j )
-						lowest_point = ceng::math::Max( new_rect_animations[j].FigureOutIRectPos(0).GetBottom(), lowest_point );
+					for( size_t j = 0; j < i; ++j )
+						lowest_point = ceng::math::Max( new_rect_animations[j].FigureOutIRectPos(  new_rect_animations[j].mFrameCount - 1 ).GetBottom(), lowest_point );
 
 					lowest_point++;
 					new_rect_animation_positions[ y_pos ] = lowest_point;
@@ -501,11 +614,15 @@ struct SpriteLoadHelper
 				// SaveImage( "temptemp/new_gfx/" + ceng::GetFilename( filename ), new_image );
 			}
 
+			DEBUG_RectAnimations[ filename ].first = rect_animations;
+			DEBUG_RectAnimations[ filename ].second = new_rect_animations;
+
 			rect_animations = new_rect_animations;
 			std::string xml_outfilename = xml_filename;
 			ceng::XmlSaveToFile( *this, xml_outfilename, "Sprite", true );
 
 			DEBUG_SavedImages.push_back( filename );
+			DEBUG_SavedImages.push_back( xml_filename );
 		}
 
 	}
@@ -1332,6 +1449,65 @@ void Sprite::RectAnimation::SetFrame( Sprite* sprite, int frame, bool update_any
 
 void Sprite::RectAnimation::Serialize( ceng::CXmlFileSys* filesys )
 {
+#ifdef DEBUG_SPRITES
+	if( filesys->IsWriting() )
+	{
+		RectAnimation default_values;
+
+		if( mName != default_values.mName )
+			XML_BindAttributeAlias( filesys, mName, "name" );
+
+		if( mFrameCount != default_values.mFrameCount )
+			XML_BindAttributeAlias( filesys, mFrameCount, "frame_count" );
+
+		if( mWidth != default_values.mWidth )
+			XML_BindAttributeAlias( filesys, mWidth, "frame_width" );
+
+		if( mHeight != default_values.mHeight )
+			XML_BindAttributeAlias( filesys, mHeight, "frame_height" );
+
+		if( mFramesPerRow != default_values.mFramesPerRow )
+			XML_BindAttributeAlias( filesys, mFramesPerRow, "frames_per_row" );
+		
+		if( mShrinkByOnePixel != default_values.mShrinkByOnePixel )
+			XML_BindAttributeAlias( filesys, mShrinkByOnePixel, "shrink_by_one_pixel" );
+
+		if( mPositionX != default_values.mPositionX ||
+			mPositionY != default_values.mPositionY )
+		{
+			XML_BindAttributeAlias( filesys, mPositionX, "pos_x" );
+			XML_BindAttributeAlias( filesys, mPositionY, "pos_y" ); 
+		}
+
+		if( mWaitTime != default_values.mWaitTime )
+			XML_BindAttributeAlias( filesys, mWaitTime, "frame_wait" );
+
+		if( mHasNewCenterOffset != default_values.mHasNewCenterOffset )
+			XML_BindAttributeAlias( filesys, mHasNewCenterOffset, "has_offset" );
+
+		if( mCenterOffset != default_values.mCenterOffset )
+		{
+			XML_BindAttributeAlias( filesys, mCenterOffset.x, "offset_x" );
+			XML_BindAttributeAlias( filesys, mCenterOffset.y, "offset_y" );
+		}
+
+		if( mLoop != default_values.mLoop )
+			XML_BindAttributeAlias( filesys, mLoop, "loop" );
+
+		if( mNextAnimation != default_values.mNextAnimation )
+			XML_BindAttributeAlias( filesys, mNextAnimation, "next_animation" );
+
+
+		ceng::VectorXmlSerializerObjects< Sprite::ChildAnimation > serializer( mChildAnimations, "ChildAnimations" );
+		serializer.Serialize( filesys );
+
+		ceng::VectorXmlSerializerObjects< Sprite::Event > event_serializer( mEvents, "Event" );
+		event_serializer.Serialize( filesys );
+
+		return;
+	}
+#endif
+
 	XML_BindAttributeAlias( filesys, mName, "name" );
 
 	XML_BindAttributeAlias( filesys, mFrameCount, "frame_count" );

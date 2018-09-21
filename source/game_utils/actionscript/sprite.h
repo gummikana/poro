@@ -35,6 +35,12 @@
 #include "../../utils/xml/cxml.h"
 #include "../../utils/array2d/carray2d.h"
 
+#define DEBUG_SPRITES
+
+#ifdef DEBUG_SPRITES
+#include "../../utils/vector_utils/vector_utils.h"
+#endif
+
 #include "displayobjectcontainer.h"
 
 
@@ -170,6 +176,20 @@ public:
 			XML_BindAttributeAlias( filesys, scale.y, "scale_y" );
 		}
 
+#ifdef DEBUG_SPRITES
+		bool operator==( const ChildAnimation& other ) const
+		{
+			return(
+				frame == frame &&
+				sprite_name == sprite_name &&
+				position == position &&
+				rotation == rotation &&
+				alpha == alpha &&
+				scale == scale 
+				);
+		}
+#endif
+
 		int					frame;
 		std::string			sprite_name;
 		types::vector2		position;
@@ -189,6 +209,21 @@ public:
 			XML_BindAttribute( filesys, on_finished );
 			XML_BindAttribute( filesys, check_physics_material );
 		}
+
+#ifdef DEBUG_SPRITES
+		bool operator==( const Event& other ) const
+		{
+			return
+			( 
+				frame == other.frame &&
+				name == other.name &&
+				probability == other.probability &&
+				max_distance == other.max_distance &&
+				on_finished == other.on_finished &&
+				check_physics_material == other.check_physics_material 
+			);
+		}
+#endif
 
 		int			frame = 0;
 		std::string	name = "";
@@ -245,6 +280,15 @@ public:
 	{
 		std::string name;
 		std::vector<types::ivector2> positions;
+
+#ifdef DEBUG_SPRITES
+		bool operator==( const ResolvedHotspot& other ) const
+		{
+			return(
+				name == other.name && 
+				ceng::VectorCompare( positions, other.positions ) );
+		}
+#endif
 	};
 
 	struct RectAnimation
@@ -289,9 +333,31 @@ public:
 		{
 		}
 
-		~RectAnimation()
+		~RectAnimation() { }
+
+#ifdef DEBUG_SPRITES
+		bool operator==( const RectAnimation& other ) const 
 		{
+			return (
+				mName == other.mName &&
+				mFrameCount == other.mFrameCount &&
+				mWidth == other.mWidth &&
+				mHeight == other.mHeight &&
+				mFramesPerRow == other.mFramesPerRow &&
+				mShrinkByOnePixel == other.mShrinkByOnePixel &&
+				mPositionX == other.mPositionX &&
+				mPositionY == other.mPositionY &&
+				mWaitTime == other.mWaitTime &&
+				mHasNewCenterOffset == other.mHasNewCenterOffset &&
+				mCenterOffset == other.mCenterOffset &&
+				mLoop == other.mLoop &&
+				mNextAnimation == other.mNextAnimation &&
+				ceng::VectorCompare( mChildAnimations, other.mChildAnimations ) &&
+				ceng::VectorCompare( mEvents, other.mEvents ) &&
+				ceng::VectorCompare( mHotspots, other.mHotspots )
+			);
 		}
+#endif
 
 		std::string mName;
 
