@@ -316,7 +316,7 @@ struct SpriteLoadHelper
 			rect_animations = temp_rect_animations;
 		}
 		
-#ifdef DEBUG_WIZARD_SPRITES
+#ifdef WIZARD_DEBUG_SPRITES
 		if( filesys->IsReading() ) // && xml_filename == "data/enemies_gfx/barfer.xml" )
 			DEBUG_CheckForLeaks();
 #endif
@@ -1179,9 +1179,9 @@ void Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 		if ( IsOutsideSreen( graphics, temp_verts ) )
 			return;
 
-	//#ifdef _DEBUG
+	#ifdef WIZARD_DEBUG
 		rendered_this_frame++;
-	//#endif
+	#endif
 
 		mLastFrameRendered = Poro()->GetFrameNum();
 
@@ -1253,9 +1253,9 @@ bool Sprite::IsOutsideSreen(poro::IGraphics* graphics, const poro::types::vec2* 
 	// don't render if outside the screen
 	bool outside_screen = verts_max.x < 0 || verts_max.y < 0 || verts_min.x > graphics->GetInternalSize().x || verts_min.y > graphics->GetInternalSize().y;
 
-//#ifdef _DEBUG
+#ifdef WIZARD_DEBUG
 	culled_this_frame += (int)outside_screen;
-//#endif
+#endif
 
 	return outside_screen;
 }
