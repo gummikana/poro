@@ -70,13 +70,17 @@ namespace
 
 namespace impl {
 
+#ifdef WIZARD_DEBUG_SPRITES
+
 std::vector< std::string > DEBUG_SavedImages;
+
 std::map< std::string, 
 	std::pair<
 		std::vector< as::Sprite::RectAnimation >,
 		std::vector< as::Sprite::RectAnimation >
-		>
-> DEBUG_RectAnimations;
+		> 
+	> DEBUG_RectAnimations;
+#endif
 
 
 struct SpriteLoadHelper
@@ -126,19 +130,21 @@ struct SpriteLoadHelper
 	std::vector< Sprite::RectAnimation > rect_animations;
 	std::vector< SpriteLoadHelper* > child_sprites;
 
-#ifdef DEBUG_SPRITES
 	// these are kept around for saving these out
+	// TODO - these aren't really needed to be kept around...
+	// they're only needed to serialize the sprites back which is done when #WIZARD_DEBUG_SPRITES is defined
+// #ifdef WIZARD_DEBUG_SPRITES
 	std::string	hotspots_filename;
 	std::vector< Sprite::Hotspot > hotspots;
 	std::string	xml_filename;
-#endif
+// #endif
 
 	// impl time_stamp
 	std::string		time_stamp;
 
 	void SpriteLoadHelper::Serialize(ceng::CXmlFileSys* filesys)
 	{
-#ifdef DEBUG_SPRITES
+#ifdef WIZARD_DEBUG_SPRITES
 
 		if( filesys->IsWriting() )
 		{
@@ -309,9 +315,11 @@ struct SpriteLoadHelper
 			// apply to rect animations
 			rect_animations = temp_rect_animations;
 		}
-		// #ifdef DEBUG
+		
+#ifdef DEBUG_WIZARD_SPRITES
 		if( filesys->IsReading() ) // && xml_filename == "data/enemies_gfx/barfer.xml" )
 			DEBUG_CheckForLeaks();
+#endif
 	}
 
 	// DEBUG - checks if there are pixels that are too close to the rect animations
@@ -412,6 +420,7 @@ struct SpriteLoadHelper
 		*/
 	}
 
+#ifdef WIZARD_DEBUG_SPRITES
 	template< class TRect >
 	inline bool Rects_Collides( const TRect& a, const TRect& b )
 	{
@@ -624,8 +633,8 @@ struct SpriteLoadHelper
 			DEBUG_SavedImages.push_back( filename );
 			DEBUG_SavedImages.push_back( xml_filename );
 		}
-
 	}
+#endif
 };
 
 //-----------------------------------------------------------------------------
@@ -1449,7 +1458,7 @@ void Sprite::RectAnimation::SetFrame( Sprite* sprite, int frame, bool update_any
 
 void Sprite::RectAnimation::Serialize( ceng::CXmlFileSys* filesys )
 {
-#ifdef DEBUG_SPRITES
+#ifdef WIZARD_DEBUG_SPRITES
 	if( filesys->IsWriting() )
 	{
 		RectAnimation default_values;

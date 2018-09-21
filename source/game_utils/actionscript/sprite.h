@@ -35,9 +35,8 @@
 #include "../../utils/xml/cxml.h"
 #include "../../utils/array2d/carray2d.h"
 
-#define DEBUG_SPRITES
 
-#ifdef DEBUG_SPRITES
+#ifdef WIZARD_DEBUG_SPRITES
 #include "../../utils/vector_utils/vector_utils.h"
 #endif
 
@@ -176,7 +175,7 @@ public:
 			XML_BindAttributeAlias( filesys, scale.y, "scale_y" );
 		}
 
-#ifdef DEBUG_SPRITES
+#ifdef WIZARD_DEBUG_SPRITES
 		bool operator==( const ChildAnimation& other ) const
 		{
 			return(
@@ -210,7 +209,7 @@ public:
 			XML_BindAttribute( filesys, check_physics_material );
 		}
 
-#ifdef DEBUG_SPRITES
+#ifdef WIZARD_DEBUG_SPRITES
 		bool operator==( const Event& other ) const
 		{
 			return
@@ -281,7 +280,7 @@ public:
 		std::string name;
 		std::vector<types::ivector2> positions;
 
-#ifdef DEBUG_SPRITES
+#ifdef WIZARD_DEBUG_SPRITES
 		bool operator==( const ResolvedHotspot& other ) const
 		{
 			return(
@@ -335,7 +334,7 @@ public:
 
 		~RectAnimation() { }
 
-#ifdef DEBUG_SPRITES
+#ifdef WIZARD_DEBUG_SPRITES
 		bool operator==( const RectAnimation& other ) const 
 		{
 			return (
