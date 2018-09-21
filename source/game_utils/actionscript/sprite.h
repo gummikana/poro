@@ -486,6 +486,13 @@ protected:
 
 	// filename
 	std::string								mFilename;
+
+#ifdef WIZARD_DEBUG_SPRITES
+public:
+	static bool DEBUG_REPORT_LEAKY_SPRITES;
+	static bool DEBUG_FIX_LEAKY_SPRITES;
+private:
+#endif
 };
 
 // ----------------------------------------------------------------------------

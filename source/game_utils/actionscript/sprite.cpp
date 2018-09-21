@@ -41,6 +41,11 @@
 
 namespace as { 
 
+#ifdef WIZARD_DEBUG_SPRITES
+bool Sprite::DEBUG_REPORT_LEAKY_SPRITES = false;
+bool Sprite::DEBUG_FIX_LEAKY_SPRITES = false;
+#endif
+
 typedef poro::types::Uint32 Uint32;
 
 namespace
@@ -317,8 +322,13 @@ struct SpriteLoadHelper
 		}
 		
 #ifdef WIZARD_DEBUG_SPRITES
-		if( filesys->IsReading() ) // && xml_filename == "data/enemies_gfx/barfer.xml" )
+		if( filesys->IsReading() && 
+			( as::Sprite::DEBUG_REPORT_LEAKY_SPRITES ||
+			as::Sprite::DEBUG_FIX_LEAKY_SPRITES ) 
+			)
+		{
 			DEBUG_CheckForLeaks();
+		}
 #endif
 	}
 
@@ -452,9 +462,13 @@ struct SpriteLoadHelper
 
 				if( ceng::VectorCompare( DEBUG_RectAnimations[ filename ].first, rect_animations ) )
 				{
+
 					rect_animations = DEBUG_RectAnimations[ filename ].second;
 					std::string xml_outfilename = xml_filename;
-					ceng::XmlSaveToFile( *this, xml_outfilename, "Sprite", true );
+					if( as::Sprite::DEBUG_FIX_LEAKY_SPRITES )
+					{
+						ceng::XmlSaveToFile( *this, xml_outfilename, "Sprite", true );
+					}
 					DEBUG_SavedImages.push_back( xml_filename );
 					return;
 				}
@@ -616,8 +630,10 @@ struct SpriteLoadHelper
 
 				// TODO( Petri ): Write the output for this
 				// ceng::CopyFileCeng( src_filename, ceng::GetWithoutExtension( src_filename ) + "_orig.png" );
-
-				SaveImage( src_filename, new_image );
+				if( as::Sprite::DEBUG_FIX_LEAKY_SPRITES )
+				{
+					SaveImage( src_filename, new_image );
+				}
 				// SaveImage( "temptemp/new_gfx/" + ceng::GetFilename( src_filename ), new_image );
 				DEBUG_SavedImages.push_back( src_filename );
 				// SaveImage( "temptemp/new_gfx/" + ceng::GetFilename( filename ), new_image );
@@ -628,7 +644,10 @@ struct SpriteLoadHelper
 
 			rect_animations = new_rect_animations;
 			std::string xml_outfilename = xml_filename;
-			ceng::XmlSaveToFile( *this, xml_outfilename, "Sprite", true );
+			if( as::Sprite::DEBUG_FIX_LEAKY_SPRITES )
+			{
+				ceng::XmlSaveToFile( *this, xml_outfilename, "Sprite", true );
+			}
 
 			DEBUG_SavedImages.push_back( filename );
 			DEBUG_SavedImages.push_back( xml_filename );
