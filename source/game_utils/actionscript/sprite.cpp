@@ -652,6 +652,47 @@ struct SpriteLoadHelper
 			DEBUG_SavedImages.push_back( filename );
 			DEBUG_SavedImages.push_back( xml_filename );
 		}
+
+		if( ceng::ContainsString( "enemies_gfx", xml_filename ) )
+		{
+			// god damn ragdolls
+			std::string ragdoll_folder = "data/ragdolls/" + ceng::GetFilenameWithoutExtension( filename );
+			if( ceng::DoesExist( ragdoll_folder ) ) 
+			{
+				// logger_error << "Found ragdoll: " << ragdoll_folder << "\n";
+
+				int stand_w = 0;
+				int stand_h = 0;
+
+				for( size_t i = 0; i < rect_animations.size(); ++i )
+				{
+					if( rect_animations[i].mName == "stand" )
+					{
+						stand_w = rect_animations[i].FigureOutIRectPos( 0 ).w;
+						stand_h = rect_animations[i].FigureOutIRectPos( 0 ).h;
+					}
+				}
+
+				std::vector< std::string > files = Poro()->GetFileSystem()->GetFiles( ragdoll_folder );
+				for ( std::string& file : files )		
+				{
+					if( ceng::GetFileExtension( file ) != "png" )
+						continue;
+
+					ceng::CArray2D< uint32 > rimage;
+					LoadImage( file, rimage );
+					if( rimage.GetWidth() != stand_w || rimage.GetHeight() != stand_h )
+					{
+						logger_error << "Found ragdoll problems: " << file 
+							<< " - width (" << rimage.GetWidth() 
+							<< ") & height (" << rimage.GetHeight() 
+							<< ") don't match stand_w (" << stand_w 
+							<< ") / stand_h (" << stand_h 
+							<< ") of image: " << xml_filename << "\n";
+					}
+				}
+			}
+		}
 	}
 #endif
 };
