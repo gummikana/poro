@@ -1988,6 +1988,10 @@ unsigned char*	GraphicsOpenGL::ImageLoad( char const *filename, int *x, int *y, 
 	unsigned char* result = stbi_load_from_memory( (stbi_uc*)filedata, data_size_bytes, x, y, comp, req_comp );
 	free( filedata );
 	
+	// error reading the file, probably not image file
+	if( result == NULL )
+		return NULL;
+
 #define PORO_SWAP_RED_AND_BLUE
 #ifdef PORO_SWAP_RED_AND_BLUE
 	if( comp && *comp == 4 )
