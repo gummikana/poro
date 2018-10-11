@@ -84,6 +84,7 @@
 
 #ifdef PORO_USE_SDL_MIXER
 	#include <SDL_mixer.h>
+			#pragma comment( lib, "SDL2_mixer.lib" )
 #endif // PORO_USE_SDL_MIXER
 
 #endif
