@@ -46,6 +46,22 @@
 
 // #define PORO_FPS_30_MODE
 
+void PORO_MessageBox( const char* title, const char* msg )
+{
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+		title,
+		msg,
+		NULL);
+}
+
+void PORO_AssertBox( const char* filename, int line, const char* msg )
+{
+	std::stringstream ss;
+	ss << "File: " << filename << " at line: " << line << "\n" << msg << " failed.";
+	
+	PORO_MessageBox( "ASSERT FAILED", ss.str().c_str() );
+}
+
 namespace {
 
 #ifdef PORO_PLAT_WINDOWS

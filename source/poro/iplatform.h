@@ -47,6 +47,7 @@ namespace poro
 // the monsterous poro::IPlatform::Instance() function
 
 poro::IPlatform* Poro();
+void PORO_MessageBox( const char* title, const char* msg );	
 
 //=============================================================================
 
