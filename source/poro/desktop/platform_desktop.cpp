@@ -475,6 +475,7 @@ void PlatformDesktop::Init( IApplication* application, const GraphicsSettings& s
 
 void PlatformDesktop::Destroy() 
 {
+/*
 	delete mGraphics;
 	mGraphics = NULL;
 
@@ -497,12 +498,14 @@ void PlatformDesktop::Destroy()
 
 	mJoysticks.clear();
 
+	delete mFileSystem;
+	mFileSystem = NULL;
+*/
+	
 	delete mEventRecorder;
 	mEventRecorder = NULL;
 	gEventRecorder = NULL;
 
-	delete mFileSystem;
-	mFileSystem = NULL;
 }
 //-----------------------------------------------------------------------------
 
@@ -533,13 +536,13 @@ void PlatformDesktop::StartMainLoop()
 	if( mApplication )
 		mApplication->Init();
 
-    types::Double32		mFrameCountLastTime = 0;
-    int					mFrameRateUpdateCounter = 0;
+	types::Double32		mFrameCountLastTime = 0;
+	int					mFrameRateUpdateCounter = 0;
 	types::Double32		mProcessorRate = 0;
 
 	while( mRunning )
 	{
-	    const types::Double32 time_before = GetUpTime();
+		const types::Double32 time_before = GetUpTime();
 
 		SingleLoop();
 
@@ -547,25 +550,25 @@ void PlatformDesktop::StartMainLoop()
 			mRunning = false;
 
 
-        const types::Double32 time_after = GetUpTime();
-        const types::Double32 elapsed_time = ( time_after - time_before );
-        if( elapsed_time < mOneFrameShouldLast )
-            Sleep( mOneFrameShouldLast - elapsed_time );
+		const types::Double32 time_after = GetUpTime();
+		const types::Double32 elapsed_time = ( time_after - time_before );
+		if( elapsed_time < mOneFrameShouldLast )
+			Sleep( mOneFrameShouldLast - elapsed_time );
 
 		while( ( GetUpTime() - time_before ) < mOneFrameShouldLast ) { Sleep( 0 ); }
 
-        // frame-rate check
+		// frame-rate check
 		mProcessorRate += ( elapsed_time / mOneFrameShouldLast );
-        mFrameCount++;
-        mFrameRateUpdateCounter++;
+		mFrameCount++;
+		mFrameRateUpdateCounter++;
 		mLastFrameExecutionTime = elapsed_time;
 		mTimeElapsedTracker += elapsed_time;
 
-        if( ( GetUpTime() - mFrameCountLastTime ) >= 1.0 )
-        {
-            mFrameCountLastTime = GetUpTime();
-            mFrameRate = mFrameRateUpdateCounter;
-            mFrameRateUpdateCounter = 0;
+		if( ( GetUpTime() - mFrameCountLastTime ) >= 1.0 )
+		{
+			mFrameCountLastTime = GetUpTime();
+			mFrameRate = mFrameRateUpdateCounter;
+			mFrameRateUpdateCounter = 0;
 			mAverageFrameExecutionTime = ( mTimeElapsedTracker / mFrameRate );
 
 			if ( mPrintFramerate )
@@ -579,7 +582,7 @@ void PlatformDesktop::StartMainLoop()
 			
 			mTimeElapsedTracker = 0;
 			mProcessorRate = 0;
-        }
+		}
 	}
 
 	if( mApplication )
@@ -740,7 +743,7 @@ void PlatformDesktop::HandleEvents()
 
 			case SDL_MOUSEMOTION:
 				{
-				    mMousePos = mGraphics->ConvertToInternalPos( event.motion.x, event.motion.y );
+					mMousePos = mGraphics->ConvertToInternalPos( event.motion.x, event.motion.y );
 					mEventRecorder->FireMouseMoveEvent( mMousePos );
 					if( mTouch && mTouch->IsTouchIdDown( 0 ) ) 
 						mEventRecorder->FireTouchMoveEvent( mMousePos, 0 );
