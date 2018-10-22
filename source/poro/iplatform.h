@@ -95,9 +95,10 @@ public:
 	virtual void SetWindowSize( int width, int height ) { poro_assert( false ); }
 	virtual int GetWidth()								{ poro_assert( false ); return 0; }
 	virtual int GetHeight()								{ poro_assert( false ); return 0; }
+	virtual void SetVsync( bool vsync_enabled )			{ poro_assert( false ); }
+	virtual bool GetVsync()								{ poro_assert( false ); return false; }
 
 	virtual bool GetOrientationIsLandscape()			{ poro_assert( false ); return 0; }
-
 
 	// InternalScale
 	//  This sets the internal resolution of the application!

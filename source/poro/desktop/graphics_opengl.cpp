@@ -610,6 +610,7 @@ GraphicsOpenGL::GraphicsOpenGL() :
 	IGraphics(),
 	mSDLWindow( NULL ),
 	mFullscreen( false ),
+	mVsync( false ),
 	mWindowWidth( 640 ),
 	mWindowHeight( 480 ),
 	mViewportOffset(),
@@ -719,10 +720,8 @@ bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::
 		exit(0);
 	}
 
-	
-
 	// vsync? 0 = no vsync, 1 = vsync
-	SDL_GL_SetSwapInterval( OPENGL_SETTINGS.vsync ? 1 : 0 );
+	SetVsync( OPENGL_SETTINGS.vsync );
 	
 	IPlatform::Instance()->SetInternalSize( (types::Float32)width, (types::Float32)height );
 	ResetWindow();
@@ -813,6 +812,15 @@ void GraphicsOpenGL::SetFullscreen(bool fullscreen)
 	{
 		mFullscreen = fullscreen;
 		ResetWindow();
+	}
+}
+
+void GraphicsOpenGL::SetVsync( bool vsync )
+{
+	if ( mVsync = vsync )
+	{
+		mVsync = vsync;
+		SDL_GL_SetSwapInterval( vsync ? 1 : 0 );
 	}
 }
 

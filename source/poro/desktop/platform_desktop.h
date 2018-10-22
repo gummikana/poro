@@ -58,6 +58,8 @@ public:
 	virtual void	SetWindowSize( int width, int height );
 	virtual int		GetWidth();
 	virtual int		GetHeight();
+	virtual void	SetVsync( bool vsync_enabled );
+	virtual bool	GetVsync();
 
 	virtual bool	GetOrientationIsLandscape();
 
