@@ -55,7 +55,7 @@ struct AppConfig
 	bool iphone_is_landscape;
 	bool sounds;
 
-	bool            event_recorder_flush_every_frame;
+	bool			event_recorder_flush_every_frame;
 	bool			record_events;
 	bool			do_a_playback;
 	std::string		playback_file;
@@ -66,7 +66,7 @@ struct AppConfig
 
 
 	// Function Pointer that gets called to setup the seed for random functions
-	void (*SetRandomSeed)(int);    
+	void (*SetRandomSeed)(int);
 };
 
 //=============================================================================
@@ -133,7 +133,8 @@ int RunPoro( AppConfig& conf = AppConfig()  )
 	}
 
 	// destroy the environment
-	poro::IPlatform::Instance()->Destroy();
+	// poro::IPlatform::Instance()->Destroy();
+	// skipping destruction, because we have to save the settings etc..
 
 	return 0;
 }
