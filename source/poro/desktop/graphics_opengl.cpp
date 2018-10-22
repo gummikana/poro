@@ -809,7 +809,7 @@ poro::types::vec2	GraphicsOpenGL::GetWindowSize() const
 
 void GraphicsOpenGL::SetFullscreen(bool fullscreen)
 {
-	if( mFullscreen!=fullscreen )
+	if( mFullscreen != fullscreen )
 	{
 		mFullscreen = fullscreen;
 		ResetWindow();
@@ -818,7 +818,7 @@ void GraphicsOpenGL::SetFullscreen(bool fullscreen)
 
 void GraphicsOpenGL::SetVsync( bool vsync )
 {
-	if ( mVsync == vsync )
+	if ( mVsync != vsync )
 	{
 		mVsync = vsync;
 		SDL_GL_SetSwapInterval( vsync ? 1 : 0 );
