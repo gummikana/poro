@@ -609,8 +609,8 @@ public:
 GraphicsOpenGL::GraphicsOpenGL() :
 	IGraphics(),
 	mSDLWindow( NULL ),
-	mFullscreen( false ),
-	mVsync( false ),
+	// mFullscreen( false ),
+	// mVsync( false ),
 	mWindowWidth( 640 ),
 	mWindowHeight( 480 ),
 	mViewportOffset(),
@@ -626,12 +626,31 @@ GraphicsOpenGL::GraphicsOpenGL() :
 {
 
 }
+
+bool GraphicsOpenGL::GetFullscreen()
+{ 
+	return OPENGL_SETTINGS.fullscreen; 
+}
+
+bool GraphicsOpenGL::GetVsync() 
+{
+	return OPENGL_SETTINGS.vsync; 
+}
+
 //-----------------------------------------------------------------------------
 
 void GraphicsOpenGL::SetSettings( const GraphicsSettings& settings ) {
+	SetFullscreen( settings.fullscreen );
+	SetVsync( settings.vsync );
 	OPENGL_SETTINGS = settings;
 	this->SetDrawTextureBuffering( settings.buffered_textures );
 }
+
+GraphicsSettings GraphicsOpenGL::GetSettings() const 
+{
+	return OPENGL_SETTINGS;
+}
+
 //-----------------------------------------------------------------------------
 	
 void GraphicsOpenGL::SetDrawTextureBuffering( bool buffering ) {
@@ -650,7 +669,7 @@ bool GraphicsOpenGL::GetDrawTextureBuffering() const {
 
 bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::string& caption )
 {
-	mFullscreen = fullscreen;
+	OPENGL_SETTINGS.fullscreen = fullscreen;
 	mWindowWidth = width;
 	mWindowHeight = height;
 	mDesktopWidth = 0;
@@ -721,8 +740,8 @@ bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::
 	}
 
 	// vsync? 0 = no vsync, 1 = vsync
-	SDL_GL_SetSwapInterval( OPENGL_SETTINGS.vsync ? 1 : 0 );	// TODO: petri
-	mVsync = OPENGL_SETTINGS.vsync;								// TODO: petri
+	SDL_GL_SetSwapInterval( OPENGL_SETTINGS.vsync ? 1 : 0 );	// TODO: petri?
+	// mVsync = OPENGL_SETTINGS.vsync;								// TODO: petri?
 	
 	IPlatform::Instance()->SetInternalSize( (types::Float32)width, (types::Float32)height );
 	ResetWindow();
@@ -809,19 +828,19 @@ poro::types::vec2	GraphicsOpenGL::GetWindowSize() const
 
 void GraphicsOpenGL::SetFullscreen(bool fullscreen)
 {
-	if( mFullscreen != fullscreen )
+	if( OPENGL_SETTINGS.fullscreen != fullscreen )
 	{
-		mFullscreen = fullscreen;
+		OPENGL_SETTINGS.fullscreen = fullscreen;
 		ResetWindow();
 	}
 }
 
 void GraphicsOpenGL::SetVsync( bool vsync )
 {
-	if ( mVsync != vsync )
+	if ( OPENGL_SETTINGS.vsync != vsync )
 	{
-		mVsync = vsync;
-		SDL_GL_SetSwapInterval( vsync ? 1 : 0 );
+		OPENGL_SETTINGS.vsync = vsync;
+		SDL_GL_SetSwapInterval( OPENGL_SETTINGS.vsync ? 1 : 0 );
 	}
 }
 
@@ -832,9 +851,9 @@ void GraphicsOpenGL::ResetWindow()
 	int window_height;
 	
 	//flags = SDL_WINDOW_OPENGL;
-	// mFullscreen = true;
+	// OPENGL_SETTINGS.fullscreen = true;
 		
-	if( mFullscreen ){
+	if( OPENGL_SETTINGS.fullscreen ){
 		// for real fullscreen
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 		// flags = SDL_WINDOW_FULLSCREEN;

@@ -126,6 +126,7 @@ struct GraphicsSettings
 		window_height(768),
 		fullscreen(0),
 		caption("poro window"),
+		icon_bmp("data/ui_gfx/icon.bmp"),
 		textures_resize_to_power_of_two( true ), 
 		textures_fix_alpha_channel( true ),
 		buffered_textures( false ),
@@ -138,7 +139,7 @@ struct GraphicsSettings
 	int				window_height;
 	bool			fullscreen;
 	types::string	caption;
-	types::string   icon_bmp;
+	types::string	icon_bmp;
 
 	bool textures_resize_to_power_of_two;
 	bool textures_fix_alpha_channel;
@@ -179,6 +180,7 @@ public:
 	//-------------------------------------------------------------------------
 
 	virtual void				SetSettings( const GraphicsSettings& settings ) { }
+	virtual GraphicsSettings	GetSettings() const { poro_assert( false); /* you have to implement this */ return GraphicsSettings(); }
 
 	virtual void				SetFillColor( const poro::types::fcolor& c );
 	virtual poro::types::fcolor	GetFillColor() const;

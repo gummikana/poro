@@ -53,14 +53,16 @@ public:
 	virtual void				SetWindowSize(int width, int height) PORO_OVERRIDE;
 	virtual poro::types::vec2	GetWindowSize() const PORO_OVERRIDE;
 	virtual void				SetFullscreen(bool fullscreen) PORO_OVERRIDE;
-	virtual bool				GetFullscreen() PORO_OVERRIDE { return mFullscreen; }
+	virtual bool				GetFullscreen() PORO_OVERRIDE;
 	virtual void				SetVsync( bool vsync ) PORO_OVERRIDE;
-	virtual bool				GetVsync() PORO_OVERRIDE { return mVsync; }
+	virtual bool				GetVsync() PORO_OVERRIDE;
 	virtual poro::types::vec2	GetViewPortSize() PORO_OVERRIDE { return mViewportSize; }
 
 	//-------------------------------------------------------------------------
 
-	virtual void		SetSettings( const GraphicsSettings& settings ) PORO_OVERRIDE;
+	virtual void				SetSettings( const GraphicsSettings& settings ) PORO_OVERRIDE;
+	virtual GraphicsSettings	GetSettings() const PORO_OVERRIDE;
+	
 	virtual void		SetDrawTextureBuffering( bool buffering ) PORO_OVERRIDE;
 	virtual bool		GetDrawTextureBuffering() const PORO_OVERRIDE;
 
@@ -157,8 +159,8 @@ public:
 private:
 
 	SDL_Window* mSDLWindow;
-	bool	mFullscreen;
-	bool	mVsync;
+	// bool	mFullscreen;
+	// bool	mVsync;
 	int		mWindowWidth;
 	int		mWindowHeight;
 	types::vec2 mViewportOffset;
