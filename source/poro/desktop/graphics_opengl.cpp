@@ -721,7 +721,8 @@ bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::
 	}
 
 	// vsync? 0 = no vsync, 1 = vsync
-	SetVsync( OPENGL_SETTINGS.vsync );
+	SDL_GL_SetSwapInterval( OPENGL_SETTINGS.vsync ? 1 : 0 );	// TODO: petri
+	mVsync = OPENGL_SETTINGS.vsync;								// TODO: petri
 	
 	IPlatform::Instance()->SetInternalSize( (types::Float32)width, (types::Float32)height );
 	ResetWindow();
@@ -817,7 +818,7 @@ void GraphicsOpenGL::SetFullscreen(bool fullscreen)
 
 void GraphicsOpenGL::SetVsync( bool vsync )
 {
-	if ( mVsync = vsync )
+	if ( mVsync == vsync )
 	{
 		mVsync = vsync;
 		SDL_GL_SetSwapInterval( vsync ? 1 : 0 );
