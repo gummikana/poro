@@ -475,7 +475,6 @@ void PlatformDesktop::Init( IApplication* application, const GraphicsSettings& s
 
 void PlatformDesktop::Destroy() 
 {
-/*
 	delete mGraphics;
 	mGraphics = NULL;
 
@@ -500,8 +499,7 @@ void PlatformDesktop::Destroy()
 
 	delete mFileSystem;
 	mFileSystem = NULL;
-*/
-	
+
 	delete mEventRecorder;
 	mEventRecorder = NULL;
 	gEventRecorder = NULL;
