@@ -476,7 +476,7 @@ void PlatformDesktop::Init( IApplication* application, const GraphicsSettings& s
 void PlatformDesktop::Destroy() 
 {
 
-/*	delete mGraphics;
+	delete mGraphics;
 	mGraphics = NULL;
 
 #ifdef PORO_USE_SDL_MIXER
@@ -498,14 +498,12 @@ void PlatformDesktop::Destroy()
 
 	mJoysticks.clear();
 
-	delete mFileSystem;
-	mFileSystem = NULL;
-*/
-	
 	delete mEventRecorder;
 	mEventRecorder = NULL;
 	gEventRecorder = NULL;
 
+	// delete mFileSystem;
+	// mFileSystem = NULL;
 }
 //-----------------------------------------------------------------------------
 
