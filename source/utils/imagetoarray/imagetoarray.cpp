@@ -87,8 +87,14 @@ void SaveImage( const std::string& filename, const ceng::CArray2D< poro::types::
 		}
 	}
 
-	//stbi_write_png( filename.c_str(), w, h, 4, pixels, w * 4 );
-	Poro()->GetGraphics()->ImageSave( filename.c_str(), w, h, 4, pixels, w * 4 );
+	if( Poro() == NULL || Poro()->GetGraphics() == NULL )
+	{
+		stbi_write_png( filename.c_str(), w, h, 4, pixels, w * 4 );
+	}
+	else
+	{
+		Poro()->GetGraphics()->ImageSave( filename.c_str(), w, h, 4, pixels, w * 4 );
+	}
 
 	delete [] pixels;
 	pixels = NULL;
