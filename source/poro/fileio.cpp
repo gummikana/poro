@@ -85,6 +85,7 @@ namespace platform_impl
 			*out_status = StreamStatus::NoError;
 			mSize = ceng::ReadFileSize( mFile );
 			mPosition = 0;
+			// BUG 2018.11.28 - crashed here (in ntdll.dll!76fae486())
 		}
 
 		StreamInternal() : 
