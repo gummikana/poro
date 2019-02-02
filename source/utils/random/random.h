@@ -231,6 +231,19 @@ public:
 		return ((mSeed>>16)&0x7FFF)%101;
 	}
 
+	// returns a value between ]0 and 127[
+	// should be faster than using Random( int low, int high )
+	inline int Random127() {
+		mSeed = (214013*mSeed+2531011); 
+		return ((mSeed>>16)&127);
+	}
+
+	// returns a random bool based on the last bit
+	inline bool RandomBool() {
+		mSeed = (214013*mSeed+2531011); 
+		return ((mSeed>>16)&1) == 0 ? false : true;
+	}
+
 	// low = 0, high
 	inline int Random0To( int high ) {
 		mSeed = (214013*mSeed+2531011); 
