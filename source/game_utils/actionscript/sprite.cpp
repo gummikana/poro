@@ -1427,6 +1427,9 @@ void Sprite::RectAnimation::Update( Sprite* sprite, float dt ) const
 	if( data->mPaused ) 
 		dt = 0;
 
+	if ( data->mPreviousFrame > -1 )
+		data->mEnteredNewFrame = false;
+
 	data->mPreviousFrame = data->mCurrentFrame;
 	int frame = data->mCurrentFrame;
 	data->mCurrentTime += dt;
@@ -1456,6 +1459,8 @@ void Sprite::RectAnimation::Update( Sprite* sprite, float dt ) const
 				}
 			}
 		}
+
+		data->mEnteredNewFrame = true;
 	}
 
 	SetFrame( sprite, frame, false );
@@ -1617,6 +1622,7 @@ void Sprite::SetRectAnimation( const RectAnimation* animation )
 		mRectAnimationData.mCurrentFrame = 0;
 		mRectAnimationData.mPreviousFrame = -1;
 		mRectAnimationData.mCurrentTime = 0;
+		mRectAnimationData.mEnteredNewFrame = true;
 	}
 	
 }

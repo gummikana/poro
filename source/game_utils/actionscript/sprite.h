@@ -397,6 +397,7 @@ public:
 		int mPreviousFrame = -1;
 		int mCurrentFrame = 0;
 		float mCurrentTime = 0;
+		bool mEnteredNewFrame = false;
 		float mWaitTime = 0;
 	};
 
