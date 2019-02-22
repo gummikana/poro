@@ -1776,7 +1776,7 @@ types::vector2 Sprite::GetHotspot( const std::string& name ) const
 
 types::vector2 Sprite::GetScreenPosition()
 {
-	types::vector2 result( 0, 0 );
+	// types::vector2 result( 0, 0 );
 	std::vector< DisplayObjectContainer* > parents;
 	getParentTree( parents );
 
@@ -1831,6 +1831,9 @@ types::vector2 Sprite::MultiplyByParentXForm( const types::vector2& p ) const
 
 std::vector< Sprite* > Sprite::FindSpritesAtPoint( const types::vector2& p )
 {
+	// bool ignore_hidden = true;
+	//if( ignore_hidden && GetVisibility() == false ) return std::vector< Sprite* >();
+
 	std::vector< Sprite* > result;
 
 	Transform t;
@@ -1842,6 +1845,9 @@ std::vector< Sprite* > Sprite::FindSpritesAtPoint( const types::vector2& p )
 
 void Sprite::FindSpritesAtPointImpl( const types::vector2& pos, Transform& transform, std::vector< Sprite* >& results )
 {
+	// NOTE( Petri ): 2018.12.07 - I added the ignore_hidden, I'm terrified that it'll break something somewhere
+	bool ignore_hidden = true;
+
 	const types::xform& matrix = transform.GetXForm();
 	types::rect dest_rect( 0, 0, mSize.x, mSize.y );
 	if( mRect ) 
@@ -1871,11 +1877,13 @@ void Sprite::FindSpritesAtPointImpl( const types::vector2& pos, Transform& trans
 		u /= x_axis.LengthSquared();
 		v /= y_axis.LengthSquared();
 
-		if( u >= 0 && u < 1.f && v >= 0 && v < 1.f )
+		if( u >= 0 && u < 1.f && v >= 0 && v < 1.f && (ignore_hidden == false || GetVisibility() ) )
+		{
 			results.push_back( this );
+		}
 	}
 
-	if( mChildren.empty() ) 
+	if( mChildren.empty() || (ignore_hidden && GetVisibility() == false ) )
 		return;
 
 	transform.PushXForm( mXForm, mColor );
