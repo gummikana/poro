@@ -81,7 +81,7 @@ public:
 	virtual IApplication*	GetApplication();
 	virtual IGraphics*		GetGraphics() = 0;
 	virtual ISoundPlayer*	GetSoundPlayer() = 0;
-    virtual FileSystem*     GetFileSystem() = 0;
+	virtual FileSystem*		GetFileSystem() = 0;
 
 	// controllers
 	virtual Mouse*			GetMouse() = 0;
@@ -90,6 +90,8 @@ public:
 
 	virtual int				GetJoystickCount() const;
 	virtual Joystick*		GetJoystick( int n );
+	virtual bool			GetJoysticksEnabled() const { return true; }
+	virtual void			SetJoysticksEnabled( bool enabled ) { poro_assert( false ); }
 
 	// window / screen
 	virtual void SetWindowSize( int width, int height ) { poro_assert( false ); }
@@ -204,17 +206,13 @@ inline Keyboard* IPlatform::GetKeyboard() {
 }
 
 inline types::Float32 IPlatform::GetInternalWidth() const {
-    if(!mInternalWidth)
-        poro_assert(false); // Platform has probably not been initialized yet.
-
-    return mInternalWidth;
+	poro_assert( mInternalWidth != 0 ); // Platform has probably not been initialized yet.
+	return mInternalWidth;
 }
 
 inline types::Float32 IPlatform::GetInternalHeight() const {
-     if(!mInternalHeight)
-        poro_assert(false); // Platform has probably not been initialized yet.
-
-    return mInternalHeight;
+	poro_assert( mInternalHeight != 0 ); // Platform has probably not been initialized yet.
+	return mInternalHeight;
 }
 
 inline void IPlatform::SetFrameRate( int targetRate, bool fixed_timestep ) {

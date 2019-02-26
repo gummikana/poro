@@ -34,6 +34,7 @@
 #include "../touch.h"
 #include "../event_recorder.h"
 #include "../iapplication.h"
+#include "../run_poro.h"
 
 #include "event_recorder_impl.h"
 #include "event_playback_impl.h"
@@ -444,6 +445,7 @@ void PlatformDesktop::Init( IApplication* application, const GraphicsSettings& s
 	mWidth = w;
 	mHeight = h;
 	mApplication = application;
+	mJoysticksEnabled = config->joysticks_enabled;
 
 	mGraphics = new GraphicsOpenGL;
 	mGraphics->SetSettings( settings );
@@ -767,11 +769,13 @@ void PlatformDesktop::HandleEvents()
 					// is reorganized
 					for (int i = 0; i < GetJoystickCount(); ++i)
 					{
+						poro_assert( GetJoystick(i) );
 						((JoystickImpl*)GetJoystick(i))->Impl_SDL2_OnRemoved();
 					}
 
 					for (int i = 0; i < GetJoystickCount(); ++i)
 					{
+						poro_assert( GetJoystick(i) );
 						((JoystickImpl*)GetJoystick(i))->Impl_SDL2_OnAdded();
 					}
 
@@ -786,6 +790,7 @@ void PlatformDesktop::HandleEvents()
 					JoystickImpl* unplugged_device = NULL;
 					for (int i = 0; i < GetJoystickCount(); ++i)
 					{
+						poro_assert( GetJoystick(i) );
 						JoystickImpl* device = (JoystickImpl*)GetJoystick(i);
 						if (device && device->Impl_GetSDLInstanceID() == instance_id)
 						{
@@ -831,12 +836,25 @@ Mouse* PlatformDesktop::GetMouse() {
 	return mMouse;
 }
 
+//-----------------------------------------------------------------------------
+
+int PlatformDesktop::GetJoystickCount() const  {
+	if( mJoysticksEnabled == false )
+		return 0;
+
+	return (int)mJoysticks.size();
+}
+
 Joystick* PlatformDesktop::GetJoystick( int n ) {
 	poro_assert( n >= 0 && n < (int)mJoysticks.size() );
 	poro_assert( mJoysticks[ n ] );
+	
+	if( mJoysticksEnabled == false ) 
+		return NULL;
 
 	return mJoysticks[ n ];
 }
+
 //-----------------------------------------------------------------------------
 
 IGraphics* PlatformDesktop::GetGraphics() {
@@ -898,6 +916,7 @@ bool PlatformDesktop::IsBreakpointFrame()
 }
 
 //-----------------------------------------------------------------------------
+
 
 int PlatformDesktop::GetRandomSeed()
 {

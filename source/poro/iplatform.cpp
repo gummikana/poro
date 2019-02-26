@@ -71,7 +71,7 @@ IPlatform::~IPlatform()
 {
 }
 
-IPlatform * IPlatform::Instance()
+IPlatform* IPlatform::Instance()
 {
 	poro_assert(gInstance!=NULL);
 	return gInstance;

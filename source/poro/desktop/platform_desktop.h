@@ -75,6 +75,9 @@ public:
 	virtual Touch*			GetTouch();
 	virtual int				GetJoystickCount() const;
 	virtual Joystick*		GetJoystick( int n );
+	virtual bool			GetJoysticksEnabled() const;
+	virtual void			SetJoysticksEnabled( bool enabled );
+
 
 	// timers
 	virtual void			SetFrameRate( int targetRate, bool fixed_timestep = true );
@@ -142,6 +145,7 @@ protected:
 	poro::types::string				mWorkingDir;
 	int								mRandomI;
 	unsigned int					mRandomSeed;
+	bool 							mJoysticksEnabled;
 
 private:
 };
@@ -177,8 +181,12 @@ inline Touch* PlatformDesktop::GetTouch() {
 	return mTouch;
 }
 
-inline int	PlatformDesktop::GetJoystickCount() const  {
-	return (int)mJoysticks.size();
+inline bool PlatformDesktop::GetJoysticksEnabled() const { 
+	return mJoysticksEnabled;
+}
+
+inline void PlatformDesktop::SetJoysticksEnabled( bool enabled ) { 
+	mJoysticksEnabled = enabled;
 }
 
 // ---

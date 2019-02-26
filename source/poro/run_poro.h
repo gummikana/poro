@@ -34,6 +34,7 @@ struct AppConfig
 		playback_file( "" ),
 		graphics_settings(),
 		report_fps( false ),
+		joysticks_enabled( true ),
 		SetRandomSeed( NULL )
 	{
 	}
@@ -61,6 +62,7 @@ struct AppConfig
 	std::string		playback_file;
 
 	bool			report_fps;
+	bool			joysticks_enabled;
 
 	GraphicsSettings graphics_settings;
 
