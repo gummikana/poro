@@ -425,7 +425,7 @@ void PlatformDesktop::Init( IApplication* application, const GraphicsSettings& s
 {
 	int w = settings.window_width;
 	int h = settings.window_height;
-	bool fullscreen = settings.fullscreen;
+	int fullscreen = settings.fullscreen;
 
 	IPlatform::Init( application, settings, config );
 	mRandomSeed = (unsigned int)time(NULL);
@@ -436,7 +436,9 @@ void PlatformDesktop::Init( IApplication* application, const GraphicsSettings& s
 		up_time = GetUpTime();
 		time_null = time_null + (unsigned int)( up_time * (double)time_null );
 		mRandomSeed = time_null;
+#ifdef WIZARD_DEBUG
 		std::cout << "Poro random seed: " << mRandomSeed << "\n";
+#endif
 	}
 	mRandomI = (int)mRandomSeed;
 	mRunning = true;
