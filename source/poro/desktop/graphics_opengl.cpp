@@ -723,7 +723,11 @@ bool GraphicsOpenGL::Init( int width, int height, int fullscreen, const types::s
 	mSDLWindow = SDL_CreateWindow( caption.c_str(), 
 		pos_x,
 		pos_y, 
-		width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE );
+		width, height, SDL_WINDOW_OPENGL 
+/*#ifdef _DEBUG
+		| SDL_WINDOW_RESIZABLE 
+#endif*/
+		);
 	if ( mSDLWindow == NULL )
 	{
 		poro_logger << PORO_ERROR << "Window creation failed:  " << SDL_GetError() << "\n";
@@ -2066,7 +2070,6 @@ unsigned char*	GraphicsOpenGL::ImageLoad( char const *filename, int *x, int *y, 
 
 int	GraphicsOpenGL::ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes )
 {
-	LogError << "filename: " << filename << " x: " << x << " y: " << y << " comp: " << comp << " data:" << data << "stride_bytes: " <<stride_bytes<< "\n";
 	int png_size_bytes;
 	unsigned char* png_memory = stbi_write_png_to_mem( (unsigned char*)data, stride_bytes, x, y, comp, &png_size_bytes );
 	if ( png_memory != 0 && png_size_bytes  > 0 )
