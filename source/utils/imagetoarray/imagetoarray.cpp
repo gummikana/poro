@@ -4,6 +4,7 @@
 #include <poro/igraphics.h>
 #include <utils/color/ccolor.h>
 #include <utils/debug.h>
+#include <poro/external/stb_image_write.h>
 
 
 //-----------------------------------------------------------------------------
