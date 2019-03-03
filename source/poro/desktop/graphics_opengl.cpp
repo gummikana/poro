@@ -627,7 +627,7 @@ GraphicsOpenGL::GraphicsOpenGL() :
 
 }
 
-bool GraphicsOpenGL::GetFullscreen()
+int GraphicsOpenGL::GetFullscreen()
 { 
 	return OPENGL_SETTINGS.fullscreen; 
 }
@@ -667,7 +667,7 @@ bool GraphicsOpenGL::GetDrawTextureBuffering() const {
 
 //-----------------------------------------------------------------------------
 
-bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::string& caption )
+bool GraphicsOpenGL::Init( int width, int height, int fullscreen, const types::string& caption )
 {
 	OPENGL_SETTINGS.fullscreen = fullscreen;
 	mWindowWidth = width;
@@ -723,7 +723,7 @@ bool GraphicsOpenGL::Init( int width, int height, bool fullscreen, const types::
 	mSDLWindow = SDL_CreateWindow( caption.c_str(), 
 		pos_x,
 		pos_y, 
-		width, height, SDL_WINDOW_OPENGL );
+		width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE );
 	if ( mSDLWindow == NULL )
 	{
 		poro_logger << PORO_ERROR << "Window creation failed:  " << SDL_GetError() << "\n";
@@ -826,7 +826,7 @@ poro::types::vec2	GraphicsOpenGL::GetWindowSize() const
 }
 //-----------------------------------------------------------------------------
 
-void GraphicsOpenGL::SetFullscreen(bool fullscreen)
+void GraphicsOpenGL::SetFullscreen(int fullscreen)
 {
 	if( OPENGL_SETTINGS.fullscreen != fullscreen )
 	{
@@ -852,19 +852,26 @@ void GraphicsOpenGL::ResetWindow()
 	
 	//flags = SDL_WINDOW_OPENGL;
 	// OPENGL_SETTINGS.fullscreen = true;
-		
-	if( OPENGL_SETTINGS.fullscreen ){
+
+	if( OPENGL_SETTINGS.fullscreen == FULLSCREEN_MODE::STRETCHED || OPENGL_SETTINGS.fullscreen == FULLSCREEN_MODE::FULL )
+	{
 		// for real fullscreen
-		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+		if( OPENGL_SETTINGS.fullscreen == FULLSCREEN_MODE::STRETCHED )
+			flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+		else 
+			flags |= SDL_WINDOW_FULLSCREEN;
 		// flags = SDL_WINDOW_FULLSCREEN;
 		window_width = (int)mDesktopWidth;
 		window_height = (int)mDesktopHeight;
-	} else {
+	} 
+	else 
+	{
 		window_width = mWindowWidth;
 		window_height = mWindowHeight;
-	#ifdef _DEBUG
-		flags |= SDL_WINDOW_RESIZABLE;
-	#endif
+	// #ifdef _DEBUG
+		// this is not supported by SDL2.0 anymore 
+		// flags |= SDL_WINDOW_RESIZABLE;
+	// #endif
 
 		flags = 0;
 		// 0 = windowed mode
@@ -874,6 +881,7 @@ void GraphicsOpenGL::ResetWindow()
 	
 	SDL_SetWindowSize( mSDLWindow, window_width, window_height );
 	SDL_SetWindowFullscreen( mSDLWindow, flags );
+	// SDL_SetWindowResizable(mSDLWindow, SDL_TRUE);
 
 	{ //OpenGL view setup
 		float internal_width = IPlatform::Instance()->GetInternalWidth();
@@ -1854,7 +1862,7 @@ IGraphicsBuffer* GraphicsOpenGL::CreateGraphicsBuffer(int width, int height)
 	return NULL;
 #else
 	GraphicsBufferOpenGL* buffer = new GraphicsBufferOpenGL;
-	buffer->Init(width, height);
+	buffer->Init(width, height, false, "");
 	return buffer;
 #endif
 }
@@ -1930,7 +1938,14 @@ void GraphicsOpenGL::SaveScreenshot( const std::string& filename, int pos_x, int
 	const int bpp = 3;
 
 	static unsigned char* pixels = new unsigned char[ bpp * (int)mViewportSize.x * (int)mViewportSize.y ];
-	const int pixels_size = bpp * (int)mViewportSize.x * (int)mViewportSize.y;
+	static int pixels_size = bpp * (int)mViewportSize.x * (int)mViewportSize.y;
+
+	if( ( bpp * (int)mViewportSize.x * (int)mViewportSize.y ) !=  pixels_size )
+	{
+		delete [] pixels;
+		pixels_size = ( bpp * (int)mViewportSize.x * (int)mViewportSize.y );
+		pixels = new unsigned char[ pixels_size ];
+	}
 
 	// this is needed for GL_RGB
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -2051,6 +2066,7 @@ unsigned char*	GraphicsOpenGL::ImageLoad( char const *filename, int *x, int *y, 
 
 int	GraphicsOpenGL::ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes )
 {
+	LogError << "filename: " << filename << " x: " << x << " y: " << y << " comp: " << comp << " data:" << data << "stride_bytes: " <<stride_bytes<< "\n";
 	int png_size_bytes;
 	unsigned char* png_memory = stbi_write_png_to_mem( (unsigned char*)data, stride_bytes, x, y, comp, &png_size_bytes );
 	if ( png_memory != 0 && png_size_bytes  > 0 )

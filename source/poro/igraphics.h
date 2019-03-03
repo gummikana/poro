@@ -53,7 +53,7 @@ namespace TEXTURE_FILTERING_MODE
 		LINEAR = 0,
 		NEAREST = 1
 	};
-};
+}
 
 namespace TEXTURE_WRAPPING_MODE
 {
@@ -89,7 +89,7 @@ namespace VERTEX_MODE
 		TRIANGLE_STRIP = 1,
 		TRIANGLES = 2
 	};
-};
+}
 
 namespace DRAWFILL_MODE
 {
@@ -99,7 +99,7 @@ namespace DRAWFILL_MODE
 		TRIANGLE_STRIP = 1,
 		QUADS = 2
 	};
-};
+}
 
 struct Vertex_PosFloat2_ColorUint32
 {
@@ -119,12 +119,24 @@ struct Vertex_PosFloat2_TexCoordFloat2_ColorUint32
 
 //-----------------------------
 
+namespace FULLSCREEN_MODE
+{
+	enum Enum
+	{
+		WINDOWED = 0,
+		STRETCHED = 1,
+		FULL = 2
+	};
+}
+
+//-----------------------------
+
 struct GraphicsSettings
 {
 	GraphicsSettings() : 
 		window_width(1024),
 		window_height(768),
-		fullscreen(0),
+		fullscreen(FULLSCREEN_MODE::WINDOWED),
 		caption("poro window"),
 		icon_bmp("data/ui_gfx/icon.bmp"),
 		textures_resize_to_power_of_two( true ), 
@@ -137,7 +149,7 @@ struct GraphicsSettings
 
 	int				window_width;
 	int				window_height;
-	bool			fullscreen;
+	int				fullscreen;
 	types::string	caption;
 	types::string	icon_bmp;
 
@@ -162,8 +174,8 @@ public:
 	virtual ~IGraphics() { }
 	//-------------------------------------------------------------------------
 
-	bool						Init( int width, int height, bool fullscreen, const types::string& caption, const GraphicsSettings& settings );
-	virtual bool				Init( int width, int height, bool fullscreen, const types::string& caption ) = 0;
+	bool						Init( int width, int height, int fullscreen, const types::string& caption, const GraphicsSettings& settings );
+	virtual bool				Init( int width, int height, int fullscreen, const types::string& caption ) = 0;
 	virtual void				SetCaption( const types::string& caption ) 							{ poro_assert( false ); /* implement for this platform*/ }
 	virtual void				SetIcon( const types::string& bmp_icon )							{ poro_assert( false ); /* implement for this platform*/ }
 	virtual void				SetInternalSize( types::Float32 width, types::Float32 height )		{ poro_assert( false ); /* You have to implement this */ }
@@ -171,8 +183,8 @@ public:
 	virtual poro::types::vec2	GetInternalSize() const												{ poro_assert( false ); /* You have to implement this */ return poro::types::vec2(); }
 	virtual void				SetWindowSize( int width, int height )								{ poro_assert( false ); /* You have to implement this */ }
 	virtual poro::types::vec2	GetWindowSize() const												{ poro_assert( false ); /* You have to implement this */ return poro::types::vec2(); }
-	virtual void				SetFullscreen( bool fullscreen )									{ poro_assert( false ); /* You have to implement this */ }
-	virtual bool				GetFullscreen()														{ poro_assert( false ); return false;/* You have to implement this */ }
+	virtual void				SetFullscreen( int fullscreen )										{ poro_assert( false ); /* You have to implement this */ }
+	virtual int					GetFullscreen()														{ poro_assert( false ); return 0;/* You have to implement this */ }
 	virtual void				SetVsync( bool vsync )												{ poro_assert( false ); /* You have to implement this */ }
 	virtual bool				GetVsync()															{ poro_assert( false ); return false;/* You have to implement this */ }
 	virtual poro::types::vec2	GetViewPortSize()													{ poro_assert( false ); return poro::types::vec2(0,0); /* You have to implement this */ }
@@ -346,7 +358,7 @@ protected:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline bool IGraphics::Init( int width, int height, bool fullscreen, const types::string& caption, const GraphicsSettings& settings )
+inline bool IGraphics::Init( int width, int height, int fullscreen, const types::string& caption, const GraphicsSettings& settings )
 {
 	SetSettings( settings );
 	return Init( width, height, fullscreen, caption );

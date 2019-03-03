@@ -48,7 +48,7 @@ void GraphicsBufferOpenGL::InitTexture(int width,int height){
 
 
 //IGraphics
-bool GraphicsBufferOpenGL::Init( int width, int height, bool fullscreen, const types::string& caption )
+bool GraphicsBufferOpenGL::Init( int width, int height, int fullscreen, const types::string& caption )
 {
 	glGenFramebuffersEXT(1, &mBufferId);	// <- this line crashes on windows
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mBufferId);

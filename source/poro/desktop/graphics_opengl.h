@@ -43,7 +43,7 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual bool				Init( int width, int height, bool fullscreen, const types::string& caption ) PORO_OVERRIDE;
+	virtual bool				Init( int width, int height, int fullscreen, const types::string& caption ) PORO_OVERRIDE;
 	virtual void				SetCaption( const types::string& caption ) PORO_OVERRIDE;
 	virtual void				SetIcon( const std::string& icon_bmp_file );
 
@@ -52,8 +52,8 @@ public:
 	virtual poro::types::vec2	GetInternalSize() const PORO_OVERRIDE;
 	virtual void				SetWindowSize(int width, int height) PORO_OVERRIDE;
 	virtual poro::types::vec2	GetWindowSize() const PORO_OVERRIDE;
-	virtual void				SetFullscreen(bool fullscreen) PORO_OVERRIDE;
-	virtual bool				GetFullscreen() PORO_OVERRIDE;
+	virtual void				SetFullscreen(int fullscreen) PORO_OVERRIDE;
+	virtual int					GetFullscreen() PORO_OVERRIDE;
 	virtual void				SetVsync( bool vsync ) PORO_OVERRIDE;
 	virtual bool				GetVsync() PORO_OVERRIDE;
 	virtual poro::types::vec2	GetViewPortSize() PORO_OVERRIDE { return mViewportSize; }

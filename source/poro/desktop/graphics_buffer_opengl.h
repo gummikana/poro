@@ -42,7 +42,7 @@ public:
 	virtual void		SetGraphicsBufferScale( float x, float y ) PORO_OVERRIDE { mBufferScale.x = x; mBufferScale.y = y; }
 	
 	// IGraphics
-	virtual bool		Init( int width, int height, bool fullscreen = false, const types::string& caption = "" ) PORO_OVERRIDE;
+	virtual bool		Init( int width, int height, int fullscreen, const types::string& caption ) PORO_OVERRIDE;
 	virtual void		Release() PORO_OVERRIDE;
 	
 	virtual void DrawTexture( ITexture* itexture, float x, float y, float w, float h, const types::fcolor& color, float rotation ) PORO_OVERRIDE
