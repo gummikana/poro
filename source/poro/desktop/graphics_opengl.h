@@ -34,8 +34,6 @@ class ITexture;
 class ITexture3d;
 class IGraphicsBuffer;
 
-const int32 PORO_WINDOW_POS_CENTERED = -1;
-
 //-----------------------------------------------------------------------------
 
 class GraphicsOpenGL : public IGraphics
