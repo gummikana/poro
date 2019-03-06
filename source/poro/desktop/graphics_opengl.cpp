@@ -21,6 +21,7 @@
 #include "graphics_opengl.h"
 
 #include <cmath>
+#include "utils/vector_utils/vector_utils.h"
 
 #include "../iplatform.h"
 #include "../fileio.h"
@@ -828,6 +829,28 @@ poro::types::vec2	GraphicsOpenGL::GetWindowSize() const
 	SDL_GetWindowSize( mSDLWindow, &window_w, &window_h );
 	return poro::types::vec2( (poro::types::Float32)window_w, (poro::types::Float32)window_h );
 }
+
+void GraphicsOpenGL::GetDisplayModes( std::vector<DisplayMode>* out_modes )
+{
+	poro_assert( out_modes );
+	poro_assert( out_modes->empty() );
+	poro_assert( mSDLWindow );
+
+	const int32 current_display_index = SDL_GetWindowDisplayIndex( mSDLWindow );
+	const uint32 num_modes = SDL_GetNumDisplayModes( current_display_index );
+
+	for ( uint32 i = 0; i < num_modes; i++ )
+	{
+		SDL_DisplayMode sdl_mode;
+		SDL_GetDisplayMode( current_display_index, i, &sdl_mode );
+
+		DisplayMode poro_mode;
+		poro_mode.width = sdl_mode.w;
+		poro_mode.height = sdl_mode.h;
+		ceng::VectorAddUnique( *out_modes, poro_mode );
+	}
+}
+
 //-----------------------------------------------------------------------------
 
 void GraphicsOpenGL::SetFullscreen(int fullscreen)

@@ -131,6 +131,21 @@ namespace FULLSCREEN_MODE
 
 //-----------------------------
 
+struct DisplayMode
+{
+	uint32 width;
+	uint32 height;
+
+	inline bool operator ==( const DisplayMode& other ) const
+	{
+		return
+			width == other.width &&
+			height == other.height;
+	}
+};
+
+//-----------------------------
+
 struct GraphicsSettings
 {
 	GraphicsSettings() : 
@@ -183,6 +198,7 @@ public:
 	virtual poro::types::vec2	GetInternalSize() const												{ poro_assert( false ); /* You have to implement this */ return poro::types::vec2(); }
 	virtual void				SetWindowSize( int width, int height )								{ poro_assert( false ); /* You have to implement this */ }
 	virtual poro::types::vec2	GetWindowSize() const												{ poro_assert( false ); /* You have to implement this */ return poro::types::vec2(); }
+	virtual void				GetDisplayModes( std::vector<DisplayMode>* out_modes )				{ poro_assert( false ); /* You have to implement this */ }
 	virtual void				SetFullscreen( int fullscreen )										{ poro_assert( false ); /* You have to implement this */ }
 	virtual int					GetFullscreen()														{ poro_assert( false ); return 0;/* You have to implement this */ }
 	virtual void				SetVsync( bool vsync )												{ poro_assert( false ); /* You have to implement this */ }

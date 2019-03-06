@@ -52,6 +52,7 @@ public:
 	virtual poro::types::vec2	GetInternalSize() const PORO_OVERRIDE;
 	virtual void				SetWindowSize(int width, int height) PORO_OVERRIDE;
 	virtual poro::types::vec2	GetWindowSize() const PORO_OVERRIDE;
+	virtual void				GetDisplayModes( std::vector<DisplayMode>* out_modes ) PORO_OVERRIDE;
 	virtual void				SetFullscreen(int fullscreen) PORO_OVERRIDE;
 	virtual int					GetFullscreen() PORO_OVERRIDE;
 	virtual void				SetVsync( bool vsync ) PORO_OVERRIDE;
