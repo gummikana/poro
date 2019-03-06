@@ -43,6 +43,8 @@ public:
 	virtual void		BeginRendering( bool clear_color = true, bool clear_depth = true, float clear_r = 0.f, float clear_g = 0.f, float clear_b = 0.f, float clear_a = 0.f ) PORO_OVERRIDE;
 	virtual void		EndRendering() PORO_OVERRIDE;
 
+	virtual void ReadTextureDataFromGPU( uint8* out_pixels ) const PORO_OVERRIDE;
+
 	// impl
 	void InitRenderTexture( int width, int height, bool linear_filtering = false );
 	bool Init( int width, int height, bool fullscreen = false, const types::string& caption = "" );

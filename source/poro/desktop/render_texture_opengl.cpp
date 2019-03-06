@@ -109,4 +109,11 @@ void RenderTextureOpenGL::EndRendering()
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 }
 
+void RenderTextureOpenGL::ReadTextureDataFromGPU( uint8* out_pixels ) const
+{
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, mBufferId );
+	glReadPixels( 0, 0, mTexture.GetDataWidth(), mTexture.GetDataHeight(), GL_RGBA, GL_UNSIGNED_BYTE, (void*)out_pixels );
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0 );
+}
+
 }

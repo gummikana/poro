@@ -34,6 +34,9 @@ namespace poro {
 
 		virtual void		BeginRendering( bool clear_color = true, bool clear_depth = true, float clear_r = 0.f, float clear_g = 0.f, float clear_b = 0.f, float clear_a = 0.f ) { };
 		virtual void		EndRendering() { };
+
+		virtual void		ReadTextureDataFromGPU( uint8* out_pixels ) const = 0;
+
 	};
 		
 } // end o namespace poro
