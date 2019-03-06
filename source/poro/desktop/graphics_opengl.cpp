@@ -822,7 +822,7 @@ void GraphicsOpenGL::SetWindowSize(int window_width, int window_height)
 	}
 }
 
-poro::types::vec2	GraphicsOpenGL::GetWindowSize() const 
+poro::types::vec2 GraphicsOpenGL::GetWindowSize() const 
 {
 	int window_w = mWindowWidth;
 	int window_h = mWindowHeight;

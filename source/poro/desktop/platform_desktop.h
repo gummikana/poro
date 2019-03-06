@@ -60,7 +60,6 @@ public:
 	virtual int		GetHeight();
 	virtual void	SetVsync( bool vsync_enabled );
 	virtual bool	GetVsync();
-
 	virtual bool	GetOrientationIsLandscape();
 
 	// global pointers
@@ -77,7 +76,6 @@ public:
 	virtual Joystick*		GetJoystick( int n );
 	virtual bool			GetJoysticksEnabled() const;
 	virtual void			SetJoysticksEnabled( bool enabled );
-
 
 	// timers
 	virtual void			SetFrameRate( int targetRate, bool fixed_timestep = true );

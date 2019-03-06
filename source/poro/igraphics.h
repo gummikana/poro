@@ -426,7 +426,7 @@ inline void IGraphics::DestroyTexture3d( ITexture3d* texture ) {
 	poro_assert( false );
 }
 
-inline IRenderTexture* IGraphics::CreateRenderTexture(int width, int height, bool linear_filtering ) { // , TEXTURE_FILTERING_MODE::Enum filtering_mode, TEXTURE_WRAPPING_MODE::Enum wrapping_mode
+inline IRenderTexture* IGraphics::CreateRenderTexture( int width, int height, bool linear_filtering ) { // , TEXTURE_FILTERING_MODE::Enum filtering_mode, TEXTURE_WRAPPING_MODE::Enum wrapping_mode
 	// If this fails, it means you should implement render texture on your end of things
 	poro_assert( false );
 	return NULL;
