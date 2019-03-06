@@ -830,6 +830,19 @@ poro::types::vec2 GraphicsOpenGL::GetWindowSize() const
 	return poro::types::vec2( (poro::types::Float32)window_w, (poro::types::Float32)window_h );
 }
 
+DisplayMode GraphicsOpenGL::GetCurrentDisplayMode()
+{
+	SDL_DisplayMode sdl_mode;
+	const int32 current_display_index = SDL_GetWindowDisplayIndex( mSDLWindow );
+	SDL_GetCurrentDisplayMode( current_display_index, &sdl_mode );
+
+	DisplayMode poro_mode;
+	poro_mode.width = sdl_mode.w;
+	poro_mode.height = sdl_mode.h;
+
+	return poro_mode;
+}
+
 void GraphicsOpenGL::GetDisplayModes( std::vector<DisplayMode>* out_modes )
 {
 	poro_assert( out_modes );
