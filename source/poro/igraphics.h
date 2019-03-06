@@ -198,6 +198,9 @@ public:
 	virtual poro::types::vec2	GetInternalSize() const												{ poro_assert( false ); /* You have to implement this */ return poro::types::vec2(); }
 	virtual void				SetWindowSize( int width, int height )								{ poro_assert( false ); /* You have to implement this */ }
 	virtual poro::types::vec2	GetWindowSize() const												{ poro_assert( false ); /* You have to implement this */ return poro::types::vec2(); }
+	virtual void				SetWindowPosition( int x, int y )									{ poro_assert( false ); /* You have to implement this */ }
+	virtual void				SetWindowPositionCentered()											{ poro_assert( false ); /* You have to implement this */ }
+	virtual poro::types::vec2	GetWindowPosition() const											{ poro_assert( false ); /* You have to implement this */ return poro::types::vec2(); }
 	virtual DisplayMode			GetCurrentDisplayMode()												{ poro_assert( false ); return DisplayMode(); /* You have to implement this */ }
 	virtual void				GetDisplayModes( std::vector<DisplayMode>* out_modes )				{ poro_assert( false ); /* You have to implement this */ }
 	virtual void				SetFullscreen( int fullscreen )										{ poro_assert( false ); /* You have to implement this */ }

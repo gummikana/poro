@@ -34,6 +34,8 @@ class ITexture;
 class ITexture3d;
 class IGraphicsBuffer;
 
+const int32 PORO_WINDOW_POS_CENTERED = -1;
+
 //-----------------------------------------------------------------------------
 
 class GraphicsOpenGL : public IGraphics
@@ -52,6 +54,9 @@ public:
 	virtual poro::types::vec2	GetInternalSize() const PORO_OVERRIDE;
 	virtual void				SetWindowSize(int width, int height) PORO_OVERRIDE;
 	virtual poro::types::vec2	GetWindowSize() const PORO_OVERRIDE;
+	virtual void				SetWindowPosition( int x, int y ) PORO_OVERRIDE;
+	virtual void				SetWindowPositionCentered() PORO_OVERRIDE;
+	virtual poro::types::vec2	GetWindowPosition() const PORO_OVERRIDE;
 	virtual DisplayMode			GetCurrentDisplayMode() PORO_OVERRIDE;
 	virtual void				GetDisplayModes( std::vector<DisplayMode>* out_modes ) PORO_OVERRIDE;
 	virtual void				SetFullscreen(int fullscreen) PORO_OVERRIDE;

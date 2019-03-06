@@ -830,6 +830,26 @@ poro::types::vec2 GraphicsOpenGL::GetWindowSize() const
 	return poro::types::vec2( (poro::types::Float32)window_w, (poro::types::Float32)window_h );
 }
 
+void GraphicsOpenGL::SetWindowPosition( int x, int y )
+{
+	poro_assert( mSDLWindow );
+	SDL_SetWindowPosition( mSDLWindow, x, y );
+}
+
+void GraphicsOpenGL::SetWindowPositionCentered()
+{
+	poro_assert( mSDLWindow );
+	SDL_SetWindowPosition( mSDLWindow, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED );
+}
+
+poro::types::vec2 GraphicsOpenGL::GetWindowPosition() const
+{
+	int x;
+	int y;
+	SDL_GetWindowPosition( mSDLWindow, &x, &y );
+	return poro::types::vec2( (float)x, (float)y );
+}
+
 DisplayMode GraphicsOpenGL::GetCurrentDisplayMode()
 {
 	SDL_DisplayMode sdl_mode;
