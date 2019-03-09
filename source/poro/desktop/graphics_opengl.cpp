@@ -1051,8 +1051,8 @@ void GraphicsOpenGL::DrawTexture( ITexture* itexture, float x, float y, float w,
 
 	TextureOpenGL* texture = (TextureOpenGL*)itexture;
 
-	static types::vec2 temp_verts[ 4 ];
-	static types::vec2 tex_coords[ 4 ];
+	types::vec2 temp_verts[ 4 ];
+	types::vec2 tex_coords[ 4 ];
 
 	temp_verts[ 0 ].x = (float)x;
 	temp_verts[ 0 ].y = (float)y;
@@ -1118,7 +1118,7 @@ void GraphicsOpenGL::DrawTexture( ITexture* itexture, types::vec2* vertices, typ
 		tex_coords[ i ].y *= texture->mExternalSizeY;
 	}
 
-	static Vertex vert[8];
+	Vertex vert[8];
 
 	float x_text_conv = ( 1.f / texture->mWidth ) * ( texture->mUv[ 2 ] - texture->mUv[ 0 ] );
 	float y_text_conv = ( 1.f / texture->mHeight ) * ( texture->mUv[ 3 ] - texture->mUv[ 1 ] );
@@ -1148,7 +1148,7 @@ void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const 
 		texture = (TextureOpenGL*)itexture;
 	}
 
-	static types::vec2 vertices[ 4 ];
+	types::vec2 vertices[ 4 ];
 	vertices[ 0 ].x = (float) position.x;
 	vertices[ 0 ].y = (float) position.y;
 	vertices[ 1 ].x = (float) position.x;
@@ -1267,7 +1267,7 @@ void GraphicsOpenGL::DrawLines( const std::vector< poro::types::vec2 >& vertices
 void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color )
 {
 	const int max_buffer_size = 256;
-	static GLfloat glVertices[ max_buffer_size ];
+	GLfloat glVertices[ max_buffer_size ];
 
 	if( this->GetDrawFillMode() == DRAWFILL_MODE::POLYGON )
 	{
@@ -1586,7 +1586,7 @@ void GraphicsOpenGL::SaveScreenshot( const std::string& filename, int pos_x, int
 	const int bpp = 3;
 
 	static unsigned char* pixels = new unsigned char[ bpp * (int)mViewportSize.x * (int)mViewportSize.y ];
-	static int pixels_size = bpp * (int)mViewportSize.x * (int)mViewportSize.y;
+	int pixels_size = bpp * (int)mViewportSize.x * (int)mViewportSize.y;
 
 	if( ( bpp * (int)mViewportSize.x * (int)mViewportSize.y ) !=  pixels_size )
 	{
