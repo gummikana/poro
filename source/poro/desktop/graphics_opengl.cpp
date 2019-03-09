@@ -1040,6 +1040,50 @@ void GraphicsOpenGL::DestroyTexture3d( ITexture3d* itexture )
 
 //=============================================================================
 
+IRenderTexture* GraphicsOpenGL::CreateRenderTexture(int width, int height, bool linear_filtering)
+{
+#ifdef PORO_DONT_USE_GLEW
+	poro_assert(false); //Buffer implementation needs glew.
+	return NULL;
+#else
+	RenderTextureOpenGL* buffer = new RenderTextureOpenGL;
+	buffer->InitRenderTexture(width, height, linear_filtering);
+	return buffer;
+#endif
+}
+
+void GraphicsOpenGL::DestroyRenderTexture(IRenderTexture* buffer)
+{
+#ifdef PORO_DONT_USE_GLEW
+	poro_assert(false); //Buffer implementation needs glew.
+#else
+	delete buffer;
+#endif
+}
+
+//=============================================================================
+
+IShader* GraphicsOpenGL::CreateShader()
+{
+	return new ShaderOpenGL();
+}
+
+void GraphicsOpenGL::SetShader( IShader* shader )
+{
+	if ( shader != mCurrentShader )
+	{
+		if ( mCurrentShader )
+			mCurrentShader->Disable();
+
+		mCurrentShader = shader;
+
+		if ( shader )
+			shader->Enable();
+	}
+}
+
+//=============================================================================
+
 void GraphicsOpenGL::BeginRendering()
 {
 	if ( mClearBackground ) {
@@ -1714,50 +1758,6 @@ types::vec2	GraphicsOpenGL::ConvertToInternalPos( int x, int y )
 	result.y *= internal_h / (types::Float32)mViewportSize.y;
 
 	return result;
-}
-
-//=============================================================================
-
-IRenderTexture* GraphicsOpenGL::CreateRenderTexture(int width, int height, bool linear_filtering)
-{
-#ifdef PORO_DONT_USE_GLEW
-	poro_assert(false); //Buffer implementation needs glew.
-	return NULL;
-#else
-	RenderTextureOpenGL* buffer = new RenderTextureOpenGL;
-	buffer->InitRenderTexture(width, height, linear_filtering);
-	return buffer;
-#endif
-}
-
-void GraphicsOpenGL::DestroyRenderTexture(IRenderTexture* buffer)
-{
-#ifdef PORO_DONT_USE_GLEW
-	poro_assert(false); //Buffer implementation needs glew.
-#else
-	delete buffer;
-#endif
-}
-
-//=============================================================================
-
-IShader* GraphicsOpenGL::CreateShader()
-{
-	return new ShaderOpenGL();
-}
-
-void GraphicsOpenGL::SetShader( IShader* shader )
-{
-	if ( shader != mCurrentShader )
-	{
-		if ( mCurrentShader )
-			mCurrentShader->Disable();
-
-		mCurrentShader = shader;
-
-		if ( shader )
-			shader->Enable();
-	}
 }
 
 //=============================================================================
