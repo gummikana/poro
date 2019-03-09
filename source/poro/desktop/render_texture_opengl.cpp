@@ -25,51 +25,37 @@
 
 namespace poro {
 
-void RenderTextureOpenGL::InitTexture(int width,int height, bool linear_filtering ) {
+bool RenderTextureOpenGL::Init( int width, int height, bool linear_filtering )
+{
+	const int filtering = linear_filtering ? GL_LINEAR : GL_NEAREST;
 
-	GLsizei widthP2 = width;  //(GLsizei)GetNextPowerOfTwo( width );
-	GLsizei heightP2 = height; // (GLsizei)GetNextPowerOfTwo( height );
+	// init texture
 	mTexture.mWidth = width;
 	mTexture.mHeight = height;
 	mTexture.mUv[0] = 0;
 	mTexture.mUv[1] = 0;
-	mTexture.mUv[2] = ((GLfloat)width) / (GLfloat)widthP2;
-	mTexture.mUv[3] = ((GLfloat)height) / (GLfloat)heightP2;
+	mTexture.mUv[2] = ((GLfloat)width) / (GLfloat)width;
+	mTexture.mUv[3] = ((GLfloat)height) / (GLfloat)height;
 
-	glGenTextures(1, (GLuint *)&mTexture.mTexture);
-	glBindTexture(GL_TEXTURE_2D, mTexture.mTexture);
+	glGenTextures( 1, (GLuint*)&mTexture.mTexture );
+	glBindTexture( GL_TEXTURE_2D, mTexture.mTexture );
 
-	int filtering;
-	if (linear_filtering)
-		filtering = GL_LINEAR;
-	else
-		filtering = GL_NEAREST;
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtering );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filtering );
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtering);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filtering);
-	
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, widthP2, heightP2, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-}
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
 
-void RenderTextureOpenGL::InitRenderTexture( int width, int height, bool linear_filtering )
-{
-	glGenFramebuffersEXT(1, &mBufferId);	// <- this line crashes on windows
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mBufferId);
+	// init fbo
+	glGenFramebuffers( 1, &mBufferId );
+	glBindFramebuffer( GL_FRAMEBUFFER, mBufferId );
 
-	InitTexture( width, height, linear_filtering );
+	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mTexture.mTexture, 0 );
+	GLenum status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
+	poro_assert( status == GL_FRAMEBUFFER_COMPLETE );
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 
-	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, mTexture.mTexture, 0);
-	GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-	poro_assert(status==GL_FRAMEBUFFER_COMPLETE_EXT);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-}
-
-//IGraphics
-bool RenderTextureOpenGL::Init( int width, int height, bool fullscreen, const types::string& caption )
-{
-	InitRenderTexture( width, height, false );
 	return true;
 }
 
@@ -78,14 +64,13 @@ void RenderTextureOpenGL::Release()
 	//Delete texture
 	glDeleteTextures(1, &mTexture.mTexture);
 	//Bind 0, which means render to back buffer, as a result, fb is unbound
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-	glDeleteFramebuffersEXT(1, &mBufferId);
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+	glDeleteFramebuffers( 1, &mBufferId );
 }
-
 
 void RenderTextureOpenGL::BeginRendering( bool clear_color, bool clear_depth, float clear_r, float clear_g, float clear_b, float clear_a )
 {
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, mBufferId );
+	glBindFramebuffer( GL_FRAMEBUFFER, mBufferId );
 	glPushAttrib( GL_VIEWPORT_BIT );
 	glViewport( 0, 0, mTexture.GetWidth(), mTexture.GetHeight() );
 
@@ -106,14 +91,14 @@ void RenderTextureOpenGL::BeginRendering( bool clear_color, bool clear_depth, fl
 void RenderTextureOpenGL::EndRendering()
 {
 	glPopAttrib();
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void RenderTextureOpenGL::ReadTextureDataFromGPU( uint8* out_pixels ) const
 {
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, mBufferId );
-	glReadPixels( 0, 0, mTexture.GetDataWidth(), mTexture.GetDataHeight(), GL_RGBA, GL_UNSIGNED_BYTE, (void*)out_pixels );
-	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0 );
+	glBindFramebuffer( GL_FRAMEBUFFER, mBufferId );
+	glReadPixels( 0, 0, mTexture.GetDataWidth(), mTexture.GetDataHeight(), GL_BGRA, GL_UNSIGNED_BYTE, (void*)out_pixels );
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 }
 
 }
