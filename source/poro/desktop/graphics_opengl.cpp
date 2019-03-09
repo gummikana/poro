@@ -48,7 +48,8 @@
 #undef STB_IMAGE_WRITE_IMPLEMENTATION
 
 
-//=============================================================================
+//-------------------------------------------------------------------------
+
 namespace poro {
 	
 	types::Uint32 GetNextPowerOfTwo(types::Uint32 input)
@@ -115,11 +116,8 @@ namespace {
 
 	//-------------------------------------------------------------------------
 
-	//static int drawcalls=0;
 	void drawsprite( TextureOpenGL* texture, Vertex* vertices, const types::fcolor& color, int count, Uint32 vertex_mode, int blend_mode )
 	{
-		//++drawcalls;
-		
 		Uint32 tex = texture->mTexture;
 		glBindTexture(GL_TEXTURE_2D, tex);
 		glEnable(GL_TEXTURE_2D);
@@ -165,72 +163,9 @@ namespace {
 		glEnd();
 		glDisable(GL_BLEND);
 		glDisable(GL_TEXTURE_2D);
-
-		//if (blend_mode == BLEND_MODE::NORMAL_ADDITIVEALPHA)
-		//	glBlendEquation(GL_FUNC_ADD);
 	}
-
-	//================================================================
-
-	void drawsprite_withalpha( TextureOpenGL* texture, Vertex* vertices, const types::fcolor& color, int count,
-		TextureOpenGL* alpha_texture, Vertex* alpha_vertices, const types::fcolor& alpha_color,
-		Uint32 vertex_mode )
-	{
-		
-#ifdef PORO_DONT_USE_GLEW
-		poro_logger << "Error: Glew isn't enable alpha masking, this means we can't do alpha masking. " << "\n";
-		return;
-#else
-		// no glew on mac? We'll maybe we need graphics_mac!?
-		if(!GLEW_VERSION_1_3)
-		{
-			poro_logger << "Error: OpenGL 1.3. isn't supported, this means we can't do alpha masking. " << "\n";
-			return;
-		}
-
-		Uint32 image_id = texture->mTexture;
-		Uint32 alpha_mask_id = alpha_texture->mTexture;
-
-		// alpha texture
-		glActiveTexture(GL_TEXTURE0);
-		glEnable(GL_TEXTURE_2D);
-		glColor4f(alpha_color[ 0 ], alpha_color[ 1 ], alpha_color[ 2 ], alpha_color[ 3 ] );
-		glBindTexture(GL_TEXTURE_2D, alpha_mask_id );
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		// sprite texture
-		glActiveTexture(GL_TEXTURE1);
-		glEnable(GL_TEXTURE_2D);
-		glColor4f(color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
-		glBindTexture(GL_TEXTURE_2D, image_id );
-
-		glDisable(GL_CULL_FACE);
-		glBegin( vertex_mode );
-		for( int i = 0; i < count; ++i )
-		{
-			// glTexCoord2f(vertices[ i ].tx, vertices[ i ].ty );
-			glMultiTexCoord2f(GL_TEXTURE0, alpha_vertices[ i ].tx, alpha_vertices[ i ].ty);
-			glMultiTexCoord2f(GL_TEXTURE1, vertices[i].tx, vertices[i].ty);
-			glVertex2f(vertices[ i ].x, vertices[ i ].y );
-		}
-
-		glEnd();
-
-
-		glDisable(GL_TEXTURE_2D);
-		glDisable( GL_BLEND );
-
-		glActiveTexture(GL_TEXTURE0);
-		glDisable(GL_TEXTURE_2D);
-#endif
-	}
-
 
 	//-------------------------------------------------------------------------
-
-
-	///////////////////////////////////////////////////////////////////////////
 
 	unsigned char* ResizeImage( unsigned char* pixels, int w, int h, int new_size_x, int new_size_y )
 	{
@@ -257,8 +192,8 @@ namespace {
 		}
 		return result;
 	}
-	
-	///////////////////////////////////////////////////////////////////////////
+
+	//-------------------------------------------------------------------------
 
 	TextureOpenGL* CreateImage( unsigned char* pixels, int w, int h, int bpp, bool store_raw_pixel_data )
 	{
@@ -345,7 +280,6 @@ namespace {
 		return result;
 	}
 			
-
 	//-----------------------------------------------------------------------------
 
 	// Thanks to Jetro Lauha for allowing me to use this. 
@@ -488,8 +422,9 @@ namespace {
 		glDisable(GL_TEXTURE_2D);
 	}
 
-} // end o namespace anon
-//-----------------------------------------------------------------------------
+} // end of namespace anon
+
+//=============================================================================
 
 GraphicsOpenGL::GraphicsOpenGL() :
 	IGraphics(),
@@ -509,16 +444,6 @@ GraphicsOpenGL::GraphicsOpenGL() :
 
 }
 
-int GraphicsOpenGL::GetFullscreen()
-{ 
-	return OPENGL_SETTINGS.fullscreen; 
-}
-
-bool GraphicsOpenGL::GetVsync() 
-{
-	return OPENGL_SETTINGS.vsync; 
-}
-
 //-----------------------------------------------------------------------------
 
 void GraphicsOpenGL::SetSettings( const GraphicsSettings& settings ) {
@@ -532,8 +457,8 @@ GraphicsSettings GraphicsOpenGL::GetSettings() const
 	return OPENGL_SETTINGS;
 }
 
-//-----------------------------------------------------------------------------
-	
+//=============================================================================
+
 bool GraphicsOpenGL::Init( int width, int height, int fullscreen, const types::string& caption )
 {
 	OPENGL_SETTINGS.fullscreen = fullscreen;
@@ -630,7 +555,8 @@ bool GraphicsOpenGL::Init( int width, int height, int fullscreen, const types::s
 
 	return 1;
 }
-//-----------------------------------------------------------------------------
+
+//=============================================================================
 
 void GraphicsOpenGL::SetCaption( const types::string& capt )
 {
@@ -647,6 +573,7 @@ void GraphicsOpenGL::SetIcon( const std::string& icon_bmp_file )
 		SDL_SetWindowIcon(mSDLWindow, icon_surface);
 
 }
+
 //-----------------------------------------------------------------------------
 
 void GraphicsOpenGL::SetInternalSize( types::Float32 width, types::Float32 height )
@@ -759,6 +686,11 @@ void GraphicsOpenGL::SetFullscreen(int fullscreen)
 	}
 }
 
+int GraphicsOpenGL::GetFullscreen()
+{ 
+	return OPENGL_SETTINGS.fullscreen; 
+}
+
 void GraphicsOpenGL::SetVsync( bool vsync )
 {
 	if ( OPENGL_SETTINGS.vsync != vsync )
@@ -766,6 +698,11 @@ void GraphicsOpenGL::SetVsync( bool vsync )
 		OPENGL_SETTINGS.vsync = vsync;
 		SDL_GL_SetSwapInterval( OPENGL_SETTINGS.vsync ? 1 : 0 );
 	}
+}
+
+bool GraphicsOpenGL::GetVsync() 
+{
+	return OPENGL_SETTINGS.vsync; 
 }
 
 void GraphicsOpenGL::ResetWindow()
@@ -1100,9 +1037,6 @@ void GraphicsOpenGL::EndRendering()
 {
 	_EndRendering();
 	SDL_GL_SwapWindow( mSDLWindow );
-
-	// std::cout << "DrawCalls:" << drawcalls << "\n";
-	// drawcalls=0;
 }
 
 //=============================================================================
@@ -1184,7 +1118,6 @@ void GraphicsOpenGL::DrawTexture( ITexture* itexture, types::vec2* vertices, typ
 		tex_coords[ i ].y *= texture->mExternalSizeY;
 	}
 
-
 	static Vertex vert[8];
 
 	float x_text_conv = ( 1.f / texture->mWidth ) * ( texture->mUv[ 2 ] - texture->mUv[ 0 ] );
@@ -1200,7 +1133,106 @@ void GraphicsOpenGL::DrawTexture( ITexture* itexture, types::vec2* vertices, typ
 	drawsprite( texture, vert, color, count, GetGLVertexMode(mVertexMode), mBlendMode );
 }
 
-//=============================================================================
+void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture, const poro::types::fcolor& color, types::vec2* tex_coords, int count, types::vec2* tex_coords2, types::vec2* tex_coords3 )
+{
+	struct Vertice
+	{
+		float x, y;
+		float uv0_x, uv0_y, uv0_z, uv0_w;
+		float uv1_x, uv1_y;
+	};
+
+	TextureOpenGL* texture;
+	if( itexture != NULL )
+	{
+		texture = (TextureOpenGL*)itexture;
+	}
+
+	static types::vec2 vertices[ 4 ];
+	vertices[ 0 ].x = (float) position.x;
+	vertices[ 0 ].y = (float) position.y;
+	vertices[ 1 ].x = (float) position.x;
+	vertices[ 1 ].y = (float) (position.y + size.y);
+	vertices[ 2 ].x = (float) (position.x + size.x);
+	vertices[ 2 ].y = (float) position.y;
+	vertices[ 3 ].x = (float) (position.x + size.x);
+	vertices[ 3 ].y = (float) (position.y + size.y);
+
+	if( itexture != NULL )
+	{
+		Uint32 tex = texture->mTexture;
+
+		glBindTexture(GL_TEXTURE_2D, tex);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	}
+
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_BLEND);
+	glColor4f( color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
+	glBegin( GL_TRIANGLE_STRIP );
+
+	for( int i = 0; i < 4; i++)
+	{
+		if( itexture != NULL )
+		{ 
+			if ( tex_coords == NULL || i >= count )
+			{
+				if (tex_coords2)
+					glTexCoord4f( vertices[i].x / texture->GetWidth(), vertices[i].y / texture->GetHeight(), vertices[i].x / texture->GetWidth(), vertices[i].y / texture->GetHeight() );
+				else
+					glTexCoord2f( vertices[i].x / texture->GetWidth(), vertices[i].y / texture->GetHeight() );
+
+				if ( tex_coords3 )
+					glMultiTexCoord2f( GL_TEXTURE1, vertices[ i ].x / texture->GetWidth(), vertices[ i ].y / texture->GetHeight() );
+			}
+			else
+			{
+				if (tex_coords2)
+					glTexCoord4f( tex_coords[i].x / texture->GetWidth(), tex_coords[i].y / texture->GetHeight(), tex_coords2[i].x / texture->GetWidth(), tex_coords2[i].y / texture->GetHeight() );
+				else
+					glTexCoord2f( tex_coords[i].x / texture->GetWidth(), tex_coords[i].y / texture->GetHeight() );
+
+				if ( tex_coords3 )
+					glMultiTexCoord2f( GL_TEXTURE1, tex_coords3[ i ].x / texture->GetWidth(), tex_coords3[ i ].y / texture->GetHeight() );
+			}
+		}
+		else
+		{
+			if ( tex_coords2 )
+				glTexCoord4f( tex_coords[i].x, tex_coords[i].y, tex_coords2[i].x, tex_coords2[i].y );
+			else
+				glTexCoord2f( tex_coords[i].x, tex_coords[i].y );
+
+			if ( tex_coords3 )
+				glMultiTexCoord2f( GL_TEXTURE1, tex_coords3[ i ].x, tex_coords3[ i ].y );
+		}
+
+		glVertex2f( vertices[ i ].x, vertices[ i ].y );
+	}
+	
+	glEnd();
+
+	// ---
+	if( itexture != NULL )
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	}
+
+	glDisable(GL_BLEND);
+	glDisable(GL_TEXTURE_2D);
+
+	// clean up
+	/*glDisableClientState( GL_VERTEX_ARRAY );
+	glClientActiveTexture( GL_TEXTURE0 );
+	glDisableClientState( GL_TEXTURE_COORD_ARRAY );
+	glClientActiveTexture( GL_TEXTURE1 );
+	glDisableClientState( GL_TEXTURE_COORD_ARRAY );*/
+}
 
 void GraphicsOpenGL::DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth, float width, bool loop )
 {
@@ -1244,11 +1276,6 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 		if(vertCount == 0)
 			return;
 		
-		//Internal rescale
-		// float xPlatformScale, yPlatformScale;
-		// xPlatformScale = (float)mViewportSize.x / (float)poro::IPlatform::Instance()->GetInternalWidth();
-		// yPlatformScale = (float)mViewportSize.y / (float)poro::IPlatform::Instance()->GetInternalHeight();
-
 		const float xPlatformScale = 1.f;
 		const float yPlatformScale = 1.f;
 
@@ -1262,13 +1289,10 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 
 		glEnable(GL_BLEND);
 		glColor4f(color[0], color[1], color[2], color[3]);
-		// glColor4f(1, 1, 1, 1);
-		// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		glEnable(GL_POLYGON_SMOOTH);
 		glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		// glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ZERO);
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glBegin(GL_POLYGON);
@@ -1292,16 +1316,10 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 	}
 	else if( GetDrawFillMode() == DRAWFILL_MODE::TRIANGLE_STRIP )
 	{
-
 		int vertCount = vertices.size();
 
 		if(vertCount == 0)
 			return;
-
-		// Internal rescale
-		// float xPlatformScale, yPlatformScale;
-		// xPlatformScale = (float)mViewportSize.x / (float)poro::IPlatform::Instance()->GetInternalWidth();
-		// yPlatformScale = (float)mViewportSize.y / (float)poro::IPlatform::Instance()->GetInternalHeight();
 
 		const float xPlatformScale = 1.f;
 		const float yPlatformScale = 1.f;
@@ -1323,7 +1341,7 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 
 		glColor4f(color[0], color[1], color[2], color[3]);
 		glPushMatrix();
-			/// glEnable(GL_POLYGON_SMOOTH);
+
 		if( color[3] < 1.f ) {
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1336,7 +1354,6 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 		
 		if( color[3] < 1.f ) 
 			glDisable(GL_BLEND);
-			// glDisable(GL_POLYGON_SMOOTH);
 		glPopMatrix();
 	}
 }
@@ -1529,207 +1546,6 @@ void GraphicsOpenGL::DrawQuads( Vertex_PosFloat2_TexCoordFloat2_ColorUint32* ver
 
 	glDisable( GL_BLEND );
 	glPopMatrix();
-}
-
-void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture, const poro::types::fcolor& color, types::vec2* tex_coords, int count, types::vec2* tex_coords2, types::vec2* tex_coords3 )
-{
-	struct Vertice
-	{
-		float x, y;
-		float uv0_x, uv0_y, uv0_z, uv0_w;
-		float uv1_x, uv1_y;
-	};
-
-	TextureOpenGL* texture;
-	if( itexture != NULL )
-	{
-		texture = (TextureOpenGL*)itexture;
-	}
-
-	static types::vec2 vertices[ 4 ];
-	vertices[ 0 ].x = (float) position.x;
-	vertices[ 0 ].y = (float) position.y;
-	vertices[ 1 ].x = (float) position.x;
-	vertices[ 1 ].y = (float) (position.y + size.y);
-	vertices[ 2 ].x = (float) (position.x + size.x);
-	vertices[ 2 ].y = (float) position.y;
-	vertices[ 3 ].x = (float) (position.x + size.x);
-	vertices[ 3 ].y = (float) (position.y + size.y);
-
-	if( itexture != NULL )
-	{
-		Uint32 tex = texture->mTexture;
-
-		glBindTexture(GL_TEXTURE_2D, tex);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	}
-
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_BLEND);
-	glColor4f( color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
-	glBegin( GL_TRIANGLE_STRIP );
-
-	for( int i = 0; i < 4; i++)
-	{
-		if( itexture != NULL )
-		{ 
-			if ( tex_coords == NULL || i >= count )
-			{
-				if (tex_coords2)
-					glTexCoord4f( vertices[i].x / texture->GetWidth(), vertices[i].y / texture->GetHeight(), vertices[i].x / texture->GetWidth(), vertices[i].y / texture->GetHeight() );
-				else
-					glTexCoord2f( vertices[i].x / texture->GetWidth(), vertices[i].y / texture->GetHeight() );
-
-				if ( tex_coords3 )
-					glMultiTexCoord2f( GL_TEXTURE1, vertices[ i ].x / texture->GetWidth(), vertices[ i ].y / texture->GetHeight() );
-			}
-			else
-			{
-				if (tex_coords2)
-					glTexCoord4f( tex_coords[i].x / texture->GetWidth(), tex_coords[i].y / texture->GetHeight(), tex_coords2[i].x / texture->GetWidth(), tex_coords2[i].y / texture->GetHeight() );
-				else
-					glTexCoord2f( tex_coords[i].x / texture->GetWidth(), tex_coords[i].y / texture->GetHeight() );
-
-				if ( tex_coords3 )
-					glMultiTexCoord2f( GL_TEXTURE1, tex_coords3[ i ].x / texture->GetWidth(), tex_coords3[ i ].y / texture->GetHeight() );
-			}
-		}
-		else
-		{
-			if ( tex_coords2 )
-				glTexCoord4f( tex_coords[i].x, tex_coords[i].y, tex_coords2[i].x, tex_coords2[i].y );
-			else
-				glTexCoord2f( tex_coords[i].x, tex_coords[i].y );
-
-			if ( tex_coords3 )
-				glMultiTexCoord2f( GL_TEXTURE1, tex_coords3[ i ].x, tex_coords3[ i ].y );
-		}
-
-		glVertex2f( vertices[ i ].x, vertices[ i ].y );
-	}
-	
-	glEnd();
-
-	/*static Vertice vertices[ 4 ];
-
-	vertices[ 0 ].x = (float) position.x;
-	vertices[ 0 ].y = (float) position.y;
-	vertices[ 1 ].x = (float) position.x;
-	vertices[ 1 ].y = (float) (position.y + size.y);
-	vertices[ 2 ].x = (float) (position.x + size.x);
-	vertices[ 2 ].y = (float) position.y;
-	vertices[ 3 ].x = (float) (position.x + size.x);
-	vertices[ 3 ].y = (float) (position.y + size.y);
-
-	vertices[ 0 ].uv0_x = 0.25f;
-	vertices[ 0 ].uv0_y = 0.5f;
-	vertices[ 1 ].uv0_x = 0.25f;
-	vertices[ 1 ].uv0_y = 0.5f;
-	vertices[ 2 ].uv0_x = 0.25f;
-	vertices[ 2 ].uv0_y = 0.5f;
-	vertices[ 3 ].uv0_x = 0.25f;
-	vertices[ 3 ].uv0_y = 0.5f;
-
-	vertices[ 0 ].uv1_x = 0.75f;
-	vertices[ 0 ].uv1_y = 0.75f;
-	vertices[ 1 ].uv1_x = 0.75f;
-	vertices[ 1 ].uv1_y = 0.75f;
-	vertices[ 2 ].uv1_x = 0.75f;
-	vertices[ 2 ].uv1_y = 0.75f;
-	vertices[ 3 ].uv1_x = 0.75f;
-	vertices[ 3 ].uv1_y = 0.75f;
-
-	for ( int i = 0; i < 4; i++ )
-	{
-		Vertice& v = vertices[ i ];
-
-		if ( itexture != NULL )
-		{
-			if ( tex_coords == NULL || i >= count )
-			{
-				if ( tex_coords2 )
-				{
-					v.uv0_x = vertices[ i ].x / texture->GetWidth();
-					v.uv0_y = vertices[ i ].y / texture->GetHeight();
-					v.uv0_z = vertices[ i ].x / texture->GetWidth();
-					v.uv0_w = vertices[ i ].y / texture->GetHeight();
-				}
-				else
-				{
-					v.uv0_x = vertices[ i ].x / texture->GetWidth();
-					v.uv0_y = vertices[ i ].y / texture->GetHeight();
-				}
-			}
-			else
-			{
-				if ( tex_coords2 )
-				{
-					v.uv0_x = tex_coords[ i ].x / texture->GetWidth();
-					v.uv0_y = tex_coords[ i ].y / texture->GetHeight();
-					v.uv0_z = tex_coords2[ i ].x / texture->GetWidth();
-					v.uv0_w = tex_coords2[ i ].y / texture->GetHeight();
-				}
-				else
-				{
-					v.uv0_x = vertices[ i ].x / texture->GetWidth();
-					v.uv0_y = vertices[ i ].y / texture->GetHeight();
-				}
-			}
-		}
-		else
-		{
-			if ( tex_coords2 )
-			{
-				v.uv0_x = tex_coords[ i ].x;
-				v.uv0_y = tex_coords[ i ].y;
-				v.uv0_z = tex_coords2[ i ].x;
-				v.uv0_w = tex_coords2[ i ].y;
-			}
-			else
-			{
-				v.uv0_x = tex_coords[ i ].x;
-				v.uv0_y = tex_coords[ i ].y;
-			}
-		}
-
-		v.uv1_x = 0.1f;
-		v.uv1_x = 0.9f;
-	}
-
-	// upload data to opengl, draw it
-	glEnableClientState( GL_VERTEX_ARRAY );
-	glVertexPointer( 2, GL_FLOAT, sizeof( Vertice ), &vertices[ 0 ].x );
-
-	glClientActiveTexture( GL_TEXTURE0 );
-	glEnableClientState( GL_TEXTURE_COORD_ARRAY );
-	glTexCoordPointer( 4, GL_FLOAT, sizeof( Vertice ), &vertices[ 0 ].uv0_x );
-
-	glClientActiveTexture( GL_TEXTURE1 );
-	glEnableClientState( GL_TEXTURE_COORD_ARRAY );
-	glTexCoordPointer( 2, GL_FLOAT, sizeof( Vertice ), &vertices[ 0 ].uv1_x );
-
-	glDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );*/
-
-	// ---
-	if( itexture != NULL )
-	{
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	}
-
-	glDisable(GL_BLEND);
-	glDisable(GL_TEXTURE_2D);
-
-	// clean up
-	/*glDisableClientState( GL_VERTEX_ARRAY );
-	glClientActiveTexture( GL_TEXTURE0 );
-	glDisableClientState( GL_TEXTURE_COORD_ARRAY );
-	glClientActiveTexture( GL_TEXTURE1 );
-	glDisableClientState( GL_TEXTURE_COORD_ARRAY );*/
 }
 
 //=============================================================================
