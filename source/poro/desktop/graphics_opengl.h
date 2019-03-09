@@ -100,18 +100,6 @@ public:
 										int count, 
 										const types::fcolor& color ) PORO_OVERRIDE;
 	
-	virtual void		DrawTextureWithAlpha( 
-		ITexture* texture, 
-		types::vec2* vertices, 
-		types::vec2* tex_coords, 
-		int count, 
-		const types::fcolor& color,
-		ITexture* alpha_texture, 
-		types::vec2* alpha_vertices, 
-		types::vec2* alpha_tex_coords, 
-		const types::fcolor& alpha_color ) PORO_OVERRIDE;
-
-
 	//-------------------------------------------------------------------------
 
 	virtual void		BeginRendering() PORO_OVERRIDE;

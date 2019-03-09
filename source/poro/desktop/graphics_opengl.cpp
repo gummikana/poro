@@ -1156,58 +1156,6 @@ void GraphicsOpenGL::DrawTexture( ITexture* itexture, types::vec2* vertices, typ
 	drawsprite( texture, vert, color, count, GetGLVertexMode(mVertexMode), mBlendMode );
 }
 
-void GraphicsOpenGL::DrawTextureWithAlpha(
-		ITexture* itexture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color,
-		ITexture* ialpha_texture, types::vec2* alpha_vertices, types::vec2* alpha_tex_coords, const types::fcolor& alpha_color )
-{
-	if( itexture == NULL || ialpha_texture == NULL )
-		return;
-
-	if( color[3] <= 0 || alpha_color[3] <= 0 )
-		return;
-
-	TextureOpenGL* texture = (TextureOpenGL*)itexture;
-	TextureOpenGL* alpha_texture = (TextureOpenGL*)ialpha_texture;
-
-	for( int i = 0; i < 4; ++i )
-	{
-		tex_coords[ i ].x *= texture->mExternalSizeX;
-		tex_coords[ i ].y *= texture->mExternalSizeY;
-		alpha_tex_coords[ i ].x *= alpha_texture->mExternalSizeX;
-		alpha_tex_coords[ i ].y *= alpha_texture->mExternalSizeY;
-	}
-
-
-	static Vertex vert[8];
-	static Vertex alpha_vert[8];
-
-	poro_assert( count > 2 );
-	poro_assert( count <= 8 );
-
-	// vertices
-	float x_text_conv = ( 1.f / texture->mWidth ) * ( texture->mUv[ 2 ] - texture->mUv[ 0 ] );
-	float y_text_conv = ( 1.f / texture->mHeight ) * ( texture->mUv[ 3 ] - texture->mUv[ 1 ] );
-	float x_alpha_text_conv = ( 1.f / alpha_texture->mWidth ) * ( alpha_texture->mUv[ 2 ] - alpha_texture->mUv[ 0 ] );
-	float y_alpha_text_conv = ( 1.f / alpha_texture->mHeight ) * ( alpha_texture->mUv[ 3 ] - alpha_texture->mUv[ 1 ] );
-
-	for( int i = 0; i < count; ++i )
-	{
-		vert[i].x = vertices[ i ].x;
-		vert[i].y = vertices[ i ].y;
-		vert[i].tx = texture->mUv[ 0 ] + ( tex_coords[ i ].x * x_text_conv );
-		vert[i].ty = texture->mUv[ 1 ] + ( tex_coords[ i ].y * y_text_conv );
-
-		alpha_vert[i].x = alpha_vertices[i].x;
-		alpha_vert[i].y = alpha_vertices[i].y;
-		alpha_vert[i].tx = alpha_texture->mUv[ 0 ] + ( alpha_tex_coords[ i ].x * x_alpha_text_conv );
-		alpha_vert[i].ty = alpha_texture->mUv[ 1 ] + ( alpha_tex_coords[ i ].y * y_alpha_text_conv );
-	}
-
-	drawsprite_withalpha( texture, vert, color, count,
-		alpha_texture, alpha_vert, alpha_color,
-		GetGLVertexMode(mVertexMode) );
-}
-
 //=============================================================================
 
 void GraphicsOpenGL::DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth, float width, bool loop )

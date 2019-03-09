@@ -266,18 +266,6 @@ public:
 										int count, 
 										const types::fcolor& color ) = 0;
 
-	
-	virtual void DrawTextureWithAlpha( ITexture* texture, 
-												types::vec2* vertices, 
-												types::vec2* tex_coords, 
-												int count, 
-												const types::fcolor& color,
-												ITexture* alpha_texture, 
-												types::vec2* alpha_vertices, 
-												types::vec2* alpha_tex_coords, 
-												const types::fcolor& alpha_color ) { poro_assert( false && "Needs to be implemented" ); }
-
-
 	virtual void DrawTexturedRect( const poro::types::vec2& position, 
 											const poro::types::vec2& size, 
 											ITexture* itexture, 
