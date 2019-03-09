@@ -33,7 +33,7 @@ namespace poro {
 class RenderTextureOpenGL :  public IRenderTexture
 {
 public:
-	RenderTextureOpenGL() : IRenderTexture() { }
+	RenderTextureOpenGL() : mTexture(), IRenderTexture() { }
 	virtual ~RenderTextureOpenGL() { Release(); }
 
 	bool Init( int width, int height, bool linear_filtering );
@@ -49,7 +49,7 @@ public:
 private:
 	
 	types::Uint32 mBufferId = 0;
-	TextureOpenGL mTexture = 0;
+	TextureOpenGL mTexture;
 };
 	
 } // end o namespace poro
