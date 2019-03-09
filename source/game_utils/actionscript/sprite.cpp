@@ -1194,6 +1194,8 @@ void Sprite::DrawChildren( poro::IGraphics* graphics, types::camera* camera, Tra
 
 void Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const Transform& transform )
 {
+	poro_assert( graphics );
+
 	if( mTexture == NULL )
 		return;
 
@@ -1206,75 +1208,63 @@ void Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 
 	types::rect dest_rect(rect.x, rect.y, rect.w, rect.h );
 	poro::types::fcolor color_me = poro::GetFColor( 
-		mColor[ 0 ] * tcolor[ 0 ], 
-		mColor[ 1 ] * tcolor[ 1 ], 
-		mColor[ 2 ] * tcolor[ 2 ], 
-		mColor[ 3 ] * tcolor[ 3 ] );
+	mColor[ 0 ] * tcolor[ 0 ], 
+	mColor[ 1 ] * tcolor[ 1 ], 
+	mColor[ 2 ] * tcolor[ 2 ], 
+	mColor[ 3 ] * tcolor[ 3 ] );
 
-#if PORO_GRAPHICS_API_OLD
-	if( graphics ) // removed because this is close to being the worst possible place to test for the existence of 'graphics'
+	temp_verts[ 0 ].x = (float)0 - mCenterOffset.x;
+	temp_verts[ 0 ].y = (float)0 - mCenterOffset.y;
+	temp_verts[ 1 ].x = (float)0 - mCenterOffset.x;
+	temp_verts[ 1 ].y = (float)dest_rect.h - mCenterOffset.y;
+	temp_verts[ 3 ].x = (float)(dest_rect.w) - mCenterOffset.x;
+	temp_verts[ 3 ].y = (float)0 - mCenterOffset.y;
+	temp_verts[ 2 ].x = (float)dest_rect.w - mCenterOffset.x;
+	temp_verts[ 2 ].y = (float)dest_rect.h - mCenterOffset.y;
+
+	for( int i = 0; i < 4; ++i )
 	{
-#endif
-		temp_verts[ 0 ].x = (float)0 - mCenterOffset.x;
-		temp_verts[ 0 ].y = (float)0 - mCenterOffset.y;
-		temp_verts[ 1 ].x = (float)0 - mCenterOffset.x;
-		temp_verts[ 1 ].y = (float)dest_rect.h - mCenterOffset.y;
-		temp_verts[ 3 ].x = (float)(dest_rect.w) - mCenterOffset.x;
-		temp_verts[ 3 ].y = (float)0 - mCenterOffset.y;
-		temp_verts[ 2 ].x = (float)dest_rect.w - mCenterOffset.x;
-		temp_verts[ 2 ].y = (float)dest_rect.h - mCenterOffset.y;
-
-		for( int i = 0; i < 4; ++i )
-		{
-			temp_verts[ i ] = ceng::math::MulWithScale( mXForm,  temp_verts[ i ] );
-			temp_verts[ i ] = ceng::math::MulWithScale( matrix, temp_verts[ i ] );
-#if PORO_GRAPHICS_API_OLD
-			if( camera )
-				temp_verts[ i ] = camera->Transform( temp_verts[ i ] );
-#endif
-		}
-
-		// cull the vertices so we can at least stress the graphics driver a bit less
-		if ( IsOutsideSreen( graphics, temp_verts ) )
-			return;
-
-	#ifdef WIZARD_DEBUG
-		rendered_this_frame++;
-	#endif
-
-		mLastFrameRendered = Poro()->GetFrameNum();
-
-		// blend mode
-		if( mBlendMode != poro::BLEND_MODE::NORMAL )
-			graphics->PushBlendMode( mBlendMode );
-
-		tex_coords[ 0 ].x = dest_rect.x;
-		tex_coords[ 0 ].y = dest_rect.y;
-		tex_coords[ 1 ].x = dest_rect.x;
-		tex_coords[ 1 ].y = dest_rect.y + dest_rect.h;
-		tex_coords[ 3 ].x = dest_rect.x + dest_rect.w;
-		tex_coords[ 3 ].y = dest_rect.y;
-		tex_coords[ 2 ].x = dest_rect.x + dest_rect.w;
-		tex_coords[ 2 ].y = dest_rect.y + dest_rect.h;
-
-		// ---
-		graphics->SetShader( mShader );
-		if ( mShader )
-		{
-			mShader->SetParameter( "tex", mTexture );
-			mShader->SetParameter( "tex_size", poro::types::vec2( (float)mTexture->GetDataWidth(), (float)mTexture->GetDataHeight() ) );
-		}
-
-		graphics->DrawTexture( mTexture, temp_verts, tex_coords, 4, color_me );
-
-		graphics->SetShader( NULL );
-		
-		if( mBlendMode != poro::BLEND_MODE::NORMAL )
-			graphics->PopBlendMode();
-
-#if PORO_GRAPHICS_API_OLD
+		temp_verts[ i ] = ceng::math::MulWithScale( mXForm,  temp_verts[ i ] );
+		temp_verts[ i ] = ceng::math::MulWithScale( matrix, temp_verts[ i ] );
 	}
+
+	// cull the vertices so we can at least stress the graphics driver a bit less
+	if ( IsOutsideSreen( graphics, temp_verts ) )
+		return;
+
+#ifdef WIZARD_DEBUG
+	rendered_this_frame++;
 #endif
+
+	mLastFrameRendered = Poro()->GetFrameNum();
+
+	// blend mode
+	if( mBlendMode != poro::BLEND_MODE::NORMAL )
+		graphics->PushBlendMode( mBlendMode );
+
+	tex_coords[ 0 ].x = dest_rect.x;
+	tex_coords[ 0 ].y = dest_rect.y;
+	tex_coords[ 1 ].x = dest_rect.x;
+	tex_coords[ 1 ].y = dest_rect.y + dest_rect.h;
+	tex_coords[ 3 ].x = dest_rect.x + dest_rect.w;
+	tex_coords[ 3 ].y = dest_rect.y;
+	tex_coords[ 2 ].x = dest_rect.x + dest_rect.w;
+	tex_coords[ 2 ].y = dest_rect.y + dest_rect.h;
+
+	// ---
+	graphics->SetShader( mShader );
+	if ( mShader )
+	{
+		mShader->SetParameter( "tex", mTexture );
+		mShader->SetParameter( "tex_size", poro::types::vec2( (float)mTexture->GetDataWidth(), (float)mTexture->GetDataHeight() ) );
+	}
+
+	graphics->DrawTexture( mTexture, temp_verts, tex_coords, 4, color_me );
+
+	graphics->SetShader( NULL );
+		
+	if( mBlendMode != poro::BLEND_MODE::NORMAL )
+		graphics->PopBlendMode();
 }
 ///////////////////////////////////////////////////////////////////////////////
 
