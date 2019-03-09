@@ -32,7 +32,6 @@ namespace poro {
 
 class ITexture;
 class ITexture3d;
-class IGraphicsBuffer;
 
 //-----------------------------------------------------------------------------
 
@@ -68,9 +67,6 @@ public:
 	virtual void				SetSettings( const GraphicsSettings& settings ) PORO_OVERRIDE;
 	virtual GraphicsSettings	GetSettings() const PORO_OVERRIDE;
 	
-	virtual void		SetDrawTextureBuffering( bool buffering ) PORO_OVERRIDE;
-	virtual bool		GetDrawTextureBuffering() const PORO_OVERRIDE;
-
 	//-------------------------------------------------------------------------
 
 	virtual ITexture*	CreateTexture( int width, int height ) PORO_OVERRIDE;
@@ -170,12 +166,6 @@ private:
 	int mDesktopHeight;
 	
 	bool mGlContextInitialized;
-
-	void FlushDrawTextureBuffer();
-
-	class					DrawTextureBuffered;
-	DrawTextureBuffered*	mDrawTextureBuffered;
-	bool					mUseDrawTextureBuffering;
 
 	uint32 mDynamicVboHandle = 0;
 

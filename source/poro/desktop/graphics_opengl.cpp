@@ -491,121 +491,6 @@ namespace {
 } // end o namespace anon
 //-----------------------------------------------------------------------------
 
-//=========================== DrawTextureBuffer ===============================
-//
-// Now the game pushes all the textures through the buffered pipeline...
-// Maybe a more intelligent way of doing this would be to draw the first 
-// "texture" through the normal pipeline. If the next draw call uses the same 
-// texture and the previous and the next one could be buffered, we draw the 
-// next one through the buffer. This way we skip unnecessary "optimization" 
-// of normal textured draw calls...
-//
-// Or maybe we just turn this on when we're using an atlas...
-//
-class GraphicsOpenGL::DrawTextureBuffered {
-public:
-
-	Vertex				vertex_buffer[PORO_DRAW_TEXTURE_BUFFER_SIZE];
-	int					vertex_buffer_count;
-	TextureOpenGL*		prev_texture;
-	Uint32				prev_texture_id;
-	types::fcolor		prev_color;
-	int					prev_vertex_mode;
-	int					prev_blend_mode;
-
-	DrawTextureBuffered() 
-	{
-		vertex_buffer_count = 0;
-		prev_texture = NULL;
-		prev_texture_id = 0;
-		prev_color = GetFColor(0,0,0,0);
-		prev_vertex_mode = 0;
-		prev_blend_mode = 0;
-	}
-
-	bool CanDrawSpriteToBuffer( TextureOpenGL* texture, const types::fcolor& color, int count, Uint32 vertex_mode, int blend_mode ) 
-	{
-		poro_assert( texture );
-		poro_assert( count > 0 );
-
-		if( vertex_buffer_count == 0 )
-			return true;
-		
-		if( prev_texture_id != texture->mTexture )
-			return false;
-		
-		if( vertex_buffer_count+(count-2)*3 >= PORO_DRAW_TEXTURE_BUFFER_SIZE )
-			return false;
-		
-		if( prev_color[0] != color[0] || prev_color[1] != color[1] || prev_color[2] != color[2] || prev_color[3] != color[3] )
-			return false;
-		
-		if( prev_blend_mode != blend_mode )
-			return false;
-		
-		return true;
-	}
-	
-	void DrawSpriteToBuffer( TextureOpenGL* texture, Vertex* vertices, const types::fcolor& color, int count, Uint32 vertex_mode, int blend_mode )
-	{
-		poro_assert( texture );
-		
-		prev_color = color;
-		prev_texture_id = texture->mTexture;
-		prev_texture = texture;
-		prev_vertex_mode = vertex_mode;
-		prev_blend_mode= blend_mode;
-		
-		//convert GL_TRIANGLE_FAN and GL_TRIANGLE_STRIP to GL_TRIANGLES
-		if(vertex_mode==GL_TRIANGLE_FAN){
-			for( int i=2; i<count; ++i ){
-				vertex_buffer[vertex_buffer_count] = vertices[0];
-				++vertex_buffer_count;
-				vertex_buffer[vertex_buffer_count] = vertices[i-1];
-				++vertex_buffer_count;
-				vertex_buffer[vertex_buffer_count] = vertices[i];
-				++vertex_buffer_count;
-			}
-		} else if(vertex_mode==GL_TRIANGLE_STRIP){
-			for( int i=2; i<count; ++i ){
-				vertex_buffer[vertex_buffer_count] = vertices[i-2];
-				++vertex_buffer_count;
-				vertex_buffer[vertex_buffer_count] = vertices[i-1];
-				++vertex_buffer_count;
-				vertex_buffer[vertex_buffer_count] = vertices[i];
-				++vertex_buffer_count;
-			}
-		} else if(vertex_mode==GL_TRIANGLES) {
-			for( int i=0; i<count; ++i ){
-				vertex_buffer[vertex_buffer_count] = vertices[i];
-				++vertex_buffer_count;
-			}
-		}
-	}
-	
-	void FlushDrawSpriteBuffer()
-	{
-		if( vertex_buffer_count > 0 ) {
-			drawsprite( prev_texture, vertex_buffer, prev_color, vertex_buffer_count, GL_TRIANGLES, prev_blend_mode );
-			/*if( vertex_buffer_count != 6 )
-				std::cout << "Buffered draw call: " << vertex_buffer_count << "\n";*/
-		}
-		vertex_buffer_count = 0;
-	}
-	
-	void BufferedDrawSprite( TextureOpenGL* texture, Vertex* vertices, const types::fcolor& color, int count, Uint32 vertex_mode, int blend_mode )
-	{
-		if( !CanDrawSpriteToBuffer( texture, color, count, vertex_mode, blend_mode ) ){
-			FlushDrawSpriteBuffer();
-		}
-		DrawSpriteToBuffer( texture, vertices, color, count, vertex_mode, blend_mode );
-	}
-	
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
-
 GraphicsOpenGL::GraphicsOpenGL() :
 	IGraphics(),
 	mSDLWindow( NULL ),
@@ -619,10 +504,7 @@ GraphicsOpenGL::GraphicsOpenGL() :
 	mDesktopWidth( 640 ),
 	mDesktopHeight( 480 ),
 
-	mGlContextInitialized( false ),
-
-	mDrawTextureBuffered( NULL ),	
-	mUseDrawTextureBuffering( false )
+	mGlContextInitialized( false )
 {
 
 }
@@ -643,7 +525,6 @@ void GraphicsOpenGL::SetSettings( const GraphicsSettings& settings ) {
 	SetFullscreen( settings.fullscreen );
 	SetVsync( settings.vsync );
 	OPENGL_SETTINGS = settings;
-	this->SetDrawTextureBuffering( settings.buffered_textures );
 }
 
 GraphicsSettings GraphicsOpenGL::GetSettings() const 
@@ -653,20 +534,6 @@ GraphicsSettings GraphicsOpenGL::GetSettings() const
 
 //-----------------------------------------------------------------------------
 	
-void GraphicsOpenGL::SetDrawTextureBuffering( bool buffering ) {
-	FlushDrawTextureBuffer();
-	mUseDrawTextureBuffering = buffering;
-
-	if( mUseDrawTextureBuffering && mDrawTextureBuffered == NULL ) 
-		mDrawTextureBuffered = new DrawTextureBuffered;
-}
-
-bool GraphicsOpenGL::GetDrawTextureBuffering() const {
-	return mUseDrawTextureBuffering;
-}
-
-//-----------------------------------------------------------------------------
-
 bool GraphicsOpenGL::Init( int width, int height, int fullscreen, const types::string& caption )
 {
 	OPENGL_SETTINGS.fullscreen = fullscreen;
@@ -675,8 +542,6 @@ bool GraphicsOpenGL::Init( int width, int height, int fullscreen, const types::s
 	mDesktopWidth = 0;
 	mDesktopHeight = 0;
 	mGlContextInitialized = false;
-	mDrawTextureBuffered = NULL;	
-	mUseDrawTextureBuffering = false;
 
 	//const SDL_VideoInfo *info = NULL;
 
@@ -1190,7 +1055,6 @@ void GraphicsOpenGL::BeginRendering()
 void GraphicsOpenGL::EndRendering()
 {
 	_EndRendering();
-	FlushDrawTextureBuffer();
 	SDL_GL_SwapWindow( mSDLWindow );
 
 	// std::cout << "DrawCalls:" << drawcalls << "\n";
@@ -1289,10 +1153,7 @@ void GraphicsOpenGL::DrawTexture( ITexture* itexture, types::vec2* vertices, typ
 		vert[i].ty = texture->mUv[ 1 ] + ( tex_coords[i].y * y_text_conv );
 	}
 
-	if( mUseDrawTextureBuffering && mDrawTextureBuffered )
-		mDrawTextureBuffered->BufferedDrawSprite( texture, vert, color, count, GetGLVertexMode(mVertexMode), mBlendMode );
-	else
-		drawsprite( texture, vert, color, count, GetGLVertexMode(mVertexMode), mBlendMode );
+	drawsprite( texture, vert, color, count, GetGLVertexMode(mVertexMode), mBlendMode );
 }
 
 void GraphicsOpenGL::DrawTextureWithAlpha(
@@ -1304,7 +1165,6 @@ void GraphicsOpenGL::DrawTextureWithAlpha(
 
 	if( color[3] <= 0 || alpha_color[3] <= 0 )
 		return;
-	FlushDrawTextureBuffer();
 
 	TextureOpenGL* texture = (TextureOpenGL*)itexture;
 	TextureOpenGL* alpha_texture = (TextureOpenGL*)ialpha_texture;
@@ -1355,7 +1215,6 @@ void GraphicsOpenGL::DrawLines( const std::vector< poro::types::vec2 >& vertices
 	//float xPlatformScale, yPlatformScale;
 	//xPlatformScale = (float)mViewportSize.x / (float)poro::IPlatform::Instance()->GetInternalWidth();
 	//yPlatformScale = (float)mViewportSize.y / (float)poro::IPlatform::Instance()->GetInternalHeight();
-	FlushDrawTextureBuffer();
 	
 	glEnable(GL_BLEND);
 
@@ -1383,8 +1242,6 @@ void GraphicsOpenGL::DrawLines( const std::vector< poro::types::vec2 >& vertices
 
 void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color )
 {
-	FlushDrawTextureBuffer();
-
 	const int max_buffer_size = 256;
 	static GLfloat glVertices[ max_buffer_size ];
 
@@ -1694,7 +1551,6 @@ void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const 
 	TextureOpenGL* texture;
 	if( itexture != NULL )
 	{
-		FlushDrawTextureBuffer();
 		texture = (TextureOpenGL*)itexture;
 	}
 
@@ -1957,14 +1813,6 @@ void GraphicsOpenGL::SetShader( IShader* shader )
 }
 
 //=============================================================================
-
-void GraphicsOpenGL::FlushDrawTextureBuffer() 
-{
-	if( mDrawTextureBuffered ) 
-		mDrawTextureBuffered->FlushDrawSpriteBuffer();
-}
-//=============================================================================
-
 
 void GraphicsOpenGL::SaveScreenshot( const std::string& filename, int pos_x, int pos_y, int w, int h )
 {

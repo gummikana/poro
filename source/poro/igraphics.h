@@ -30,12 +30,6 @@
 #include "itexture3d.h"
 #include "ishader.h"
 
-//Number of vertices that can be stored in the DrawTextureBuffer.
-//6000 = 2000 triangles = 1000 quads, since we use GL_TRIANGLES.
-#ifndef PORO_DRAW_TEXTURE_BUFFER_SIZE
-	#define PORO_DRAW_TEXTURE_BUFFER_SIZE 6000 
-#endif
-
 namespace poro {
 
 class IRenderTexture;
@@ -155,7 +149,6 @@ struct GraphicsSettings
 		icon_bmp("data/ui_gfx/icon.bmp"),
 		textures_resize_to_power_of_two( true ), 
 		textures_fix_alpha_channel( true ),
-		buffered_textures( false ),
 		vsync( false ),
 		current_display( 0 )
 	{
@@ -169,7 +162,6 @@ struct GraphicsSettings
 
 	bool textures_resize_to_power_of_two;
 	bool textures_fix_alpha_channel;
-	bool buffered_textures;
 	
 	bool vsync;
 	int current_display;	// opens fullscreen on this display index...
@@ -257,22 +249,6 @@ public:
 	virtual void PushVertexMode( VERTEX_MODE::Enum vertex_mode);
 	virtual void PopVertexMode();
 
-	//-------------------------------------------------------------------------
-	 
-	// DrawTextureBuffer
-	// The DrawTextureBuffer works so that consecutive calls to DrawTexture are buffered. 
-	// The buffer is automatically flushed using a single draw call when one of the following things happen:
-	// - The used texture changes.
-	// - The used color changes.
-	// - The used blendmode changes.
-	// - EndRendering() is called.
-	// - Any other Draw function ecept the two DrawTexture() functions are called.
-	// - The buffer is full.
-	// - Turinging of the buffering.
-	
-	virtual void SetDrawTextureBuffering( bool buffering ) {}
-	virtual bool GetDrawTextureBuffering() const { return false; }
-	
 	//-------------------------------------------------------------------------
 
 	virtual void DrawTexture( ITexture* texture,
