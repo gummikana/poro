@@ -38,7 +38,6 @@
 
 namespace poro {
 
-class IGraphicsBuffer;
 class IRenderTexture;
 class IShader;
 
@@ -325,9 +324,6 @@ public:
 
 	virtual void SetDrawFillMode( int drawfill_mode )	{ mDrawFillMode = drawfill_mode; }
 	virtual int  GetDrawFillMode() const				{ return mDrawFillMode; }
-
-	virtual IGraphicsBuffer* CreateGraphicsBuffer( int width, int height ) { return NULL; }
-	virtual void DestroyGraphicsBuffer(IGraphicsBuffer* buffer) { }
 
 	//-------------------------------------------------------------------------
 

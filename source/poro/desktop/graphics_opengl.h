@@ -132,11 +132,6 @@ public:
 	
 	//-------------------------------------------------------------------------
 
-	virtual IGraphicsBuffer* CreateGraphicsBuffer(int width, int height) PORO_OVERRIDE;
-	virtual void DestroyGraphicsBuffer(IGraphicsBuffer* buffer) PORO_OVERRIDE;
-
-	//-------------------------------------------------------------------------
-
 	virtual IRenderTexture* CreateRenderTexture(int width, int height, bool linear_filtering) PORO_OVERRIDE;
 	virtual void DestroyRenderTexture(IRenderTexture* buffer) PORO_OVERRIDE;
 

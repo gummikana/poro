@@ -25,7 +25,6 @@
 // LoadSprite requires these
 #include "../../poro/iplatform.h"
 #include "../../poro/igraphics.h"
-#include "../../poro/igraphics_buffer.h"
 #include "../../poro/ishader.h"
 
 #include "../../utils/singleton/csingletonptr.h"

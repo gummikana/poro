@@ -36,7 +36,6 @@
 #undef STB_IMAGE_IMPLEMENTATION
 
 #ifndef PORO_DONT_USE_GLEW
-#	include "graphics_buffer_opengl.h"
 #	include "render_texture_opengl.h"
 #	include "shader_opengl.h"
 #endif
@@ -1911,29 +1910,6 @@ types::vec2	GraphicsOpenGL::ConvertToInternalPos( int x, int y )
 	result.y *= internal_h / (types::Float32)mViewportSize.y;
 
 	return result;
-}
-
-//=============================================================================
-
-IGraphicsBuffer* GraphicsOpenGL::CreateGraphicsBuffer(int width, int height)
-{
-#ifdef PORO_DONT_USE_GLEW
-	poro_assert(false); //Buffer implementation needs glew.
-	return NULL;
-#else
-	GraphicsBufferOpenGL* buffer = new GraphicsBufferOpenGL;
-	buffer->Init(width, height, false, "");
-	return buffer;
-#endif
-}
-
-void GraphicsOpenGL::DestroyGraphicsBuffer(IGraphicsBuffer* buffer)
-{
-#ifdef PORO_DONT_USE_GLEW
-	poro_assert(false); //Buffer implementation needs glew.
-#else
-	delete buffer;
-#endif
 }
 
 //=============================================================================
