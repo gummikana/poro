@@ -983,8 +983,8 @@ IRenderTexture* GraphicsOpenGL::CreateRenderTexture(int width, int height, bool 
 	poro_assert(false); //Buffer implementation needs glew.
 	return NULL;
 #else
-	RenderTextureOpenGL* buffer = new RenderTextureOpenGL;
-	buffer->InitRenderTexture(width, height, linear_filtering);
+	RenderTextureOpenGL* buffer = new RenderTextureOpenGL();
+	buffer->Init( width, height, linear_filtering );
 	return buffer;
 #endif
 }
