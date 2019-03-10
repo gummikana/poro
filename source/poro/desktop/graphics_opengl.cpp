@@ -788,19 +788,22 @@ ITexture* GraphicsOpenGL::CreateTexture( int width, int height )
 
 ITexture* GraphicsOpenGL::CloneTexture( ITexture* other )
 {
-	return new TextureOpenGL( dynamic_cast< TextureOpenGL* >( other ) );
+	poro_assert( dynamic_cast<TextureOpenGL*>( other ) );
+	return new TextureOpenGL( static_cast<TextureOpenGL*>(other) );
 }
 
-void GraphicsOpenGL::SetTextureData( ITexture* texture, void* data )
+void GraphicsOpenGL::SetTextureData( ITexture* itexture, void* data )
 {
-    TextureOpenGL* texture_opengl = dynamic_cast< TextureOpenGL* >( texture );
-	SetTextureData_Impl( texture_opengl, data, 0, 0, texture_opengl->GetWidth(), texture_opengl->GetHeight() );
+	poro_assert( dynamic_cast<TextureOpenGL*>( itexture) );
+    TextureOpenGL* texture = static_cast<TextureOpenGL*>(itexture);
+	SetTextureData_Impl( texture, data, 0, 0, texture->GetWidth(), texture->GetHeight() );
 }
 
-void GraphicsOpenGL::SetTextureData( ITexture* texture, void* data, int x, int y, int w, int h )
+void GraphicsOpenGL::SetTextureData( ITexture* itexture, void* data, int x, int y, int w, int h )
 {
-    TextureOpenGL* texture_opengl = dynamic_cast< TextureOpenGL* >( texture );
-    SetTextureData_Impl( texture_opengl, data, x, y, w, h );
+	poro_assert( dynamic_cast<TextureOpenGL*>( itexture) );
+	TextureOpenGL* texture = static_cast<TextureOpenGL*>(itexture);
+    SetTextureData_Impl( texture, data, x, y, w, h );
 }
 
 ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename )
@@ -814,29 +817,31 @@ ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename, bool store
 {
 	ITexture* result = LoadTexture_Impl( filename, store_raw_pixel_data );
 	
-	if( result == NULL )
-		poro_logger << "Couldn't load image: " << filename << "\n";
-		
-	TextureOpenGL* texture = dynamic_cast< TextureOpenGL* >( result );
-	if( texture )
+	if ( result )
+	{
+		poro_assert( dynamic_cast<TextureOpenGL*>( result ) );
+		TextureOpenGL* texture = static_cast<TextureOpenGL*>( result );
 		texture->SetFilename( filename );
+	}
+	else
+	{
+		poro_logger << "Couldn't load image: " << filename << "\n";
+	}
 
 	return result;
 }
 
 void GraphicsOpenGL::DestroyTexture( ITexture* itexture )
 {
-	TextureOpenGL* texture = dynamic_cast< TextureOpenGL* >( itexture );
-
-	if( texture )
-		glDeleteTextures(1, &texture->mTexture);
+	poro_assert( dynamic_cast<TextureOpenGL*>( itexture ) );
+	TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
+	glDeleteTextures(1, &texture->mTexture);
 }
 
 void GraphicsOpenGL::SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode )
 {
-	TextureOpenGL* texture = dynamic_cast< TextureOpenGL* >( itexture );
-	if( texture == NULL)
-		return;
+	poro_assert( dynamic_cast<TextureOpenGL*>( itexture ) );
+	TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
 
 	glEnable( GL_TEXTURE_2D );
 	glBindTexture( GL_TEXTURE_2D, texture->mTexture );
@@ -869,9 +874,8 @@ void GraphicsOpenGL::SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTER
 
 void GraphicsOpenGL::SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum mode )
 {
-	TextureOpenGL* texture = dynamic_cast< TextureOpenGL* >( itexture );
-	if( texture == NULL)
-		return;
+	poro_assert( dynamic_cast<TextureOpenGL*>( itexture ) );
+	TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
 
 	glEnable( GL_TEXTURE_2D );
 	glBindTexture( GL_TEXTURE_2D, texture->mTexture );
@@ -969,7 +973,8 @@ ITexture3d* GraphicsOpenGL::LoadTexture3d( const types::string& filename )
 
 void GraphicsOpenGL::DestroyTexture3d( ITexture3d* itexture )
 {
-	Texture3dOpenGL* texture = dynamic_cast< Texture3dOpenGL* >( itexture );
+	poro_assert( dynamic_cast<Texture3dOpenGL*>( itexture ) );
+	Texture3dOpenGL* texture = static_cast<Texture3dOpenGL*>( itexture );
 
 	if( texture )
 		glDeleteTextures(1, &texture->mTexture);
