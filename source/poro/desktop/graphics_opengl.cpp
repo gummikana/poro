@@ -705,80 +705,6 @@ bool GraphicsOpenGL::GetVsync()
 	return OPENGL_SETTINGS.vsync; 
 }
 
-void GraphicsOpenGL::ResetWindow()
-{
-	int flags = 0;
-	int window_width;
-	int window_height;
-	
-	//flags = SDL_WINDOW_OPENGL;
-	// OPENGL_SETTINGS.fullscreen = true;
-
-	if( OPENGL_SETTINGS.fullscreen == FULLSCREEN_MODE::STRETCHED || OPENGL_SETTINGS.fullscreen == FULLSCREEN_MODE::FULL )
-	{
-		// for real fullscreen
-		if( OPENGL_SETTINGS.fullscreen == FULLSCREEN_MODE::STRETCHED )
-			flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-		else 
-			flags |= SDL_WINDOW_FULLSCREEN;
-		// flags = SDL_WINDOW_FULLSCREEN;
-		window_width = (int)mDesktopWidth;
-		window_height = (int)mDesktopHeight;
-	} 
-	else 
-	{
-		window_width = mWindowWidth;
-		window_height = mWindowHeight;
-	// #ifdef _DEBUG
-		// this is not supported by SDL2.0 anymore 
-		// flags |= SDL_WINDOW_RESIZABLE;
-	// #endif
-
-		flags = 0;
-		// 0 = windowed mode
-	}
-
-	mGlContextInitialized = true;
-	
-	SDL_SetWindowSize( mSDLWindow, window_width, window_height );
-	SDL_SetWindowFullscreen( mSDLWindow, flags );
-	// SDL_SetWindowResizable(mSDLWindow, SDL_TRUE);
-
-	{ //OpenGL view setup
-		float internal_width = IPlatform::Instance()->GetInternalWidth();
-		float internal_height = IPlatform::Instance()->GetInternalHeight();
-		float screen_aspect = (float)window_width/(float)window_height;
-		float internal_aspect = (float)internal_width/(float)internal_height;
-		mViewportSize.x = (float)window_width;
-		mViewportSize.y = (float)window_height;
-		mViewportOffset = types::vec2(0, 0);
-		if(screen_aspect>internal_aspect){
-			//Widescreen, Black borders on left and right
-			mViewportSize.x = window_height*internal_aspect;
-			mViewportOffset.x = (window_width-mViewportSize.x)*0.5f;
-		} else {
-			//Tallscreen, Black borders on top and bottom
-			mViewportSize.y = window_width/internal_aspect;
-			mViewportOffset.y = (window_height-mViewportSize.y)*0.5f;
-		}
-		
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-
-		glViewport((GLint)mViewportOffset.x, (GLint)mViewportOffset.y, (GLint)mViewportSize.x, (GLint)mViewportSize.y);
-		
-		glClearColor(0,0,0,1.0f);
-		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-		
-		//(OpenGL actually wants the x offset from the bottom, but since we are centering the view the direction does not matter.)
-		// glEnable(GL_SCISSOR_TEST);
-		// glScissor((GLint)mViewportOffset.x, (GLint)mViewportOffset.y, (GLint)mViewportSize.x, (GLint)mViewportSize.y);
-
-		glScalef(1,-1,1); //Flip y axis
-		gluOrtho2D(0, internal_width, 0, internal_height);
-	}
-}
-
 //=============================================================================
 
 ITexture* GraphicsOpenGL::CreateTexture( int width, int height )
@@ -1714,6 +1640,80 @@ types::vec2	GraphicsOpenGL::ConvertToInternalPos( int x, int y )
 	result.y *= internal_h / (types::Float32)mViewportSize.y;
 
 	return result;
+}
+
+void GraphicsOpenGL::ResetWindow()
+{
+	int flags = 0;
+	int window_width;
+	int window_height;
+
+	//flags = SDL_WINDOW_OPENGL;
+	// OPENGL_SETTINGS.fullscreen = true;
+
+	if( OPENGL_SETTINGS.fullscreen == FULLSCREEN_MODE::STRETCHED || OPENGL_SETTINGS.fullscreen == FULLSCREEN_MODE::FULL )
+	{
+		// for real fullscreen
+		if( OPENGL_SETTINGS.fullscreen == FULLSCREEN_MODE::STRETCHED )
+			flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+		else 
+			flags |= SDL_WINDOW_FULLSCREEN;
+		// flags = SDL_WINDOW_FULLSCREEN;
+		window_width = (int)mDesktopWidth;
+		window_height = (int)mDesktopHeight;
+	} 
+	else 
+	{
+		window_width = mWindowWidth;
+		window_height = mWindowHeight;
+		// #ifdef _DEBUG
+		// this is not supported by SDL2.0 anymore 
+		// flags |= SDL_WINDOW_RESIZABLE;
+		// #endif
+
+		flags = 0;
+		// 0 = windowed mode
+	}
+
+	mGlContextInitialized = true;
+
+	SDL_SetWindowSize( mSDLWindow, window_width, window_height );
+	SDL_SetWindowFullscreen( mSDLWindow, flags );
+	// SDL_SetWindowResizable(mSDLWindow, SDL_TRUE);
+
+	{ //OpenGL view setup
+		float internal_width = IPlatform::Instance()->GetInternalWidth();
+		float internal_height = IPlatform::Instance()->GetInternalHeight();
+		float screen_aspect = (float)window_width/(float)window_height;
+		float internal_aspect = (float)internal_width/(float)internal_height;
+		mViewportSize.x = (float)window_width;
+		mViewportSize.y = (float)window_height;
+		mViewportOffset = types::vec2(0, 0);
+		if(screen_aspect>internal_aspect){
+			//Widescreen, Black borders on left and right
+			mViewportSize.x = window_height*internal_aspect;
+			mViewportOffset.x = (window_width-mViewportSize.x)*0.5f;
+		} else {
+			//Tallscreen, Black borders on top and bottom
+			mViewportSize.y = window_width/internal_aspect;
+			mViewportOffset.y = (window_height-mViewportSize.y)*0.5f;
+		}
+
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+
+		glViewport((GLint)mViewportOffset.x, (GLint)mViewportOffset.y, (GLint)mViewportSize.x, (GLint)mViewportSize.y);
+
+		glClearColor(0,0,0,1.0f);
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+		//(OpenGL actually wants the x offset from the bottom, but since we are centering the view the direction does not matter.)
+		// glEnable(GL_SCISSOR_TEST);
+		// glScissor((GLint)mViewportOffset.x, (GLint)mViewportOffset.y, (GLint)mViewportSize.x, (GLint)mViewportSize.y);
+
+		glScalef(1,-1,1); //Flip y axis
+		gluOrtho2D(0, internal_width, 0, internal_height);
+	}
 }
 
 //=============================================================================
