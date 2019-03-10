@@ -721,14 +721,14 @@ ITexture* GraphicsOpenGL::CloneTexture( ITexture* other )
 void GraphicsOpenGL::SetTextureData( ITexture* itexture, void* data )
 {
 	poro_assert( dynamic_cast<TextureOpenGL*>( itexture) );
-    TextureOpenGL* texture = static_cast<TextureOpenGL*>(itexture);
+	TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
 	SetTextureData_Impl( texture, data, 0, 0, texture->GetWidth(), texture->GetHeight() );
 }
 
 void GraphicsOpenGL::SetTextureData( ITexture* itexture, void* data, int x, int y, int w, int h )
 {
 	poro_assert( dynamic_cast<TextureOpenGL*>( itexture) );
-	TextureOpenGL* texture = static_cast<TextureOpenGL*>(itexture);
+	TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
     SetTextureData_Impl( texture, data, x, y, w, h );
 }
 
@@ -1066,9 +1066,292 @@ void GraphicsOpenGL::RenderTexture_AsyncReadTextureDataFromGPUFinish( IRenderTex
 
 //=============================================================================
 
-IShader* GraphicsOpenGL::CreateShader()
+int LoadShaderFromString( ShaderOpenGL* shader, const char* source, const int source_length, bool is_vertex_shader )
+{
+	poro_assert( shader );
+
+	const int shader_handle = glCreateShader( is_vertex_shader ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER );
+	glShaderSource( shader_handle, 1, &source, &source_length );
+	glCompileShader( shader_handle );
+
+	//DEBUG
+	GLint status;
+	glGetShaderiv( shader_handle, GL_COMPILE_STATUS, &status );
+	if (status == GL_FALSE)
+	{
+		GLint infoLogLength;
+		glGetShaderiv( shader_handle, GL_INFO_LOG_LENGTH, &infoLogLength );
+
+		GLchar *strInfoLog = new GLchar[infoLogLength + 1];
+		glGetShaderInfoLog( shader_handle, infoLogLength, NULL, strInfoLog );
+
+
+		fprintf(stderr, "GLSL compile failure:\n%s\n", strInfoLog);
+		delete[] strInfoLog;
+
+		shader->isCompiledAndLinked = false;
+	}
+
+	return shader_handle;
+}
+
+int LoadShader( ShaderOpenGL* shader, const std::string& filename, bool is_vertex_shader )
+{
+	poro_assert( shader );
+
+	CharBufferAutoFree text;
+	StreamStatus::Enum read_status = Poro()->GetFileSystem()->ReadWholeFile( filename, text.memory, &text.size_bytes );
+	if ( read_status != StreamStatus::NoError )
+	{
+		shader->isCompiledAndLinked = false;
+		return 0;
+	}
+
+	return LoadShaderFromString( shader, text.memory, text.size_bytes, is_vertex_shader );
+}
+
+void Shader_Link( const GraphicsOpenGL* graphics, ShaderOpenGL* shader )
+{
+	poro_assert( graphics );
+	poro_assert( shader );
+
+	shader->program = glCreateProgram();
+	glAttachShader( shader->program, shader->vertexShader );
+	glAttachShader( shader->program, shader->fragmentShader );
+	glLinkProgram( shader->program);
+
+	//DEBUG
+	GLint status;
+	glGetProgramiv( shader->program, GL_LINK_STATUS, &status );
+	if (status == GL_FALSE)
+	{
+		GLint infoLogLength;
+		glGetProgramiv( shader->program, GL_INFO_LOG_LENGTH, &infoLogLength );
+
+		GLchar *strInfoLog = new GLchar[infoLogLength + 1];
+		glGetProgramInfoLog( shader->program, infoLogLength, NULL, strInfoLog );
+		fprintf(stderr, "GLSL link failure: %s\n", strInfoLog);
+		delete[] strInfoLog;
+
+		graphics->Shader_Release( shader );
+	}
+}
+
+int Shader_GetParameterLocation( ShaderOpenGL* shader, const std::string& name )
+{
+	poro_assert( shader );
+
+	int result;
+
+	auto it = shader->parameterLocationCache.find( name );
+	if ( it == shader->parameterLocationCache.end() )
+	{
+		result = glGetUniformLocation( shader->program, name.c_str() );
+		shader->parameterLocationCache.insert( std::make_pair( name, result ) );
+	}
+	else
+	{
+		result = it->second;
+	}
+
+	return result;
+}
+
+void Shader_Release( IShader* ishader )
+{
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+
+	shader->isCompiledAndLinked = false;
+
+	if ( shader->program != 0 )
+	{
+		glDeleteProgram( shader->program );
+		shader->program = 0;
+	}
+
+	if ( shader->vertexShader != 0 )
+	{
+		glDeleteShader( shader->vertexShader );
+		shader->vertexShader = 0;
+	}
+
+	if ( shader->fragmentShader != 0 )
+	{
+		glDeleteShader( shader->fragmentShader );
+		shader->fragmentShader = 0;
+	}
+
+	shader->parameterLocationCache.clear();
+}
+
+//=============================================================================
+
+IShader* GraphicsOpenGL::Shader_Create() const
 {
 	return new ShaderOpenGL();
+}
+
+ShaderOpenGL::~ShaderOpenGL()
+{ 
+	poro::Shader_Release( this );
+}
+
+void GraphicsOpenGL::Shader_Init( IShader* ishader, const std::string& vertex_source_filename, const std::string& fragment_source_filename ) const
+{
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+
+	Shader_Release( ishader );
+
+	shader->vertexShader = LoadShader( shader, vertex_source_filename, true );
+	shader->fragmentShader = LoadShader( shader, fragment_source_filename, false );
+
+	poro::Shader_Link( this, shader );
+}
+
+void GraphicsOpenGL::Shader_InitFromString( IShader* ishader, const std::string& vertex_source, const std::string& fragment_source ) const
+{ 
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+
+	Shader_Release( ishader );
+
+	shader->vertexShader = LoadShaderFromString( shader, vertex_source.c_str(), vertex_source.size(), true );
+	shader->fragmentShader = LoadShaderFromString( shader, fragment_source.c_str(), fragment_source.size(), false );
+
+	if ( shader->vertexShader == 0 || shader->fragmentShader == 0)
+	{
+		Shader_Release( shader );
+		return;
+	}
+
+	poro::Shader_Link( this, shader );
+}	
+
+void GraphicsOpenGL::Shader_Release( IShader* ishader ) const
+{
+	poro::Shader_Release( ishader );
+}
+
+void GraphicsOpenGL::Shader_Enable( IShader* ishader ) const
+{
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+
+	shader->lastAllocatedTextureUnit = 2;
+	glUseProgram( shader->program );
+}
+
+void GraphicsOpenGL::Shader_Disable( IShader* ishader ) const
+{
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+
+	shader->lastAllocatedTextureUnit = 2;
+	glUseProgram( 0 );
+	glDisable( GL_TEXTURE_2D );
+	glDisable( GL_TEXTURE_3D );
+}
+
+bool GraphicsOpenGL::Shader_HasParameter( IShader* ishader, const std::string& name) const
+{
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+
+	const int location = Shader_GetParameterLocation( shader, name );
+	return location > -1;
+}
+
+void GraphicsOpenGL::Shader_SetParameter( IShader* ishader, const std::string& name, float value ) const
+{
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+
+	const int location = Shader_GetParameterLocation( shader, name );
+	glUniform1f( location, value );
+}
+
+void GraphicsOpenGL::Shader_SetParameter( IShader* ishader, const std::string& name, const types::vec2& value ) const
+{
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+
+	const int location = Shader_GetParameterLocation( shader, name );
+	glUniform2f( location, value.x, value.y );
+}
+
+void GraphicsOpenGL::Shader_SetParameter( IShader* ishader, const std::string& name, const types::vec3& value ) const
+{
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+
+	const int location = Shader_GetParameterLocation( shader, name );
+	glUniform3f( location, value.x, value.y, value.z );
+}
+
+void GraphicsOpenGL::Shader_SetParameter( IShader* ishader, const std::string& name, const types::vec2& value_xy, types::vec2& value_zw ) const
+{
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+
+	const int location = Shader_GetParameterLocation( shader, name );
+	glUniform4f( location, value_xy.x, value_xy.y, value_zw.x, value_zw.y );
+}
+
+void GraphicsOpenGL::Shader_SetParameter( IShader* ishader, const std::string& name, float x, float y, float z, float w ) const
+{
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+
+	const int location = Shader_GetParameterLocation( shader, name );
+	glUniform4f( location, x, y, z, w );
+}
+
+void GraphicsOpenGL::Shader_SetParameter( IShader* ishader, const std::string& name, const ITexture* itexture ) const
+{
+	poro_assert( itexture );
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+	poro_assert( dynamic_cast<const TextureOpenGL*>( itexture) );
+	const TextureOpenGL* texture = static_cast<const TextureOpenGL*>( itexture );
+
+	const int location = Shader_GetParameterLocation( shader, name );
+
+	glEnable( GL_TEXTURE_2D );
+	glUniform1i( location, shader->lastAllocatedTextureUnit );
+	glActiveTexture( GL_TEXTURE0 + shader->lastAllocatedTextureUnit );
+	shader->lastAllocatedTextureUnit++;
+
+	glBindTexture( GL_TEXTURE_2D, texture->mTexture );
+	glActiveTexture( GL_TEXTURE0 );
+}
+
+void GraphicsOpenGL::Shader_SetParameter( IShader* ishader, const std::string& name, const ITexture3d* itexture ) const
+{
+	poro_assert( itexture );
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+	poro_assert( dynamic_cast<const Texture3dOpenGL*>( itexture) );
+	const Texture3dOpenGL* texture = static_cast<const Texture3dOpenGL*>( itexture );
+
+	const int location = Shader_GetParameterLocation( shader, name );
+
+	glEnable( GL_TEXTURE_3D );
+	glUniform1i( location, shader->lastAllocatedTextureUnit );
+	glActiveTexture( GL_TEXTURE0 + shader->lastAllocatedTextureUnit );
+	shader->lastAllocatedTextureUnit++;
+
+	glBindTexture( GL_TEXTURE_3D, texture->mTexture );
+	glActiveTexture( GL_TEXTURE0 );
+}
+
+bool GraphicsOpenGL::Shader_GetIsCompiledAndLinked( IShader* ishader ) const
+{
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+
+	return shader->isCompiledAndLinked;
 }
 
 void GraphicsOpenGL::SetShader( IShader* shader )
@@ -1076,16 +1359,16 @@ void GraphicsOpenGL::SetShader( IShader* shader )
 	if ( shader != mCurrentShader )
 	{
 		if ( mCurrentShader )
-			mCurrentShader->Disable();
+			Shader_Disable( mCurrentShader );
 
 		mCurrentShader = shader;
 
 		if ( shader )
-			shader->Enable();
+			Shader_Enable( shader );
 	}
 }
 
-//=============================================================================
+//===================================================================================
 
 void GraphicsOpenGL::BeginRendering()
 {

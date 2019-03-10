@@ -96,8 +96,23 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual IShader* CreateShader() PORO_OVERRIDE;
-	virtual void SetShader( IShader* shader ) PORO_OVERRIDE;
+	virtual IShader* Shader_Create() const PORO_OVERRIDE;
+	virtual void Shader_Init( IShader* shader, const std::string& vertex_source_filename, const std::string& fragment_source_filename ) const PORO_OVERRIDE;
+	virtual void Shader_InitFromString( IShader* shader, const std::string& vertex_source, const std::string& fragment_source ) const PORO_OVERRIDE;
+	virtual void Shader_Release( IShader* shader ) const PORO_OVERRIDE;
+	virtual void Shader_Enable( IShader* shader ) const PORO_OVERRIDE;
+	virtual void Shader_Disable( IShader* shader ) const PORO_OVERRIDE;
+	virtual bool Shader_HasParameter( IShader* shader, const std::string& name ) const PORO_OVERRIDE;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, float value ) const PORO_OVERRIDE;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const types::vec2& value ) const PORO_OVERRIDE;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const types::vec3& value ) const PORO_OVERRIDE;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const types::vec2& value_xy, types::vec2& value_zw ) const PORO_OVERRIDE;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, float x, float y, float z, float w ) const PORO_OVERRIDE;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const ITexture* texture ) const PORO_OVERRIDE;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const ITexture3d* texture ) const PORO_OVERRIDE;
+	virtual bool Shader_GetIsCompiledAndLinked( IShader* shader ) const PORO_OVERRIDE;
+
+	virtual void SetShader( IShader* shader );
 
 	//-------------------------------------------------------------------------
 

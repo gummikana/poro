@@ -237,7 +237,21 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual IShader* CreateShader() = 0;
+	virtual IShader* Shader_Create() const = 0;
+	virtual void Shader_Init( IShader* shader, const std::string& vertex_source_filename, const std::string& fragment_source_filename ) const = 0;
+	virtual void Shader_InitFromString( IShader* shader, const std::string& vertex_source, const std::string& fragment_source ) const = 0;
+	virtual void Shader_Release( IShader* shader ) const = 0;
+	virtual void Shader_Enable( IShader* shader ) const = 0;
+	virtual void Shader_Disable( IShader* shader ) const = 0;
+	virtual bool Shader_HasParameter( IShader* shader, const std::string& name ) const = 0;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, float value ) const = 0;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const types::vec2& value ) const = 0;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const types::vec3& value ) const = 0;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const types::vec2& value_xy, types::vec2& value_zw ) const = 0;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, float x, float y, float z, float w ) const = 0;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const ITexture* texture ) const = 0;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const ITexture3d* texture ) const = 0;
+	virtual bool Shader_GetIsCompiledAndLinked( IShader* shader ) const = 0;
 
 	//-------------------------------------------------------------------------
 
@@ -316,7 +330,7 @@ protected:
 	void _EndRendering()
 	{
 		if ( mCurrentShader )
-			mCurrentShader->Disable();
+			Shader_Disable( mCurrentShader );
 		mCurrentShader = NULL;
 	}
 

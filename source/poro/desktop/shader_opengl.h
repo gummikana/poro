@@ -23,9 +23,6 @@
 
 #include <map>
 #include "../poro_types.h"
-#include "graphics_opengl.h"
-#include "texture_opengl.h"
-#include "texture3d_opengl.h"
 #include "../ishader.h"
 
 namespace poro {
@@ -33,53 +30,21 @@ namespace poro {
 class ShaderOpenGL :  public IShader
 {
 public:
-	ShaderOpenGL() : IShader(), 
-		isCompiledAndLinked(false), 
-		program(0), 
-		vertexShader(0), 
-		fragmentShader(0),
-		lastAllocatedTextureUnit(2) 
+	ShaderOpenGL() : IShader()
 	{
 
 	}
-	virtual ~ShaderOpenGL(){ Release(); }
 
-	virtual void Init( const std::string& vertex_source_filename, const std::string& fragment_source_filename ) PORO_OVERRIDE;	
-    virtual void InitFromString( const std::string& vertex_source, const std::string& fragment_source ) PORO_OVERRIDE;
-	virtual void Release() PORO_OVERRIDE;
-	virtual void Enable() PORO_OVERRIDE;
-	virtual void Disable() PORO_OVERRIDE;
-	virtual bool HasParameter( const std::string& name ) PORO_OVERRIDE;
-	virtual void SetParameter( const std::string& name, float value ) PORO_OVERRIDE;
-	virtual void SetParameter( const std::string& name, const types::vec2& value ) PORO_OVERRIDE;
-	virtual void SetParameter( const std::string& name, const types::vec3& value ) PORO_OVERRIDE;
-	virtual void SetParameter( const std::string& name, const types::vec2& value_xy, types::vec2& value_zw ) PORO_OVERRIDE;
-	virtual void SetParameter( const std::string& name, float x, float y, float z, float w ) PORO_OVERRIDE;
-	virtual void SetParameter( const std::string& name, const ITexture* texture ) PORO_OVERRIDE;
-	virtual void SetParameter( const std::string& name, const ITexture3d* texture ) PORO_OVERRIDE;
-	virtual bool GetIsCompiledAndLinked() const PORO_OVERRIDE;
+	virtual ~ShaderOpenGL();
 
-private:
-    bool isCompiledAndLinked;
-    int program;
-    int vertexShader;
-    int fragmentShader;
-	int lastAllocatedTextureUnit;
+	bool isCompiledAndLinked = false;
+	int program = 0;
+    int vertexShader = 0;
+    int fragmentShader = 0;
+	int lastAllocatedTextureUnit = 2;
 	std::map<std::string, int> parameterLocationCache;
-	
-	int LoadShader( const std::string& filename, bool is_vertex_shader );
-	int LoadShaderFromString( const char* source, const int source_length, bool is_vertex_shader );
-    void Init();
-	int GetParameterLocation( const std::string& name );
-
-    //const int MAX_PARAMETER_COUNT = 100;
-    /*int lastSetParameterId = -1;
-    int[] parameterHandles = new int[MAX_PARAMETER_COUNT];
-    int[] bindedTextures = new int[MAX_PARAMETER_COUNT];
-    Dictionary<int, int> allocatedTextureUnits;
-    int nextAllocatedTextureUnit;*/
 };
 	
-} // end o namespace poro
+} // end of namespace poro
 
 #endif

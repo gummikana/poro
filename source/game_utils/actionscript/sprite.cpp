@@ -1255,8 +1255,8 @@ void Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 	graphics->SetShader( mShader );
 	if ( mShader )
 	{
-		mShader->SetParameter( "tex", mTexture );
-		mShader->SetParameter( "tex_size", poro::types::vec2( (float)mTexture->GetDataWidth(), (float)mTexture->GetDataHeight() ) );
+		graphics->Shader_SetParameter( mShader, "tex", mTexture );
+		graphics->Shader_SetParameter( mShader, "tex_size", poro::types::vec2( (float)mTexture->GetDataWidth(), (float)mTexture->GetDataHeight() ) );
 	}
 
 	graphics->DrawTexture( mTexture, temp_verts, tex_coords, 4, color_me );
