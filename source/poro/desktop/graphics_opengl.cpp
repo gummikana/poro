@@ -982,25 +982,160 @@ void GraphicsOpenGL::DestroyTexture3d( ITexture3d* itexture )
 
 //=============================================================================
 
-IRenderTexture* GraphicsOpenGL::CreateRenderTexture(int width, int height, bool linear_filtering)
+IRenderTexture* GraphicsOpenGL::RenderTexture_Create( int width, int height, bool linear_filtering ) const
 {
 #ifdef PORO_DONT_USE_GLEW
 	poro_assert(false); //Buffer implementation needs glew.
 	return NULL;
 #else
-	RenderTextureOpenGL* buffer = new RenderTextureOpenGL();
-	buffer->Init( width, height, linear_filtering );
-	return buffer;
+	const int filtering = linear_filtering ? GL_LINEAR : GL_NEAREST;
+
+	RenderTextureOpenGL* result = new RenderTextureOpenGL();
+	poro_assert( result );
+
+	// init texture
+	result->mTexture.mWidth = width;
+	result->mTexture.mHeight = height;
+	result->mTexture.mUv[0] = 0;
+	result->mTexture.mUv[1] = 0;
+	result->mTexture.mUv[2] = ((GLfloat)width) / (GLfloat)width;
+	result->mTexture.mUv[3] = ((GLfloat)height) / (GLfloat)height;
+
+	glGenTextures( 1, (GLuint*)&result->mTexture.mTexture );
+	glBindTexture( GL_TEXTURE_2D, result->mTexture.mTexture );
+
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtering );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filtering );
+
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
+
+	// init fbo
+	glGenFramebuffers( 1, &result->mBufferId );
+	glBindFramebuffer( GL_FRAMEBUFFER, result->mBufferId );
+
+	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, result->mTexture.mTexture, 0 );
+	GLenum status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
+	poro_assert( status == GL_FRAMEBUFFER_COMPLETE );
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+
+	// init pbo
+	glGenBuffers( 1, &result->mPboBufferId );
+	glBindBuffer( GL_PIXEL_PACK_BUFFER, result->mPboBufferId );
+	glBufferData( GL_PIXEL_PACK_BUFFER, width * height * 4, 0, GL_STATIC_COPY );
+	glBindBuffer( GL_PIXEL_PACK_BUFFER, 0 );
+
+	return result;
 #endif
 }
 
-void GraphicsOpenGL::DestroyRenderTexture(IRenderTexture* buffer)
+RenderTextureOpenGL::~RenderTextureOpenGL() 
+{ 
+	//Delete texture
+	glDeleteTextures(1, &mTexture.mTexture);
+	//Bind 0, which means render to back buffer, as a result, fb is unbound
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+	glDeleteFramebuffers( 1, &mBufferId );
+}
+
+void GraphicsOpenGL::RenderTexture_Destroy( IRenderTexture* itexture ) const
 {
 #ifdef PORO_DONT_USE_GLEW
 	poro_assert(false); //Buffer implementation needs glew.
 #else
-	delete buffer;
+	poro_assert( dynamic_cast<RenderTextureOpenGL*>( itexture ) );
+	RenderTextureOpenGL* texture = static_cast<RenderTextureOpenGL*>( itexture );
+
+	//Delete texture
+	glDeleteTextures(1, &texture->mTexture.mTexture);
+	//Bind 0, which means render to back buffer, as a result, fb is unbound
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+	glDeleteFramebuffers( 1, &texture->mBufferId );
+	delete texture;
 #endif
+}
+
+void GraphicsOpenGL::RenderTexture_BeginRendering( IRenderTexture* itexture, bool clear_color, bool clear_depth, float clear_r, float clear_g, float clear_b, float clear_a ) const
+{
+	poro_assert( dynamic_cast<RenderTextureOpenGL*>( itexture ) );
+	RenderTextureOpenGL* texture = static_cast<RenderTextureOpenGL*>( itexture );
+
+	glBindFramebuffer( GL_FRAMEBUFFER, texture->mBufferId );
+	glPushAttrib( GL_VIEWPORT_BIT );
+	glViewport( 0, 0, texture->mTexture.GetWidth(), texture->mTexture.GetHeight() );
+
+	if ( clear_color || clear_depth )
+	{
+		glClearColor( clear_r, clear_g, clear_b, clear_a );
+
+		int clear_bits = 0;
+		if ( clear_color )
+			clear_bits |= GL_COLOR_BUFFER_BIT;
+		if ( clear_depth )
+			clear_bits |= GL_DEPTH_BUFFER_BIT;
+
+		glClear( clear_bits );
+	}
+}
+
+void GraphicsOpenGL::RenderTexture_EndRendering( IRenderTexture* itexture ) const
+{
+	poro_assert( dynamic_cast<RenderTextureOpenGL*>( itexture ) );
+	RenderTextureOpenGL* texture = static_cast<RenderTextureOpenGL*>( itexture );
+
+	glPopAttrib();
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+}
+
+void GraphicsOpenGL::RenderTexture_ReadTextureDataFromGPU( IRenderTexture* itexture, uint8* out_pixels ) const
+{
+	poro_assert( dynamic_cast<RenderTextureOpenGL*>( itexture ) );
+	RenderTextureOpenGL* texture = static_cast<RenderTextureOpenGL*>( itexture );
+
+	glBindFramebuffer( GL_FRAMEBUFFER, texture->mBufferId );
+	glReadPixels( 0, 0, texture->mTexture.GetDataWidth(), texture->mTexture.GetDataHeight(), GL_BGRA, GL_UNSIGNED_BYTE, (void*)out_pixels );
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+}
+
+void GraphicsOpenGL::RenderTexture_AsyncReadTextureDataFromGPUBegin( IRenderTexture* itexture ) const
+{
+	poro_assert( dynamic_cast<RenderTextureOpenGL*>( itexture ) );
+	RenderTextureOpenGL* texture = static_cast<RenderTextureOpenGL*>( itexture );
+
+	glReadBuffer( GL_COLOR_ATTACHMENT0 );
+	glBindBuffer( GL_PIXEL_PACK_BUFFER, texture->mPboBufferId );
+	//glBufferData( GL_PIXEL_PACK_BUFFER, 1920* 1080 * 4, 0, GL_STREAM_READ );
+	glBindFramebuffer( GL_FRAMEBUFFER, texture->mBufferId );
+	//glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 0, GL_TEXTURE_2D, mTexture.mTexture, 0);
+	glReadPixels( 0, 0, texture->mTexture.GetDataWidth(), texture->mTexture.GetDataHeight(), GL_RGBA, GL_UNSIGNED_BYTE, 0 );
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+	glBindBuffer( GL_PIXEL_PACK_BUFFER, 0 );
+}
+
+void GraphicsOpenGL::RenderTexture_AsyncReadTextureDataFromGPUFinish( IRenderTexture* itexture, uint8* out_pixels ) const
+{
+	poro_assert( dynamic_cast<RenderTextureOpenGL*>( itexture ) );
+	RenderTextureOpenGL* texture = static_cast<RenderTextureOpenGL*>( itexture );
+
+	//glBindBuffer( GL_COPY_READ_BUFFER, source_buffer);
+	//glBindBuffer( GL_COPY_WRITE_BUFFER, dest_buffer); 
+	//glCopyBufferSubData( GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, source_offset, 0, data_len );
+
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, texture->mPboBufferId );
+
+	const uint32 data_size_bytes = texture->mTexture.GetDataWidth() * texture->mTexture.GetDataHeight() * 4;
+
+	//const uint8* src = (uint8*)glMapBuffer( GL_PIXEL_PACK_BUFFER, GL_READ_ONLY );
+	const uint8* src = (uint8*)glMapBufferRange( GL_PIXEL_PACK_BUFFER, 0, data_size_bytes, GL_MAP_READ_BIT );
+	if ( src )
+	{
+		const uint32 data_size = texture->mTexture.GetDataWidth() * texture->mTexture.GetDataHeight() * 4;
+		memcpy( out_pixels, src, data_size );
+		glUnmapBuffer( GL_PIXEL_PACK_BUFFER );
+	}
+
+	glBindBuffer( GL_PIXEL_PACK_BUFFER, 0 );
 }
 
 //=============================================================================
