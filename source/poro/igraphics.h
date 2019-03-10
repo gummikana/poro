@@ -26,12 +26,14 @@
 
 #include "poro_types.h"
 #include "poro_macros.h"
-#include "itexture.h"
-#include "itexture3d.h"
-#include "ishader.h"
+//#include "itexture.h"
+//#include "itexture3d.h"
+//#include "ishader.h"
 
 namespace poro {
 
+class ITexture;
+class ITexture3d;
 class IRenderTexture;
 class IShader;
 

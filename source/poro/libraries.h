@@ -24,7 +24,7 @@
 #include "platform_defs.h"
 
 //-----------------------------------------------------------------------------
-// #define GLEW_STATIC
+
 #ifdef PORO_PLAT_IPHONE
 
 	#include <CoreFoundation/CoreFoundation.h>
@@ -38,7 +38,6 @@
 
 	#include <CoreFoundation/CoreFoundation.h>
 	#include <SDL.h>
-	#include <GLEW/GLEW.h>
 	#include <GLUT/glut.h>
 
 #ifdef PORO_USE_SDL_MIXER
@@ -52,7 +51,6 @@
 #ifdef PORO_PLAT_LINUX
 
 	#include <SDL.h>
-	#include <GL/glew.h>
 	#include <GL/freeglut.h>
 	#include <GL/gl.h>
 	#include <GL/glu.h>
@@ -70,7 +68,6 @@
 	#pragma comment( lib, "sdl2.lib" )
 	#pragma comment( lib, "opengl32.lib" )
 	#pragma comment( lib, "glu32.lib" )
-	#pragma comment( lib, "glew32.lib" )
 
 	/*
 	// PLEASE USE poro_windows.h instead
@@ -80,7 +77,6 @@
 	*/
 	
 	#include <SDL.h>
-	#include <GL/glew.h>
 
 #ifdef PORO_USE_SDL_MIXER
 	#include <SDL_mixer.h>

@@ -29,16 +29,19 @@
 #include "../poro_macros.h"
 #include "texture_opengl.h"
 #include "texture3d_opengl.h"
+#include "render_texture_opengl.h"
+#include "shader_opengl.h"
 
+// for opengl function loading (glew replacement)
+#define FGL_IMPLEMENTATION
+#include "../external/final_dynamic_opengl.h"
+#undef FGL_IMPLEMENTATION
+
+// ---
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_NO_STDIO
 #include "../external/stb_image.h"
 #undef STB_IMAGE_IMPLEMENTATION
-
-#ifndef PORO_DONT_USE_GLEW
-#	include "render_texture_opengl.h"
-#	include "shader_opengl.h"
-#endif
 
 #define PORO_ERROR "ERROR: "
 
@@ -429,8 +432,6 @@ namespace {
 GraphicsOpenGL::GraphicsOpenGL() :
 	IGraphics(),
 	mSDLWindow( NULL ),
-	// mFullscreen( false ),
-	// mVsync( false ),
 	mWindowWidth( 640 ),
 	mWindowHeight( 480 ),
 	mViewportOffset(),
@@ -446,7 +447,9 @@ GraphicsOpenGL::GraphicsOpenGL() :
 
 //-----------------------------------------------------------------------------
 
-void GraphicsOpenGL::SetSettings( const GraphicsSettings& settings ) {
+void GraphicsOpenGL::SetSettings( const GraphicsSettings& settings )
+{
+	LoadOpenGL(); // SetFullscreen needs access to some opengl functions
 	SetFullscreen( settings.fullscreen );
 	SetVsync( settings.vsync );
 	OPENGL_SETTINGS = settings;
@@ -536,19 +539,13 @@ bool GraphicsOpenGL::Init( int width, int height, int fullscreen, const types::s
 	// vsync? 0 = no vsync, 1 = vsync
 	SDL_GL_SetSwapInterval( OPENGL_SETTINGS.vsync ? 1 : 0 );	// TODO: petri?
 	// mVsync = OPENGL_SETTINGS.vsync;								// TODO: petri?
-	
+
+	// ---
+	LoadOpenGL();
+
+	// ---
 	IPlatform::Instance()->SetInternalSize( (types::Float32)width, (types::Float32)height );
 	ResetWindow();
-	
-	// no glew for mac? this might cause some problems
-#ifndef PORO_DONT_USE_GLEW
-	GLenum glew_err = glewInit();
-	if (GLEW_OK != glew_err)
-	{
-		/* Problem: glewInit failed, something is seriously wrong. */
-		poro_logger << "Error: " << glewGetErrorString(glew_err) << "\n";
-	}
-#endif
 
 	poro_assert( mDynamicVboHandle == 0 );
 	glGenBuffers( 1, &mDynamicVboHandle );
@@ -582,7 +579,7 @@ void GraphicsOpenGL::SetInternalSize( types::Float32 width, types::Float32 heigh
 	{
 		glMatrixMode( GL_PROJECTION );
 		glLoadIdentity();
-		gluOrtho2D(0, (GLdouble)width, (GLdouble)height, 0);
+		glOrtho( 0.0,(GLdouble)width, (GLdouble)height, 0.0, -1.0, 1.0 );
 	}
 }
 
@@ -592,7 +589,7 @@ void GraphicsOpenGL::SetInternalSizeAdvanced( types::Float32 left, types::Float3
 	{
 		glMatrixMode( GL_PROJECTION );
 		glLoadIdentity();
-		gluOrtho2D((GLdouble)left, (GLdouble)right, (GLdouble)bottom, (GLdouble)top);
+		glOrtho( (GLdouble)left, (GLdouble)right, (GLdouble)bottom, (GLdouble)top, -1.0, 1.0 );
 	}
 }
 
@@ -910,10 +907,6 @@ void GraphicsOpenGL::DestroyTexture3d( ITexture3d* itexture )
 
 IRenderTexture* GraphicsOpenGL::RenderTexture_Create( int width, int height, bool linear_filtering ) const
 {
-#ifdef PORO_DONT_USE_GLEW
-	poro_assert(false); //Buffer implementation needs glew.
-	return NULL;
-#else
 	const int filtering = linear_filtering ? GL_LINEAR : GL_NEAREST;
 
 	RenderTextureOpenGL* result = new RenderTextureOpenGL();
@@ -953,7 +946,6 @@ IRenderTexture* GraphicsOpenGL::RenderTexture_Create( int width, int height, boo
 	glBindBuffer( GL_PIXEL_PACK_BUFFER, 0 );
 
 	return result;
-#endif
 }
 
 RenderTextureOpenGL::~RenderTextureOpenGL() 
@@ -967,9 +959,6 @@ RenderTextureOpenGL::~RenderTextureOpenGL()
 
 void GraphicsOpenGL::RenderTexture_Destroy( IRenderTexture* itexture ) const
 {
-#ifdef PORO_DONT_USE_GLEW
-	poro_assert(false); //Buffer implementation needs glew.
-#else
 	poro_assert( dynamic_cast<RenderTextureOpenGL*>( itexture ) );
 	RenderTextureOpenGL* texture = static_cast<RenderTextureOpenGL*>( itexture );
 
@@ -979,7 +968,6 @@ void GraphicsOpenGL::RenderTexture_Destroy( IRenderTexture* itexture ) const
 	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 	glDeleteFramebuffers( 1, &texture->mBufferId );
 	delete texture;
-#endif
 }
 
 void GraphicsOpenGL::RenderTexture_BeginRendering( IRenderTexture* itexture, bool clear_color, bool clear_depth, float clear_r, float clear_g, float clear_b, float clear_a ) const
@@ -1958,8 +1946,6 @@ void GraphicsOpenGL::ResetWindow()
 		// 0 = windowed mode
 	}
 
-	mGlContextInitialized = true;
-
 	SDL_SetWindowSize( mSDLWindow, window_width, window_height );
 	SDL_SetWindowFullscreen( mSDLWindow, flags );
 	// SDL_SetWindowResizable(mSDLWindow, SDL_TRUE);
@@ -1995,8 +1981,23 @@ void GraphicsOpenGL::ResetWindow()
 		// glScissor((GLint)mViewportOffset.x, (GLint)mViewportOffset.y, (GLint)mViewportSize.x, (GLint)mViewportSize.y);
 
 		glScalef(1,-1,1); //Flip y axis
-		gluOrtho2D(0, internal_width, 0, internal_height);
+		glOrtho( 0.0, internal_width, 0.0, internal_height, -1.0, 1.0 );
 	}
+}
+
+void GraphicsOpenGL::LoadOpenGL()
+{
+	if ( mGlContextInitialized )
+		return;
+
+	const bool fgl_init_ok = fglLoadOpenGL( true );
+	if ( fgl_init_ok == false )
+	{
+		// Problem: fgl init failed, something is seriously wrong.
+		poro_logger << "FGL init error: " << fglGetLastError() << "\n";
+	}
+
+	mGlContextInitialized = fgl_init_ok;
 }
 
 //=============================================================================

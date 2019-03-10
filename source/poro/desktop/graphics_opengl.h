@@ -149,6 +149,7 @@ public:
 
 	types::vec2 ConvertToInternalPos( int x, int y );
 	void ResetWindow();
+	void LoadOpenGL();
 
 	//-------------------------------------------------------------------------
 
