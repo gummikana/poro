@@ -39,6 +39,7 @@ public:
 
 	types::Uint32 mBufferId = 0;
 	types::Uint32 mPboBufferId = 0;
+	types::Uint32 mPboBufferOutId = 0;
 	TextureOpenGL mTexture;
 };
 	
