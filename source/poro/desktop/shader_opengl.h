@@ -51,6 +51,7 @@ public:
 	virtual void Disable() PORO_OVERRIDE;
 	virtual bool HasParameter( const std::string& name ) PORO_OVERRIDE;
 	virtual void SetParameter( const std::string& name, float value ) PORO_OVERRIDE;
+	virtual void SetParameter( const std::string& name, float* four_float_values ) PORO_OVERRIDE;
 	virtual void SetParameter( const std::string& name, const types::vec2& value ) PORO_OVERRIDE;
 	virtual void SetParameter( const std::string& name, const types::vec3& value ) PORO_OVERRIDE;
 	virtual void SetParameter( const std::string& name, const types::vec2& value_xy, types::vec2& value_zw ) PORO_OVERRIDE;
