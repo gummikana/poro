@@ -106,7 +106,7 @@ void ShaderOpenGL::SetParameter( const std::string& name, float value )
 	glUniform1f( location, value );
 }
 
-void ShaderOpenGL::SetParameter( const std::string& name, float* four_float_values )
+void ShaderOpenGL::SetParameter( const std::string& name, const float* four_float_values )
 {
 	const int location = GetParameterLocation( name );
 

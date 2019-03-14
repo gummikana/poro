@@ -41,7 +41,7 @@ public:
 	virtual void Disable() { }
 	virtual bool HasParameter( const std::string& name ) = 0;
 	virtual void SetParameter( const std::string& name, float value ) { }
-	virtual void SetParameter( const std::string& name, float* four_float_values ) { }
+	virtual void SetParameter( const std::string& name, const float* four_float_values ) { }
 	virtual void SetParameter( const std::string& name, const types::vec2& value ) { }
 	virtual void SetParameter( const std::string& name, const types::vec3& value ) { }
 	virtual void SetParameter( const std::string& name, const types::vec2& value_xy, types::vec2& value_zw ) { }
