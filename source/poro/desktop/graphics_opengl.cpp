@@ -50,6 +50,24 @@
 
 
 //=============================================================================
+// Note( Petri ): This is to tell NVidia and AMD to use their proper graphics 
+// cards instead of the integrated one
+// from:  https://github.com/HandmadeHero/cpp/issues/51
+//=============================================================================
+
+#ifdef PORO_WINDOWS
+
+extern "C" {
+	// http://developer.download.nvidia.com/devzone/devcenter/gamegraphics/files/OptimusRenderingPolicies.pdf
+	__declspec(dllexport) DWORD NvOptimusEnablement = 1;
+
+	// https://community.amd.com/thread/169965
+	__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+}
+
+#endif
+
+//=============================================================================
 namespace poro {
 	
 	types::Uint32 GetNextPowerOfTwo(types::Uint32 input)
@@ -71,7 +89,7 @@ namespace {
 
 	Uint32 GetGLVertexMode(int vertex_mode){
 		switch (vertex_mode) {
-		    case VERTEX_MODE::TRIANGLE_FAN:
+			case VERTEX_MODE::TRIANGLE_FAN:
 				return GL_TRIANGLE_FAN;
 			case VERTEX_MODE::TRIANGLE_STRIP:
 				return GL_TRIANGLE_STRIP;
@@ -992,14 +1010,14 @@ ITexture* GraphicsOpenGL::CloneTexture( ITexture* other )
 
 void GraphicsOpenGL::SetTextureData( ITexture* texture, void* data )
 {
-    TextureOpenGL* texture_opengl = dynamic_cast< TextureOpenGL* >( texture );
+	TextureOpenGL* texture_opengl = dynamic_cast< TextureOpenGL* >( texture );
 	SetTextureData_Impl( texture_opengl, data, 0, 0, texture_opengl->GetWidth(), texture_opengl->GetHeight() );
 }
 
 void GraphicsOpenGL::SetTextureData( ITexture* texture, void* data, int x, int y, int w, int h )
 {
-    TextureOpenGL* texture_opengl = dynamic_cast< TextureOpenGL* >( texture );
-    SetTextureData_Impl( texture_opengl, data, x, y, w, h );
+	TextureOpenGL* texture_opengl = dynamic_cast< TextureOpenGL* >( texture );
+	SetTextureData_Impl( texture_opengl, data, x, y, w, h );
 }
 
 ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename )
