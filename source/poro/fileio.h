@@ -211,7 +211,7 @@ namespace poro {
 
 		// === file browsing API ===
 		// Get the full location of a file.
-		std::string GetFullPathFromRelativePath( const std::string& relative_path );
+		std::string GetFullPathFromRelativePath( FileLocation::Enum location, const std::string& relative_path );
 
 		// Get a list of files at the location specified by the parameters.
 		std::vector<std::string> GetFiles      ( FileLocation::Enum location, const std::string& path_relative_to_location = "" );

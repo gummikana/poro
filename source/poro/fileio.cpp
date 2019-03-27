@@ -711,18 +711,9 @@ StreamStatus::Enum FileSystem::WriteWholeTextFile( const std::string& path, cons
 
 // ===
 
-std::string FileSystem::GetFullPathFromRelativePath( const std::string& relative_path )
+std::string FileSystem::GetFullPathFromRelativePath( FileLocation::Enum location, const std::string& relative_path )
 {
-	// use first device that is able to find a matching file
-	ReadStream result = ReadStream();
-	for ( size_t i = 0; i < mDevices.size(); i++ )
-	{
-		IFileDevice* device = mDevices[ i ];
-		const std::string full_path = device->GetFullPath( relative_path );
-		if ( ceng::DoesExist( full_path ) )
-			return full_path;
-	}
-	return "";
+	return platform_impl::GetFullPath( location, relative_path );
 }
 
 
