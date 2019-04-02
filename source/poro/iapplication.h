@@ -34,6 +34,7 @@ public:
 	virtual void Init() { }
 	virtual void Update(float deltaTime) = 0;
 	virtual void Draw(poro::IGraphics * graphics) { }
+	virtual void WindowFocusChanged( bool has_focus ) { }
 	virtual void Exit() { }
 
 	virtual bool IsDead() const { return false; }

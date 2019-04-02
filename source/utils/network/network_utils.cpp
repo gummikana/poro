@@ -40,6 +40,18 @@ namespace network_utils
 		return result;
 	}
 
+	uint32 ConvertHexToUint32( const types::ustring& s )
+	{
+		cassert( s.size() >= 4 );
+		
+		uint32 result = 
+			( (uint32(s[ 0 ]) & 0xFF) << 24 ) |
+			( (uint32(s[ 1 ]) & 0xFF) << 16 ) |
+			( (uint32(s[ 2 ]) & 0xFF) << 8 ) |
+			( (uint32(s[ 3 ]) & 0xFF) );
+
+		return result;
+	}
 
 	//-------------------------------------------------------------------------
 
@@ -67,19 +79,73 @@ namespace network_utils
 
 		return result;
 	}
+	
+	//-------------------------------------------------------------------------
 
+	types::ustring ConvertInt64ToHex( int64 value )
+	{
+		types::ustring result;
+		result.resize( 8 );
+		result[0] = (unsigned char) ( ( value >> 56 ) & 0xFF);
+		result[1] = (unsigned char) ( ( value >> 48 ) & 0xFF );
+		result[2] = (unsigned char) ( ( value >> 40 ) & 0xFF );
+		result[3] = (unsigned char) ( ( value >> 32 ) & 0xFF );
+		result[4] = (unsigned char) ( ( value >> 24 ) & 0xFF );
+		result[5] = (unsigned char) ( ( value >> 16 ) & 0xFF );
+		result[6] = (unsigned char) ( ( value >> 8 ) & 0xFF );
+		result[7] = (unsigned char) ( ( value >> 0 ) & 0xFF );
+		
+		return result;
+	}
+
+	int64 ConvertHexToInt64( const types::ustring& s )
+	{
+		cassert( s.size() >= 8 );
+		
+		int64 result = 
+			( (int64(s[ 0 ]) & 0xFF) << 56 ) |
+			( (int64(s[ 1 ]) & 0xFF) << 48 ) |
+			( (int64(s[ 2 ]) & 0xFF) << 40 ) |
+			( (int64(s[ 3 ]) & 0xFF) << 32 ) |
+			( (int64(s[ 4 ]) & 0xFF) << 24 ) |
+			( (int64(s[ 5 ]) & 0xFF) << 16 ) |
+			( (int64(s[ 6 ]) & 0xFF) << 8 ) |
+			( (int64(s[ 7 ]) & 0xFF) );
+
+		return result;
+	}
 
 	//-------------------------------------------------------------------------
 
-	uint32 ConvertHexToUint32( const types::ustring& s )
+	types::ustring ConvertUint64ToHex( uint64 value )
 	{
-		cassert( s.size() >= 4 );
+		types::ustring result;
+		result.resize( 8 );
+		result[0] = (unsigned char) ( ( value >> 56 ) & 0xFF);
+		result[1] = (unsigned char) ( ( value >> 48 ) & 0xFF );
+		result[2] = (unsigned char) ( ( value >> 40 ) & 0xFF );
+		result[3] = (unsigned char) ( ( value >> 32 ) & 0xFF );
+		result[4] = (unsigned char) ( ( value >> 24 ) & 0xFF );
+		result[5] = (unsigned char) ( ( value >> 16 ) & 0xFF );
+		result[6] = (unsigned char) ( ( value >> 8 ) & 0xFF );
+		result[7] = (unsigned char) ( ( value >> 0 ) & 0xFF );
 		
-		uint32 result = 
-			( (uint32(s[ 0 ]) & 0xFF) << 24 ) |
-			( (uint32(s[ 1 ]) & 0xFF) << 16 ) |
-			( (uint32(s[ 2 ]) & 0xFF) << 8 ) |
-			( (uint32(s[ 3 ]) & 0xFF) );
+		return result;
+	}
+
+	uint64 ConvertHexToUint64( const types::ustring& s )
+	{
+		cassert( s.size() >= 8 );
+		
+		uint64 result = 
+			( (uint64(s[ 0 ]) & 0xFF) << 56 ) |
+			( (uint64(s[ 1 ]) & 0xFF) << 48 ) |
+			( (uint64(s[ 2 ]) & 0xFF) << 40 ) |
+			( (uint64(s[ 3 ]) & 0xFF) << 32 ) |
+			( (uint64(s[ 4 ]) & 0xFF) << 24 ) |
+			( (uint64(s[ 5 ]) & 0xFF) << 16 ) |
+			( (uint64(s[ 6 ]) & 0xFF) << 8 ) |
+			( (uint64(s[ 7 ]) & 0xFF) );
 
 		return result;
 	}
@@ -91,11 +157,21 @@ namespace network_utils
 		return ConvertUint32ToHex( ConvertBits< uint32, float32 >( value ) );
 	}
 
+	types::ustring DoubleToHexString( double64 value ) 
+	{
+		return ConvertUint64ToHex( ConvertBits< uint64, double64 >( value ) );
+	}
+
 	//-------------------------------------------------------------------------
 
 	float32 HexStringToFloat( const types::ustring& value )
 	{
 		return ConvertBits< float32, uint32 >( ConvertHexToUint32( value ) );
+	}
+	
+	double64 HexStringToDouble( const types::ustring& value )
+	{
+		return ConvertBits< double64, uint64 >( ConvertHexToUint64( value ) );
 	}
 
 	//-------------------------------------------------------------------------

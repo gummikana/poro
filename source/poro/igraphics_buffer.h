@@ -34,11 +34,12 @@ namespace poro {
 		
 		virtual ITexture*	LoadTexture( const types::string& filename ) { return NULL; }
 		virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data ) { return NULL; }
-		virtual void		ReleaseTexture( ITexture* texture )  {  }
-		virtual void		SetTextureSmoothFiltering( ITexture* itexture, bool enabled ) {  }
+		virtual void		DestroyTexture( ITexture* texture )  {  }
+		virtual void		SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode ) {  }
+		virtual void		SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum mode ) {  }
 
 		//IGraphics
-		virtual bool		Init( int width, int height, bool fullscreen = false, const types::string& caption = "" ) = 0;
+		virtual bool		Init( int width, int height, int fullscreen, const types::string& caption ) = 0;
 		
 		virtual void		SetGraphicsBufferScale( float x, float y ) { }
 

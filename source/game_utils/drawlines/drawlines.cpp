@@ -739,6 +739,14 @@ void DrawCircle( poro::IGraphics* graphics, const types::vector2& position, floa
 
 //-----------------------------------------------------------------------------
 
+void DrawCross( poro::IGraphics* graphics, const types::vector2& p, float r, const poro::types::fcolor& color, types::camera* camera )
+{
+	DrawLine( graphics, p - types::vector2( r, r ), p + types::vector2( r, r ), color, camera );
+	DrawLine( graphics, p + types::vector2( -r, r ), p + types::vector2( r, -r ), color, camera );
+}
+
+//-----------------------------------------------------------------------------
+
 void DrawBox( poro::IGraphics* graphics, const types::vector2& min_pos, const types::vector2& max_pos, const poro::types::fcolor& color, types::camera* camera )
 {
 	DrawLine( graphics, types::vector2( min_pos.x, min_pos.y ), types::vector2( max_pos.x, min_pos.y ), color, camera );
@@ -749,9 +757,26 @@ void DrawBox( poro::IGraphics* graphics, const types::vector2& min_pos, const ty
 
 //-----------------------------------------------------------------------------
 
-void DrawHersheyText( poro::IGraphics* graphics, const std::string& text, const types::vector2& pos, float text_size, const poro::types::fcolor& color, types::camera* camera )
+void DrawFilledBox( poro::IGraphics* graphics, const types::vector2& min_pos, const types::vector2& max_pos, const poro::types::fcolor& color, types::camera* camera )
 {
+	static auto vertices = std::vector< poro::types::vec2 >( 4 );
 
+	auto fill_mode = graphics->GetDrawFillMode();
+	graphics->SetDrawFillMode( poro::DRAWFILL_MODE::TRIANGLE_STRIP );
+
+	vertices[0] = poro::types::vec2( min_pos.x, max_pos.y );
+	vertices[1] = poro::types::vec2( min_pos.x, min_pos.y );
+	vertices[2] = poro::types::vec2( max_pos.x, max_pos.y );
+	vertices[3] = poro::types::vec2( max_pos.x, min_pos.y );
+
+	graphics->DrawFill( vertices, color );
+	graphics->SetDrawFillMode( fill_mode );
+}
+//-----------------------------------------------------------------------------
+
+float DrawHersheyText( poro::IGraphics* graphics, const std::string& text, const types::vector2& pos, float text_size, const poro::types::fcolor& color, types::camera* camera )
+{
+	float width = 0;
 	float tx = pos.x;
 	float ty = pos.y;
 	const float scale = text_size / 24.0f;
@@ -768,31 +793,37 @@ void DrawHersheyText( poro::IGraphics* graphics, const std::string& text, const 
 		glyph = &g_simplex[(int)c*GLYPH_SIZE];
 		npts = *glyph++;
 		adv = *glyph++;
-		for (j = 0; j < npts; ++j)
+		if( graphics )
 		{
-			const char gx = glyph[j*2+0];
-			char gy = glyph[j*2+1];
-
-			if (gy == -1 && gy == -1)
+			for (j = 0; j < npts; ++j)
 			{
-				count = 0;
-				continue;
-			}
+				const char gx = glyph[j*2+0];
+				char gy = glyph[j*2+1];
 
-			gy = 24 - gy;
+				if (gx == -1 && gy == -1)
+				{
+					count = 0;
+					continue;
+				}
 
-			if (count > 0)
-			{
-				DrawLine( graphics, types::vector2( tx+px*scale, ty+py*scale ), types::vector2( tx+gx*scale, ty+gy*scale ), color, camera );
-			}
+				gy = 24 - gy;
 
-			count++;
+				if (count > 0)
+				{
+					DrawLine( graphics, types::vector2( tx+px*scale, ty+py*scale ), types::vector2( tx+gx*scale, ty+gy*scale ), color, camera );
+				}
+
+				count++;
 			
-			px = gx;
-			py = gy;
+				px = gx;
+				py = gy;
+			}
 		}
+		width += adv*scale;
 		tx += adv*scale;
 	}
+
+	return width;
 }
 
 //-----------------------------------------------------------------------------

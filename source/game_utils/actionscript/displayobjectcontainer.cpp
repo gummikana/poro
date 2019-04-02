@@ -70,6 +70,19 @@ void DisplayObjectContainer::addChild( DisplayObjectContainer* child )
 }
 //-----------------------------------------------------------------------------
 
+void DisplayObjectContainer::addChildAndRemoveFromPreviousFather( DisplayObjectContainer* child )
+{
+	cassert( child );
+	cassert( child != this );
+
+	if ( child->mFather != NULL )
+		child->mFather->removeChildForReuse( child );
+
+	mChildren.push_back( child );
+	child->SetFather( this );
+}
+//-----------------------------------------------------------------------------
+
 void DisplayObjectContainer::removeChild( DisplayObjectContainer* child )
 {
 	if( child == NULL ) return;
@@ -118,6 +131,7 @@ void DisplayObjectContainer::SetFather( DisplayObjectContainer* father )
 		}
 	}
 }
+
 //-----------------------------------------------------------------------------
 
 void DisplayObjectContainer::RemoveAllChildren()
@@ -179,7 +193,7 @@ DisplayObjectContainer::ChildList& DisplayObjectContainer::GetRawChildren()
 }
 //-----------------------------------------------------------------------------
 
-void DisplayObjectContainer::getParentTree( std::vector< const DisplayObjectContainer* >& parents_tree ) const
+void DisplayObjectContainer::getParentTree( std::vector< DisplayObjectContainer* >& parents_tree )
 {
 	parents_tree.push_back( this );
 	if( getParent() )
@@ -221,7 +235,7 @@ bool DisplayObjectContainer::SendChildToBack( DisplayObjectContainer* child )
 		return false;
 
 	mChildren.erase( i );
-	mChildren.push_front( child );	
+	mChildren.insert( mChildren.begin(), child );
 	return true;
 }
 

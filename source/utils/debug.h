@@ -23,7 +23,12 @@
 #define INC_UTILS_DEBUG_H
 
 #include <iostream>
-#include <assert.h>
+// #include <assert.h>
+
+// hax hax hax
+#include "../../../Source/debug/wizard_log.h"
+#define logger Log
+#define logger_error LogError
 
 
 //----------------- TESTING ---------------------------------------------------
@@ -51,41 +56,30 @@
 // logger that logs into a file, or we just use std::cout to output into
 // the terminal window
 
+
 #ifdef PORO_PLAT_WINDOWS
-#   define PORO_USE_LOGGER
+// #   define PORO_USE_LOGGER
 #endif
 
-#include "logger/logger.h"
-#define assert_logger std::cout
-
-
-//----------------- ASSERT ----------------------------------------------------
-// define cassert
-#include "pow2assert/pow2assert.h"
-
-#ifdef NDEBUG
-
-// assert that could be used during run time. Just outputs the error, instead of crashing things
-#	ifdef PORO_USE_RELEASE_ASSERTS
-
-#		define cassert(cond) \
-			do \
-			{ \
-				if (!(cond)) \
-				{ \
-					assert_logger << "Assert failed: (" << #cond << ") in " << __FILE__ << " at line " << __LINE__ << std::endl; \
-				} \
-			} while(0)
-#	else
-		// optimized assert that doesn't do anything
-#		define cassert(cond) do { } while(0)
-#	endif
-
+#ifdef PORO_USE_LOGGER
+	#include "logger/logger.h"
 #else
-#	define cassert 	POW2_ASSERT
+
+// #define logger std::cout
+// #define assert_logger std::cout
+
 #endif
 
+#include "poro_assert.h"
 
 
+template< class T >
+void DEBUG_LOG( const T& what )
+{
+	// god damn, couldn't get the logger to work...
+	std::ofstream fileout( "logger.txt", std::ios::out | std::ios::app );
+	fileout << what << "\n";
+	fileout.close();
+}
 
 #endif

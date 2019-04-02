@@ -24,23 +24,11 @@
 #include "texture_opengl.h"
 
 namespace poro {
-namespace {
-Uint32 GetNextPowerOfTwo(Uint32 input)
-{
-	--input;
-	input |= input >> 16;
-	input |= input >> 8;
-	input |= input >> 4;
-	input |= input >> 2;
-	input |= input >> 1;
-	return input + 1;
-}
-} // end of anonymous namespace
 
 void RenderTextureOpenGL::InitTexture(int width,int height, bool linear_filtering ) {
 
-	GLsizei widthP2 = (GLsizei)GetNextPowerOfTwo(width);
-	GLsizei heightP2 = (GLsizei)GetNextPowerOfTwo(height);
+	GLsizei widthP2 = width;  //(GLsizei)GetNextPowerOfTwo( width );
+	GLsizei heightP2 = height; // (GLsizei)GetNextPowerOfTwo( height );
 	mTexture.mWidth = width;
 	mTexture.mHeight = height;
 	mTexture.mUv[0] = 0;
@@ -95,21 +83,37 @@ void RenderTextureOpenGL::Release()
 }
 
 
-void RenderTextureOpenGL::BeginRendering()
+void RenderTextureOpenGL::BeginRendering( bool clear_color, bool clear_depth, float clear_r, float clear_g, float clear_b, float clear_a )
 {
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mBufferId);
-	glPushAttrib(GL_VIEWPORT_BIT);
-	// glViewport(0,0,mTexture.GetWidth(),mTexture.GetHeight());
-	glViewport(0,0,mTexture.GetWidth(),mTexture.GetHeight());
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, mBufferId );
+	glPushAttrib( GL_VIEWPORT_BIT );
+	glViewport( 0, 0, mTexture.GetWidth(), mTexture.GetHeight() );
 
-	glClearColor(0, 0, 0, 0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearColor( clear_r, clear_g, clear_b, clear_a );
+
+	if ( clear_color || clear_depth )
+	{
+		int clear_bits = 0;
+		if ( clear_color )
+			clear_bits |= GL_COLOR_BUFFER_BIT;
+		if ( clear_depth )
+			clear_bits |= GL_DEPTH_BUFFER_BIT;
+
+		glClear( clear_bits );
+	}
 }
 
 void RenderTextureOpenGL::EndRendering()
 {
 	glPopAttrib();
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+}
+
+void RenderTextureOpenGL::ReadTextureDataFromGPU( uint8* out_pixels ) const
+{
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, mBufferId );
+	glReadPixels( 0, 0, mTexture.GetDataWidth(), mTexture.GetDataHeight(), GL_RGBA, GL_UNSIGNED_BYTE, (void*)out_pixels );
+	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0 );
 }
 
 }

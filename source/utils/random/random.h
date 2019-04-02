@@ -50,8 +50,23 @@ void SetRandomSeeds( int random_seed );
 //! result: ] low, high [
 int Random( int low, int high );
 
+// Does a check,  that low is low, and high is high
+int RandomSafe(int low, int high);
+
 //! Returns a number in float
 float Randomf( float low, float high );
+
+//! Returns a number in double
+double Randomd( double low, double high );
+
+// Does a check,  that low is low, and high is high
+float RandomfSafe(float low, float high);
+
+// returns either a or b with a 50% chance for each
+float ChooseRandom( float a, float b );
+
+// returns true with the given chance [0,100]
+bool RandomBool( int chance_of_true = 50 );
 
 //-----------------------------------------------------------------------------
 // Here's some stats that produced by a quick testing of the speed of the 
@@ -99,7 +114,9 @@ T TemplateRandom( T low, T high )
 	RandomFunc func;
 
 	// return ( rand()%(t+1) ) + low;
-	return (T)(func() * (double)t + 0.5 ) + low;
+	// return low+(int)((double)(high-low + 1)*(double)Next() );
+
+	return (T)(func() * (double)(t + 1) ) + low;
 }
 
 //-----------------------------------------------------------------------------
@@ -116,7 +133,6 @@ public:
 	static void SetSeed( double seed );
 
 	Global_LGMRandom() { }
-	~Global_LGMRandom() { }
 
 
 	double operator()() 
@@ -132,13 +148,17 @@ public:
 		return low+((high-low)*(float)Next() );
 	}
 
+	static double Randomd( double low, double high )
+	{
+		return low+((high-low)*Next() );
+	}
+
 	static int Random( int low, int high )
 	{
-		return low+(int)((double)(high-low)*(double)Next() + 0.5);
+		return low+(int)((double)(high-low + 1)*(double)Next() );
 	}
 
 	static double seed;
-	static double iseed;
 };
 
 //-----------------------------------------------------------------------------
@@ -148,9 +168,8 @@ class CLGMRandom
 public:
 	void SetSeed( double seed );
 
-	CLGMRandom() : seed( 0 ), iseed( 0 ) { }
-	~CLGMRandom() { }
-
+	CLGMRandom() : seed( 0 ) { }
+	CLGMRandom( double seed ) { SetSeed( seed ); }
 
 	double operator()() 
 	{
@@ -167,11 +186,20 @@ public:
 
 	int Random( int low, int high )
 	{
-		return low+(int)((double)(high-low)*(double)Next() + 0.5);
+		return low+(int)((double)(high-low + 1)*(double)Next() );
+	}
+
+	int RandomSafe( int range0, int range1 )
+	{
+		return Random( range0 < range1 ? range0 : range1, range0 > range1 ? range0 : range1 );
+	}
+
+	float RandomfSafe( float range0, float range1 )
+	{
+		return Randomf( range0 < range1 ? range0 : range1, range0 > range1 ? range0 : range1 );
 	}
 
 	double seed;
-	double iseed;
 };
 
 //-----------------------------------------------------------------------------
@@ -180,6 +208,7 @@ class CFastRandom
 {
 public:
 	CFastRandom() : mSeed( 0 )  { }
+	CFastRandom( int seed ) { SetSeed( seed ); }
 
 	void SetSeed( int in_seed ) {
 		mSeed = in_seed ^ 13 - 1;
@@ -202,6 +231,19 @@ public:
 		return ((mSeed>>16)&0x7FFF)%101;
 	}
 
+	// returns a value between ]0 and 127[
+	// should be faster than using Random( int low, int high )
+	inline int Random127() {
+		mSeed = (214013*mSeed+2531011); 
+		return ((mSeed>>16)&127);
+	}
+
+	// returns a random bool based on the last bit
+	inline bool RandomBool() {
+		mSeed = (214013*mSeed+2531011); 
+		return ((mSeed>>16)&1) == 0 ? false : true;
+	}
+
 	// low = 0, high
 	inline int Random0To( int high ) {
 		mSeed = (214013*mSeed+2531011); 
@@ -210,7 +252,14 @@ public:
 
 	inline float Randomf( float low, float high ) {
 		mSeed = (214013*mSeed+2531011); 
-		return low+((high-low)*((float)((mSeed>>16)&0x7FFF) / (float)RAND_MAX) );
+		return low+((high-low)*((float)((mSeed>>16)&0x7FFF) / (float)0x7FFF) );
+	}
+
+	// 
+	inline double Next()
+	{
+		mSeed = (214013*mSeed+2531011); 
+		return (double)((1.f)*((float)((mSeed>>16)&0x7FFF) / (float)0x7FFF) );
 	}
 
 	int mSeed;

@@ -41,6 +41,7 @@
 #include "cvector2.h"
 #include "cmat22.h"
 #include "cxform.h"
+#include "cangle.h"
 #include "math_functions.h"
 
 
@@ -85,6 +86,13 @@ CVector2< Type > operator * ( Type s, const CVector2< Type >& v)
 {
 	return CVector2< Type >(s * v.x, s * v.y);
 }
+
+template< class Type >
+CAngle< Type > operator * ( float s, const CAngle< Type >& v)
+{
+	return ( v * s );
+}
+
 
 template< class Type >
 CMat22< Type > operator + (const CMat22< Type >& A, const CMat22< Type >& B)
@@ -158,7 +166,7 @@ CVector2< Type > Mul( const CXForm< Type >& T, const CVector2< Type >& v )
 	return T.position + Mul( T.R, v );
 }
 
-
+#if 0
 template< class Type, class Vector2 >
 Vector2 Mul( const CXForm< Type >& T, const Vector2& v )
 {
@@ -170,7 +178,7 @@ Vector2 Mul( const CXForm< Type >& T, const Vector2& v )
 	result.y += T.position.y;
 	return result;
 }
-
+#endif
 
 template< class Type, class Vector2 >
 Vector2 MulWithScale( const CXForm< Type >& T, const Vector2& v )
@@ -210,13 +218,33 @@ CVector2< Type > MulT( const CXForm< Type >& T, const CVector2< Type >& v )
 	return MulT( T.R, v - T.position );
 }
 
+
+template< class Type >
+CXForm< Type > MulT( const CXForm< Type >& T, const CXForm< Type >& v )
+{
+	
+	CXForm< Type > result;
+
+	result.scale.x = v.scale.x / T.scale.x;
+	result.scale.y = v.scale.y / T.scale.y;
+	result.R = Mul( T.R.Invert(), v.R );
+
+	result.position.x = ( v.position.x - T.position.x ) / T.scale.x;
+	result.position.y = ( v.position.y - T.position.y ) / T.scale.y;
+	// result.position = v.position - T.position;
+	result.position = MulT( T.R, result.position );
+
+	return result;
+}
+
 template< class Type >
 CVector2< Type > MulTWithScale( const CXForm< Type >& T, const CVector2< Type >& v )
 {
 	CVector2< Type > result( v );
+	result = MulT( T.R, result - T.position );
 	if( T.scale.x != 0 ) result.x /= T.scale.x;
 	if( T.scale.y != 0 ) result.y /= T.scale.y;
-	return MulT( T.R, result - T.position );
+	return result;
 }
 
 
@@ -309,26 +337,42 @@ bool LineIntersection( const CVector2< T >& startA, const CVector2< T >& endA,
 }
 
 // ----------------------------------------------------------------------------
-
+/*
 template< class PType >
 float DistanceFromAABB( const CVector2< PType >& point, const CVector2< PType >& aabb_min, const CVector2< PType >& aabb_max )
 {
 	if( IsPointInsideAABB( point, aabb_min, aabb_max ) ) return 0;
 
 	float lowest = 0;
-	float temp = ceng::math::DistanceFromLineSquared( aabb_min, types::ivector2( aabb_max.x, aabb_min.y ), point );
+	float temp = ceng::math::DistanceFromLineSquared( aabb_min, CVector2< PType >( aabb_max.x, aabb_min.y ), point );
+	lowest = temp;
+
+	temp = ceng::math::DistanceFromLineSquared( CVector2< PType >( aabb_max.x, aabb_min.y ), CVector2< PType >( aabb_max.x, aabb_max.y ), point );
 	if( temp < lowest ) lowest = temp;
 
-	temp = ceng::math::DistanceFromLineSquared( types::ivector2( aabb_max.x, aabb_min.y ), types::ivector2( aabb_max.x, aabb_max.y ), point );
+	temp = ceng::math::DistanceFromLineSquared( CVector2< PType >( aabb_max.x, aabb_max.y ), CVector2< PType >( aabb_min.x, aabb_max.y ), point );
 	if( temp < lowest ) lowest = temp;
 
-	temp = ceng::math::DistanceFromLineSquared( types::ivector2( aabb_max.x, aabb_max.y ), types::ivector2( aabb_min.x, aabb_max.y ), point );
-	if( temp < lowest ) lowest = temp;
-
-	temp = ceng::math::DistanceFromLineSquared( types::ivector2( aabb_min.x, aabb_max.y ), types::ivector2( aabb_min.x, aabb_min.y ), point );
+	temp = ceng::math::DistanceFromLineSquared( CVector2< PType >( aabb_min.x, aabb_max.y ), CVector2< PType >( aabb_min.x, aabb_min.y ), point );
 	if( temp < lowest ) lowest = temp;
 
 	return sqrtf( lowest );
+}*/
+
+template< class PType >
+float DistanceFromAABBSquared( const CVector2< PType >& pos, const CVector2< PType >& aabb_min, const CVector2< PType >& aabb_max )
+{
+	CVector2< PType > mins(
+		ceng::math::Max(aabb_min.x - pos.x, 0.f, pos.x - aabb_max.x),
+		ceng::math::Max(aabb_min.y - pos.y, 0.f, pos.y - aabb_max.y) );
+
+	return mins.LengthSquared();
+}
+
+template< class PType >
+float DistanceFromAABB( const CVector2< PType >& pos, const CVector2< PType >& aabb_min, const CVector2< PType >& aabb_max )
+{
+	return sqrtf( DistanceFromAABBSquared( pos, aabb_min, aabb_max ) );
 }
 
 // ----------------------------------------------------------------------------

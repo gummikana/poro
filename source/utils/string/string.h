@@ -97,7 +97,7 @@ namespace ceng {
 	substring of string formed by splitting it on
 	boundaries formed by the string separator.
 */
-std::vector <std::string> Split( const std::string& _separator, std::string _string );
+std::vector <std::string> Split( const std::string& _separator, std::string _string, bool include_empty = false );
 
 //! If limit is set, the returned array will contain a maximum of limit
 //! elements with the last element containing the rest of string.
@@ -140,7 +140,6 @@ std::string RemoveQuotes( std::string line );
 std::string Uppercase( const std::string& _string );
 //! returns a string in lowercase
 std::string Lowercase( const std::string& _string );
-
 //! for some vector to string conversation
 std::string ConvertNumbersToString( const std::vector< int >& array );
 
@@ -168,6 +167,15 @@ std::string MakeAlphaNumeric( const std::string& who );
 //! converts all the character to alpha numeric charasters
 std::string ConvertToAlphaNumeric( const std::string& who );
 
+//! converts "SomeString" to "some_string"
+std::string ConvertCamelCaseToUnderscoreCase(const std::string& _string);
+
+// ! converts "some string_stuff" to "Some String_stuff"
+std::string ConvertFirstCharactersOfWordsToUpperCase( const std::string& _string );
+
+// ! allocates a char array and copies the contents of the given string to it. the resulting char* is null-terminated. you have to call delete[] on the return value when done with it
+char* CreateCStringCopy( const std::string& _string );
+
 //-----------------------------------------------------------------------------
 
 //! Just a helper utility to save some code lines
@@ -183,9 +191,9 @@ std::string CastToString( const T& var )
 //! Just a helper utility to save some code lines,
 //! casts a string to a variable
 template< class T >
-T CastFromString( const std::string& str )
+T CastFromString( const std::string& str, T default_value = T() )
 {
-	T result;
+	T result = default_value;
 	std::stringstream ss( str );
 	ss.operator>>( result );
 	return result;

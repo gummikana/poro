@@ -16,6 +16,8 @@ namespace easing {
 Back::EaseIn Back::easeIn;
 Back::EaseOut Back::easeOut;
 Back::EaseInOut Back::easeInOut;
+ceng::CLGMRandom mRandom( 42589 );
+
 
 float Back::impl_easeIn (float t,float b , float c, float d) {
 	float s = 1.70158f;
@@ -110,7 +112,7 @@ float Elastic::impl_easeIn (float t,float b , float c, float d) {
 	float p=d*.3f;
 	float a=c; 
 	float s=p/4;
-	float postFix =a*pow(2,10*(t-=1)); // this is a fix, again, with post-increment operators
+	float postFix =a*powf(2,10*(t-=1)); // this is a fix, again, with post-increment operators
 	return (float) -(postFix * sin((t*d-s)*(2*PI)/p )) + b;
 }
 
@@ -129,10 +131,10 @@ float Elastic::impl_easeInOut(float t,float b , float c, float d) {
 	float s=p/4;
 	 
 	if (t < 1) {
-		float postFix =a*pow(2,10*(t-=1)); // postIncrement is evil
+		float postFix =a*powf(2,10*(t-=1)); // postIncrement is evil
 		return (float)( -.5f*(postFix* sin( (t*d-s)*(2*PI)/p )) + b );
 	} 
-	float postFix =  a*pow(2,-10*(t-=1)); // postIncrement is evil
+	float postFix =  a*powf(2,-10*(t-=1)); // postIncrement is evil
 	return (float)( postFix * sin( (t*d-s)*(2*PI)/p )*.5f + c + b );
 }
 
@@ -143,17 +145,17 @@ Expo::EaseOut Expo::easeOut;
 Expo::EaseInOut Expo::easeInOut;
 
 float Expo::impl_easeIn (float t,float b , float c, float d) {
-	return (t==0) ? b : c * pow(2, 10 * (t/d - 1)) + b;
+	return (t==0) ? b : c * powf(2, 10 * (t/d - 1)) + b;
 }
 float Expo::impl_easeOut(float t,float b , float c, float d) {
-	return (t==d) ? b+c : c * (-pow(2, -10 * t/d) + 1) + b;	
+	return (t==d) ? b+c : c * (-powf(2, -10 * t/d) + 1) + b;	
 }
 
 float Expo::impl_easeInOut(float t,float b , float c, float d) {
 	if (t==0) return b;
 	if (t==d) return b+c;
-	if ((t/=d/2) < 1) return c/2 * pow(2, 10 * (t - 1)) + b;
-	return c/2 * (-pow(2, -10 * --t) + 2) + b;
+	if ((t/=d/2) < 1) return c/2 * powf(2, 10 * (t - 1)) + b;
+	return c/2 * (-powf(2, -10 * --t) + 2) + b;
 }
 
 //-----------------------------------------------------------------------------
@@ -269,10 +271,10 @@ float PetriHacks::DimishingShakeBack::f( float x ) { return ( ( cos( x * 3.1415f
 float PetriHacks::DimishingShake::f( float x ) { return ( ( cos( x * 3.1415f ) + 1 ) * 0.5f )  * sin( x * 30.0f ) + x; }
 
 // Randomf, just gives you a ceng::math::Randomf(0,1) as a result
-float PetriHacks:: Randomf::f( float x ) { return ceng::Randomf( 0.f, 1.f ); }
+float PetriHacks:: Randomf::f( float x ) { return mRandom.Randomf( 0.f, 1.f ); }
 
 // BooleanRandom, returns 0 or 1 randomly
-float PetriHacks:: BooleanRandom::f( float x ) { return (float)ceng::Random( 0, 1 ); }
+float PetriHacks:: BooleanRandom::f( float x ) { return (float)mRandom.Random( 0, 1 ); }
 
 
 PetriHacks::SinGoTo2AndBack		PetriHacks::sinGoTo2AndBack;

@@ -1,9 +1,9 @@
 #include "event_playback_impl.h"
 
-#include <fstream>
 #include <sstream>
 
-#include "../poro_macros.h"
+#include "../iplatform.h"
+#include "../fileio.h"
 
 namespace poro {
 
@@ -17,7 +17,6 @@ namespace {
 //
 std::vector<std::string> Split( const std::string& _separator, std::string _string )
 {
-
     std::vector <std::string> array;
 
     size_t position;
@@ -103,7 +102,7 @@ T ParseSafely( const std::vector< std::string >& pieces, int i )
 {
 	if( i < 0 || i >= (int)pieces.size() ) 
 	{
-		poro_logger << "Error: EventPlaybackImpl::DoAnEventFromString() trying to parse index: " << i << " for an event that doesn't exist in the array" << std::endl;
+		poro_logger << "Error: EventPlaybackImpl::DoAnEventFromString() trying to parse index: " << i << " for an event that doesn't exist in the array" << "\n";
 		return T();
 	}
 
@@ -123,7 +122,7 @@ EventPlaybackImpl::EventPlaybackImpl() :
 }
 
 EventPlaybackImpl::EventPlaybackImpl( Keyboard* keyboard, Mouse* mouse, Touch* touch ) : 
-	EventRecorder( keyboard, mouse, touch ), 
+	EventRecorder( keyboard, mouse, touch, NULL ), 
 	mEventsEnabled( false ),
 	mFrameCount( 0 ),
 	mPlaybacks(),
@@ -132,7 +131,7 @@ EventPlaybackImpl::EventPlaybackImpl( Keyboard* keyboard, Mouse* mouse, Touch* t
 }
 //=============================================================================	
 
-int EventPlaybackImpl::GetRandomSeed()
+unsigned int EventPlaybackImpl::GetRandomSeed()
 {
 	return mRandomSeed;
 }
@@ -194,21 +193,18 @@ void EventPlaybackImpl::FireTouchUpEvent(const types::vec2& pos, int touchId) {
 
 void EventPlaybackImpl::LoadPlaybacksFromFile( const std::string& filename )
 {
-	std::fstream file_input;
 	std::string line;
 
 	poro_assert( mPlaybacks.empty() );
 
-	int random_seed = 0;
+	unsigned int random_seed = 0;
 	int line_num = 0;
 	if( filename.empty() == false )
 	{
-		file_input.open( filename.c_str(), std::ios::in );
+		ReadStream file = Poro()->GetFileSystem()->OpenRead( filename );
         
-		while ( file_input.good() ) 
+		while ( file.ReadTextLine( line ) ) 
 		{
-			std::getline( file_input, line );
-
 			// comment sections
 			if( line.empty() == false && line[ 0 ] == '#' ) continue;
 
@@ -249,19 +245,18 @@ void EventPlaybackImpl::LoadPlaybacksFromFile( const std::string& filename )
 							if( CheckIfTheBeginningIsSame( "randomseed", str ) ) 
 							{
 								std::vector< std::string > pieces = Split( " ", str );
-								random_seed = ParseSafely< int >( pieces, 1 );
-								std::cout << "randomseed: " << random_seed << std::endl;
+								random_seed = ParseSafely< unsigned int >( pieces, 1 );
+								std::cout << "randomseed: " << random_seed << "\n";
 							}
 						}
 					}
 				}
 			}
 		}
-		file_input.close();
 	}
 	else
 	{
-		poro_logger << "Error: couldn't read playback file: " << filename << std::endl;
+		poro_logger << "Error: couldn't read playback file: " << filename << "\n";
 	}
 
 	if( random_seed != 0 ) 
@@ -281,7 +276,10 @@ void EventPlaybackImpl::DoAnEventFromString( const std::string& event_string )
 	
 
 	// switch( type ) 
-	if( type == "mm" ) {
+	if ( type == "wf" ) {
+		FireWindowFocusEvent( ParseSafely< bool >( pieces, 1 ) );
+	}
+	else if( type == "mm" ) {
 		FireMouseMoveEvent( types::Vec2( ParseSafely< float >( pieces, 1 ), ParseSafely< float >( pieces, 2 ) ) );
 	} 
 	else if( type == "md" ) {
@@ -306,7 +304,7 @@ void EventPlaybackImpl::DoAnEventFromString( const std::string& event_string )
 		FireTouchUpEvent(  types::Vec2( ParseSafely< float >( pieces, 1 ), ParseSafely< float >( pieces, 2 ) ), ParseSafely< int >( pieces, 3 )  );
 	}
 	else {
-		poro_logger << "Error: EventPlaybackImpl::DoAnEventFromString() - unknown event type: " << type << std::endl;
+		poro_logger << "Error: EventPlaybackImpl::DoAnEventFromString() - unknown event type: " << type << "\n";
 	}
 
 }

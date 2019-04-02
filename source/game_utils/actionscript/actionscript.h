@@ -22,8 +22,6 @@
 #ifndef INC_ACTIONSCRIPT_H
 #define INC_ACTIONSCRIPT_H
 
-#include <iostream>
-
 #include "actionscript_types.h"
 #include "eventdispatcher.h"
 #include "vector.h"
@@ -44,7 +42,7 @@ void trace( const std::string& what );
 
 inline void trace( const std::string& what )
 {
-	std::cout << what << std::endl;
+	logger << what << "\n";
 }
 
 class Rndm
@@ -64,7 +62,10 @@ public:
 poro::ITexture*				GetTexture( const std::string& filename );
 ceng::CArray2D< Uint32 >*	GetImageData( const std::string& filename, bool load_and_cache_if_needed = false);
 as::Sprite*					LoadSprite( const std::string& filename );
+void						LoadSpriteTo( const std::string& filename, as::Sprite* sprite );
 as::TextSprite*				LoadTextSprite( const std::string& font_file );
+void						LoadTextSpriteTo( const std::string& font_file, as::TextSprite* sprite );
+bool						PreloadSprite( const std::string& filename );
 
 } // end of namespace as
 

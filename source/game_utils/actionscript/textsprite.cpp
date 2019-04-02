@@ -37,10 +37,9 @@ namespace as {
 // ---- just a simple font cache ----------------------------------------
 std::map< std::string, CFont* > m_font_cache;
 
-
-as::TextSprite* LoadTextSprite( const std::string& font_file )
+void LoadTextSpriteTo( const std::string& font_file, as::TextSprite* mTextSprite )
 {
-	as::TextSprite* mTextSprite = new as::TextSprite;
+	if( mTextSprite == NULL ) return;
 
 	CFont* font = m_font_cache[ font_file ];
 	if( font == NULL ) {
@@ -50,8 +49,16 @@ as::TextSprite* LoadTextSprite( const std::string& font_file )
 	}
 
 	mTextSprite->SetFont( font );
-	mTextSprite->SetColor( 0, 0, 0 );
 
+	mTextSprite->SetColor( font->GetDefaultColor()[0], font->GetDefaultColor()[1], font->GetDefaultColor()[2] );
+	mTextSprite->SetAlpha( font->GetDefaultColor()[3] );
+}
+
+as::TextSprite* LoadTextSprite( const std::string& font_file )
+{
+	as::TextSprite* mTextSprite = new as::TextSprite;
+	LoadTextSpriteTo( font_file, mTextSprite );
+	mTextSprite->SetFilename( font_file );
 	return mTextSprite;
 }
 
@@ -130,8 +137,8 @@ types::rect TextSprite::GetBounds()
 	
 	return bounds;
 }
-
 //-----------------------------------------------------------------------------
+
 void TextSprite::RecalcuateRects()
 {
 	if( mFont ) 
@@ -171,7 +178,7 @@ void TextSprite::RecalcuateRects()
 
 			// figure out mRealSize.x && mRealSize.y
 			types::vector2 min_p( FLT_MAX, FLT_MAX );
-			types::vector2 max_p( FLT_MIN, FLT_MIN );
+			types::vector2 max_p( -FLT_MAX, -FLT_MAX );
 			for( std::size_t i = 0; i < mOutRects.size(); ++i )
 			{
 				if( mOutRects[ i ].w >= 0 &&
@@ -195,49 +202,6 @@ void TextSprite::RecalcuateRects()
 			mRealSize.x = mTextBox.w;
 			mRealSize.y = mTextBox.h;
 		}
-#if 0 
-		mInRects = mFont->GetRectsForText( mText );
-		mOutRects.clear();
-
-		if( mFontAlign == NULL || mTextBox.w < 0 )
-		{
-			types::vector2 f_pos( 0, 0 );
-			for( std::size_t i = 0; i < mInRects.size(); ++i )
-			{
-				types::rect font_rect = mInRects[ i ];
-				font_rect.x = f_pos.x;
-				font_rect.y = f_pos.y;
-
-				mOutRects.push_back( font_rect );
-
-				f_pos.x += ( font_rect.w + mFont->GetCharSpace() );  /* GetScale().x;*/
-			}
-
-			// figure out mRealSize.x && mRealSize.y
-			types::vector2 min_p( 100000.f, 100000.f );
-			types::vector2 max_p( -100000.f, -100000.f );
-			for( std::size_t i = 0; i < mOutRects.size(); ++i )
-			{
-				if( mOutRects[ i ].w >= 0 &&
-					mOutRects[ i ].h >= 0 )
-				{
-					min_p.x = ceng::math::Min( min_p.x, mOutRects[ i ].x );
-					min_p.y = ceng::math::Min( min_p.y, mOutRects[ i ].y );
-					max_p.x = ceng::math::Max( max_p.x, mOutRects[ i ].x + mOutRects[ i ].w );
-					max_p.y = ceng::math::Max( max_p.y, mOutRects[ i ].y + mOutRects[ i ].h );
-				}
-
-				mRealSize.x = max_p.x - min_p.x;
-				mRealSize.y = max_p.y - min_p.y;
-			}
-		}
-		else if( mFontAlign )
-		{
-			mOutRects = mFontAlign->GetRectPositions( mInRects, mText, types::rect( 0, 0, mTextBox.w, mTextBox.h ), mFont );
-			mRealSize.x = mTextBox.w;
-			mRealSize.y = mTextBox.h;
-		}
-#endif
 	}
 }
 
@@ -250,10 +214,9 @@ void TextSprite::SetText( const std::string& text )
 	}
 }
 
-
-bool TextSprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const Transform& transform )
+void TextSprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const Transform& transform )
 {
-	return Sprite::DrawRect( rect, graphics, camera, transform );
+	Sprite::DrawRect( rect, graphics, camera, transform );
 }
 
 //-----------------------------------------------------------------------------
@@ -276,21 +239,11 @@ types::rect MultiRect( const types::xform& xform, types::rect r, const types::ve
 } // end of anonymous namespace
 //-----------------------------------------------------------------------------
 
-bool TextSprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& transform )
+void TextSprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transform& transform )
 { 
 	//-------------------------------------------
 	if( mVisible == false )
-		return true;
-
-	// if we have an alpha mask we set it up drawing with it
-	if( mAlphaMask )
-	{
-		if( mAlphaMask->GetScaleX() == 0 || 
-			mAlphaMask->GetScaleY() == 0 )
-			return true;
-	}
-
-	//------------------------------------
+		return;
 
 	const types::xform		m_xform = mXForm;
 	const types::vector2	m_centerpos = mCenterOffset;
@@ -329,7 +282,6 @@ bool TextSprite::Draw( poro::IGraphics* graphics, types::camera* camera, Transfo
 
 	// drawing children
 	DrawChildren( graphics, camera, transform );
-	return true;
 }
 
 void TextSprite::SetAlign( int align_type )

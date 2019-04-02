@@ -5,17 +5,31 @@
 #include "keyboard.h"
 #include "mouse.h"
 #include "touch.h"
+#include "joystick.h"
+#include "iplatform.h"
+#include "iapplication.h"
 
 namespace poro {
 
-int EventRecorder::GetRandomSeed() 
+unsigned int EventRecorder::GetRandomSeed() 
 { 
 	if( mRandomSeed == 0 ) 
-		mRandomSeed = (int)time( NULL );
+	{
+		unsigned int time_null = (unsigned int)time( NULL );
+		double up_time = 0.1234;
+		if( Poro() ) up_time = Poro()->GetUpTime();
+		time_null = time_null + (unsigned int)( up_time * (double)time_null );
+		mRandomSeed = time_null;
+	}
 
 	return mRandomSeed; 
 }
 	
+// window events
+void EventRecorder::FireWindowFocusEvent( bool has_focus ) {
+	Poro()->GetApplication()->WindowFocusChanged( has_focus );
+}
+
 // keyboard events
 void EventRecorder::FireKeyDownEvent( int button, types::charset unicode ) {
 	if( mKeyboard ) mKeyboard->FireKeyDownEvent( button, unicode );
@@ -49,6 +63,15 @@ void EventRecorder::FireTouchDownEvent(const types::vec2& pos, int touchId) {
 
 void EventRecorder::FireTouchUpEvent(const types::vec2& pos, int touchId) {
 	if( mTouch ) mTouch->FireTouchUpEvent( pos, touchId );
+}
+
+// gamepad events
+void EventRecorder::FireGamepadDownEvent( int button ) {
+	if ( mJoystick ) mJoystick->SetButtonState( button, true );
+}
+
+void EventRecorder::FireGamepadUpEvent( int button ) {
+	if ( mJoystick ) mJoystick->SetButtonState( button, false );
 }
 
 

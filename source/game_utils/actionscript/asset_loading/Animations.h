@@ -33,13 +33,14 @@ namespace impl  {
 
 struct Frame
 {
-	Frame() : visible( true ), pos(), scale( 1, 1 ), rotation( 0 ), alpha( 1.f ) { }
+	Frame() : visible( true ), pos(), scale( 1, 1 ), rotation( 0 ), alpha( 1.f ), index( 0 ) { }
 	Frame( bool visible, double x, double y, double scaleX, double scaleY, double rotation, double alpha ) :
 		visible( visible ),
 		pos( (float)x, (float)y ),
 		scale( (float)scaleX, (float)scaleY ),
 		rotation( (float)rotation ),
-		alpha( (float)alpha )
+		alpha( (float)alpha ),
+		index( 0 )
 	{
 	}
 

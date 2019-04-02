@@ -28,21 +28,34 @@ namespace ceng {
 
 void ClearLogs();
 
+
 #ifdef PORO_USE_LOGGER
 
 extern CLog logger_impl;
 
+#ifndef logger
 #define logger			ceng::logger_impl
+#endif
+
 #define logger_error	ceng::logger_impl.Error()
 #define logger_warning	ceng::logger_impl.Warning()
 #define logger_debug	ceng::logger_impl.Debug()
 
 #else
 
-#define logger std::cout
-#define logger_error	std::cout
-#define logger_warning	std::cout
-#define logger_debug	std::cout
+#ifndef logger 
+#define logger std::cout 
+#endif
+
+#ifndef logger_error
+#define logger_error logger 
+#endif
+#ifndef logger_warning	
+#define logger_warning logger 
+#endif
+#ifndef logger_debug	
+#define logger_debug logger 
+#endif
 
 #endif
 

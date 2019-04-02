@@ -87,16 +87,19 @@
 
 	A warpper class for the CXmlNode and for the functions in the CXmlCast.
 	Used also in the Serialize method all over the place, so its a so called
-    Bridge between the CXmlNode datastructure and various amounths of classes
+	Bridge between the CXmlNode datastructure and various amounths of classes
 */
 namespace ceng {
 
 class CXmlNode;
-    
+
 template< class T >
 CXmlNode* TEMP_XmlConvertFrom( T& from, const std::string& name );
 
-                              
+template< class T >
+void TEMP_XmlConvertTo( CXmlNode* from, T& to );
+
+//                              
 class CXmlFileSys
 {
 public:
@@ -111,21 +114,21 @@ public:
 
 	//! Basic constructors
 	CXmlFileSys() :
-        myFilename(),
-        myLine( 0 ),
+		myFilename(),
+		myLine( 0 ),
 		myUseStrict( false ),
 		myStatus( empty ),
 		myRootElement( NULL ),
 		myCurrentNode( NULL ),
 		myChildPosition( 0 )
-    { }
+	{ }
 
 	//! Basic constructor with node and status
 	CXmlFileSys( CXmlNode* node, FileSysStatus status ) :
-        myFilename(),
-        myLine( 0 ),
+		myFilename(),
+		myLine( 0 ),
 		myUseStrict( false ),
-        myStatus( status ),
+		myStatus( status ),
 		myRootElement( node ),
 		myCurrentNode( node ),
 		myChildPosition( 0 )
@@ -166,7 +169,7 @@ public:
 	// Reading
 	template< class T >
 	void ConvertTo( T& to, const std::string& name )
-	{ XmlConvertTo( FindChildByName( name ), to ); }
+	{ TEMP_XmlConvertTo( FindChildByName( name ), to ); }
 
 	//! For use of while reading. Creates new pointer of the type
 	// Reading
@@ -179,9 +182,9 @@ public:
 	template< class T >
 	void ConvertFrom( T& from, const std::string& name )
 	{
-        myCurrentNode->AddChild( TEMP_XmlConvertFrom( from, name ) );
-    }
-    
+		myCurrentNode->AddChild( TEMP_XmlConvertFrom( from, name ) );
+	}
+
 	//! Basicly to be used while writing, adds a new child to the current element
 	/*!
 		Note: Remember to call the EndElement( name ) after this.
@@ -205,7 +208,7 @@ public:
 	void EndElement( const std::string& name )
 	{
 		if ( myCurrentNode->GetName() != name )
-			if ( myUseStrict ) logger << "Xml warning, trying to end a different node: " << name << " should end: " << myCurrentNode->GetName() << " in file: " << myFilename << " at line " << myLine << std::endl;
+			if ( myUseStrict ) logger << "Xml warning, trying to end a different node: " << name << " should end: " << myCurrentNode->GetName() << " in file: " << myFilename << " at line " << myLine << "\n";
 
 		myCurrentNode = myCurrentNode->GetFather();
 
@@ -216,7 +219,7 @@ public:
 	CXmlNode* FindChildByName( const std::string& name )
 	{
 		if ( myUseStrict && myChildPosition >= myCurrentNode->GetChildCount() )
-			logger << "Xml warning, ain't no childs left in the current node: " << myCurrentNode->GetName() << " in file: " << myFilename << " at line " << myLine << std::endl;
+			logger << "Xml warning, ain't no childs left in the current node: " << myCurrentNode->GetName() << " in file: " << myFilename << " at line " << myLine << "\n";
 
 		if( HasChildNamed( name ) == false )
 			return NULL;
@@ -228,7 +231,7 @@ public:
 			return myCurrentNode->GetChild( myChildPosition-1 );
 		}
 
-		if ( myUseStrict ) logger << "Xml warning a child node wasn't in the place it should be, order fucked up in node: " << myCurrentNode->GetName() << " in file: " << myFilename << " at line " << myLine << std::endl;
+		if ( myUseStrict ) logger << "Xml warning a child node wasn't in the place it should be, order fucked up in node: " << myCurrentNode->GetName() << " in file: " << myFilename << " at line " << myLine << "\n";
 
 		for (	myChildPosition = 0;
 				myChildPosition < myCurrentNode->GetChildCount() &&
@@ -237,7 +240,7 @@ public:
 
 		if ( myChildPosition == myCurrentNode->GetChildCount() )
 		{
-			if ( myUseStrict ) logger << "Xml error a child node: " << name << " wasn't found at all in the node: " << myCurrentNode->GetName() << " in file: " << myFilename << " at line " << myLine << std::endl;
+			if ( myUseStrict ) logger << "Xml error a child node: " << name << " wasn't found at all in the node: " << myCurrentNode->GetName() << " in file: " << myFilename << " at line " << myLine << "\n";
 			return NULL;
 		}
 
@@ -267,6 +270,9 @@ public:
 
 	//! Sets the filename to myFilename
 	void SetFileName( const std::string& file ) { myFilename = file; }
+
+	std::string		GetFileName() const { return myFilename; }
+	unsigned int	GetLineNumber() const { return myLine; }
 
 	//! Sets the strict, default true
 	/*!

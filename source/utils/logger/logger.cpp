@@ -21,15 +21,22 @@
 
 #include "logger.h"
 
+#include <fstream>
+
 namespace ceng {
 
+#ifdef PORO_USE_LOGGER
 CLog logger_impl;
 CLog assert_logger;
 
+#endif
+
 void ClearLogs()
 {
-	logger_impl.SetFile( "logs/log.txt" );
+#ifdef PORO_USE_LOGGER
+	logger_impl.SetFile("logs/log.txt");
 	assert_logger.SetFile( "logs/assert_fails.txt" );
+#endif
 }
 
 

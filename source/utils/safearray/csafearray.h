@@ -1,8 +1,8 @@
 #ifndef INC_CSAFEARRAY_H
 #define INC_CSAFEARRAY_H
 
-#include <stdio.h>
-#include <string.h>
+// #include <stdio.h>
+// #include <string.h>
 
 #include "../debug.h"
 #include "../memcpy/memcpy.h"
@@ -40,17 +40,23 @@ public:
 
 	const CSafeArray& operator=( const CSafeArray& other )
 	{
-		Clear();
-		data =  new Type[ other._size ];
-		_size = other._size;
+		int min_size = Size();
+
+		if( other._size != _size )
+		{
+			Clear();
+			data =  new Type[ other._size ];
+			_size = other._size;
+			min_size = Size() < other.Size() ? Size() : other.Size();
+		}
+
 		
 		/*
 		for( SizeType i = 0; i < Size(); ++i ) 
 			data[ i ] = other.Rand( i );
 		*/
 		// memcpy( data, other.data, Size() * sizeof( Type ) );
-		fast_memcpy( data, other.data, Size() * sizeof( Type ) );
-		// X_aligned_memcpy_sse2( data, other.data, Size() * sizeof( Type ) );
+		fast_memcpy( data, other.data, min_size * sizeof( Type ) );
 
 		return *this;
 	}
@@ -84,14 +90,17 @@ public:
 
 	void Resize( SizeType s ) 
 	{
-		Clear();
-		data =  new Type[ s ];
-		_size = s;
-		
-		
-		/*for( SizeType i = 0; i < Size(); ++i ) 
-			data[ i ] = Type();*/
-		memset( data, 0, Size() * sizeof( Type ) );
+		if( _size != s )
+		{
+			Clear();
+			data =  new Type[ s ];
+			_size = s;
+			
+			
+			/*for( SizeType i = 0; i < Size(); ++i ) 
+				data[ i ] = Type();*/
+			memset( data, 0, Size() * sizeof( Type ) );
+		}
 	}
 
 	void resize( SizeType s ) { Resize( s ); }

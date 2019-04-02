@@ -30,9 +30,9 @@
 
 #ifdef PORO_PLAT_WINDOWS
 
-#include "../utils/pow2assert/pow2assert.h"
+#include "../utils/poro_assert.h"
 
-#define test_assert		POW2_ASSERT
+#define test_assert		cassert
 #define test_logger		std::cout
 
 #else

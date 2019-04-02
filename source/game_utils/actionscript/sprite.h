@@ -23,8 +23,6 @@
 #define INC_SPRITE_H
 
 #include <vector>
-#include <map>
-#include <list>
 #include <string>
 
 #include "../../poro/igraphics.h"
@@ -36,6 +34,11 @@
 #include "../../utils/camera/icamera.h"
 #include "../../utils/xml/cxml.h"
 #include "../../utils/array2d/carray2d.h"
+
+
+#ifdef WIZARD_DEBUG_SPRITES
+#include "../../utils/vector_utils/vector_utils.h"
+#endif
 
 #include "displayobjectcontainer.h"
 
@@ -55,6 +58,10 @@ class SpriteAnimationUpdater;
 class Sprite : public DisplayObjectContainer
 {
 public:
+	static int culled_this_frame;
+	static int rendered_this_frame;
+	static int total_sprites;
+
 	typedef poro::ITexture Image;
 
 	Sprite();
@@ -90,17 +97,16 @@ public:
 	float 			GetRotation();
 	void			SetVisibility( bool value );
 	bool			GetVisibility() const;
-	void			SetBlendMode( int blend_mode );
-	int				GetBlendMode() const;
+	void			SetBlendMode( poro::BLEND_MODE::Enum blend_mode );
+	poro::BLEND_MODE::Enum GetBlendMode() const;
 
 	virtual types::vector2 GetSize() const;
 	virtual types::vector2 GetTextureSize() const;
 	
-
 	void								SetTexture( Image* texture );
 	Image*								GetTexture();
 	void								SetImageData( ceng::CArray2D< Uint32 >* image_data );
-	ceng::CArray2D< Uint32 >*			GetImageData();
+	const ceng::CArray2D< Uint32 >*		GetImageData() const;
 
 	//static Image*						GetTexture( const std::string& filename );
 	//static ceng::CArray2D< Uint32 >*	GetImageData( const std::string& filename );
@@ -124,11 +130,15 @@ public:
 	void		SetClearTweens( bool value )	{ mClearTweens = value; }
 	bool		GetClearTweens() const			{ return mClearTweens; }
 
+	void		SetShader( poro::IShader* shader ) { mShader = shader;  }
 
-	virtual bool Draw( poro::IGraphics* graphics, types::camera* camera, Transform& transform );
+	inline int	GetLastFrameRendered() const { return mLastFrameRendered; }
+
+	virtual void Draw( poro::IGraphics* graphics, types::camera* camera, Transform& transform );
 protected:
-	virtual bool DrawChildren( poro::IGraphics* graphics, types::camera* camera, Transform& transform );
-	virtual bool DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const Transform& transform );
+	void DrawChildren( poro::IGraphics* graphics, types::camera* camera, Transform& transform );
+	virtual void DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const Transform& transform );
+	bool IsOutsideSreen( poro::IGraphics* graphics, const poro::types::vec2* verts );
 
 public:
 
@@ -136,15 +146,10 @@ public:
 	
 	void Clear();
 
-	Sprite*			GetChildByName( const std::string& name );
-	const Sprite*	GetChildByName( const std::string& name ) const;
+	Sprite*			GetChildByName( const std::string& name, bool recursive = false ) const;
 	void			SetName( const std::string& name )	{ mName = name; }
 	std::string		GetName() const						{ return mName; }
 
-	void	SetAlphaMask( Sprite* alpha_mask );
-	Sprite*	GetAlphaMask();
-
-	
 	//-------------------------------------------------------------------------
 	struct ChildAnimation
 	{
@@ -170,6 +175,20 @@ public:
 			XML_BindAttributeAlias( filesys, scale.y, "scale_y" );
 		}
 
+#ifdef WIZARD_DEBUG_SPRITES
+		bool operator==( const ChildAnimation& other ) const
+		{
+			return(
+				frame == frame &&
+				sprite_name == sprite_name &&
+				position == position &&
+				rotation == rotation &&
+				alpha == alpha &&
+				scale == scale 
+				);
+		}
+#endif
+
 		int					frame;
 		std::string			sprite_name;
 		types::vector2		position;
@@ -178,51 +197,179 @@ public:
 		types::vector2		scale;
 	};
 
+	struct Event
+	{
+		void Serialize( ceng::CXmlFileSys* filesys )
+		{
+			XML_BindAttribute( filesys, frame );
+			XML_BindAttribute( filesys, name  );
+			XML_BindAttribute( filesys, probability );
+			XML_BindAttribute( filesys, max_distance );
+			XML_BindAttribute( filesys, on_finished );
+			XML_BindAttribute( filesys, check_physics_material );
+		}
+
+#ifdef WIZARD_DEBUG_SPRITES
+		bool operator==( const Event& other ) const
+		{
+			return
+			( 
+				frame == other.frame &&
+				name == other.name &&
+				probability == other.probability &&
+				max_distance == other.max_distance &&
+				on_finished == other.on_finished &&
+				check_physics_material == other.check_physics_material 
+			);
+		}
+#endif
+
+		int			frame = 0;
+		std::string	name = "";
+		float		probability = 1.0f;
+		float		max_distance = 500.0f;
+		bool		on_finished = false;
+		bool		check_physics_material = false;
+	};
+
+	struct Hotspot
+	{
+		void Serialize( ceng::CXmlFileSys* filesys )
+		{
+			SerializeColor( filesys, color, "color" );
+			XML_BindAttribute( filesys, name );
+		}
+
+		uint32      color = 0;
+		std::string name = "";
+
+	private:
+		template< class T >
+		inline void SWAP_RED_AND_BLUE( T& color ) 
+		{
+			color = ((color & 0x000000FF) << 16) | ((color & 0x00FF0000) >> 16) | (color & 0xFF00FF00);
+		}
+
+		inline std::string CastToColorString( uint32 what )
+		{
+			SWAP_RED_AND_BLUE( what );
+			std::stringstream ss;
+			ss << std::hex << ( what );
+			return ss.str();
+		}
+
+		inline uint32 CastFromColorString( const std::string& str )
+		{
+			uint32 result;
+			std::stringstream ss( str );
+			ss >> std::hex >> ( result );
+			SWAP_RED_AND_BLUE( result );
+			return result;
+		}
+
+		void SerializeColor( ceng::CXmlFileSys* filesys, uint32& color, const std::string& alias )
+		{
+			std::string scolor = CastToColorString( color );
+			XML_BindAttributeAlias( filesys, scolor, alias );
+			color = CastFromColorString( scolor );
+		}
+	};
+
+	struct ResolvedHotspot
+	{
+		std::string name;
+		std::vector<types::ivector2> positions;
+
+#ifdef WIZARD_DEBUG_SPRITES
+		bool operator==( const ResolvedHotspot& other ) const
+		{
+			return(
+				name == other.name && 
+				ceng::VectorCompare( positions, other.positions ) );
+		}
+#endif
+	};
+
 	struct RectAnimation
 	{
 		RectAnimation() :
 			mName( "unknown" ),
-			mKillMe( true ),
-			mPaused( false ),
 			mFrameCount( 0 ),
-			mCurrentFrame( 0 ),
 			mWidth( 0 ),
 			mHeight( 0 ),
-			mFramesPerRow( 4 ),
+			mFramesPerRow( 9999 ),
+			mShrinkByOnePixel( false ),
 			mPositionX( 0 ),
 			mPositionY( 0 ),
 			mWaitTime( 0 ),
-			mCurrentTime( 0 ),
 			mHasNewCenterOffset( false ),
 			mCenterOffset( 0, 0 ),
 			mLoop( true ),
-			mNextAnimation( "" )
+			mNextAnimation( "" ),
+			mChildAnimations(),
+			mEvents(),
+			mHotspots()
 		{
 		}
 
-		~RectAnimation()
+		RectAnimation(const RectAnimation& other) :
+			mName(other.mName),
+			mFrameCount(other.mFrameCount),
+			mWidth(other.mWidth),
+			mHeight(other.mHeight),
+			mFramesPerRow(other.mFramesPerRow),
+			mShrinkByOnePixel(other.mShrinkByOnePixel),
+			mPositionX(other.mPositionX),
+			mPositionY(other.mPositionY),
+			mWaitTime(other.mWaitTime),
+			mHasNewCenterOffset(other.mHasNewCenterOffset),
+			mCenterOffset(other.mCenterOffset),
+			mLoop(other.mLoop),
+			mNextAnimation(other.mNextAnimation),
+			mChildAnimations(other.mChildAnimations),
+			mEvents(other.mEvents),
+			mHotspots(other.mHotspots)
 		{
-			for( std::size_t i = 0; i < mChildAnimations.size(); ++i ) 
-				delete mChildAnimations[ i ];
-
-			mChildAnimations.clear();
 		}
+
+		~RectAnimation() { }
+
+#ifdef WIZARD_DEBUG_SPRITES
+		bool operator==( const RectAnimation& other ) const 
+		{
+			return (
+				mName == other.mName &&
+				mFrameCount == other.mFrameCount &&
+				mWidth == other.mWidth &&
+				mHeight == other.mHeight &&
+				mFramesPerRow == other.mFramesPerRow &&
+				mShrinkByOnePixel == other.mShrinkByOnePixel &&
+				mPositionX == other.mPositionX &&
+				mPositionY == other.mPositionY &&
+				mWaitTime == other.mWaitTime &&
+				mHasNewCenterOffset == other.mHasNewCenterOffset &&
+				mCenterOffset == other.mCenterOffset &&
+				mLoop == other.mLoop &&
+				mNextAnimation == other.mNextAnimation &&
+				ceng::VectorCompare( mChildAnimations, other.mChildAnimations ) &&
+				ceng::VectorCompare( mEvents, other.mEvents ) &&
+				ceng::VectorCompare( mHotspots, other.mHotspots )
+			);
+		}
+#endif
 
 		std::string mName;
-		bool		mKillMe;
 
-		bool mPaused;
 		int mFrameCount;
-		int mCurrentFrame;
 		int mWidth;
 		int mHeight;
 		int mFramesPerRow;
+		bool mShrinkByOnePixel;
 
 		int mPositionX;
 		int mPositionY;
 
 		float mWaitTime;
-		float mCurrentTime;
 
 		bool			mHasNewCenterOffset;
 		types::vector2	mCenterOffset;
@@ -230,27 +377,44 @@ public:
 
 		std::string		mNextAnimation;
 
-		std::vector< ChildAnimation* > mChildAnimations;
+		std::vector< ChildAnimation > mChildAnimations;
 
-		types::rect Sprite::RectAnimation::FigureOutRectPos();
-		void Update( Sprite* sprite, float dt );
-		void SetFrame( Sprite* sprite, int frame, bool update_anyhow );
+		std::vector< Event > mEvents;
+		std::vector< ResolvedHotspot > mHotspots;
+
+		types::rect FigureOutRectPos( int frame ) const;
+		types::irect FigureOutIRectPos( int frame ) const;
+		
+		void Update( Sprite* sprite, float dt ) const;
+		void SetFrame( Sprite* sprite, int frame, bool update_anyhow ) const;
 
 		void Serialize( ceng::CXmlFileSys* filesys );
 	};
 
-	//-------------------------------------------------------------------------
+	struct RectAnimationData
+	{
+		bool mPaused = false;
+		int mPreviousFrame = -1;
+		int mCurrentFrame = 0;
+		float mCurrentTime = 0;
+		bool mEnteredNewFrame = false;
+		float mWaitTime = 0;
+	};
 
-	void					SetRectAnimation( RectAnimation* animation );
-	RectAnimation*			GetRectAnimation();
+	//-------------------------------------------------------------------------
+	RectAnimationData* GetRectAnimationData();
+
+	void					SetRectAnimation( const RectAnimation* animation );
 	const RectAnimation*	GetRectAnimation() const;
-	void					SetRectAnimations( const std::vector< RectAnimation* >& animations );
+	void					SetRectAnimations( std::vector< RectAnimation >* animations );
+    const std::vector< RectAnimation >* GetRectAnimations() const;
 	
 	// looks in mRectAnimations for a rect animation with the name
 	void PlayRectAnimation( const std::string& name );
 	void PauseRectAnimation();
 
 	bool IsRectAnimationPlaying() const;
+	bool HasRectAnimationJustFinished() const;
 	bool HasRectAnimation( const std::string& name ) const;
 
 	std::string GetRectAnimationName() const;
@@ -264,16 +428,24 @@ public:
 	bool IsAnimationPlaying() const;
 	void SetAnimationFrame( int frame );
 
+	types::vector2 GetHotspot( const std::string& name ) const;
+
 	//-------------------------------------------------------------------------
 
+	// returns a list of sprites at position p (local coordinate). 
+	// First in the list [0] is the sprite itself (if it's at p)
 	std::vector< Sprite* >	FindSpritesAtPoint( const types::vector2& p );
-	types::vector2			GetScreenPosition() const;
-	types::vector2			TransformWithAllParents( const types::vector2& mouse_pos ) const;
+	types::vector2			GetScreenPosition();
+	types::vector2			TransformWithAllParents( const types::vector2& mouse_pos );
 	
 	//-------------------------------------------------------------------------
 
 	virtual const std::string& GetFilename() const;
 	virtual void SetFilename( const std::string& filename );
+	
+	//-------------------------------------------------------------------------
+	
+	bool mHasAnimationFinished;
 
 protected:
 
@@ -282,13 +454,9 @@ protected:
 	types::vector2 MultiplyByParentXForm( const types::vector2& p ) const;
 	
 
-	poro::IGraphicsBuffer*		GetAlphaBuffer( poro::IGraphics* graphics );
-
 	bool						mClearTweens;
-	Sprite*						mAlphaMask;
-	poro::IGraphicsBuffer*		mAlphaBuffer;
 
-	poro::types::Int8			mBlendMode;
+	poro::BLEND_MODE::Enum		mBlendMode;
 
 	std::string					mName;
 	Image*						mTexture;
@@ -299,20 +467,33 @@ protected:
 	types::xform				mXForm;
 	int							mZ;
 
+	int							mLastFrameRendered;
+
 	std::vector< float >		mColor;
 	bool						mDead;
 	bool						mVisible;
 
 	types::rect*				mRect;
 
+	poro::IShader*				mShader;
+
 	// animation stuff
-	RectAnimation*							mRectAnimation;
 	Animations*								mAnimations;
 	std::auto_ptr< SpriteAnimationUpdater >	mAnimationUpdater;
-	std::vector< RectAnimation* >			mRectAnimations;
-	
+
+	const RectAnimation*					mRectAnimation;
+	RectAnimationData						mRectAnimationData;
+	std::vector< RectAnimation >*			mRectAnimations;
+
 	// filename
 	std::string								mFilename;
+
+#ifdef WIZARD_DEBUG_SPRITES
+public:
+	static bool DEBUG_REPORT_LEAKY_SPRITES;
+	static bool DEBUG_FIX_LEAKY_SPRITES;
+private:
+#endif
 };
 
 // ----------------------------------------------------------------------------
@@ -333,50 +514,46 @@ struct Transform
 	
 	void PushXFormButDontMultiply( const types::xform& xform,  const std::vector< float >& color )
 	{
-		mQueue.push_front( mTop );
+		mQueue.push_back( mTop );
 		mTop.xform = xform;
 		mTop.color = color;
 	}
 
 	void PushXForm( const types::xform& xform, const std::vector< float >& color )
 	{
-		mQueue.push_front( mTop );
+		mQueue.push_back( mTop );
 		mTop.xform = ceng::math::Mul( mTop.xform, xform );
-		mTop.color = MulColor( mTop.color, color );
+		MulColor( mTop.color, color );
 	}
 
 	void PopXForm()
 	{
 		if( mQueue.empty() == false )
 		{
-			mTop = mQueue.front();
-			mQueue.pop_front();
+			mTop = mQueue.back();
+			mQueue.pop_back();
 		}
 	}
 
-	std::vector< float > MulColor( const std::vector< float >& c1, const std::vector< float >& c2 ) 
+	void MulColor( std::vector< float >& c1, const std::vector< float >& c2 )
 	{
-		std::vector< float > result( 4 );
 		cassert( c1.size() == 4 );
 		cassert( c2.size() == 4 );
-
-		for( std::size_t i = 0; i < result.size(); ++i )
-			result[ i ] = c1[ i ] * c2[ i ];
-
-		return result;
+		c1[ 0 ] *= c2[ 0 ];
+		c1[ 1 ] *= c2[ 1 ];
+		c1[ 2 ] *= c2[ 2 ];
+		c1[ 3 ] *= c2[ 3 ];
+		/* for( std::size_t i = 0; i < result.size(); ++i )
+			c1[ i ] *= c2[ i ];
+			*/
 	}
 
 	types::xform&					GetXForm()	{ return mTop.xform; }
 	const types::xform&				GetXForm() const { return mTop.xform; }
 	const std::vector< float >&		GetColor() const { return mTop.color; }
 
-	/*
-	types::xform mXForm;
-	std::list< types::xform > mXFormQueue;
-	*/
-
 	TransformHelper mTop;
-	std::list< TransformHelper > mQueue;
+	std::vector< TransformHelper > mQueue;
 	
 };
 
@@ -467,12 +644,12 @@ inline bool Sprite::GetVisibility() const {
 	return mVisible; 
 }
 
-inline void	Sprite::SetBlendMode( int blend_mode ) {
-	mBlendMode = (poro::types::Int8)blend_mode;
+inline void	Sprite::SetBlendMode( poro::BLEND_MODE::Enum blend_mode ) {
+	mBlendMode = blend_mode;
 }
 
-inline int Sprite::GetBlendMode() const {
-	return (int)mBlendMode;
+inline poro::BLEND_MODE::Enum Sprite::GetBlendMode() const {
+	return mBlendMode;
 }
 
 
@@ -504,7 +681,7 @@ inline void Sprite::SetImageData( ceng::CArray2D< Uint32 >* image_data ) {
 	mImageData = image_data;
 }
 
-inline ceng::CArray2D< Uint32 >* Sprite::GetImageData() { 
+inline const ceng::CArray2D< Uint32 >* Sprite::GetImageData() const { 
 	return mImageData;
 }
 
@@ -562,6 +739,17 @@ inline void Sprite::SetFilename( const std::string& filename ) {
 	mFilename = filename;
 }
 
+inline const Sprite::RectAnimation* Sprite::GetRectAnimation() const { 
+	return mRectAnimation;
+}
+
+inline Sprite::RectAnimationData* Sprite::GetRectAnimationData() {
+	return &mRectAnimationData;
+}
+
+inline const std::vector< Sprite::RectAnimation >* Sprite::GetRectAnimations() const {
+    return mRectAnimations;
+}
 ///////////////////////////////////////////////////////////////////////////////
 
 } // end of namespace as

@@ -1,35 +1,22 @@
 #include "imagetoarray.h"
 
-
-#define STBI_HEADER_FILE_ONLY
-#include <poro/external/stb_image.h>
-#undef STBI_HEADER_FILE_ONLY
-#include <sdl.h>
-
-#include <algorithm>
-#include <iostream>
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iomanip>
-
 #include <poro/iplatform.h>
 #include <poro/igraphics.h>
-#include <utils/string/string.h>
-// #include "../game_types.h"
-
-
-using namespace imagetoarray;
+#include <utils/color/ccolor.h>
+#include <utils/debug.h>
+#include <poro/external/stb_image_write.h>
 
 
 //-----------------------------------------------------------------------------
-void LoadImage( const std::string& filename, ceng::CArray2D< Uint32 >& out_array2d, bool include_alpha )
+void LoadImage( const std::string& filename, ceng::CArray2D< poro::types::Uint32 >& out_array2d, bool include_alpha )
 {
-	TempTexture* surface = GetTexture( filename );
+	using namespace imagetoarray;
 
+	// Cacheing this is a bit silly, use LoadImageConst for cached version
+	TempTexture* surface = GetTexture(filename);
 	if( surface == NULL || surface->data == NULL )
 	{
-		std::cout << "LoadImage() - Failed to load image: " << filename << std::endl;
+		logger_error << "LoadImage() - Failed to load image: " << filename << "\n";
 		return;		
 	}
 	
@@ -37,11 +24,36 @@ void LoadImage( const std::string& filename, ceng::CArray2D< Uint32 >& out_array
 
 	if( surface )
 	{
-		for( int y = 0; y < surface->h; ++y )
+		int i = 0;
+		const int bpp = 4;
+		auto data = surface->data;
+		uint32 color = 0;
+		if (include_alpha)
 		{
-			for( int x = 0; x < surface->w; ++x )
+			for (int y = 0; y < surface->h; ++y)
 			{
-				out_array2d.Rand( x, y ) = GetPixel( surface, x, y, include_alpha );
+				for (int x = 0; x < surface->w; ++x)
+				{
+					/*int co = (y * surface->width) * bpp + x * bpp;
+					cassert(co == i);*/
+
+					color = data[i+0] << 16 | data[i+1] << 8 | data[i+2] << 0 | data[i+3] << 24;
+					i += 4;
+					out_array2d.Rand(x, y) = color;
+					// cassert( color == surface->GetPixel( x, y, include_alpha ) );
+				}
+			}
+		}
+		else
+		{
+			for (int y = 0; y < surface->h; ++y)
+			{
+				for (int x = 0; x < surface->w; ++x)
+				{
+					color = data[i+0] << 16 | data[i+1] << 8 | data[i+2] << 0;
+					i += 4;
+					out_array2d.Rand(x, y) = color;
+				}
 			}
 		}
 	}
@@ -50,8 +62,10 @@ void LoadImage( const std::string& filename, ceng::CArray2D< Uint32 >& out_array
 }
 
 //-----------------------------------------------------------------------------
-void SaveImage( const std::string& filename, const ceng::CArray2D< uint32 >& image_data )
+void SaveImage( const std::string& filename, const ceng::CArray2D< poro::types::Uint32 >& image_data )
 {
+	using namespace imagetoarray;
+
 	// do the file and save it
 	const int w = image_data.GetWidth();
 	const int h = image_data.GetHeight();
@@ -74,7 +88,14 @@ void SaveImage( const std::string& filename, const ceng::CArray2D< uint32 >& ima
 		}
 	}
 
-	poro::IPlatform::Instance()->GetGraphics()->ImageSave( filename.c_str(), w, h, 4, pixels, w * 4 );
+	if( Poro() == NULL || Poro()->GetGraphics() == NULL )
+	{
+		stbi_write_png( filename.c_str(), w, h, 4, pixels, w * 4 );
+	}
+	else
+	{
+		Poro()->GetGraphics()->ImageSave( filename.c_str(), w, h, 4, pixels, w * 4 );
+	}
 
 	delete [] pixels;
 	pixels = NULL;
@@ -82,39 +103,13 @@ void SaveImage( const std::string& filename, const ceng::CArray2D< uint32 >& ima
 
 
 namespace imagetoarray {
-uint32 GetPixel(SDL_Surface *surface, int x, int y)
-{
-	int bpp = surface->format->BytesPerPixel;
-	/* Here p is the address to the pixel we want to retrieve */
-	Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
-
-	switch(bpp) {
-	case 1:
-		return *p;
-
-	case 2:
-		return *(Uint16 *)p;
-
-	case 3:
-		if(SDL_BYTEORDER == SDL_BIG_ENDIAN)
-			return p[0] << 16 | p[1] << 8 | p[2];
-		else
-			return p[0] | p[1] << 8 | p[2] << 16;
-
-	case 4:
-		return *(uint32 *)p;
-
-	default:
-		return 0;       /* shouldn't happen, but avoids warnings */
-	}
-}
 
 
 TempTexture* GetTexture( const std::string& filename )
 {
 	TempTexture* result = new TempTexture;
-	result->data = stbi_load(filename.c_str(), &result->width, &result->height, &result->bpp, 4);
-	if( result->data == NULL ) std::cout << "LoadLevel - Couldn't load file: " << filename << std::endl;
+	result->data = Poro()->GetGraphics()->ImageLoad( filename.c_str(), &result->width, &result->height, &result->bpp, 4 );
+	if( result->data == NULL ) logger_error << "GetTexture - Couldn't load file: " << filename << "\n";
 	result->filename = filename;
 	return result;
 }
@@ -126,6 +121,4 @@ uint32 GetPixel(TempTexture* surface, int x, int y, bool include_alpha )
 }
 
 
-
-
-} // End of namespace
+} // End of namespace imagetoarray

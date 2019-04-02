@@ -24,18 +24,7 @@
 #include "texture_opengl.h"
 
 namespace poro {
-namespace {
-Uint32 GetNextPowerOfTwo(Uint32 input)
-{
-	--input;
-	input |= input >> 16;
-	input |= input >> 8;
-	input |= input >> 4;
-	input |= input >> 2;
-	input |= input >> 1;
-	return input + 1;
-}
-} // end of anonymous namespace
+
 
 void GraphicsBufferOpenGL::InitTexture(int width,int height){
 
@@ -59,7 +48,7 @@ void GraphicsBufferOpenGL::InitTexture(int width,int height){
 
 
 //IGraphics
-bool GraphicsBufferOpenGL::Init( int width, int height, bool fullscreen, const types::string& caption )
+bool GraphicsBufferOpenGL::Init( int width, int height, int fullscreen, const types::string& caption )
 {
 	glGenFramebuffersEXT(1, &mBufferId);	// <- this line crashes on windows
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mBufferId);

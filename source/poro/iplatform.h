@@ -22,21 +22,32 @@
 #define INC_IPLATFORM_H
 
 #include "poro_types.h"
-#include "iapplication.h"
-#include "igraphics.h"
-#include "isoundplayer.h"
-#include "mouse.h"
-#include "touch.h"
-#include "joystick.h"
-#include "keyboard.h"
+#include "poro_macros.h"
 
-namespace poro { class IPlatform; }
+
+namespace poro 
+{ 
+	class IPlatform;
+
+	class IApplication;
+	class IGraphics;
+	class ISoundPlayer;
+	class Mouse;
+	class Touch;
+	class Joystick;
+	class Keyboard;
+	class FileSystem;
+
+	struct GraphicsSettings;
+	struct AppConfig;
+}
 
 //=============================================================================
 // Function that returns a pointer to IPlatform class, can be used instead of
 // the monsterous poro::IPlatform::Instance() function
 
 poro::IPlatform* Poro();
+void PORO_MessageBox( const char* title, const char* msg );	
 
 //=============================================================================
 
@@ -57,7 +68,7 @@ public:
 	// you set the mInternalWidth and mInternalHeight to proper sizes if they
 	// haven't been set already!
 	// mInternalWidth is 0 if nobody has set it by hand same goes for mInternalHeight
-	virtual void Init(IApplication* application, int w, int h, bool fullscreen, std::string = "Poro Application");
+	virtual void Init( IApplication* application, const GraphicsSettings& graphics_settings, AppConfig* config );
 	virtual void Exit() { }
 
 	virtual void StartMainLoop() = 0;
@@ -70,6 +81,7 @@ public:
 	virtual IApplication*	GetApplication();
 	virtual IGraphics*		GetGraphics() = 0;
 	virtual ISoundPlayer*	GetSoundPlayer() = 0;
+	virtual FileSystem*		GetFileSystem() = 0;
 
 	// controllers
 	virtual Mouse*			GetMouse() = 0;
@@ -78,15 +90,17 @@ public:
 
 	virtual int				GetJoystickCount() const;
 	virtual Joystick*		GetJoystick( int n );
-
+	virtual bool			GetJoysticksEnabled() const { return true; }
+	virtual void			SetJoysticksEnabled( bool enabled ) { poro_assert( false ); }
 
 	// window / screen
 	virtual void SetWindowSize( int width, int height ) { poro_assert( false ); }
 	virtual int GetWidth()								{ poro_assert( false ); return 0; }
 	virtual int GetHeight()								{ poro_assert( false ); return 0; }
+	virtual void SetVsync( bool vsync_enabled )			{ poro_assert( false ); }
+	virtual bool GetVsync()								{ poro_assert( false ); return false; }
 
 	virtual bool GetOrientationIsLandscape()			{ poro_assert( false ); return 0; }
-
 
 	// InternalScale
 	//  This sets the internal resolution of the application!
@@ -108,10 +122,11 @@ public:
 	virtual types::Float32	GetTime()							{ return (types::Float32)GetUpTime(); }
 	virtual void			SetPrintFramerate( bool fps )		{ }
 	virtual types::Double32 GetLastFrameExecutionTime() const	{ return 0; }
+	virtual types::Double32 GetAverageFrameExecutionTime() const { return 0; }
 
 
 	// event recording
-	virtual void SetEventRecording( bool record_events )		{ }
+	virtual void SetEventRecording( bool record_events, bool flush_every_frame ) { }
 	virtual bool GetEventRecording() const						{ return false; }
 	
 	virtual void DoEventPlayback( const std::string& filename ) { }
@@ -124,13 +139,17 @@ public:
 
 	// RANDOM SEED
 	// 	basically returns (int)time(NULL)
-	// 	reason to use this is that it's saved into the playback file
-	// 	and if you call this after loading the playback file, you'll 
-	// 	get the same one for your application. Pretty useful when making
-	// 	a deterministic playback functionality
-	// 	if you want to use a seed that is saved in the playback file
+	// + a simple PRNG randomizer to the value,  
+	// so calling this multipletimes in a row will give you different results
 	virtual int GetRandomSeed();
+	virtual void SetRandomSeed( unsigned int random_seed ) { }
 
+	// 	basically returns (unsigned int)time(NULL)
+	// this will return the same value everytime you call it
+	virtual unsigned int GetTimeNull() const = 0;
+
+	// other
+	virtual AppConfig* GetApplicationConfig() const;
 
 private:
 
@@ -145,6 +164,7 @@ protected:
 
 	// the game:
 	IApplication* mApplication;
+	AppConfig* mAppConfig;
 	types::Float32 mInternalWidth;
 	types::Float32 mInternalHeight;
 
@@ -160,17 +180,6 @@ enum PORO_SLEEPING_MODES
 };
 
 //-------------------------- inlined stuff ------------------------------------
-
-inline void IPlatform::SetInternalSize( types::Float32 width, types::Float32 height) {
-	mInternalWidth = width;
-	mInternalHeight = height;
-
-	IGraphics* graphics = GetGraphics();
-	poro_assert( graphics );
-
-	if( graphics )
-		graphics->SetInternalSize( width, height );
-}
 
 inline int IPlatform::GetJoystickCount() const {
 	// If this fails, it means you should implement joysticks on your end of things
@@ -197,17 +206,13 @@ inline Keyboard* IPlatform::GetKeyboard() {
 }
 
 inline types::Float32 IPlatform::GetInternalWidth() const {
-    if(!mInternalWidth)
-        poro_assert(false); // Platform has probably not been initialized yet.
-
-    return mInternalWidth;
+	poro_assert( mInternalWidth != 0 ); // Platform has probably not been initialized yet.
+	return mInternalWidth;
 }
 
 inline types::Float32 IPlatform::GetInternalHeight() const {
-     if(!mInternalHeight)
-        poro_assert(false); // Platform has probably not been initialized yet.
-
-    return mInternalHeight;
+	poro_assert( mInternalHeight != 0 ); // Platform has probably not been initialized yet.
+	return mInternalHeight;
 }
 
 inline void IPlatform::SetFrameRate( int targetRate, bool fixed_timestep ) {

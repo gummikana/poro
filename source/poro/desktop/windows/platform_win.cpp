@@ -19,12 +19,31 @@
  ***************************************************************************/
 
 #include "platform_win.h"
+#include <stdio.h>  /* defines FILENAME_MAX */
+#ifdef _MSC_VER
+#include <direct.h>
+#define GetCurrentDir _getcwd
+#else
+#include <unistd.h>
+#define GetCurrentDir getcwd
+#endif
 
 namespace poro {
 
 void PlatformWin::SetWorkingDir(poro::types::string dir){
 	//TODO implement
 	//chdir(dir);
+}
+
+poro::types::string PlatformWin::GetWorkingDir() const {
+
+	char cCurrentPath[FILENAME_MAX];
+
+	if (!GetCurrentDir(cCurrentPath, sizeof(cCurrentPath)))
+		return "";
+
+	cCurrentPath[sizeof(cCurrentPath) - 1] = '\0'; /* not really required */
+	return cCurrentPath;
 }
 
 } // end o namespace poro

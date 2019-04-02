@@ -40,6 +40,8 @@
 
 #include <stdlib.h>
 
+#include "igraphics.h"
+
 
 
 namespace poro {
@@ -69,25 +71,23 @@ IPlatform::~IPlatform()
 {
 }
 
-IPlatform * IPlatform::Instance()
+IPlatform* IPlatform::Instance()
 {
 	poro_assert(gInstance!=NULL);
 	return gInstance;
 }
 
-void IPlatform::Init(IApplication* application,
-					   int screenWidth,
-					   int screenHeight,
-					   bool fullscreen,
-					   std::string title)
+
+void IPlatform::Init( IApplication* application, const GraphicsSettings& settings, AppConfig* config )
 {
 	mApplication = application;
 
 	if( mInternalWidth == 0.f )
-		mInternalWidth = (types::Float32)screenWidth;
+		mInternalWidth = (types::Float32)settings.window_width;
 	if( mInternalHeight == 0.f )
-		mInternalHeight = (types::Float32)screenHeight;
+		mInternalHeight = (types::Float32)settings.window_height;
 
+	mAppConfig = config;
 }
 
 void IPlatform::Destroy()
@@ -96,12 +96,28 @@ void IPlatform::Destroy()
 }
 
 
+void IPlatform::SetInternalSize( types::Float32 width, types::Float32 height ) {
+	mInternalWidth = width;
+	mInternalHeight = height;
+
+	IGraphics* graphics = GetGraphics();
+	poro_assert( graphics );
+
+	if ( graphics )
+		graphics->SetInternalSize( width, height );
+}
+
 void IPlatform::SetApplication(IApplication* application){
 	mApplication = application;
 }
 
 IApplication* IPlatform::GetApplication(){
 	return mApplication;
+}
+
+AppConfig* IPlatform::GetApplicationConfig() const
+{
+	return mAppConfig;
 }
 
 

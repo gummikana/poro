@@ -37,9 +37,9 @@
 #ifndef INC_CSINGLETON_H
 #define INC_CSINGLETON_H
 
+#if 0 
 #include <memory>
 
-namespace ceng {
 
 template < class T >
 class CSingleton
@@ -75,14 +75,14 @@ protected:
 };
 
 template< typename T >  std::auto_ptr< T > CSingleton< T >::myInstance;
-
+#endif
 //=============================================================================
+namespace ceng {
 
 template < typename T >
 class CStaticSingleton
 {
 public:
-	virtual ~CStaticSingleton() { }
 
 	static T* GetSingletonPtr()
 	{ 
@@ -99,6 +99,30 @@ public:
 protected:
 	CStaticSingleton() { }
 };
+
+
+template < typename T >
+class CSingleton
+{
+public:
+
+	static T* GetSingletonPtr()
+	{ 
+		static T* myInstance = 0;
+		if ( myInstance == 0 ) 
+			myInstance = new T; 
+		
+		return myInstance; 
+	}
+
+
+	static T& GetSingleton() { return (*GetSingletonPtr() ); }
+
+protected:
+	CSingleton() { }
+};
+
+
 
 
 } // end of namespace ceng

@@ -204,7 +204,7 @@ void CDirList::Read( std::string directory )	  { ClearData(); ReadDirsAndFiles( 
 													ReadDirsAndFiles( directory, true  ); }
 
 void CDirList::Init() { myBrowser = myData.begin(); }
-void CDirList::ClearData() { while ( !myData.empty() ) myData.pop_front(); }
+void CDirList::ClearData() { myData.clear(); }
 
 void CDirList::PushToList( std::string filename, std::string pattern, bool isdir )
 {

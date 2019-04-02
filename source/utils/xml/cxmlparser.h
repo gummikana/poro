@@ -48,70 +48,239 @@
 #pragma warning(disable:4786)
 #endif
 
-#ifndef INC_CXMLTESTPARSER_H
-#define INC_CXMLTESTPARSER_H
+#ifndef INC_CXMLPARSER_H
+#define INC_CXMLPARSER_H
 
-#include "canycontainer.h"
+#include <map>
+#include "cxmlnode.h"
 
-namespace ceng {
+namespace ceng
+{
+	class CAnyContainer;
+	class CXmlNode;
+// #include <assert.h>
+// #define cassert assert
 
-class CXmlHandler;
 
-//! Parses open a xml file
-class CXmlParser
+//! The handler which creates a CXmlNode structure.
+/*!
+	You should use this to create your own CXmlNode structure,
+	you can get the root node by calling the GetRootElement() method
+
+	Note: CXmlHanlder aint responsible for destroing the CXmlNode structure it
+	created. The user should always remember to release after use.
+
+*/
+class CXmlHandler
 {
 public:
-	enum ParserStatus
+	typedef std::map< std::string, CAnyContainer >					attributes;
+	typedef std::map< std::string, CAnyContainer >::const_iterator	attributes_const_iterator;
+
+
+	CXmlHandler() { StartDocument();  }
+	~CXmlHandler() { }
+
+	void StartDocument()	{ myCurrentNode = NULL; myRootElement = NULL; }
+	void EndDocument()		{ /*cassert( myCurrentNode == NULL ); if( myCurrentNode != NULL) reportError();*/  }
+
+	void Characters( const std::string& chars )
 	{
-		content = 0,
-		tag = 1
-	};
+		if( myCurrentNode )
+			myCurrentNode->SetContent( chars );
+		// else report_error
+	}
 
-	//-------------------------------------------------------------------------
+	void StartElement( const std::string& name, const attributes& attr )
+	{
 
-	CXmlParser() :
-	  myRemoveWhiteSpace( true ),
-	  myStatus( content ),
-	  myHandler( NULL )
-    { }
+		CXmlNode* tmp_node = CXmlNode::CreateNewNode();
 
-	~CXmlParser() { }
+		tmp_node->SetName( name );
+		tmp_node->SetFather( myCurrentNode );
 
-	void SetHandler( CXmlHandler* handler ) { myHandler = handler; }
-	void SetRemoveWhiteSpace( bool whitespace ) { myRemoveWhiteSpace = whitespace; }
-	bool GetRemoveWhiteSpace() { return myRemoveWhiteSpace; }
+		if ( !attr.empty() )
+		{
+			attributes_const_iterator i;
 
-	void ParseFile( const std::string& file );
-	void ParseStringData( const std::string& stringdata );
+			for ( i = attr.begin(); i != attr.end(); ++i )
+			{
+				tmp_node->AddAttribute( i->first, i->second );
+			}
+		}
+		
+		// is this a bug? shouldn't this be
+		// myCurrentNode != NULL
+		// currently it's myRootElement != NULL
+		// changed 12/06/2008
+		if ( myCurrentNode != NULL )
+		{
+			myCurrentNode->AddChild( tmp_node );
+			myCurrentNode = tmp_node;
+		} else {
+			myRootElement = tmp_node;
+			myCurrentNode = tmp_node;
+		}
 
-	//-------------------------------------------------------------------------
+	}
+
+	void EndElement( const std::string& name )
+	{
+		// fixing bugs 12/06/2008
+		if( myCurrentNode )
+			myCurrentNode = myCurrentNode->GetFather();
+	}
+
+	//! Returns the root node
+	CXmlNode* GetRootElement() const
+	{
+		return myRootElement;
+	}
 
 private:
-	void ParseLine( const std::string& in_line );
-
-	void		ParseContentBuffer();
-	void		ParseTagBuffer();
-
-	std::string	ParseAttributes( const std::string& line );
-
-
-	//-------------------------------------------------------------------------
-
-	bool			myRemoveWhiteSpace;
-	ParserStatus	myStatus;
-
-	CXmlHandler*	myHandler;
-
-	std::string		myContentBuffer;
-	std::string		myTagBuffer;
-
-	std::map< std::string, CAnyContainer > myAttributeBuffer;
-
-	//-------------------------------------------------------------------------
+	CXmlNode*	myRootElement;
+	CXmlNode*	myCurrentNode;
+	int			myCount;
 
 };
 
-}
+//-----------------------------------------------------------------------------
+
+class CXmlParser
+{
+public:
+	CXmlHandler mHandler;
+
+	void ParseFile( const char* filename );
+
+	CXmlNode* GetRootElement() const
+	{
+		return mHandler.GetRootElement();
+	}
+};
+
+//-----------------------------------------------------------------------------
+
+} // end of namespace ceng
+
+namespace ceng
+{
+	
+//! This parses the stuff confronted in to the stream.
+/*!
+	Works the other way round. If you have a CXmlNode structure you can create
+	a xml file structure and output it in you favourite stream.
+*/
+
+class CXmlStreamHandler 
+{
+public:
+	typedef std::map< std::string, CAnyContainer >					attributes;
+
+	CXmlStreamHandler() : 
+		myCount(0), 
+		myPackTight ( false ),
+		myWriteAttributesOnLines( false ),
+		myExtraLineBetweenTags( false )
+		{ 
+		}
+
+	~CXmlStreamHandler() { }
+
+	void StartDocument() { }
+	void EndDocument() { }
+
+	void Characters( const std::string& chars, poro::WriteStream* stream  ) { if ( !chars.empty() ) PrintText( chars, stream ); }
+	void StartElement( const std::string& name, const attributes& attr, poro::WriteStream* stream  )
+	{
+		std::stringstream ss;
+		ss << "<" << name;
+
+		if ( !attr.empty() )
+		{
+			std::string extra_space = "";
+
+			// parse attributes into multiple lines
+			if( myWriteAttributesOnLines ) 
+			{
+				for( int i = 0; i < myCount + 1; ++i )
+					extra_space += "  ";
+			}
+
+			ss << " ";
+			
+			attributes::const_iterator i;
+			for ( i = attr.begin(); i != attr.end(); ++i )
+			{
+				if( myWriteAttributesOnLines )
+					ss << "\n" << extra_space;
+
+				ss << i->first << "=\"" << CAnyContainerCast< std::string >( i->second ) << "\" ";
+			}
+		}
+		ss << ">";
+
+		PrintText( ss.str(), stream );
+		myCount++;
+	}
+
+	void EndElement( const std::string& name, poro::WriteStream* stream  )
+	{
+		myCount--;
+		PrintText( "</" + name + ">", stream );
+		if( myExtraLineBetweenTags ) 
+			stream->WriteEndOfLine();
+	}
+
+	//! Just for printing the text
+	void PrintText( const std::string& text, poro::WriteStream* stream  )
+	{
+		if( myPackTight == false )
+		{
+			for( int i = 0; i < myCount; i++ )
+				stream->Write( "  " );
+		}
+
+		stream->Write( text );
+		if( myPackTight == false )
+			stream->WriteEndOfLine();
+	}
+
+	//! Just for parsing open the Node
+	void ParseOpen( CXmlNode* rootnode, poro::WriteStream* stream )
+	{
+		std::map< std::string, CAnyContainer > attributes;
+		CreateAttributes( rootnode, attributes );
+		StartElement( rootnode->GetName(), attributes, stream );
+		Characters( rootnode->GetContent() , stream );
+		for( int i = 0; i < rootnode->GetChildCount(); i++ )
+		{
+			ParseOpen( rootnode->GetChild( i ), stream );
+		}
+		EndElement( rootnode->GetName(), stream );
+	}
+
+	//! Returns a map of attributes
+	void CreateAttributes( CXmlNode* node, std::map< std::string, CAnyContainer >& tmp_map )
+	{
+		for( int i = 0; i < node->GetAttributeCount(); i++ )
+		{
+			tmp_map.insert( std::pair< std::string, CAnyContainer >( node->GetAttributeName( i ), node->GetAttributeValue( i ) ) );
+		}
+	}
+
+	void SetPackTight( bool value )					{ myPackTight = value; }
+	void SetWriteAttributesOnLines( bool value )	{ myWriteAttributesOnLines = value; }
+	void SetExtraLineBetweenTags( bool value )		{ myExtraLineBetweenTags = value; }
+
+	int				myCount;
+	bool			myPackTight;
+	bool			myWriteAttributesOnLines;
+	bool			myExtraLineBetweenTags;
+};
+
+//-----------------------------------------------------------------------------
+} // end of namespace ceng
 
 #endif
 

@@ -102,10 +102,10 @@ public:
 	void			SetCharQuad( CharType c, CharQuad* quad );
 
 	float	GetOffsetLineHeight() const		{ return mOffsetLineHeight; }
-	float   GetLineHeight() const;
+	float	GetLineHeight() const 			{ return mLineHeight;  }
 	void	SetLineHeight( float lh )		{ mLineHeight = lh; }
 
-	float   GetCharSpace() const			{ return mCharSpace; }
+	float	GetCharSpace() const			{ return mCharSpace; }
 	void	SetCharSpace( float cs )		{ mCharSpace = cs; }
 
 	float	GetWordSpace() const			{ return mWordSpace; }
@@ -123,6 +123,9 @@ public:
 
 
 	void Serialize( ceng::CXmlFileSys* filesys );
+
+	// returns float[4]
+	const float* GetDefaultColor() const { return mDefaultColor; }
 
 	//.........................................................................
 
@@ -147,6 +150,8 @@ protected:
 	float	mCharSpace;
 	float	mWordSpace;
 	float	mOffsetLineHeight;
+
+	float	mDefaultColor[4];
 
 	std::string mTextureFilename;
 	std::string mFilename;

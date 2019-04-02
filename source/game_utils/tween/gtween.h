@@ -44,6 +44,7 @@
 //-----------------------------------------------------------------------------
 // updates all gtweens and removes the dead gtweens from the list as well
 void UpdateGTweens( float dt );
+void KillGTweens();
 
 //-----------------------------------------------------------------------------
 
@@ -60,7 +61,7 @@ public:
 	template< typename T >
 	GTween( T& variable, const T& target, float duration = 1.f, ceng::easing::IEasingFunc& math_func = ceng::easing::Linear::easeNone, bool autokill = true ) 
 	{
-		GTween( duration, autokill );
+		this->GTween::GTween( duration, autokill );
 
 		SetFunction( math_func );
 		AddVariable( variable, target, "variable" );
@@ -130,10 +131,23 @@ public:
 	// returns true if the pointer is used - non const because of function pointers
 	bool HasPointer( void* pointer );
 
+	// add a pointer to help identify some objects that might get killed otherwise
+	void AddPointer( void * pointer );
+
 	// Plays the tween backwards from the point that is currently at. 
 	// Useful for UI animations in which mouse cursor is taken away from a button while the tween is being played
 	// uses Looping to reverse the direction of this animation
 	void Reverse();
+
+	// --- userdata & name
+	void			SetUserData( const types::vector2& user_data );
+	types::vector2	GetUserData() const;
+
+	void SetName( const std::string& name );
+	std::string GetName() const;
+
+protected:
+	void* mExtraPointer;
 
 private:
 	void RemoveDuplicateInterpolators( const std::string& name );
@@ -148,6 +162,7 @@ private:
 
 	std::vector< ceng::IInterpolator* > mInterpolators;
 	std::vector< GTweenListener* > mListeners;
+	std::vector< void* > mExtraPointers;
 	
 	bool mDirty;
 	float mDelay;
@@ -165,6 +180,8 @@ private:
 
 	ceng::easing::IEasingFunc* mMathFunc;
 
+	std::string mName;
+	types::vector2 mUserData;
 };
 
 //-----------------------------------------------------------------------------

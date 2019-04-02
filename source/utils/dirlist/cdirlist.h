@@ -40,7 +40,7 @@
 #endif
 
 #include <string>
-#include <list>
+#include <vector>
 
 namespace ceng {
 // This is a class that will read files and directories from sertain path
@@ -89,9 +89,8 @@ public:
 	bool			End();
 
 
-	// This returns the files a std::list < std::string > type
-	// thingie
-	std::list< std::string > GetTheList() { return myData; }
+	// This returns the files as a std::vector
+	std::vector< std::string > GetTheList() { return myData; }
 
 
 
@@ -127,15 +126,10 @@ private:
 
 
 	// This is the list where the files are stored
-	std::list< std::string >			myData;
+	std::vector< std::string >			myData;
 
 	// This is the iterator which keeps track where Next() is going
-	std::list< std::string >::iterator	myBrowser;
-	/*
-	std::list < std::string >			 myData;
-	std::list < std::string >::iterator  myBrowser;
-	*/
-
+	std::vector< std::string >::iterator	myBrowser;
 };
 
 } //end o namespace ceng

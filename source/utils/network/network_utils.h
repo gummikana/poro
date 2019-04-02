@@ -44,11 +44,19 @@ namespace network_utils
 	types::ustring	ConvertInt32ToHex( int32 value );
 	int32			ConvertHexToInt32( const types::ustring& s );
 
+	types::ustring	ConvertUint64ToHex( uint64 value );
+	uint64			ConvertHexToUint64( const types::ustring& s );
+
+	types::ustring	ConvertInt64ToHex( int64 value );
+	int64			ConvertHexToInt64( const types::ustring& s );
+
 	types::ustring	FloatToHexString( float32 value );
 	float32			HexStringToFloat( const types::ustring& value );
 
-	//-------------------------------------------------------------------------
+	types::ustring	DoubleToHexString( double64 value );
+	double64		HexStringToDouble( const types::ustring& value );
 
+	//-------------------------------------------------------------------------
 
 
 	/*class SimpleMutex
@@ -75,7 +83,7 @@ namespace network_utils
 
 			if( SDL_mutexP( mLock ) == -1 )
 			{
-				std::cout << "Thread fail: SDL_mutexP failed" << std::endl;
+				std::cout << "Thread fail: SDL_mutexP failed" << "\n";
 				return false;
 			}
 
@@ -94,7 +102,7 @@ namespace network_utils
 
 			if( SDL_mutexV( mLock ) == -1 )
 			{
-				std::cout << "Thread fail: SDL_mutexV failed" << std::endl;
+				std::cout << "Thread fail: SDL_mutexV failed" << "\n";
 				return false;
 			}
 

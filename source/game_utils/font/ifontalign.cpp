@@ -140,7 +140,11 @@ public:
 				out_texture_rects[ i ] = EMPTY_RECT;
 				out_screen_rects[ i ] = EMPTY_RECT;
 
-				if( char_quad == NULL || IsLineBreak( text[ i ] ) )
+				if( char_quad == NULL || IsLineBreak( text[ i ] ) || 
+					( f_pos.x >= ( fit_in_here.x + fit_in_here.w ) ) || 
+					( f_pos.x < fit_in_here.x ) ||
+					( f_pos.y < fit_in_here.y ) ||
+					( f_pos.y >= ( fit_in_here.y + fit_in_here.h ) ) )
 				{
 					continue;
 				}
@@ -157,7 +161,21 @@ public:
 					font_rect.w = char_quad->rect.w;
 					font_rect.h = char_quad->rect.h;
 					
+					// clamp the rects if this is too big?
+					if( ( font_rect.x + font_rect.w ) > ( fit_in_here.x + fit_in_here.w ) )
+					{
+						font_rect.w = ( fit_in_here.x + fit_in_here.w ) - font_rect.x;
+						out_texture_rects[ i ].w = font_rect.w;
+					}
+
+					if( ( font_rect.y + font_rect.h ) > ( fit_in_here.y + fit_in_here.h ) )
+					{
+						font_rect.h = ( fit_in_here.y + fit_in_here.h ) - font_rect.y;
+						out_texture_rects[ i ].h = font_rect.h;
+					}
+
 					out_screen_rects[ i ] = font_rect;
+
 					f_pos.x += char_quad->width + font->GetCharSpace();
 				}
 			}

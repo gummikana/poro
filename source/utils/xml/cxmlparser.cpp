@@ -1,227 +1,561 @@
-/***************************************************************************
- *
- * Copyright (c) 2003 - 2011 Petri Purho
- *
- * This software is provided 'as-is', without any express or implied
- * warranty.  In no event will the authors be held liable for any damages
- * arising from the use of this software.
- * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, and to alter it and redistribute it
- * freely, subject to the following restrictions:
- * 1. The origin of this software must not be misrepresented; you must not
- *    claim that you wrote the original software. If you use this software
- *    in a product, an acknowledgment in the product documentation would be
- *    appreciated but is not required.
- * 2. Altered source versions must be plainly marked as such, and must not be
- *    misrepresented as being the original software.
- * 3. This notice may not be removed or altered from any source distribution.
- *
- ***************************************************************************/
-
-
 #include "cxmlparser.h"
 
-#include <fstream>
+#include <stdio.h>
+#include <stdlib.h>
 #include <iostream>
+#include <string>
+#include <vector>
+#include "xml_macros.h"
 
-#include "cxmlhandler.h"
+// #include "../../../../Source/debug/simple_profiler.h"
 
-
-// #include "../basepath/basepath.h"
-
-#define ADD_BASE_PATH( x ) x
-
-namespace ceng {
-
-void CXmlParser::ParseFile( const std::string& file )
+namespace ceng { 
+#if 0
+static char* ReadWholeFile(const char *FileName)
 {
-	myHandler->StartDocument();
+    char *Result = 0;
+    FILE *File = fopen(FileName, "r");
+    if(File)
+    {
+		// TODO( Petri ): fseek doesn't give accurate filesize
+        fseek(File, 0, SEEK_END);
+        size_t FileSize = ftell(File);
+        fseek(File, 0, SEEK_SET);
 
-	std::fstream file_input;
-    
-	std::string line;
-
-	if( file.empty() == false )
-	{
-		std::string t = ADD_BASE_PATH(file.c_str());
-		file_input.open(t.c_str() , std::ios::in );
-
-		if(!file_input.good())
+		size_t ResultSize = FileSize + 1;
+        Result = (char *)malloc(ResultSize);
+		fread(Result, FileSize, 1, File);
+	
+        Result[FileSize] = 0;
+		if( true )
 		{
-			logger << "Unable to open xml-file: " << file.c_str() << "\n";
-		}
-		while ( file_input.good() ) 
-		{
-			std::getline( file_input, line );
 			
-			if( line.size() > 256 )
+			for( int i = FileSize; i > 0; --i )
 			{
-				std::vector< std::string > lines = ceng::Split( ">", line );
-				for( unsigned int i = 0; i < lines.size(); ++i )
+				if( Result[i] == '>' ) 
+					break;
+				else
+					Result[i] = '\0';
+			}
+		}
+        
+        fclose(File);
+    }
+
+    return(Result);
+}
+#else
+
+static char* ReadWholeFile( const char* filename )
+{
+	using namespace poro;
+
+	FileSystem* file_system = Poro()->GetFileSystem();
+	bool delete_file_system = false;
+	if ( file_system == NULL )
+	{
+		file_system = new FileSystem;
+		delete_file_system = true;
+	}
+	
+	char* result = NULL;
+	poro::types::Uint32 result_size = 0;
+	file_system->ReadWholeFileAndNullTerminate( filename, result, &result_size );
+
+	if ( delete_file_system )
+		delete file_system;
+
+	return result;
+}
+#endif
+
+// --- 
+
+struct XmlHandlerImpl
+{
+	struct String
+	{
+		String() : text( NULL ), length( 0 ) { }
+		String( const char* t, size_t l ) : text( t ), length( l ) { }
+
+		std::string AsString() 
+		{
+			std::string result;
+			result.resize( length );
+			for( size_t i = 0; i < length; ++i ) 
+			{
+				if( text[i] == 0 ) 
+					return result;
+				result[i] = text[i];
+			}
+			return result;
+ 		}
+		const char* text;
+		size_t length;
+	};
+
+	CXmlHandler* mHandler;
+	String mName;
+	std::vector< String > mContent;
+	std::vector< std::pair< String, String > > mTags;
+
+	//! Called when a document it started
+	void StartDocument() 
+	{ 
+		mHandler->StartDocument();
+	}
+
+	//! Called when the document is ended
+	void EndDocument() 
+	{ 
+		mHandler->EndDocument();
+	}
+
+	void Flush()
+	{
+		if( mName.text == 0 )
+			return;
+
+		// Flush...
+		cassert( mHandler );
+		CXmlHandler::attributes tags;
+		for( size_t i = 0; i < mTags.size(); ++i )
+		{
+			tags.insert( std::make_pair( 
+				mTags[i].first.AsString(), mTags[i].second.AsString()
+				) );
+		}
+
+		const std::string str_name = mName.AsString();
+		mHandler->StartElement( str_name, tags );
+
+		if( mContent.empty() == false )
+		{
+			std::stringstream ss;
+			for( std::size_t i = 0; i < mContent.size(); ++i )
+			{
+				ss << mContent[i].AsString();
+			}
+			mHandler->Characters( ss.str() );
+		}
+
+		mName.text = 0;
+		mName.length = 0;
+		mContent.clear();
+		mTags.clear();
+	}
+
+	//! When we hit some characters this gets called,
+	void AddContent( const char* content, int content_length ) 
+	{ 
+		mContent.push_back( String( content, content_length ) );
+	}
+
+	//! When a element gets startted this gets called
+	void StartElement( const char* name, int name_length ) 
+	{ 
+		mName = String( name, name_length );
+	}
+
+	void AddTag( const char* tag, int tag_length, const char* value, int value_length ) 
+	{ 
+		mTags.push_back( std::make_pair( String( tag, tag_length ), String( value, value_length ) ) );
+	}
+
+	//! And when it ends we call him
+	void EndElement( const char* name, int name_length ) 
+	{ 
+		Flush();
+		String s( name, name_length );
+		mHandler->EndElement( s.AsString() );
+	}
+	// virtual void EndElement( /*const std::string& name*/ ) { }
+
+};
+
+
+//-----------------------------------------------------------------------------
+
+class CXmlParserIMPL
+{
+public:
+
+	const char* mFilename;
+	const char* mContents;
+
+	enum TokenType
+	{
+		TOKEN_Unknown,
+
+		TOKEN_OpenLess,
+		TOKEN_CloseGreater,
+		TOKEN_Slash,
+		TOKEN_Equal,
+
+		TOKEN_String,
+
+		TOKEN_EndOfStream
+	};
+
+	struct Token
+	{
+		char* text;
+		TokenType type;	
+		size_t length;
+	};
+
+	struct Tokenizer
+	{
+		char* at;
+		bool end_of_stream;
+	};
+
+	bool TextCompare( const Token& a, const Token& b )
+	{
+		if( a.type != TOKEN_String || b.type != TOKEN_String )
+			return false;
+		
+		if( a.length != b.length )
+			return false;
+
+		for( size_t i = 0; i < a.length; ++i )
+		{
+			if( a.text[i] != b.text[i] )
+				return false;
+		}
+
+		return true;
+	}
+
+	std::string AsString( const Token& t )
+	{
+		std::string result;
+		result.resize( t.length );
+		for( size_t i = 0; i < t.length; ++i )
+			result[i] = t.text[i];
+		return result;
+	}
+
+	bool StringMatch( Tokenizer* tokenizer, const char* match_me )
+	{
+		for( size_t i = 0; match_me[i]; ++i )
+		{
+			if( tokenizer->at[i] == 0 ) 
+				return false;
+			
+			if( tokenizer->at[i] != match_me[i] )
+				return false;
+		}
+		return true;
+	}
+
+	bool IsWhitespace( char c )
+	{
+		return (c == ' ' || c == '\t' || c == '\r' || c == '\n');
+	}
+
+	bool NonStringCharacter( char c )
+	{
+		return ( IsWhitespace( c ) || c == '<' || c == '>' || c == '=' || c == '/' );
+	}
+
+	void SkipWhiteSpace( Tokenizer* tokenizer )
+	{
+		while( tokenizer->at[0] )
+		{
+			if( IsWhitespace( tokenizer->at[0] ) )
+			{
+				++tokenizer->at;
+			}
+			else if( StringMatch( tokenizer, "<!--" ) )
+			{
+				// this should be before the other one since  <! can start before us
+				tokenizer->at += 4;
+				while( tokenizer->at[0] && StringMatch( tokenizer, "-->" ) == false )
 				{
-					ParseLine( lines[ i ] + ">" );    
+					++tokenizer->at;
 				}
+
+				if( StringMatch( tokenizer, "-->") )
+					tokenizer->at += 3;
+
+			}
+			else if( tokenizer->at[0] == '<' && tokenizer->at[1] == '!' )
+			{
+				tokenizer->at += 2;
+				while( tokenizer->at[0] && tokenizer->at[0] != '>')
+				{
+					++tokenizer->at;
+				}
+				
+				if( tokenizer->at[0] == '>')
+					++tokenizer->at;
+			}
+			else if( StringMatch( tokenizer, "<?" ) )
+			{
+				tokenizer->at += 2;
+				while( tokenizer->at[0] && StringMatch( tokenizer, "?>" ) == false )
+				{
+					++tokenizer->at;
+				}
+
+				if( StringMatch( tokenizer, "?>") )
+					tokenizer->at += 2;
 			}
 			else
 			{
-				ParseLine( line );    
+				break;
+			}
+		}
+	}
+
+	Token GetToken( Tokenizer* tokenizer )
+	{
+
+		SkipWhiteSpace( tokenizer );
+
+		Token result = {};
+		result.text = tokenizer->at;
+		result.length = 1;
+
+		if( tokenizer->end_of_stream )
+		{
+			result.type = TOKEN_EndOfStream;
+			return result;
+		}
+
+		char c = tokenizer->at[0];
+		++tokenizer->at;
+		switch( c )
+		{
+		case '\0': { result.type = TOKEN_EndOfStream; tokenizer->end_of_stream = true; } break;
+		case '<': { result.type = TOKEN_OpenLess; } break;
+		case '>': { result.type = TOKEN_CloseGreater; } break;
+		case '/': { result.type = TOKEN_Slash; } break;
+		case '=': { result.type = TOKEN_Equal; } break;
+
+		case '"': 
+		{ 
+			result.type = TOKEN_String;
+			result.text = tokenizer->at;
+			while( tokenizer->at[0] && tokenizer->at[0] != '"' ) {
+				++tokenizer->at;
+			}
+			result.length = ( tokenizer->at - result.text );
+			++tokenizer->at;
+		}
+		break;
+
+		default:
+			{
+				// string, read till next white space
+				result.type = TOKEN_String;
+				while( tokenizer->at[0] && NonStringCharacter( tokenizer->at[0] ) == false )
+				{
+					++tokenizer->at;
+				}
+				result.length = ( tokenizer->at - result.text );
+				
+				// result.type = TOKEN_Unknown;
+			}
+			break;
+		}
+		return result;
+	}
+
+	void ReportError( Tokenizer* tokenizer, const std::string& error_message )
+	{
+		int line_count = 0;
+		for( const char* p = mContents; p != tokenizer->at; ++p )
+		{
+			if( p[0] == NULL ) break;
+			if( p[0] == '\n' ) line_count++;
+		}
+		
+
+		logger << "XML error in file(" << mFilename << ") at line (" << line_count << ")" << error_message << "\n";
+	}
+
+	void ParseTag( Tokenizer* tokenizer, XmlHandlerImpl* handler, Token tag_name )
+	{
+		// should we reset the position? 
+		Token t = GetToken( tokenizer );
+		if( t.type == TOKEN_Equal )
+		{
+			Token tag_value = GetToken( tokenizer);
+			if( tag_value.type == TOKEN_String )
+			{
+				if( handler )
+					handler->AddTag( tag_name.text, tag_name.length, tag_value.text, tag_value.length );
+			}
+			else
+			{
+				ReportError( tokenizer, "parsing tag (" + AsString( tag_name ) + ") - expected a \"string\"  after =, but none found" );
+				return;
+			}
+		}
+		else
+		{
+			ReportError( tokenizer, "parsing tag (" + AsString( tag_name ) + ") - expected '='" );
+			return;
+		}
+	}
+
+	void ParseElement( Tokenizer* tokenizer, XmlHandlerImpl* handler )
+	{
+		// name of this element 
+		Token name = GetToken( tokenizer );
+		if( name.type != TOKEN_String )
+		{
+			ReportError( tokenizer, "Expected a name of the element after <" );			
+			return;
+		}
+
+		if( handler )
+		{
+			handler->Flush();
+			handler->StartElement( name.text, name.length );
+		}
+
+		// read till the end of the element
+		bool parsing_element_start = true;
+		bool element_ended = false;
+		while(parsing_element_start)
+		{
+			Token t = GetToken( tokenizer );
+			switch(t.type)
+			{
+				case TOKEN_EndOfStream: { return; } break;
+				case TOKEN_Slash:
+				{
+					if( tokenizer->at[0] == '>')
+					{
+						element_ended = true;
+						parsing_element_start = false;
+						++tokenizer->at;
+					}
+				}
+				break;
+				case TOKEN_CloseGreater:
+				{
+					parsing_element_start = false;
+				}
+				break;
+				case TOKEN_String:
+				{
+					ParseTag( tokenizer, handler, t );
+				}
+				break;
 			}
 		}
 
-		file_input.close();
-	}
-
-	myHandler->EndDocument();
-}
-
-void CXmlParser::ParseStringData( const std::string& stringdata )
-{
-	myHandler->StartDocument();
-
-	std::vector< std::string > lines = ceng::Split( ">", stringdata + " " );
-	for( unsigned int i = 0; i < lines.size(); ++i )
-	{
-		if( i < lines.size() - 1 ) 
-			ParseLine( lines[ i ] + ">" );    
-		else
-			ParseLine( lines[ i ] );    
-	}
-	myHandler->EndDocument();
-}
-
-void CXmlParser::ParseLine( const std::string& in_line )
-{
-	std::string line = in_line;
-	
-	// added " " to fix the white space bug in attribute parsing
-	if ( myRemoveWhiteSpace ) 
-		line = RemoveWhiteSpace( line ) + " ";
-	
-	size_t i;
-
-	if ( myStatus == content )
-	{
-		i = line.find_first_of("<");
-           
-        if ( i == line.npos ) 
+		if( element_ended )
 		{
-			myContentBuffer += line;
-			return;
-		} else {
-			myContentBuffer += line.substr( 0, i );
-			myStatus = tag;
-			ParseContentBuffer();
-			ParseLine( line.substr( i + 1 ) );
+			if( handler )
+				handler->EndElement( name.text, name.length );
 			return;
 		}
-	} else if ( myStatus == tag )
-	{
-		i = line.find_first_of(">");
-		
-		if ( i == line.npos )
+
+		// read contents
+		bool parsing_contents = true;
+		while( parsing_contents )
 		{
-			myTagBuffer += line;
-			return;
-		} else {
-			myTagBuffer += line.substr( 0, i );
-			myStatus = content;
-			ParseTagBuffer();
-			ParseLine( line.substr( i + 1 ) );
-			return;
+			Token t = GetToken( tokenizer );
+			switch( t.type )
+			{
+				case TOKEN_EndOfStream:
+				{ 
+					parsing_contents = false; 
+					return; 
+				}
+				break;
+
+				case TOKEN_OpenLess:
+				{
+					if( tokenizer->at[0] == '/' )
+					{
+						++tokenizer->at;
+
+						// check if the rest is correct
+						Token end_name = GetToken( tokenizer );
+						if( end_name.type == TOKEN_String && TextCompare( name, end_name ) )
+						{
+							Token close_greater = GetToken( tokenizer );
+							if( close_greater.type == TOKEN_CloseGreater )
+							{
+								if( handler )
+									handler->EndElement( name.text, name.length );
+
+							}
+							else if( close_greater.type != TOKEN_CloseGreater )
+							{
+								ReportError( tokenizer, "No closing '>' found for ending element </" + AsString( end_name ) );
+								// std::cout << "Error at - expected >" << "\n";
+							}
+						}
+						else
+						{
+							ReportError( tokenizer, "Closing element is in wrong order. Expected '</" + AsString( name ) + ">', but instead got '" + AsString( end_name ) + "'"  );
+						}
+
+						// and we're done with parsing element
+						return;
+					}
+					else /*if( c == '<' )*/
+					{
+						// new element
+						ParseElement( tokenizer, handler );
+					}
+				}
+				break;
+
+				default:
+				{
+					if( handler ) 
+						handler->AddContent( t.text, t.length );
+				}
+				break;
+ 			}
 		}
 	}
-}
+}; // end of CXmlParserIMPL
 
-void CXmlParser::ParseContentBuffer()
+//-----------------------------------------------------------------------------
+
+void CXmlParser::ParseFile( const char* filename )
 {
-	
-	while ( myRemoveWhiteSpace && myContentBuffer.size() > 1 && myContentBuffer[ myContentBuffer.size() - 1 ] == '\n' ) 
-		myContentBuffer = myContentBuffer.substr( 0, myContentBuffer.size() - 1 );
-	
-	if ( myContentBuffer.empty() ) return;
+	// SPROFILE( "XML::ParseFile" );
 
-	if( myRemoveWhiteSpace ) 
-		myContentBuffer = RemoveWhiteSpace( myContentBuffer );	
-	
-	myHandler->Characters( myContentBuffer );
-	myContentBuffer = "";
+	if( filename == NULL ) return;
 
-}
-
-void CXmlParser::ParseTagBuffer()
-{
-	if ( myRemoveWhiteSpace ) myTagBuffer = RemoveWhiteSpace( myTagBuffer );
-	while ( myRemoveWhiteSpace && myTagBuffer.size() > 1 && myTagBuffer[ myTagBuffer.size() - 1 ] == '\n' ) myTagBuffer = myTagBuffer.substr( 0, myTagBuffer.size() - 1 );
-	
-	if ( myTagBuffer.empty() ) return;
-
-	
-	
-	std::string line = myTagBuffer;
-	myTagBuffer = "";
-
-	if ( line[0] == '/' ) 
-	{
-		myHandler->EndElement( line.substr( 1 ) );
+	char* contents = ReadWholeFile( filename );
+	if( contents == NULL ) 
 		return;
-	}
 
-	if ( line[0] == '!' )
+	XmlHandlerImpl handler;
+	handler.mHandler = &mHandler;
+
+	handler.StartDocument();
+
+	CXmlParserIMPL impl;
+	impl.mFilename = filename;
+	impl.mContents = contents;
+
+	CXmlParserIMPL::Tokenizer tokenizer = {};
+	tokenizer.at = contents;
+
+	CXmlParserIMPL::Token t = impl.GetToken( &tokenizer );
+	if( t.type == CXmlParserIMPL::TOKEN_OpenLess )
 	{
-		return;
+		impl.ParseElement( &tokenizer, &handler );
+	}
+	else
+	{
+		impl.ReportError( &tokenizer, "Couldn't find a '<' to start parsing with" );
 	}
 
-	size_t i = line.find_first_of( "=" );
-	if ( i != line.npos ) line = ParseAttributes( line );
-	
-	if ( line.empty() ) return;
-
-	if ( line[ line.size() - 1 ] == '/' )
-	{	
-		line = line.substr( 0, line.size() - 1 );
-		line = RemoveWhiteSpace( line );
-		myHandler->StartElement( line, myAttributeBuffer );
-		myAttributeBuffer.clear();
-		myHandler->EndElement( line );
-
-		return;
-	}
-
-	myHandler->StartElement( line, myAttributeBuffer );
-	myAttributeBuffer.clear();
-
+	handler.EndDocument();
+	free( contents );
 }
 
-std::string CXmlParser::ParseAttributes( const std::string& line )
-{
-	std::string tmp = line;
-	size_t i = tmp.find_first_of( "=" );
-	if ( i == tmp.npos ) return tmp;
-	
-	std::string key_part	= RemoveWhiteSpace( tmp.substr( 0, i ) );
-	std::string value_part  = RemoveWhiteSpace( tmp.substr( i + 1 ) );
-
-	i = key_part.find_last_of(" \t");
-	if ( i != key_part.npos ) 
-	{
-		tmp = key_part.substr( 0, i );
-		key_part = key_part.substr( i + 1 );
-	}
-
-	i = StringFindFirstOf( " \t/", value_part );
-	if ( i != value_part.npos )
-	{
-		tmp += value_part.substr( i );
-		value_part = value_part.substr( 0, i);
-	}
-
-	value_part = RemoveWhiteSpace( value_part );
-	value_part = RemoveQuotes( value_part );
-	// value_part = value_part.substr( 1, value_part.size() - 2 );
-	
-	myAttributeBuffer.insert( std::pair< std::string, CAnyContainer >( key_part, value_part ) );
-
-	return ParseAttributes( tmp );	
-}
-
-}
+} // end of namespace ceng

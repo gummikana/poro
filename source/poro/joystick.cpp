@@ -30,11 +30,13 @@ const int JOYSTICK_ANALOG_BUTTON_COUNT = ( Joystick::JOY_BUTTON_ANALOG_09_MOVED 
 Joystick::Joystick( int id ) :
 	mListeners(),
 	mId( id ),
+	mName("(unknown)"),
 	mLeftStick( 0, 0 ),
 	mRightStick( 0, 0 ),
 	mButtonsDown( Joystick::JOY_BUTTON_COUNT ),
 	mAnalogButtons( JOYSTICK_ANALOG_BUTTON_COUNT ),
-	mConnected( false )
+	mConnected( false ),
+	mIsGamePad( false)
 {
 	// just making sure everything is set to 0
 	for( std::size_t i = 0; i < mButtonsDown.size(); ++i )

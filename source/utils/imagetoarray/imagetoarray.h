@@ -1,9 +1,7 @@
 #ifndef INC_IMAGE_TO_ARRAY_H
 #define INC_IMAGE_TO_ARRAY_H
 
-#include <map>
 #include <poro/poro_types.h>
-#include <utils/color/ccolor.h>
 #include <utils/array2d/carray2d.h>
 
 //-----------------------------------------------------------------------------
@@ -12,7 +10,7 @@
 typedef poro::types::Uint32 uint32;
 
 
-void	LoadImage( const std::string& filename, ceng::CArray2D< poro::types::Uint32 >& out_array2d, bool include_alpha );
+void	LoadImage( const std::string& filename, ceng::CArray2D< poro::types::Uint32 >& out_array2d, bool include_alpha = true );
 void	SaveImage( const std::string& filename, const ceng::CArray2D< poro::types::Uint32 >& image_data );
 
 
@@ -59,7 +57,7 @@ struct TempTexture
 		int co2 = data[co + 2];
 		int co3 = data[co + 3];
 		
-		std::cout << "CO( " << x << ", " << y << " ): " << co0 << ", " << co1 << ", " << co2 << ", " << co3 << std::endl;*/
+		std::cout << "CO( " << x << ", " << y << " ): " << co0 << ", " << co1 << ", " << co2 << ", " << co3 << "\n";*/
 
 		poro::types::Uint32 result = 
 			data[ co ] << 16 |

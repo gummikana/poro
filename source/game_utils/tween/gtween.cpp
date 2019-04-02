@@ -26,31 +26,52 @@
 // updates all gtweens and removes the dead gtweens from the list as well
 void UpdateGTweens( float dt )
 {
-	std::list< GTween* >& update_list = ceng::CAutoList< GTween >::GetList();
+	auto* update_list = ceng::CAutoList< GTween >::GetList();
+	cassert( update_list );
 
-	if( update_list.empty() ) 
+	if( update_list->empty() ) 
 		return;
 
-	std::list< GTween* > release_us;
+	static std::vector< GTween* > release_us;
+	release_us.clear();
 
-	GTween* tween = NULL;
-	for( std::list< GTween* >::iterator i = update_list.begin(); i != update_list.end();  )
+	cassert( release_us.empty() );
+	for ( auto& tween : *update_list )
 	{
-		tween = *i;
-		++i;
 		cassert( tween );
-		tween->Update( dt );
+		if( tween->IsDead() == false )
+			tween->Update( dt );
+
 		if( tween->IsDead() )
 			release_us.push_back( tween );
 	}
 
 	// release the dead tweens
-	for( std::list< GTween* >::iterator i = release_us.begin();
-		i != release_us.end(); ++i )
+	for ( auto tweeny : release_us )
+		delete tweeny;
+
+	release_us.clear();
+}
+
+void KillGTweens()
+{
+	auto* update_list = ceng::CAutoList< GTween >::GetList();
+	cassert( update_list );
+
+	static std::vector< GTween* > release_us;
+	release_us.clear();
+	release_us.reserve( update_list->size() );
+
+	cassert( release_us.empty() );
+	for ( auto& tween : *update_list )
 	{
-		tween = *i;
-		delete tween;
+		release_us.push_back( tween );
 	}
+
+	for ( auto tween : release_us )
+		delete tween;
+
+	release_us.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -68,7 +89,10 @@ GTween::GTween() :
 	mLoopCount( -1 ),
 	mClampValues( false ),
 	mKillMeAutomatically( false ),
-	mMathFunc( NULL )
+	mMathFunc( NULL ),
+	mName(),
+	mUserData(),
+	mExtraPointer( NULL )
 {
 }
 
@@ -87,7 +111,10 @@ GTween::GTween( float duration, bool auto_kill ) :
 	mLoopCount( -1 ),
 	mClampValues( false ),
 	mKillMeAutomatically( auto_kill ),
-	mMathFunc( NULL )
+	mMathFunc( NULL ),
+	mName(),
+	mUserData(),
+	mExtraPointer( NULL )
 {
 }
 //-----------------------------------------------------------------------------
@@ -355,6 +382,9 @@ bool GTween::ClearPointer( void* pointer )
 		}
 	}
 
+	if ( mExtraPointer == pointer )
+		mExtraPointer = NULL;
+
 	return result;
 }
 
@@ -369,8 +399,17 @@ bool GTween::HasPointer( void* pointer )
 			return true;
 	}
 
+	if( std::find( mExtraPointers.begin(), mExtraPointers.end(), pointer ) != mExtraPointers.end() )
+		return true;
+
 	return false;
 }
+
+void GTween::AddPointer( void* pointer )
+{
+	mExtraPointers.push_back( pointer );
+}
+
 
 //-----------------------------------------------------------------------------
 
@@ -436,8 +475,32 @@ void GTween::Reverse()
 	}
 	else if( mLooping && mTimer < mDuration )
 	{
-		std::cout << "ERROROR" <<std::endl;
+		std::cout << "ERROROR" <<"\n";
 	}
 }
+
+//-----------------------------------------------------------------------------
+
+void GTween::SetName( const std::string& name )
+{
+	mName = name;
+}
+
+std::string GTween::GetName() const
+{
+	return mName;
+}
+
+void GTween::SetUserData( const types::vector2& user_data )
+{
+	mUserData = user_data;
+}
+
+types::vector2 GTween::GetUserData() const
+{
+	return mUserData;
+}
+
+
 
 ///////////////////////////////////////////////////////////////////////////////

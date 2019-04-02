@@ -20,6 +20,7 @@
 
 
 #include "eventdispatcher.h"
+#include <list>
 
 namespace as {
 

@@ -37,6 +37,10 @@ CFont::CFont() :
 	mWordSpace( 0 ),
 	mTextureFilename()
 {
+	mDefaultColor[0] = 0;
+	mDefaultColor[1] = 0;
+	mDefaultColor[2] = 0;
+	mDefaultColor[3] = 1;
 }
 
 //.............................................................................
@@ -108,13 +112,6 @@ std::vector< types::rect > CFont::GetRectsForText( const std::string& text )
 
 	return result;
 }
-//.............................................................................
-
-float CFont::GetLineHeight() const	
-{ 
-	return mLineHeight; 
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 //-----------------------------------------------------------------------------
@@ -123,7 +120,7 @@ namespace
 {
 	struct FontSerializeHelper
 	{
-		FontSerializeHelper() { }
+		FontSerializeHelper() : recto(), id(0) { }
 		FontSerializeHelper( CFont::CharType id, const types::rect& recto ) : id( id ), recto( recto ) { }
 
 		void Serialize( ceng::CXmlFileSys* filesys )
@@ -145,7 +142,7 @@ namespace
 
 	struct FontQuadHelper
 	{
-		FontQuadHelper() : char_quad( NULL ) { }
+		FontQuadHelper() : char_quad( NULL ), id(0) { }
 		FontQuadHelper(  CFont::CharType id, CFont::CharQuad* char_quad ) : id( id ), char_quad( char_quad ) { }
 
 		void Serialize( ceng::CXmlFileSys* filesys ) 
@@ -186,6 +183,13 @@ void CFont::Serialize( ceng::CXmlFileSys* filesys )
 	XML_BindAlias( filesys, mLineHeight,		"LineHeight" );
 	XML_BindAlias( filesys, mCharSpace,		"CharSpace" );
 	XML_BindAlias( filesys, mWordSpace,		"WordSpace" );
+
+	XML_BindAttributeAlias(filesys, mDefaultColor[0], "color_r");
+	XML_BindAttributeAlias(filesys, mDefaultColor[1], "color_g");
+	XML_BindAttributeAlias(filesys, mDefaultColor[2], "color_b");
+	XML_BindAttributeAlias(filesys, mDefaultColor[3], "color_a");
+
+
 
 	if( filesys->IsWriting() )
 	{

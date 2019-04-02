@@ -63,24 +63,24 @@ public:
 		mUv[ 3 ] = other->mUv[3]; 
 	}
 
-	virtual int GetWidth() const	{ return (int)(((float)mWidth) / mExternalSizeX); } 
-	virtual int GetHeight() const	{ return (int)(((float)mHeight) / mExternalSizeY); }
+	virtual int GetWidth()  const PORO_OVERRIDE	{ return (int)(((float)mWidth) / mExternalSizeX); } 
+	virtual int GetHeight() const PORO_OVERRIDE	{ return (int)(((float)mHeight) / mExternalSizeY); }
 
-	virtual void SetExternalSize(int width, int height) {
+	virtual void SetExternalSize(int width, int height)  PORO_OVERRIDE {
 		mExternalSizeX = (float)mWidth / (float)width;
 		mExternalSizeY = (float)mHeight / (float)height;
 	}
 
-	virtual std::string GetFilename() const								{ return mFilename; }
+	virtual std::string GetFilename() const	 PORO_OVERRIDE				{ return mFilename; }
 	void				SetFilename( const types::string& filename )	{ mFilename = filename; }
 
 
-	virtual unsigned char* GetPixelData() const
+	virtual unsigned char* GetPixelData() const  PORO_OVERRIDE
 	{
 		return mPixelData;
 	}
 
-	virtual void DeletePixelData()
+	virtual void DeletePixelData() PORO_OVERRIDE
 	{
 		// HACK: inlined stb because include messes things up
 		if (mPixelData != NULL)
@@ -89,7 +89,7 @@ public:
 		mPixelData = NULL;
 	}
 
-	virtual void SetUVCoords( float x1, float y1, float x2, float y2 ) 
+	virtual void SetUVCoords( float x1, float y1, float x2, float y2 ) PORO_OVERRIDE
 	{
 		mUv[ 0 ] = x1 * ( (float)mWidth / (float)mRealSizeX );
 		mUv[ 1 ] = y1 * ( (float)mHeight / (float)mRealSizeY );
@@ -97,7 +97,7 @@ public:
 		mUv[ 3 ] = y2 * ( (float)mHeight / (float)mRealSizeY );
 	}
 
-	virtual void GetUVCoords( types::vec2& coord1, types::vec2& coord2 )
+	virtual void GetUVCoords( types::vec2& coord1, types::vec2& coord2 ) PORO_OVERRIDE
 	{
 		coord1.x = mUv[ 0 ];
 		coord1.y = mUv[ 1 ];
@@ -105,6 +105,13 @@ public:
 		coord2.y = mUv[ 3 ];
 	}
 
+    // ------------------------------------
+
+    virtual int GetDataWidth() const PORO_OVERRIDE { return mWidth; }
+    virtual int GetDataHeight() const PORO_OVERRIDE { return mHeight; }
+
+    // ------------------------------------
+    
 	types::Uint32	mTexture;
 	int				mWidth;
 	int				mHeight;

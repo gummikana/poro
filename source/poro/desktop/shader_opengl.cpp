@@ -18,13 +18,12 @@
  *
  ***************************************************************************/
 
-#include <fstream>
-#include <string>
+#include "shader_opengl.h"
 
 #include "../libraries.h"
-#include "../iplatform.h"
-#include "shader_opengl.h"
 #include "../itexture.h"
+#include "../iplatform.h"
+#include "../fileio.h"
 
 
 namespace poro {
@@ -33,10 +32,18 @@ void ShaderOpenGL::Init( const std::string& vertex_source_filename, const std::s
 {
 	Release();
 
-    program = glCreateProgram();
-
 	vertexShader = LoadShader( vertex_source_filename, true );
-    fragmentShader = LoadShader( fragment_source_filename, false );
+	fragmentShader = LoadShader( fragment_source_filename, false );
+
+	Init();
+}
+
+void ShaderOpenGL::InitFromString( const std::string& vertex_source, const std::string& fragment_source )
+{ 
+	Release();
+
+	vertexShader = LoadShaderFromString( vertex_source.c_str(), vertex_source.size(), true );
+	fragmentShader = LoadShaderFromString( fragment_source.c_str(), fragment_source.size(), false );
 
 	if (vertexShader == 0 || fragmentShader == 0)
 	{
@@ -44,26 +51,8 @@ void ShaderOpenGL::Init( const std::string& vertex_source_filename, const std::s
 		return;
 	}
 
-    glAttachShader( program, vertexShader );
-    glAttachShader( program, fragmentShader );
-    glLinkProgram( program);
-
-    //DEBUG
-	GLint status;
-    glGetProgramiv (program, GL_LINK_STATUS, &status);
-    if (status == GL_FALSE)
-    {
-        GLint infoLogLength;
-        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
-        
-        GLchar *strInfoLog = new GLchar[infoLogLength + 1];
-        glGetProgramInfoLog(program, infoLogLength, NULL, strInfoLog);
-        fprintf(stderr, "GLSL link failure: %s\n", strInfoLog);
-        delete[] strInfoLog;
-
-		Release();
-    }
-}
+	Init();
+}	
 
 void ShaderOpenGL::Release()
 {
@@ -86,61 +75,75 @@ void ShaderOpenGL::Release()
 		glDeleteShader( fragmentShader );
 		fragmentShader = 0;
 	}
+
+	parameterLocationCache.clear();
 }
 
 void ShaderOpenGL::Enable()
 {
 	lastAllocatedTextureUnit = 2;
-    glUseProgram( program );
+	glUseProgram( program );
 }
 
 void ShaderOpenGL::Disable()
 {
 	lastAllocatedTextureUnit = 2;
-    glUseProgram( 0 );
+	glUseProgram( 0 );
 	glDisable( GL_TEXTURE_2D );
 	glDisable( GL_TEXTURE_3D );
 }
 
-bool ShaderOpenGL::HasParameter(const std::string& name)
+bool ShaderOpenGL::HasParameter( const std::string& name)
 {
-	const char *c_str = name.c_str();
-    int handle = glGetUniformLocation( program, name.c_str() );
-    return handle > -1;
+	const int location = GetParameterLocation( name );
+	return location > -1;
 }
 
 void ShaderOpenGL::SetParameter( const std::string& name, float value )
 {
-	// TODO: cache parameter locations!
-	const char *c_str = name.c_str();
-	int location = glGetUniformLocation( program, name.c_str() );
+	const int location = GetParameterLocation( name );
 
 	glUniform1f( location, value );
 }
 
-void ShaderOpenGL::SetParameter( const std::string& name, types::vec2 value )
+void ShaderOpenGL::SetParameter( const std::string& name, const float* four_float_values )
 {
-	// TODO: cache parameter locations!
-	const char *c_str = name.c_str();
-	int location = glGetUniformLocation( program, name.c_str() );
+	const int location = GetParameterLocation( name );
+
+	glUniform4fv( location, 1, four_float_values );
+}
+void ShaderOpenGL::SetParameter( const std::string& name, const types::vec2& value )
+{
+	const int location = GetParameterLocation( name );
 
 	glUniform2f( location, value.x, value.y );
 }
 
-void ShaderOpenGL::SetParameter( const std::string& name, types::vec3 value )
+void ShaderOpenGL::SetParameter( const std::string& name, const types::vec3& value )
 {
-	// TODO: cache parameter locations!
-	const char *c_str = name.c_str();
-	int location = glGetUniformLocation( program, name.c_str() );
+	const int location = GetParameterLocation( name );
 
 	glUniform3f( location, value.x, value.y, value.z );
 }
 
-void ShaderOpenGL::SetParameter( const std::string& name, ITexture* texture )
+void ShaderOpenGL::SetParameter( const std::string& name, const types::vec2& value_xy, types::vec2& value_zw )
 {
-	// TODO: cache parameter locations!
-	const char *c_str = name.c_str();
-	int location = glGetUniformLocation( program, name.c_str() );
+	const int location = GetParameterLocation( name );
+
+	glUniform4f( location, value_xy.x, value_xy.y, value_zw.x, value_zw.y );
+}
+
+void ShaderOpenGL::SetParameter( const std::string& name, float x, float y, float z, float w )
+{
+	const int location = GetParameterLocation( name );
+
+	glUniform4f( location, x, y, z, w );
+}
+
+void ShaderOpenGL::SetParameter( const std::string& name, const ITexture* texture )
+{
+	poro_assert( texture );
+	const int location = GetParameterLocation( name );
 
 	glEnable( GL_TEXTURE_2D );
 	glUniform1i( location, lastAllocatedTextureUnit );
@@ -152,11 +155,10 @@ void ShaderOpenGL::SetParameter( const std::string& name, ITexture* texture )
 	glActiveTexture( GL_TEXTURE0 );
 }
 
-void ShaderOpenGL::SetParameter( const std::string& name, ITexture3d* texture )
+void ShaderOpenGL::SetParameter( const std::string& name, const ITexture3d* texture )
 {
-	// TODO: cache parameter locations!
-	const char *c_str = name.c_str();
-	int location = glGetUniformLocation( program, name.c_str() );
+	poro_assert( texture );
+	const int location = GetParameterLocation( name );
 
 	glEnable( GL_TEXTURE_3D );
 	glUniform1i( location, lastAllocatedTextureUnit );
@@ -168,7 +170,7 @@ void ShaderOpenGL::SetParameter( const std::string& name, ITexture3d* texture )
 	glActiveTexture( GL_TEXTURE0 );
 }
 
-bool ShaderOpenGL::GetIsCompiledAndLinked()
+bool ShaderOpenGL::GetIsCompiledAndLinked() const
 {
 	return isCompiledAndLinked;
 }
@@ -177,40 +179,85 @@ bool ShaderOpenGL::GetIsCompiledAndLinked()
 
 int ShaderOpenGL::LoadShader( const std::string& filename, bool is_vertex_shader )
 {
-	std::ifstream ifile(filename.c_str());
-    std::string filetext;
+	// TODO( Petri ): glCreateShader crashes on old graphics drivers
+	CharBufferAutoFree text;
+	StreamStatus::Enum read_status = Poro()->GetFileSystem()->ReadWholeFile( filename, text.memory, &text.size_bytes );
+	if ( read_status != StreamStatus::NoError )
+	{
+		isCompiledAndLinked = false;
+		return 0;
+	}
 
-    while( ifile.good() ) {
-        std::string line;
-        std::getline(ifile, line);
-        filetext.append(line + "\n");
-    }
+	return LoadShaderFromString( text.memory, text.size_bytes, is_vertex_shader );
+}
 
-	const char* filetext_ptr = filetext.c_str();
-
+int ShaderOpenGL::LoadShaderFromString( const char* source, const int source_length, bool is_vertex_shader )
+{
 	int shader_handle = glCreateShader( is_vertex_shader ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER );
-	glShaderSource( shader_handle, 1, &filetext_ptr, NULL );
+	glShaderSource( shader_handle, 1, &source, &source_length );
 	glCompileShader( shader_handle );
 
 	//DEBUG
 	GLint status;
-    glGetShaderiv(shader_handle, GL_COMPILE_STATUS, &status);
-    if (status == GL_FALSE)
-    {
-        GLint infoLogLength;
-        glGetShaderiv(shader_handle, GL_INFO_LOG_LENGTH, &infoLogLength);
-        
-        GLchar *strInfoLog = new GLchar[infoLogLength + 1];
-        glGetShaderInfoLog(shader_handle, infoLogLength, NULL, strInfoLog);
-        
-        
-        fprintf(stderr, "GLSL compile failure:\n%s\n", strInfoLog);
-        delete[] strInfoLog;
+	glGetShaderiv(shader_handle, GL_COMPILE_STATUS, &status);
+	if (status == GL_FALSE)
+	{
+		GLint infoLogLength;
+		glGetShaderiv(shader_handle, GL_INFO_LOG_LENGTH, &infoLogLength);
+
+		GLchar *strInfoLog = new GLchar[infoLogLength + 1];
+		glGetShaderInfoLog(shader_handle, infoLogLength, NULL, strInfoLog);
+
+
+		fprintf(stderr, "GLSL compile failure:\n%s\n", strInfoLog);
+		delete[] strInfoLog;
 
 		isCompiledAndLinked = false;
-    }
+	}
 
 	return shader_handle;
+}
+
+void ShaderOpenGL::Init()
+{
+	program = glCreateProgram();
+	glAttachShader( program, vertexShader );
+	glAttachShader( program, fragmentShader );
+	glLinkProgram( program);
+
+	//DEBUG
+	GLint status;
+	glGetProgramiv (program, GL_LINK_STATUS, &status);
+	if (status == GL_FALSE)
+	{
+		GLint infoLogLength;
+		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
+
+		GLchar *strInfoLog = new GLchar[infoLogLength + 1];
+		glGetProgramInfoLog(program, infoLogLength, NULL, strInfoLog);
+		fprintf(stderr, "GLSL link failure: %s\n", strInfoLog);
+		delete[] strInfoLog;
+
+		Release();
+	}
+}
+
+int ShaderOpenGL::GetParameterLocation( const std::string& name )
+{
+	int result;
+
+	auto it = parameterLocationCache.find( name );
+	if ( it == parameterLocationCache.end() )
+	{
+		result = glGetUniformLocation( program, name.c_str() );
+		parameterLocationCache.insert( std::make_pair( name, result ) );
+	}
+	else
+	{
+		result = it->second;
+	}
+
+	return result;
 }
 
 }

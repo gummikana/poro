@@ -264,17 +264,24 @@ types::uint32 Blend2Colors( types::uint32 c1, types::uint32 c2, float how_much_o
 {
 	if( c1 == c2 ) return c1;
 
-	types::fcolor color1( c1 );
-	types::fcolor color2( c2 );
+	types::color color1( c1 );
+	types::color color2( c2 );
 
-	types::fcolor result = how_much_of_1 * color1 + ( 1.f - how_much_of_1 ) * color2;
+	types::color::uint8 alpha = color2.a;
+
+	color1 *= how_much_of_1;
+	color2 *= ( 1.f - how_much_of_1 );
+
+	color1 += color2;
+	
+	// types::fcolor result = how_much_of_1 * color1 + ( 1.f - how_much_of_1 ) * color2;
 	// alpha?
 	// we set the alpha (R channel for twiched reasons) to be the highest alpha
 	if( ignore_alpha )
-		result.SetA( color2.GetA() );
+		color1.SetA( alpha );
 
 	// result.SetR( ( color1.GetR() > color2.GetR() )? color1.GetR() : color2.GetR() );
-	return result.Get32();
+	return color1.Get32();
 }
 
 //-----------------------------------------------------------------------------

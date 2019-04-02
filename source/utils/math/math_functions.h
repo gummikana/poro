@@ -38,7 +38,7 @@ namespace ceng {
 namespace math {
 
 //=============================================================================
-const float pi = 3.1415926f;
+const float pi = 3.14159265f;
 
 //-----------------------------------------------------------------------------
 // returns a rounded value, if the value is less than 0, rounds it "down"
@@ -132,6 +132,18 @@ inline Type Absolute( const Type& n )
 }
 
 //=============================================================================
+// A modulu (%) operation that functions with negative numbers. Make sure the
+// given n is in between [0 and mod - 1]
+//-----------------------------------------------------------------------------
+
+template< typename Type >
+Type Mod(Type n, Type mod)
+{
+    Type r = n % mod;
+    return r < 0 ? r + mod : r;
+}
+
+//=============================================================================
 // Clams a give value to the desired 
 //
 // Required operators: < operator
@@ -217,12 +229,32 @@ inline float DistanceSquared( const Type& vector1 )
 	return (float)( vector1.x * vector1.x + vector1.y * vector1.y );
 }
 
+template< typename T >
+float RelativeDistance( T start, T end, T current )
+{
+	if( end == start ) return 1.f;
+	// if limited
+	/* if( current >= end ) return 1.f;
+	if( current <= start ) return 0.f; */
+
+	T t = current - start;
+	return (float)( (double)(t) / (double)(end - start) );
+}
+
 //=============================================================================
 
 template< typename Type >
 inline Type Lerp( const Type& a, const Type& b, float t )
 {
 	return (Type)( a + t * (b - a) );
+}
+
+//=============================================================================
+
+template< typename Type >
+inline Type ScaleToRange( const Type& a, const Type& orig_min, const Type& orig_max, const Type& new_min, const Type& new_max )
+{
+	return ((new_max - new_min) * (Clamp( a, orig_min, orig_max) - orig_min) / (orig_max - orig_min)) + new_min;
 }
 
 //=============================================================================

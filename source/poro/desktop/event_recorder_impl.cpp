@@ -1,9 +1,11 @@
 #include "event_recorder_impl.h"
 
-#include <fstream>
 #include <sstream>
-#include <iomanip>
 #include <ctime>
+
+#include "../iplatform.h"
+#include "../fileio.h"
+
 
 namespace poro {
 
@@ -27,30 +29,39 @@ std::string GetEventRecorderFilename()
 //=============================================================================	
 
 EventRecorderImpl::EventRecorderImpl() : 
-	EventRecorder(), 
+	EventRecorder(),
+	mFlushEveryFrame( true ),
 	mFrameCount( 0 ), 
 	mFilename(),
-	mFrameStartTime( 0 )
+	mFrameStartTime( 0 ),
+	mFirstThisFrame( true )
 { 
 	mFilename = GetEventRecorderFilename();
+
+	//mFile = Poro()->GetFileSystem()->OpenWrite( mFilename, StreamWriteMode::Recreate, FileLocation::WorkingDirectory );
 }
 
-EventRecorderImpl::EventRecorderImpl( Keyboard* keyboard, Mouse* mouse, Touch* touch ) : 
-	EventRecorder( keyboard, mouse, touch ), 
+EventRecorderImpl::EventRecorderImpl( Keyboard* keyboard, Mouse* mouse, Touch* touch, bool flush_every_frame ) :
+	EventRecorder( keyboard, mouse, touch, NULL ),
+	mFlushEveryFrame( flush_every_frame ),
 	mFrameCount( 0 ),
 	mFilename(),
-	mFrameStartTime( 0 )
+	mFrameStartTime( 0 ),
+	mFirstThisFrame( true )
 { 
 	mFilename = GetEventRecorderFilename();
+
+	if ( mFlushEveryFrame == false )
+		mFile = Poro()->GetFileSystem()->OpenWrite( mFilename, StreamWriteMode::Recreate, FileLocation::WorkingDirectory );
 }
 
 //=============================================================================	
 
-int EventRecorderImpl::GetRandomSeed() 
+unsigned int EventRecorderImpl::GetRandomSeed() 
 {
 	if( mRandomSeed == 0 ) 
 	{
-		mRandomSeed = (int)( time(NULL) * time(NULL) );
+		mRandomSeed = EventRecorder::GetRandomSeed();
 
 		std::stringstream ss;
 		ss << "randomseed " << mRandomSeed;
@@ -62,13 +73,25 @@ int EventRecorderImpl::GetRandomSeed()
 
 //=============================================================================	
 // keyboard events
+void EventRecorderImpl::FireWindowFocusEvent( bool is_focused )
+{
+	EventRecorder::FireWindowFocusEvent( is_focused );
+
+	std::stringstream ss;
+	ss << "wf " << is_focused;
+	mEventBuffer.push_back( ss.str() );
+	Flush();
+}
+
+//=============================================================================	
+// keyboard events
 void EventRecorderImpl::FireKeyDownEvent( int button, types::charset unicode ) {
 	EventRecorder::FireKeyDownEvent( button, unicode );
 
 	std::stringstream ss;
 	ss << "kd " << button << " " << unicode;
 	mEventBuffer.push_back( ss.str() );
-
+	Flush();
 }
 
 void EventRecorderImpl::FireKeyUpEvent( int button, types::charset unicode ) {
@@ -77,6 +100,7 @@ void EventRecorderImpl::FireKeyUpEvent( int button, types::charset unicode ) {
 	std::stringstream ss;
 	ss << "ku " << button << " " << unicode;
 	mEventBuffer.push_back( ss.str() );
+	Flush();
 }
 
 //-----------------------------------------------------------------------------	
@@ -87,6 +111,7 @@ void EventRecorderImpl::FireMouseMoveEvent(const types::vec2& pos) {
 	std::stringstream ss;
 	ss << "mm " << pos.x << " " << pos.y;
 	mEventBuffer.push_back( ss.str() );
+	Flush();
 }
 
 void EventRecorderImpl::FireMouseDownEvent(const types::vec2& pos, int button) {
@@ -95,6 +120,7 @@ void EventRecorderImpl::FireMouseDownEvent(const types::vec2& pos, int button) {
 	std::stringstream ss;
 	ss << "md " << pos.x << " " << pos.y << " " << button;
 	mEventBuffer.push_back( ss.str() );
+	Flush();
 }
 
 void EventRecorderImpl::FireMouseUpEvent(const types::vec2& pos, int button) { 
@@ -103,6 +129,7 @@ void EventRecorderImpl::FireMouseUpEvent(const types::vec2& pos, int button) {
 	std::stringstream ss;
 	ss << "mu " << pos.x << " " << pos.y << " " << button;
 	mEventBuffer.push_back( ss.str() );
+	Flush();
 }
 
 //-----------------------------------------------------------------------------
@@ -113,6 +140,7 @@ void EventRecorderImpl::FireTouchMoveEvent(const types::vec2& pos, int touchId) 
 	std::stringstream ss;
 	ss << "tm " << pos.x << " " << pos.y << " " << touchId;
 	mEventBuffer.push_back( ss.str() );
+	Flush();
 }
 
 void EventRecorderImpl::FireTouchDownEvent(const types::vec2& pos, int touchId) {
@@ -121,6 +149,7 @@ void EventRecorderImpl::FireTouchDownEvent(const types::vec2& pos, int touchId) 
 	std::stringstream ss;
 	ss << "td " << pos.x << " " << pos.y << " " << touchId;
 	mEventBuffer.push_back( ss.str() );
+	Flush();
 }
 
 void EventRecorderImpl::FireTouchUpEvent(const types::vec2& pos, int touchId) {
@@ -129,6 +158,7 @@ void EventRecorderImpl::FireTouchUpEvent(const types::vec2& pos, int touchId) {
 	std::stringstream ss;
 	ss << "tu " << pos.x << " " << pos.y << " " << touchId;
 	mEventBuffer.push_back( ss.str() );
+	Flush();
 }
 
 //=============================================================================
@@ -144,25 +174,71 @@ void EventRecorderImpl::StartOfFrame( float start_time ) {
 
 void EventRecorderImpl::EndOfFrame( float time ) {
 
-	std::ofstream		file_out;
-	if( mFrameCount == 0 ) 
-		file_out.open( mFilename.c_str(), std::ios::out );
-	else 
-		file_out.open( mFilename.c_str(), std::ios::app );
-
-
-
-	file_out << mFrameCount << ", " << (int)(( time - mFrameStartTime ) * 1000.f) << " ms : ";
-	for( int i = 0; i < (int)mEventBuffer.size(); ++i ) {
-		file_out << mEventBuffer[ i ];
-		if( i < (int)mEventBuffer.size() - 1 ) 
-			file_out << ", ";
+	if( mFlushEveryFrame )
+	{
+		Flush();
+		mFirstThisFrame = true;
+		mFrameCount++;
 	}
-	file_out << std::endl;
-	file_out.close();
+	else
+	{
 
-	mEventBuffer.clear();
-	mFrameCount++;
+		std::stringstream ss;
+		ss << mFrameCount << ", " << (int)( ( time - mFrameStartTime ) * 1000.f ) << " ms : ";
+
+		for( int i = 0; i < (int)mEventBuffer.size(); ++i ) {
+			ss << mEventBuffer[ i ];
+			if( i < (int)mEventBuffer.size() - 1 ) 
+				ss << ", ";
+		}
+		ss << "\n";
+
+		mFile.Write( ss.str() );
+
+		mEventBuffer.clear();
+		mFrameCount++;
+	}
+}
+
+void EventRecorderImpl::FlushAndClose()
+{
+	EndOfFrame( Poro()->GetTime() );
+
+	mFile.~WriteStream();
+}
+
+void EventRecorderImpl::Flush()
+{
+	if( mFlushEveryFrame )
+	{
+		unsigned int write_mode = StreamWriteMode::Append | StreamWriteMode::Ascii;
+		WriteStream file = Poro()->GetFileSystem()->OpenWrite( mFilename, write_mode, FileLocation::WorkingDirectory );
+
+		std::stringstream ss;
+		if( mFirstThisFrame )
+		{
+			ss << "\n";
+			float time = Poro()->GetTime();
+			ss << mFrameCount << ", " << (int)( ( time - mFrameStartTime ) * 1000.f ) << " ms : ";
+			mFirstThisFrame = false;
+		}
+		else
+		{
+			ss << ", ";
+		}
+		
+		if( mEventBuffer.empty() ) return;
+
+		for( int i = 0; i < (int)mEventBuffer.size(); ++i ) {
+			ss << mEventBuffer[ i ];
+			if( i < (int)mEventBuffer.size() - 1 ) 
+				ss << ", ";
+		}
+
+		file.Write( ss.str() );
+
+		mEventBuffer.clear();
+	}
 }
 
 //=============================================================================

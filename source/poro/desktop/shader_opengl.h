@@ -21,6 +21,7 @@
 #ifndef INC_SHADER_OPENGL_H
 #define INC_SHADER_OPENGL_H
 
+#include <map>
 #include "../poro_types.h"
 #include "graphics_opengl.h"
 #include "texture_opengl.h"
@@ -43,17 +44,21 @@ public:
 	}
 	virtual ~ShaderOpenGL(){ Release(); }
 
-	virtual void Init( const std::string& vertex_source_filename, const std::string& fragment_source_filename );	
-	virtual void Release();
-	virtual void Enable();
-	virtual void Disable();
-	virtual bool HasParameter( const std::string& name );
-	virtual void SetParameter( const std::string& name, float value );
-	virtual void SetParameter( const std::string& name, types::vec2 value );
-	virtual void SetParameter( const std::string& name, types::vec3 value );
-	virtual void SetParameter( const std::string& name, ITexture* texture );
-	virtual void SetParameter( const std::string& name, ITexture3d* texture );
-	virtual bool GetIsCompiledAndLinked();
+	virtual void Init( const std::string& vertex_source_filename, const std::string& fragment_source_filename ) PORO_OVERRIDE;	
+    virtual void InitFromString( const std::string& vertex_source, const std::string& fragment_source ) PORO_OVERRIDE;
+	virtual void Release() PORO_OVERRIDE;
+	virtual void Enable() PORO_OVERRIDE;
+	virtual void Disable() PORO_OVERRIDE;
+	virtual bool HasParameter( const std::string& name ) PORO_OVERRIDE;
+	virtual void SetParameter( const std::string& name, float value ) PORO_OVERRIDE;
+	virtual void SetParameter( const std::string& name, const float* four_float_values ) PORO_OVERRIDE;
+	virtual void SetParameter( const std::string& name, const types::vec2& value ) PORO_OVERRIDE;
+	virtual void SetParameter( const std::string& name, const types::vec3& value ) PORO_OVERRIDE;
+	virtual void SetParameter( const std::string& name, const types::vec2& value_xy, types::vec2& value_zw ) PORO_OVERRIDE;
+	virtual void SetParameter( const std::string& name, float x, float y, float z, float w ) PORO_OVERRIDE;
+	virtual void SetParameter( const std::string& name, const ITexture* texture ) PORO_OVERRIDE;
+	virtual void SetParameter( const std::string& name, const ITexture3d* texture ) PORO_OVERRIDE;
+	virtual bool GetIsCompiledAndLinked() const PORO_OVERRIDE;
 
 private:
     bool isCompiledAndLinked;
@@ -61,8 +66,12 @@ private:
     int vertexShader;
     int fragmentShader;
 	int lastAllocatedTextureUnit;
+	std::map<std::string, int> parameterLocationCache;
 	
 	int LoadShader( const std::string& filename, bool is_vertex_shader );
+	int LoadShaderFromString( const char* source, const int source_length, bool is_vertex_shader );
+    void Init();
+	int GetParameterLocation( const std::string& name );
 
     //const int MAX_PARAMETER_COUNT = 100;
     /*int lastSetParameterId = -1;

@@ -53,6 +53,7 @@ bool IsPointInsidePolygon( const CVector2< PointType >& point, const std::vector
 bool IsPointInsidePolygon( const CVector2< int >& point, const std::vector< CVector2< int > >& polygon );
 
 bool IsPointInsidePolygon_Better( const CVector2< PointType >& point, const std::vector< CVector2< PointType > >& pgon );
+bool IsPointInsidePolygon_Better( const CVector2< PointType >& point, const CVector2< PointType >* pgon, int pgon_size );
 
 template< class Type >
 bool IsPointInsideAABB( const Type& point, const Type& rect_low, const Type& rect_high )
@@ -62,6 +63,9 @@ bool IsPointInsideAABB( const Type& point, const Type& rect_low, const Type& rec
 
 bool DoesLineAndBoxCollide( const CVector2< PointType >& p1, const CVector2< PointType >& p2, 
 						   const CVector2< PointType >& rect_low, const CVector2< PointType >& rect_high ); 
+
+bool DoesLineAndBoxCollide( const CVector2< PointType >& p1, const CVector2< PointType >& p2, 
+						   const CVector2< PointType >& rect_low, const CVector2< PointType >& rect_high, CVector2< PointType >& result ); 
 
 bool TestLineAABB( const CVector2< PointType >& p1, const CVector2< PointType >& p2, 
 						   const CVector2< PointType >& rect_low, const CVector2< PointType >& rect_high ); 

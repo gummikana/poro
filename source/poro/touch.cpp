@@ -19,66 +19,66 @@
  ***************************************************************************/
 
 #include "touch.h"
-#include <iostream>
 #include <algorithm>
 #include "poro_macros.h"
 
-using namespace poro;
-
-void Touch::AddTouchListener(ITouchListener *listener)
+namespace poro
 {
-	poro_logger << "Added touch listener" << std::endl;
-	mTouchListeners.push_back(listener);
-}
-
-void Touch::RemoveTouchListener(ITouchListener *listener)
-{
-	poro_logger << "Remove touch listener";
-	
-	std::vector< ITouchListener* >::iterator i = std::find(mTouchListeners.begin(),mTouchListeners.end(),listener);
-	
-	poro_assert( i != mTouchListeners.end() );
-	
-	if( i != mTouchListeners.end() )
-		mTouchListeners.erase( i );
-}
-
-void Touch::FireTouchMoveEvent(const types::vec2& pos, int touchId)
-{
-	for( std::size_t i = 0; i < mTouchListeners.size() ; i++)
+	void Touch::AddTouchListener(ITouchListener *listener)
 	{
-		mTouchListeners[i]->TouchMove(pos, touchId);;
-	}
-}
-
-void Touch::FireTouchDownEvent(const types::vec2& pos, int touchId)
-{
-	for( std::size_t i = 0; i < mTouchListeners.size() ; i++)
-	{
-		mTouchListeners[i]->TouchDown(pos, touchId);
+		poro_logger << "Added touch listener" << "\n";
+		mTouchListeners.push_back(listener);
 	}
 
-	SetTouchDown( touchId, true );
-}
-
-void Touch::FireTouchUpEvent(const types::vec2& pos, int touchId)
-{
-	for( std::size_t i = 0; i < mTouchListeners.size() ; i++)
+	void Touch::RemoveTouchListener(ITouchListener *listener)
 	{
-		mTouchListeners[i]->TouchUp(pos, touchId);
+		poro_logger << "Remove touch listener";
+	
+		std::vector< ITouchListener* >::iterator i = std::find(mTouchListeners.begin(),mTouchListeners.end(),listener);
+	
+		poro_assert( i != mTouchListeners.end() );
+	
+		if( i != mTouchListeners.end() )
+			mTouchListeners.erase( i );
 	}
 
-	SetTouchDown( touchId, false );
-}
+	void Touch::FireTouchMoveEvent(const types::vec2& pos, int touchId)
+	{
+		for( std::size_t i = 0; i < mTouchListeners.size() ; i++)
+		{
+			mTouchListeners[i]->TouchMove(pos, touchId);
+		}
+	}
 
-bool Touch::IsTouchIdDown( int touchId ) const
-{
-	std::map< int, bool >::const_iterator i = mTouchDowns.find( touchId );
-	if( i == mTouchDowns.end() ) return false;
-	return i->second;
-}
+	void Touch::FireTouchDownEvent(const types::vec2& pos, int touchId)
+	{
+		for( std::size_t i = 0; i < mTouchListeners.size() ; i++)
+		{
+			mTouchListeners[i]->TouchDown(pos, touchId);
+		}
 
-void Touch::SetTouchDown( int touchId, bool down )
-{
-	mTouchDowns[ touchId ] = down;
+		SetTouchDown( touchId, true );
+	}
+
+	void Touch::FireTouchUpEvent(const types::vec2& pos, int touchId)
+	{
+		for( std::size_t i = 0; i < mTouchListeners.size() ; i++)
+		{
+			mTouchListeners[i]->TouchUp(pos, touchId);
+		}
+
+		SetTouchDown( touchId, false );
+	}
+
+	bool Touch::IsTouchIdDown( int touchId ) const
+	{
+		std::map< int, bool >::const_iterator i = mTouchDowns.find( touchId );
+		if( i == mTouchDowns.end() ) return false;
+		return i->second;
+	}
+
+	void Touch::SetTouchDown( int touchId, bool down )
+	{
+		mTouchDowns[ touchId ] = down;
+	}
 }

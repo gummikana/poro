@@ -22,7 +22,7 @@
 #ifndef INC_DISPLAYOBJECTCONTAINER_H
 #define INC_DISPLAYOBJECTCONTAINER_H
 
-#include <list>
+#include <vector>
 #include "eventdispatcher.h"
 
 namespace as { 
@@ -34,7 +34,7 @@ namespace as {
 class DisplayObjectContainer : public EventDispatcher
 {
 public:
-	typedef std::list< DisplayObjectContainer* > ChildList;
+	typedef std::vector< DisplayObjectContainer* > ChildList;
 	
 	//-------------------------------------------------------------------------
 
@@ -55,6 +55,7 @@ public:
 	// children and should not be used in time critical places
 	DisplayObjectContainer* GetChildAt( int index );
 	virtual void addChild( DisplayObjectContainer* child );
+	virtual void addChildAndRemoveFromPreviousFather( DisplayObjectContainer* child );
 	virtual void addChildAt( DisplayObjectContainer* child, int index );
 
 	virtual void removeChild( DisplayObjectContainer* child );
@@ -86,7 +87,7 @@ public:
 
 	// goes up the tree for as long it can, adding each parent to the end of the array
 	// so the highest parent is the last in the array
-	void getParentTree( std::vector< const DisplayObjectContainer* >& parents_tree ) const;
+	void getParentTree( std::vector< DisplayObjectContainer* >& parents_tree );
 
 	//-------------------------------------------------------------------------
 

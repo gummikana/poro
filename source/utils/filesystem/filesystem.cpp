@@ -18,7 +18,7 @@
 
 #ifdef CENG_PLATFORM_WINDOWS
 #include <io.h>
-#include <windows.h>
+#include "../../poro/external/poro_windows.h"
 #include <shlobj.h>
 #endif
 #ifdef CENG_PLATFORM_MACOSX
@@ -48,6 +48,7 @@
 #include "../string/string.h"
 
 #include "../debug.h"
+
 namespace ceng {
 
 namespace {
@@ -134,7 +135,7 @@ bool DoesExist( const std::string& filename )
 		NSString *path = [[NSString alloc] initWithCString:filename.c_str() encoding:NSMacOSRomanStringEncoding];
 		@try
 		{
-            return [[NSFileManager defaultManager] fileExistsAtPath:path]==TRUE;
+			return [[NSFileManager defaultManager] fileExistsAtPath:path]==TRUE;
 		}
 		@finally
 		{
@@ -142,16 +143,34 @@ bool DoesExist( const std::string& filename )
 		}
 #endif
 	#elif defined(CENG_PLATFORM_LINUX)
-        struct stat st;
-        if(stat(filename.c_str(),&st) != 0)
-            return false;
-    #endif
+		struct stat st;
+		if(stat(filename.c_str(),&st) != 0)
+			return false;
+	#endif
 
 	return true;
 }
 
+bool RenameFile( const std::string& file, const std::string& new_name )
+{
+#ifdef CENG_PLATFORM_WINDOWS
+	{
+		/* add | MOVEFILE_WRITE_THROUGH  if you want to make this block until the operation is done*/
+		BOOL result = MoveFileExA( file.c_str(), new_name.c_str(), MOVEFILE_REPLACE_EXISTING  );
+		if( result == 0) 
+		{
+			LogError << "RenameFile(" << file << ", " << new_name << ") failed - error code: " << GetLastError() << "\n";
+		}
+		return result ? true : false;
+	}
+#endif	
+	cassert( "implementation missing");
+	return false;
+}
+
 std::string GetDateForFile( const std::string& filename )
 {
+
 	std::string result;
 	#ifdef CENG_PLATFORM_WINDOWS
 	struct _finddata_t c_file;
@@ -241,13 +260,13 @@ long ReadFileSize( std::fstream& file )
 	long size;
 	long current;
 
-	current = file.tellg();
+	current = (long)file.tellg();
 
 	file.seekg(0, std::ios::beg );
-	begin	= file.tellg();
+	begin	= (long)file.tellg();
 
 	file.seekg(0, std::ios::end );
-	end		= file.tellg();
+	end		= (long)file.tellg();
 
 	size	= end - begin;
 
@@ -263,7 +282,7 @@ long ReadFileSize( const std::string& filename )
 
 	if ( file.is_open() == 0 )
 	{
-		logger_error << "Error! Could not open " << filename << " for reading" << std::endl;
+		logger_error << "Error! Could not open " << filename << " for reading" << "\n";
 		return 0;
 	}
 
@@ -281,7 +300,7 @@ void ReadFileToBuffer( const std::string& filename, CSafeArray< char, long >& bu
 
 	if ( file.is_open() == 0 )
 	{
-		logger_error << "Error! Could not open " << filename << " for reading" << std::endl;
+		logger_error << "Error! Could not open " << filename << " for reading" << "\n";
 		return;
 	}
 
@@ -326,12 +345,12 @@ void ReadFileToVector( const std::string& filename, std::vector< std::string >& 
 {
 	std::ifstream ifile(filename.c_str());
 
-    while( ifile.good() ) 
+	while( ifile.good() ) 
 	{
-        std::string line;
-        std::getline(ifile, line);
+		std::string line;
+		std::getline(ifile, line);
 		output.push_back( line );
-    }
+	}
 
 	ifile.close();
 }
@@ -355,7 +374,7 @@ std::string GetParentPath( const std::string& path )
 	if( pos == path.npos )
 		return "";
 
-    std::string result = path.substr( 0, pos );
+	std::string result = path.substr( 0, pos );
 	return result;
 }
 
@@ -366,6 +385,15 @@ std::string GetFileExtension( const std::string& filename )
 		return ceng::Lowercase( filename.substr( p + 1 ) );
 
 	return "";
+}
+
+std::string GetWithoutExtension(const std::string& filename)
+{
+	unsigned int p = filename.find_last_of(".");
+	if (p < filename.size())
+		return filename.substr(0, p);
+
+	return filename;
 }
 
 std::string GetFilenameWithoutExtension( const std::string& filename )
@@ -399,7 +427,12 @@ std::string MakeUniqueFilename( const std::string& file, const std::string& exte
 void CopyFileCeng( const std::string& from, const std::string& to )
 {
 #ifdef CENG_PLATFORM_WINDOWS
-	CopyFile( from.c_str(), to.c_str(), false );
+	int CopyFile_result = CopyFile( from.c_str(), to.c_str(), false );
+
+	if( CopyFile_result == 0) 
+	{
+		LogError << "CopyFileCeng(" << from << ", " << to << ") file failed - error code: " << GetLastError() << "\n";
+	}
 #else
 	std::ifstream  src( from.c_str() );
 	std::ofstream  dst( to.c_str() );
@@ -423,5 +456,32 @@ void CopyFileCeng( const std::string& from, const std::string& to )
     fclose(dest);
 	*/
 }
+
+
+void MoveFileCeng( const std::string& from, const std::string& to )
+{
+#ifdef CENG_PLATFORM_WINDOWS
+	int MoveFile_result = MoveFile( from.c_str(), to.c_str() );
+
+	if( MoveFile_result == 0) 
+	{
+		LogError << "MoveFileCeng(" << from << ", " << to << ") file failed - error code: " << GetLastError() << "\n";
+	}
+#else
+	cassert( false && "IMPLEMENTATION NEEDED!" );
+#endif
+}
+
+void DeleteFileCeng( const std::string& filepath )
+{
+	int DeleteFile_result = DeleteFile( filepath.c_str() );
+
+	if( DeleteFile_result == 0) 
+	{
+		LogError << "DeleteFileCeng(" << filepath << ") file failed - error code: " << GetLastError() << "\n";
+	}
+}
+
+
 
 } // end o namespace ceng

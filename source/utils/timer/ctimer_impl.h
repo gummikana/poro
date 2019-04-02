@@ -24,6 +24,7 @@
 
 // CTimer requires cassert assert, that can be found in here
 #include "../debug.h"
+#include <stdint.h>
 
 
 namespace ceng {

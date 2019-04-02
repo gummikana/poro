@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- * Copyright (c) 2010 Petri Purho, Dennis Belfrage
+ * Copyright (c) 2010-2015 Petri Purho, Dennis Belfrage, Olli Harjola
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -19,25 +19,36 @@
  ***************************************************************************/
 
 #include "keyboard.h"
-#include "poro_macros.h"
-#include <iostream>
 #include <algorithm>
+#include "poro_macros.h"
+
+
+// #define PORO_CONVERT_SDLKEYSYM(X) ((X) & ~(1 << 30)) + 100;
 
 
 namespace poro {
 
+// I have no idea how big the converts are going to be?
+// up to 30^2?
+
+Keyboard::Keyboard() :
+	mKeysDown(poro::Key_SPECIAL_COUNT),
+	mKeysJustDown(poro::Key_SPECIAL_COUNT),
+	mKeysJustUp(poro::Key_SPECIAL_COUNT),
+	mDisableRepeats(true)
+{
+}
+
 void Keyboard::AddKeyboardListener( IKeyboardListener* listener )
 {
 	poro_assert( listener );
-	// poro_logger << "Added keyboard listener" << std::endl;
-
+	// poro_logger << "Added keyboard listener" << "\n";
 	mListeners.push_back(listener);
 }
 
 void Keyboard::RemoveKeyboardListener( IKeyboardListener* listener )
 {
-	// poro_logger << "Remove keyboard listener" << std::endl;
-	
+	// poro_logger << "Remove keyboard listener" << "\n";
 	std::vector< IKeyboardListener* >::iterator i = 
 		std::find( mListeners.begin(), mListeners.end(), listener );
 
@@ -66,6 +77,12 @@ void Keyboard::FireKeyDownEvent( int button, types::charset unicode )
 	// this is here so we don't fire up the same down event if a listener is added on a down event
 	// example of this is menus, that get created when a button is pressed and are added to the end of the array
 	// this causes that the newly added menu also gets the 
+	//if ( unicode != button )
+	//	button = unicode;
+
+	if (mDisableRepeats && IsKeyDown(button))
+		return;
+
 	std::size_t listeners_size = mListeners.size();
 	for( std::size_t i = 0; i < mListeners.size() && i < listeners_size; ++i )
 	{
@@ -78,6 +95,10 @@ void Keyboard::FireKeyDownEvent( int button, types::charset unicode )
 
 void Keyboard::FireKeyUpEvent( int button, types::charset unicode )
 {
+	// this is probably not needed... since repeat key up events shouldn't happen
+	// if( mDisableRepeats && IsKeyDown( button ) == false )
+	//	return;
+
 	std::size_t listeners_size = mListeners.size();
 	for( std::size_t i = 0; i < mListeners.size() && i < listeners_size; ++i )
 	{
@@ -118,7 +139,7 @@ bool Keyboard::IsKeyJustUp( int button ) const
 void Keyboard::SetKeyDown( int key, bool down )
 {
 	if( key < 0 ) return;
-	if( key > 10000 ) return;
+	if( key >= poro::Key_SPECIAL_COUNT ) return;
 
 	if( key >= (int)mKeysDown.size() ) 
 	{
@@ -135,35 +156,21 @@ void Keyboard::SetKeyDown( int key, bool down )
 		mKeysJustUp[ key ] = true;
 }
 
-namespace {
-
-// these are ripped from SDL
-enum SDL_RIPOFF
-{
-	POROK_RSHIFT		= 303,
-	POROK_LSHIFT		= 304,
-	POROK_RCTRL			= 305,
-	POROK_LCTRL			= 306,
-	POROK_RALT			= 307,
-	POROK_LALT			= 308,
-};	
-} // end of anonymous namespace
-
 bool Keyboard::IsShiftDown() const
 {
-	return ( IsKeyDown( POROK_LSHIFT ) || IsKeyDown( POROK_RSHIFT ) );
+	return ( IsKeyDown( poro::Key_LSHIFT ) || IsKeyDown( poro::Key_RSHIFT ) );
 }
 
 
 bool Keyboard::IsAltDown() const
 {
-	return ( IsKeyDown( POROK_LALT ) || IsKeyDown( POROK_RALT ) );
+	return ( IsKeyDown( poro::Key_LALT ) || IsKeyDown( poro::Key_RALT ) );
 }
 
 
 bool Keyboard::IsCtrlDown() const
 {
-	return ( IsKeyDown( POROK_LCTRL ) || IsKeyDown( POROK_RCTRL ) );
+	return ( IsKeyDown( poro::Key_LCTRL ) || IsKeyDown( poro::Key_RCTRL ) );
 }
 
 

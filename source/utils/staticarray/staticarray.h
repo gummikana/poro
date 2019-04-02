@@ -90,6 +90,8 @@ public:
 		return data[ i ];
 	}
 
+	const int size() const { return length; }
+
 	const int length;
 
 private:

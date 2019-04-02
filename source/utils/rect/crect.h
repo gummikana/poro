@@ -62,27 +62,26 @@ public:
 	CRect() : x( 0 ), y( 0 ), w( T() ), h( T() ) { }
 
 	CRect( const CRect< T >& other ) :
-	  x( other.x ),
-	  y( other.y ),
-	  w( other.w ),
-	  h( other.h )
+		x( other.x ),
+		y( other.y ),
+		w( other.w ),
+		h( other.h )
 	{ }
 
 	CRect( const T& inx, const T& iny, const T& inw, const T& inh ) :
-	  x( inx ),
-	  y( iny ),
-	  w( inw ),
-	  h( inh )
+		x( inx ),
+		y( iny ),
+		w( inw ),
+		h( inh )
 	{ }
 
 
 	bool operator==( const CRect< T >& other ) const
 	{
-		if ( x == other.x &&
-			 y == other.y &&
-			 w == other.w &&
-			 h == other.h ) return true;
-		else return false;
+		if ( x == other.x && y == other.y && w == other.w && h == other.h ) 
+			return true;
+		else 
+			return false;
 	}
 
 	bool operator!=( const CRect< T >& other ) const
@@ -159,6 +158,13 @@ public:
 	T GetRight() const	{ return x + w; }
 	T GetTop() const	{ return y; }
 	T GetBottom() const	{ return y + h; }
+	T GetCenterX() const { return x + w / T(2);  }
+	T GetCenterY() const { return y + h / T(2);  }
+
+	template< class T2 >
+	T2 GetCornerMin() const { return T2( x, y );  }
+	template< class T2 >
+	T2 GetCornerMax() const { return T2( x + w, y + h );  }
 
 	//-------------------------------------------------------------------------
 

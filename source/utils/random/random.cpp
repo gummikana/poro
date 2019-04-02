@@ -27,6 +27,8 @@
 
 #include <iostream>
 
+#include <poro/poro_macros.h>
+
 namespace ceng {
 namespace {
 
@@ -52,7 +54,7 @@ CRandomSeedSetter seed_stter;
 
 void SetRandomSeeds( int random_seed )
 {
-	std::cout << "Setting random seed: " << random_seed << std::endl;
+	std::cout << "Setting random seed: " << random_seed << "\n";
 	srand ( (unsigned int)random_seed );
 	Global_LGMRandom::SetSeed( (double)random_seed );
 	set_fastrand_seed( (int)random_seed );
@@ -61,18 +63,16 @@ void SetRandomSeeds( int random_seed )
 ///////////////////////////////////////////////////////////////////////////////
 
 double Global_LGMRandom::seed = 0;
-double Global_LGMRandom::iseed = 0;
 
 void Global_LGMRandom::SetSeed( double s )
 {
 	seed = s;
-	iseed = 0;
 }
 
 // Algorithm ripped from Newran02C http://www.robertnz.net/nr02doc.htm
 double Global_LGMRandom::Next()
 {
-	assert( seed );
+	poro_assert( seed );
 	// m = 2147483647 = 2^31 - 1; a = 16807;
 	// 127773 = m div a; 2836 = m mod a
 	long iseed = (long)seed;
@@ -88,12 +88,12 @@ double Global_LGMRandom::Next()
 void CLGMRandom::SetSeed( double s )
 {
 	seed = s;
-	iseed = 0;
+	Next();
 }
 
 double CLGMRandom::Next()
 {
-	assert( seed );
+	poro_assert( seed );
 	// m = 2147483647 = 2^31 - 1; a = 16807;
 	// 127773 = m div a; 2836 = m mod a
 	long iseed = (long)seed;
@@ -106,17 +106,17 @@ double CLGMRandom::Next()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static int g_seed;
+static int g_seed = 0;
 
 void set_fastrand_seed( int seed ) {
 	g_seed = seed ^ 13 - 1;
 }
 
 int fastrand() { 
-  g_seed = (214013*g_seed+2531011); 
-  return (g_seed>>16)&0x7FFF; 
+	g_seed = (214013*g_seed+2531011); 
+	return (g_seed>>16)&0x7FFF; 
 
-  // return ceng::Global_LGMRandom::Random( 0, 0x7FFF );
+	// return ceng::Global_LGMRandom::Random( 0, 0x7FFF );
 } 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -145,6 +145,49 @@ float Randomf( float low, float high )
 #else
 	return ceng::Global_LGMRandom::Randomf( low, high );
 #endif
+}
+
+//! Returns a number in double
+double Randomd( double low, double high )
+{
+#if defined(CENG_USE_FAST_RAND)
+	return low+((high-low)*((double)fastrand() / (double)RAND_MAX) );
+#elif defined(CENG_USE_C_RAND)
+	return low+((high-low)*((double)std::rand() / (double)RAND_MAX) );
+#else
+	return ceng::Global_LGMRandom::Randomd( low, high );
+#endif
+}
+
+// Does a check,  that low is low, and high is high
+int RandomSafe(int low, int high)
+{
+	if( low == high ) return low;
+
+	if (high < low)
+		return Random(high, low);
+	else
+		return Random(low, high);
+}
+
+// Does a check,  that low is low, and high is high
+float RandomfSafe(float low, float high)
+{
+	if (high < low)
+		return Randomf(high, low);
+	else
+		return Randomf(low, high);
+}
+
+
+float ChooseRandom( float a, float b )
+{
+	return ( Random( 0, 1 ) == 0 ) ? a : b;
+}
+
+bool RandomBool( int chance_of_true )
+{
+	return Random( 1, 100 ) <= chance_of_true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -206,12 +249,12 @@ int CreateWeightedRandom( int low, int high, const std::vector< int >& data, flo
 
 	/*if( result == 0 )
 	{
-		ceng::logger << "Random problems: " << random_f << std::endl;
+		ceng::logger << "Random problems: " << random_f << "\n";
 		for( i = 0; i < numbers.size(); ++i )
 		{
 			ceng::logger << numbers[ i ] << ", ";
 		}
-		ceng::logger << std::endl;
+		ceng::logger << "\n";
 
 		result = range;
 	}*/

@@ -26,6 +26,10 @@
 // cassert is from here
 
 
+// #include "../../../../Source/debug/simple_profiler.h"
+// #define SPROFILE()
+
+
 // #include "../../tester/ctester.h"
 // #include "../debug.h"
 /*

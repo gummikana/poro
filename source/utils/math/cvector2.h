@@ -74,14 +74,24 @@ public:
 	CVector2< Type >& operator *= ( float a )
 	{
 		x = (Type)(x * a); y = (Type)(y * a);
-
 		return *this;
 	}
 	
 	CVector2< Type >& operator /= ( float a )
 	{
 		x = (Type)(x / a); y = (Type)(y / a);
+		return *this;
+	}
 
+	CVector2< Type >& operator *= ( int a )
+	{
+		x = (Type)(x * a); y = (Type)(y * a);
+		return *this;
+	}
+	
+	CVector2< Type >& operator /= ( int a )
+	{
+		x = (Type)(x / a); y = (Type)(y / a);
 		return *this;
 	}
 
@@ -99,12 +109,22 @@ public:
 
 	CVector2< Type > operator * ( float t ) const
 	{
-		return CVector2< Type >( this->x * t, this->y * t );
+		return CVector2< Type >( (Type)( this->x * t ), (Type)( this->y * t ) );
 	}
 
 	CVector2< Type > operator / ( float t ) const
 	{
-		return CVector2< Type >( this->x / t, this->y / t );
+		return CVector2< Type >( (Type)( this->x / t ), (Type)( this->y / t ) );
+	}
+
+	CVector2< Type > operator * ( int t ) const
+	{
+		return CVector2< Type >( (Type)( this->x * t ), (Type)( this->y * t ) );
+	}
+
+	CVector2< Type > operator / ( int t ) const
+	{
+		return CVector2< Type >( (Type)( this->x / t ), (Type)( this->y / t ) );
 	}
 	
 	//=========================================================================
@@ -131,12 +151,12 @@ public:
 
 	//=========================================================================
 
-	Type LengthSquared() const
+	inline Type LengthSquared() const
 	{
 		return ( x * x + y * y );
 	}
 
-	float Length() const
+	inline float Length() const
 	{
 		return sqrtf( (float)LengthSquared() );
 	}
@@ -155,38 +175,34 @@ public:
 	// ripped from:
 	// http://forums.indiegamer.com/showthread.php?t=10459
 
-	Type Angle() const 
+	inline float Angle() const 
 	{
-		CVector2< Type > normal = Normalize();
-		Type angle = atan2( normal.y, normal.x );
-
-		return angle;
+		const float l = Length();
+		if( l == 0 ) return 0;
+		return (float)atan2f( ((float)y) / l, ((float)x) / l );
 	}
 
-	Type Angle( const CVector2< Type >& x ) const
+	inline float Angle( const CVector2< Type >& v2 ) const
 	{
-		Type dot = Dot( *this, x );
-		Type cross = Cross( *this, x );
+		Type dot = Dot( *this, v2 );
+		Type cross = Cross( *this, v2 );
 		
-		// angle between segments
-		Type angle = (Type) atan2( cross, dot );
-
-		return angle;
+		return (float)atan2f( (float)cross, (float)dot );
 	}
 
-	CVector2< Type >& Rotate( Type angle ) 
+	CVector2< Type >& Rotate( float angle_rad ) 
 	{
 		Type tx = x;
-		x = (Type)x * (Type)cos(angle) - y * (Type)sin(angle);
-		y = (Type)tx * (Type)sin(angle) + y * (Type)cos(angle);
+		x = (Type)((((float)x) * (float)cosf(angle_rad)) - ((float)y * (float)sinf(angle_rad)));
+		y = (Type)((((float)tx) * (float)sinf(angle_rad)) + ((float)y * (float)cosf(angle_rad)));
 
 		return *this;
 	}
 
-	CVector2< Type >& Rotate( const CVector2< Type >& centre, Type angle )
+	CVector2< Type >& Rotate( const CVector2< Type >& centre, float angle_rad )
 	{
 		CVector2< Type > D = *this - centre;
-		D.Rotate( angle );
+		D.Rotate( angle_rad );
 
 		// *this = xCentre + D;
 		D += centre;
@@ -213,5 +229,8 @@ namespace types {
 	typedef ceng::math::CVector2< int >		point;
 
 } // end of namespace types
+
+typedef ceng::math::CVector2< float > vec2;
+typedef ceng::math::CVector2< int > ivec2;
 
 #endif

@@ -21,11 +21,15 @@
 #ifndef INC_SOUND_SDL_H
 #define INC_SOUND_SDL_H
 
+#include "../platform_defs.h"
+#ifdef PORO_USE_SDL_MIXER
+
 #include "../isound.h"
 #include "../poro_types.h"
 #include "../libraries.h"
 
 namespace poro {
+
 
 // SDL_Mixer implementation for sound
 class SoundSDL : public ISound 
@@ -53,4 +57,5 @@ public:
 
 } // end o namespace poro
 
+#endif // PORO_USE_SDL_MIXER
 #endif

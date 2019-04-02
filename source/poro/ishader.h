@@ -18,7 +18,7 @@
  *
  ***************************************************************************/
 
-#ifndef INC_ÍSHADER_H
+#ifndef INC_ISHADER_H
 #define INC_ISHADER_H
 
 
@@ -35,17 +35,21 @@ public:
 	virtual ~IShader() { }
 
 	virtual void Init( const std::string& vertex_source_filename, const std::string& fragment_source_filename ) { }	
+    virtual void InitFromString( const std::string& vertex_source, const std::string& fragment_source ) { }	
 	virtual void Release() { }
 	virtual void Enable() { }
 	virtual void Disable() { }
 	virtual bool HasParameter( const std::string& name ) = 0;
 	virtual void SetParameter( const std::string& name, float value ) { }
-	virtual void SetParameter( const std::string& name, types::vec2 value ) { }
-	virtual void SetParameter( const std::string& name, types::vec3 value ) { }
-	virtual void SetParameter( const std::string& name, ITexture* texture ) { }
-	virtual void SetParameter( const std::string& name, ITexture3d* texture ) { }
+	virtual void SetParameter( const std::string& name, const float* four_float_values ) { }
+	virtual void SetParameter( const std::string& name, const types::vec2& value ) { }
+	virtual void SetParameter( const std::string& name, const types::vec3& value ) { }
+	virtual void SetParameter( const std::string& name, const types::vec2& value_xy, types::vec2& value_zw ) { }
+	virtual void SetParameter( const std::string& name, float x, float y, float z, float w ) { }
+	virtual void SetParameter( const std::string& name, const ITexture* texture ) { }
+	virtual void SetParameter( const std::string& name, const ITexture3d* texture ) { }
 	
-	virtual bool GetIsCompiledAndLinked() = 0;
+	virtual bool GetIsCompiledAndLinked()const = 0;
 
 };
 

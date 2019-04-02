@@ -32,18 +32,6 @@ namespace math {
 template< typename T >
 class CAngle 
 {
-	static const T TWO_PI;
-	
-	T AngleMod( T value ) {
-		while( value < 0 ) {
-			value += TWO_PI;
-		}
-
-		value = static_cast< T >( fmod( (double)value, (double)TWO_PI ) );
-
-		return value;
-	}
-
 public:
 	CAngle()						: mAng( T() )			{ }
 	CAngle( const CAngle& other )	: mAng( other.mAng )	{ }
@@ -86,8 +74,25 @@ public:
 		return result;
 	}
 
+	CAngle operator*( float value ) const {
+		CAngle result( GetValue() * value );
+		return result;
+	}
+
 	bool operator==( const CAngle& other ) const {
 		return GetValue() == other.GetValue();
+	}
+
+	static const T TWO_PI;
+	
+	static T AngleMod( T value ) {
+		while( value < 0 ) {
+			value += TWO_PI;
+		}
+
+		value = static_cast< T >( fmod( (double)value, (double)TWO_PI ) );
+
+		return value;
 	}
 
 private:
@@ -104,6 +109,21 @@ template< typename T >  const T CAngle< T >::TWO_PI = (T)(2 * ceng::math::pi);
 
 namespace types { 
 	typedef ceng::math::CAngle< float >		angle;
+
+	// clamps the radian angle to 0-2*pi
+	float AngleMod( float value );
+
+	inline float AngleMod( float value ) 
+	{
+		while( value < 0 ) {
+			value += ceng::math::CAngle< float >::TWO_PI;
+		}
+
+		value = (float)( fmod( (double)value, (double)ceng::math::CAngle< float >::TWO_PI ) );
+
+		return value;
+	}
+
 } // end of namespace types
 
 #endif

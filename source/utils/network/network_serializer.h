@@ -41,10 +41,14 @@ namespace network_utils
 		virtual void IO( uint8		&value ) = 0;
 		virtual void IO( uint32		&value ) = 0;
 		virtual void IO( int32		&value ) = 0;
+		virtual void IO( uint64		&value ) = 0;
+		virtual void IO( int64		&value ) = 0;
 		virtual void IO( float32	&value ) = 0;
+		virtual void IO( double64	&value ) = 0;
 		virtual void IO( bool		&value ) = 0;
 		virtual void IO( types::ustring& str ) = 0;
 	
+#if 0
 		template< typename T >
 		void IO( std::vector< T >& vector )
 		{
@@ -63,6 +67,7 @@ namespace network_utils
 					vector[ i ] = temp_var;
 			}
 		}
+#endif
 
 #ifdef NETWORK_USE_VECTOR2
 		template< typename T >
@@ -99,6 +104,7 @@ namespace network_utils
 		{
 			// buffer=buf; length=size; bytesUsed=0; bHasOverflowed=false;
 			mLength = 1024;
+			mBuffer.reserve( 1024 );
 			mBytesUsed = 0;
 			mHasOverflowed = false;
 		}
@@ -123,12 +129,34 @@ namespace network_utils
 			mBuffer += ConvertInt32ToHex( value );
 			mBytesUsed += 4;
 		}
+
+		virtual void IO( uint64& value ) 
+		{
+			if( mHasOverflowed ) return; //stop writing when overflowed
+			mBuffer += ConvertUint64ToHex( value );
+			mBytesUsed += 8;
+		}
+
+		virtual void IO( int64& value )
+		{
+			if( mHasOverflowed ) return; //stop writing when overflowed
+			mBuffer += ConvertInt64ToHex( value );
+			mBytesUsed += 8;
+		}
+
 		
 		void IO( float32& value )
 		{
 			if( mHasOverflowed ) return; //stop writing when overflowed
 			mBuffer += FloatToHexString( value );
 			mBytesUsed += 4;
+		}
+		
+		void IO( double64	&value )
+		{
+			if( mHasOverflowed ) return; //stop writing when overflowed
+			mBuffer += DoubleToHexString( value );
+			mBytesUsed += 8;
 		}
 			
 		void IO( bool& value )
@@ -139,6 +167,16 @@ namespace network_utils
 		}
 
 		void IO( types::ustring& str )
+		{
+			uint32 l = str.length();
+			IO(l);
+			if( mHasOverflowed ) return;
+			
+			mBuffer += str;
+			mBytesUsed +=l;
+		}
+
+		void IO( const types::ustring& str )
 		{
 			uint32 l = str.length();
 			IO(l);
@@ -203,12 +241,36 @@ namespace network_utils
 			mBytesUsed += 4;
 		}
 
+		void IO( uint64& value )
+		{
+			if( mHasOverflowed ) return; 
+			if( mBytesUsed + 8 > mLength ) { mHasOverflowed = true; return; }
+			value = ConvertHexToUint64( mBuffer.substr( mBytesUsed, 8 ) );
+			mBytesUsed += 8;
+		}
+
+		virtual void IO( int64&	value )
+		{
+			if( mHasOverflowed ) return; 
+			if( mBytesUsed + 8 > mLength ) { mHasOverflowed = true; return; }
+			value = ConvertHexToInt64( mBuffer.substr( mBytesUsed, 8 ) );
+			mBytesUsed += 8;
+		}
+
 		void IO( float32& value )
 		{
 			if( mHasOverflowed ) return; 
 			if( mBytesUsed + 4 > mLength ) { mHasOverflowed = true; return; }
 			value = HexStringToFloat( mBuffer.substr( mBytesUsed, 4 ) );
 			mBytesUsed += 4;
+		}
+
+		void IO( double64	&value )
+		{
+			if( mHasOverflowed ) return; //stop writing when overflowed
+			if( mBytesUsed + 8 > mLength ) { mHasOverflowed = true; return; }
+			value = HexStringToDouble( mBuffer.substr( mBytesUsed, 8 ) );
+			mBytesUsed += 8;
 		}
 			
 		void IO( bool& value )

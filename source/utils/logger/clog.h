@@ -102,7 +102,7 @@ namespace ceng {
 	Uses logger in logger.h as a global entry point for the logger.
 	So you can input stuff like:
 
-	  logger << "Hello world" << std::endl;
+	  logger << "Hello world" << "\n";
 
 	And it writes it to the log.
 

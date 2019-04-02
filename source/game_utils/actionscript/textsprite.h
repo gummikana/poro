@@ -81,9 +81,9 @@ public:
 	int				GetCursorTextPosition( const types::vector2& p );
 
 
-	virtual bool Draw( poro::IGraphics* graphics, types::camera* camera, Transform& transform );
+	virtual void Draw( poro::IGraphics* graphics, types::camera* camera, Transform& transform );
 protected:
-	virtual bool DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const Transform& transform );
+	virtual void DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const Transform& transform );
 
 protected:
 

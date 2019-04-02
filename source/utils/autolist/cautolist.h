@@ -79,51 +79,31 @@ class CAutoList
 public:
 	virtual ~CAutoList()
 	{
-		GetList().erase( 
-			std::find( GetList().begin(), 
-						GetList().end(),
-						reinterpret_cast< T* >( this ) )
-					  );
-
-		if( GetList().empty() )
-		{
-			delete myAutoListPointerList;
-			myAutoListPointerList = NULL;
-		}
+		myAutoListPointerList.erase( std::find( myAutoListPointerList.begin(), myAutoListPointerList.end(), reinterpret_cast< T* >( this ) ) );
 	}
 
 	static bool Empty()
 	{
-		return myAutoListPointerList == NULL;
+		return myAutoListPointerList.empty();
 	}
 
-	static std::list< T* >& GetList() 
+	static std::vector< T* >* GetList()
 	{ 
-		if( myAutoListPointerList == NULL )
-		{
-			myAutoListPointerList = new std::list< T* >;
-		}
-
-		return *myAutoListPointerList; 
+		return &myAutoListPointerList; 
 	}
 
 protected:
-	CAutoList() 
+	CAutoList()
 	{ 
-		// static InsertOperation insert_into_list;
-		// insert_into_list( reinterpret_cast< T* >( this ), GetList() );
-		GetList().push_back( reinterpret_cast< T* >( this ) );
+		myAutoListPointerList.push_back( reinterpret_cast< T* >( this ) );
 	}
 
-
 private:
-	static std::list< T* >* myAutoListPointerList;
-
-
+	static std::vector< T* > myAutoListPointerList;
 };
 
 template< class T >
-std::list< T* >* CAutoList< T >::myAutoListPointerList = NULL;
+std::vector< T* > CAutoList< T >::myAutoListPointerList;
 
 } // end of namespace ceng
 #endif

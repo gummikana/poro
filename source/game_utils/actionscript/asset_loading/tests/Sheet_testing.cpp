@@ -31,7 +31,7 @@ int SheetTest()
 	Sheet test;
 	ceng::XmlLoadFromFile( test, "temp/testdata/sheets.xml", "Sheets" );
 
-	// std::cout << "Size: " << test.mTextureSheets.size() << std::endl;
+	// std::cout << "Size: " << test.mTextureSheets.size() << "\n";
 	return 0;
 }
 

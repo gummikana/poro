@@ -35,6 +35,7 @@ class GraphicsOpenGL;
 class Keyboard;
 class Touch;
 class SoundPlayerSDL;
+class FileSystem;
 
 //-----------------------------------------------------------------------------
 
@@ -45,7 +46,7 @@ public:
 	virtual ~PlatformDesktop();
 
 	// platform setup
-	virtual void Init( IApplication* application, int w, int h, bool fullscreen, std::string = "Poro Application" );
+	virtual void Init( IApplication* application, const GraphicsSettings& settings, AppConfig* config );
 	virtual void Exit();
 
 	virtual void StartMainLoop();
@@ -54,16 +55,18 @@ public:
 	virtual void Destroy();
 
 	// window / screen
-	virtual void    SetWindowSize( int width, int height );
+	virtual void	SetWindowSize( int width, int height );
 	virtual int		GetWidth();
 	virtual int		GetHeight();
-
+	virtual void	SetVsync( bool vsync_enabled );
+	virtual bool	GetVsync();
 	virtual bool	GetOrientationIsLandscape();
 
 	// global pointers
 	virtual void			SetApplication( IApplication* application );
 	virtual IGraphics*		GetGraphics();
 	virtual ISoundPlayer*	GetSoundPlayer();
+	virtual FileSystem*		GetFileSystem();
 
 	// controllers
 	virtual Mouse*			GetMouse();
@@ -71,19 +74,22 @@ public:
 	virtual Touch*			GetTouch();
 	virtual int				GetJoystickCount() const;
 	virtual Joystick*		GetJoystick( int n );
+	virtual bool			GetJoysticksEnabled() const;
+	virtual void			SetJoysticksEnabled( bool enabled );
 
 	// timers
-	virtual void	        SetFrameRate( int targetRate, bool fixed_timestep = true );
-	virtual int	            GetFrameRate();
-	virtual int		        GetFrameNum();
-	virtual void	        Sleep( types::Double32 seconds );
+	virtual void			SetFrameRate( int targetRate, bool fixed_timestep = true );
+	virtual int				GetFrameRate();
+	virtual int				GetFrameNum();
+	virtual void			Sleep( types::Double32 seconds );
 	virtual void			SetSleepingMode( int sleep_mode );
 	virtual types::Double32 GetUpTime();
 	virtual void			SetPrintFramerate( bool fps );
 	virtual types::Double32 GetLastFrameExecutionTime() const;
+	virtual types::Double32 GetAverageFrameExecutionTime() const;
 
 	// event recordings
-	virtual void SetEventRecording( bool record_events );
+	virtual void SetEventRecording( bool record_events, bool flush_every_frame );
 	virtual bool GetEventRecording() const;
 	
 	virtual void DoEventPlayback( const std::string& filename );
@@ -95,6 +101,8 @@ public:
 
 	// random seed
 	virtual int GetRandomSeed();
+	unsigned int GetTimeNull() const;
+	virtual void SetRandomSeed( unsigned int random_seed );	// Never call this without a good reason
 
 	// looping and handling events
 	void SingleLoop();
@@ -105,25 +113,37 @@ protected:
 	types::vec2		ConvertMouseToInternalSize( int x, int y );
 
 	GraphicsOpenGL*					mGraphics;
+	
+	// struct Timing
 	bool							mFixedTimeStep;
 	int								mFrameCount;
 	int								mFrameRate;
 	types::Double32					mLastFrameExecutionTime;
+	types::Double32					mAverageFrameExecutionTime;
 	types::Double32					mOneFrameShouldLast;
+	types::Double32					mTimeElapsedTracker;
+
 	int								mWidth;
 	int								mHeight;
 	EventRecorder*					mEventRecorder;
 	MouseImpl*						mMouse;
-	Keyboard*					    mKeyboard;
+	Keyboard*						mKeyboard;
 	Touch*							mTouch;
 	std::vector< JoystickImpl* >	mJoysticks;
-	SoundPlayerSDL*		            mSoundPlayer;
-	bool						    mRunning;
-	types::vec2					    mMousePos;
+#ifdef PORO_USE_SDL_MIXER
+	SoundPlayerSDL*					mSoundPlayer;
+#else
+	ISoundPlayer*					mSoundPlayer;
+#endif
+	FileSystem*						mFileSystem;
+	bool							mRunning;
+	types::vec2						mMousePos;
 	int								mSleepingMode;
 	bool							mPrintFramerate;
 	poro::types::string				mWorkingDir;
-	int								mRandomSeed;
+	int								mRandomI;
+	unsigned int					mRandomSeed;
+	bool 							mJoysticksEnabled;
 
 private:
 };
@@ -131,7 +151,7 @@ private:
 //-------------------------- inlined functions -------------------------------------
 
 inline void PlatformDesktop::Exit() {
-    mRunning = false;
+	mRunning = false;
 }
 
 inline int PlatformDesktop::GetWidth() { 
@@ -159,16 +179,20 @@ inline Touch* PlatformDesktop::GetTouch() {
 	return mTouch;
 }
 
-inline int	PlatformDesktop::GetJoystickCount() const  {
-	return (int)mJoysticks.size();
+inline bool PlatformDesktop::GetJoysticksEnabled() const { 
+	return mJoysticksEnabled;
+}
+
+inline void PlatformDesktop::SetJoysticksEnabled( bool enabled ) { 
+	mJoysticksEnabled = enabled;
 }
 
 // ---
-inline void PlatformDesktop::SetFrameRate( int targetRate, bool fixed_time_step ) {
-	mFrameRate = targetRate;
-	mOneFrameShouldLast = 1.0 / (types::Double32)targetRate;
-	mFixedTimeStep = fixed_time_step;
+inline FileSystem* PlatformDesktop::GetFileSystem() {
+	return mFileSystem;
 }
+
+// ---
 
 inline int PlatformDesktop::GetFrameRate() {
 	return mFrameRate;
@@ -199,6 +223,10 @@ inline void PlatformDesktop::SetPrintFramerate( bool framerate ) {
 
 inline types::Double32 PlatformDesktop::GetLastFrameExecutionTime() const {
 	return mLastFrameExecutionTime;
+}
+
+inline types::Double32 PlatformDesktop::GetAverageFrameExecutionTime() const {
+	return mAverageFrameExecutionTime;
 }
 
 

@@ -55,18 +55,24 @@ public:
 	virtual bool IsCursorVisible() const;
 	virtual void HideCursor();
 	virtual void ShowCursor();
-	virtual void SetCursorVisiblity( bool show_cursor );
+	virtual void SetCursorVisibility( bool show_cursor );
+	virtual void SetCursor( const char* image_rgba8, int width, int height, int center_offset_x, int center_offset_y ) = 0;
 
 	virtual types::vec2 GetMousePos() const;
 	virtual bool		IsButtonDown( int button ) const;
 	virtual bool		IsButtonJustDown( int button ) const;
 	virtual bool		IsButtonJustUp( int button ) const;
 
+	// -1 is up and +1 is down
+	virtual int			GetMouseWheelJustAxis() const;
+	virtual int			GetButtonJustDownCount( int button ) const;
+	virtual int			GetButtonJustUpCount( int button ) const;
+
 private:
 	std::vector< IMouseListener* >	mMouseListeners;
 	std::vector< bool >				mMouseButtonsDown;
-	std::vector< bool >				mMouseButtonsJustDown;
-	std::vector< bool >				mMouseButtonsJustUp;
+	std::vector< int >				mMouseButtonsJustDown;
+	std::vector< int >				mMouseButtonsJustUp;
 	
 	bool							mCursorVisible;
 	types::vec2						mMousePos;
