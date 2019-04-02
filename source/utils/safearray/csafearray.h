@@ -91,7 +91,7 @@ public:
 		
 		/*for( SizeType i = 0; i < Size(); ++i ) 
 			data[ i ] = Type();*/
-		memset( data, (int)Type(), Size() * sizeof( Type ) );
+		memset( data, 0, Size() * sizeof( Type ) );
 	}
 
 	void resize( SizeType s ) { Resize( s ); }
