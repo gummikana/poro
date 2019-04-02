@@ -23,7 +23,7 @@ public:
 		/*for( SizeType i = 0; i < Size(); ++i ) 
 			data[ i ] = Type();*/
 		
-		memset( data, (int)Type(), Size() * sizeof( Type ) );
+		memset( data, 0, Size() * sizeof( Type ) );
 	}
 	
 	CSafeArray( const CSafeArray& other ) :
