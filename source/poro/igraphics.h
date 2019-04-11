@@ -92,24 +92,44 @@ namespace DRAWFILL_MODE
 	{
 		POLYGON = 0,
 		TRIANGLE_STRIP = 1,
-		QUADS = 2
+		QUADS = 2,
+		LINES = 3,
+		LINE_STRIP = 4,
+		LINE_LOOP = 5,
 	};
 }
 
-struct Vertex_PosFloat2_ColorUint32
+//-----------------------------
+
+namespace DRAW_PRIMITIVE_MODE
 {
-	float x;
-	float y;
-	uint32 color;
+	enum Enum
+	{
+		POINTS,
+		LINE_STRIP,
+		LINE_LOOP,
+		LINES,
+		TRIANGLE_STRIP,
+		TRIANGLE_FAN,
+		TRIANGLES
+	};
 };
 
-struct Vertex_PosFloat2_TexCoordFloat2_ColorUint32
+namespace DRAW_FLAGS
 {
-	float x;
-	float y;
-	float u;
-	float v;
-	uint32 color;
+	enum Enum
+	{
+		NONE = 0,
+		LINE_SMOOTH = 1	<< 1,
+	};
+};
+
+struct GraphicsState
+{
+	poro::BLEND_MODE::Enum blend_mode = poro::BLEND_MODE::NORMAL;
+	poro::DRAW_PRIMITIVE_MODE::Enum primitive_mode = poro::DRAW_PRIMITIVE_MODE::TRIANGLES;
+	poro::DRAW_FLAGS::Enum flags = poro::DRAW_FLAGS::NONE;
+	float line_width;
 };
 
 //-----------------------------
@@ -313,8 +333,9 @@ public:
 	virtual void DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) { DrawLines( vertices, color, false, 1.f, true ); }
 	virtual void DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) { }
 	virtual void DrawQuads( float* vertices, int vertex_count, float* tex_coords, float* colors, ITexture* texture ) { }
-	virtual void DrawQuads( Vertex_PosFloat2_ColorUint32* vertices, int vertex_count ) { }
-	virtual void DrawQuads( Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, int vertex_count, ITexture* texture ) { }
+	virtual void DrawQuads( types::Vertex_PosFloat2_ColorUint32* vertices, int vertex_count ) { }
+	virtual void DrawQuads( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, int vertex_count, ITexture* texture ) { }
+	virtual void DrawVertices( const std::vector< types::Vertex_PosFloat2_ColorUint32 >& vertices, const poro::GraphicsState& state ) { }
 
 	//-------------------------------------------------------------------------
 

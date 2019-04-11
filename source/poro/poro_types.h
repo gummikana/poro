@@ -58,7 +58,22 @@ namespace types {
 	typedef ceng::StaticArray< Float32, 4 >		fcolor;
 	typedef Vec2								vec2;
 	typedef Vec3								vec3;
-	
+
+	struct Vertex_PosFloat2_ColorUint32
+	{
+		float x;
+		float y;
+		uint32 color;
+	};
+
+	struct Vertex_PosFloat2_TexCoordFloat2_ColorUint32
+	{
+		float x;
+		float y;
+		float u;
+		float v;
+		uint32 color;
+	};
 
 } // end o types
 } // end o poro

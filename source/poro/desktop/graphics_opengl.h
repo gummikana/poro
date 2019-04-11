@@ -143,8 +143,9 @@ public:
 	virtual void DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth, float width, bool loop ) PORO_OVERRIDE;
 	virtual void DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) PORO_OVERRIDE;
 	virtual void DrawQuads( float* vertices, int vertex_count, float* tex_coords, float* colors, ITexture* texture ) PORO_OVERRIDE;
-	virtual void DrawQuads( Vertex_PosFloat2_ColorUint32* vertices, int vertex_count ) PORO_OVERRIDE;
-	virtual void DrawQuads( Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, int vertex_count, ITexture* texture ) PORO_OVERRIDE;
+	virtual void DrawQuads( types::Vertex_PosFloat2_ColorUint32* vertices, int vertex_count ) PORO_OVERRIDE;
+	virtual void DrawQuads( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, int vertex_count, ITexture* texture ) PORO_OVERRIDE;
+	virtual void DrawVertices( const std::vector< types::Vertex_PosFloat2_ColorUint32 >& vertices, const poro::GraphicsState& state ) PORO_OVERRIDE;
 	
 	//-------------------------------------------------------------------------
 
