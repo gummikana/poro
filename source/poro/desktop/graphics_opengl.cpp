@@ -1550,9 +1550,9 @@ void GraphicsOpenGL::DrawVertices( const types::Vertex_PosFloat2_2xTexCoordFloat
 	glEnableClientState( GL_COLOR_ARRAY );
 	glEnableClientState( GL_TEXTURE_COORD_ARRAY );
 
-	glVertexPointer( 2, GL_FLOAT, sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), &vertices->x );
-	glTexCoordPointer( 4, GL_FLOAT, sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), &vertices->u );
-	glColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), &vertices->color );
+	glVertexPointer( 2, GL_FLOAT, sizeof( types::Vertex_PosFloat2_2xTexCoordFloat2_ColorUint32 ), &vertices->x );
+	glTexCoordPointer( 4, GL_FLOAT, sizeof( types::Vertex_PosFloat2_2xTexCoordFloat2_ColorUint32 ), &vertices->u );
+	glColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( types::Vertex_PosFloat2_2xTexCoordFloat2_ColorUint32 ), &vertices->color );
 
 	// draw
 	glDrawArrays( api_primitive_mode, 0, num_vertices );
@@ -1575,12 +1575,12 @@ void GraphicsOpenGL::DrawVertices( const types::Vertex_PosFloat2_3xTexCoordFloat
 	glEnableClientState( GL_COLOR_ARRAY );
 	glEnableClientState( GL_TEXTURE_COORD_ARRAY );
 
-	glVertexPointer( 2, GL_FLOAT, sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), &vertices->x );
-	glTexCoordPointer( 4, GL_FLOAT, sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), &vertices->u );
+	glVertexPointer( 2, GL_FLOAT, sizeof( types::Vertex_PosFloat2_3xTexCoordFloat2_ColorUint32 ), &vertices->x );
+	glTexCoordPointer( 4, GL_FLOAT, sizeof( types::Vertex_PosFloat2_3xTexCoordFloat2_ColorUint32 ), &vertices->u );
 	glClientActiveTexture( GL_TEXTURE1 );
 	glEnableClientState( GL_TEXTURE_COORD_ARRAY ); // for texture unit 1
-	glTexCoordPointer( 2, GL_FLOAT, sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), &vertices->u3 );
-	glColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), &vertices->color );
+	glTexCoordPointer( 2, GL_FLOAT, sizeof( types::Vertex_PosFloat2_3xTexCoordFloat2_ColorUint32 ), &vertices->u3 );
+	glColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( types::Vertex_PosFloat2_3xTexCoordFloat2_ColorUint32 ), &vertices->color );
 
 	// draw
 	glDrawArrays( api_primitive_mode, 0, num_vertices );
