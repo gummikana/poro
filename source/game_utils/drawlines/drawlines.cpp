@@ -647,23 +647,29 @@ float GetLineWidth() {
 
 void DrawLine( poro::IGraphics* graphics, const types::vector2& i_p1, const types::vector2& i_p2, const poro::types::fcolor& color, types::camera* camera )
 {
-	if( color[ 3 ] <= 0.01f ) return;
+	if( color[ 3 ] <= 0.01f ) 
+		return;
 
-	static std::vector< poro::types::vec2 > line( 2 );
+	auto color32 = types::fcolor( color ).Get32();
+
+	poro::types::Vertex_PosFloat2_ColorUint32 line[2];
 
 	types::vector2 p1 = i_p1;
 	types::vector2 p2 = i_p2;
-	if( camera ) {
+	if( camera )
+	{
 		p1 = camera->Transform( i_p1 );
 		p2 = camera->Transform( i_p2 );
 	}
 
 	line[ 0 ].x = p1.x;
 	line[ 0 ].y = p1.y;
+	line[ 0 ].color = color32;
 	line[ 1 ].x = p2.x;
 	line[ 1 ].y = p2.y;
+	line[ 1 ].color = color32;
 
-	graphics->DrawLines( line, color, smooth_lines, line_width );
+	graphics->DrawLines( line, 2, smooth_lines, line_width );
 }
 
 void DrawLines( poro::IGraphics* graphics, const std::vector< poro::types::vec2 >& lines, const poro::types::fcolor& color, types::camera* camera )
@@ -706,9 +712,10 @@ void DrawArrow( poro::IGraphics* graphics, const types::vector2& p1, const types
 
 void DrawCircle( poro::IGraphics* graphics, const types::vector2& position, float r, const poro::types::fcolor& color, types::camera* camera )
 {
-	std::vector< poro::types::vec2 > debug_drawing;
+	std::vector< poro::types::Vertex_PosFloat2_ColorUint32 > debug_drawing;
 	const float k_segments = 16.0f;
 	const float k_increment = 2.0f * ceng::math::pi / k_segments;
+	const uint32 color32 = types::fcolor( color ).Get32();
 
 	float theta = 0.0f;
 	for( int i = 0; i < k_segments; ++i )
@@ -721,7 +728,7 @@ void DrawCircle( poro::IGraphics* graphics, const types::vector2& position, floa
 
 		// types::vector2 p = types::vector2( v.x, v.y );
 
-		debug_drawing.push_back( ToPoro( v ) );
+		debug_drawing.push_back( poro::types::Vertex_PosFloat2_ColorUint32{ v.x, v.y, color32 } );
 
 		theta += k_increment;
 	}
@@ -735,7 +742,7 @@ void DrawCircle( poro::IGraphics* graphics, const types::vector2& position, floa
 
 
 	cassert( graphics );
-	graphics->DrawLines( debug_drawing, color, smooth_lines, line_width );
+	graphics->DrawLines( debug_drawing, smooth_lines, line_width );
 }
 
 //-----------------------------------------------------------------------------
