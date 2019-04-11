@@ -98,6 +98,16 @@ public:
 	}
 
 
+	CColorFloat( const poro::types::fcolor& other ) :
+		r( other[0] ),
+		g( other[1] ),
+		b( other[2] ),
+		a( other[3] ),
+		multiplied_with_alpha( false )
+	{
+	}
+
+
 	CColorFloat( const uint32 clor ) :
 		multiplied_with_alpha( false )
 	{
