@@ -275,14 +275,8 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual void DrawTexturedRect( const poro::types::vec2& position, 
-											const poro::types::vec2& size, 
-											ITexture* itexture, 
-											const types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ), 
-											types::vec2* tex_coords = NULL, 
-											int count = 0,
-											types::vec2* tex_coords2 = NULL,
-											types::vec2* tex_coords3 = NULL ) { poro_assert( false && "Needs to be implemented" ); }
+	virtual void DrawRect( const poro::types::vec2& position, const poro::types::vec2& size, const types::vec2* tex_coords, const types::vec2* tex_coords2 = NULL, const types::vec2* tex_coords3 = NULL ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); };
+	virtual void DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture, const types::vec2* tex_coords, const types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ) ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); };
 
 	//-------------------------------------------------------------------------
 

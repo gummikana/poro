@@ -1360,8 +1360,61 @@ void GraphicsOpenGL::EndRendering()
 
 //=============================================================================
 
-void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture, const poro::types::fcolor& color, types::vec2* tex_coords, int count, types::vec2* tex_coords2, types::vec2* tex_coords3 )
+void GraphicsOpenGL::DrawRect( const poro::types::vec2& position, const poro::types::vec2& size, const types::vec2* tex_coords, const types::vec2* tex_coords2, const types::vec2* tex_coords3 )
 {
+	poro_assert( tex_coords );
+	if ( tex_coords2 )
+		poro_assert( tex_coords );
+	if ( tex_coords3 )
+		poro_assert( tex_coords2 );
+
+	struct Vertice
+	{
+		float x, y;
+		float uv0_x, uv0_y, uv0_z, uv0_w;
+		float uv1_x, uv1_y;
+	};
+
+	types::vec2 vertices[4];
+	vertices[0].x = (float)position.x;
+	vertices[0].y = (float)position.y;
+	vertices[1].x = (float)position.x;
+	vertices[1].y = (float)( position.y + size.y );
+	vertices[2].x = (float)( position.x + size.x );
+	vertices[2].y = (float)position.y;
+	vertices[3].x = (float)( position.x + size.x );
+	vertices[3].y = (float)( position.y + size.y );
+
+	glEnable( GL_TEXTURE_2D );
+	glEnable( GL_BLEND );
+	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+
+	glBegin( GL_TRIANGLE_STRIP );
+
+	for ( int i = 0; i < 4; i++ )
+	{
+		if ( tex_coords2 )
+			glTexCoord4f( tex_coords[i].x, tex_coords[i].y, tex_coords2[i].x, tex_coords2[i].y );
+		else
+			glTexCoord2f( tex_coords[i].x, tex_coords[i].y );
+
+		if ( tex_coords3 )
+			glMultiTexCoord2f( GL_TEXTURE1, tex_coords3[i].x, tex_coords3[i].y );
+
+		glVertex2f( vertices[i].x, vertices[i].y );
+	}
+
+	glEnd();
+
+	glDisable( GL_BLEND );
+	glDisable( GL_TEXTURE_2D );
+}
+
+void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture, const types::vec2* tex_coords, const poro::types::fcolor& color )
+{
+	poro_assert( itexture );
+	poro_assert( tex_coords );
+
 	struct Vertice
 	{
 		float x, y;
@@ -1404,40 +1457,7 @@ void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const 
 
 	for( int i = 0; i < 4; i++)
 	{
-		if( itexture != NULL )
-		{ 
-			if ( tex_coords == NULL || i >= count )
-			{
-				if (tex_coords2)
-					glTexCoord4f( vertices[i].x / texture->GetWidth(), vertices[i].y / texture->GetHeight(), vertices[i].x / texture->GetWidth(), vertices[i].y / texture->GetHeight() );
-				else
-					glTexCoord2f( vertices[i].x / texture->GetWidth(), vertices[i].y / texture->GetHeight() );
-
-				if ( tex_coords3 )
-					glMultiTexCoord2f( GL_TEXTURE1, vertices[ i ].x / texture->GetWidth(), vertices[ i ].y / texture->GetHeight() );
-			}
-			else
-			{
-				if (tex_coords2)
-					glTexCoord4f( tex_coords[i].x / texture->GetWidth(), tex_coords[i].y / texture->GetHeight(), tex_coords2[i].x / texture->GetWidth(), tex_coords2[i].y / texture->GetHeight() );
-				else
-					glTexCoord2f( tex_coords[i].x / texture->GetWidth(), tex_coords[i].y / texture->GetHeight() );
-
-				if ( tex_coords3 )
-					glMultiTexCoord2f( GL_TEXTURE1, tex_coords3[ i ].x / texture->GetWidth(), tex_coords3[ i ].y / texture->GetHeight() );
-			}
-		}
-		else
-		{
-			if ( tex_coords2 )
-				glTexCoord4f( tex_coords[i].x, tex_coords[i].y, tex_coords2[i].x, tex_coords2[i].y );
-			else
-				glTexCoord2f( tex_coords[i].x, tex_coords[i].y );
-
-			if ( tex_coords3 )
-				glMultiTexCoord2f( GL_TEXTURE1, tex_coords3[ i ].x, tex_coords3[ i ].y );
-		}
-
+		glTexCoord2f( tex_coords[i].x / texture->GetWidth(), tex_coords[i].y / texture->GetHeight() );
 		glVertex2f( vertices[ i ].x, vertices[ i ].y );
 	}
 	
@@ -1452,32 +1472,12 @@ void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const 
 
 	glDisable(GL_BLEND);
 	glDisable(GL_TEXTURE_2D);
-
-	// clean up
-	/*glDisableClientState( GL_VERTEX_ARRAY );
-	glClientActiveTexture( GL_TEXTURE0 );
-	glDisableClientState( GL_TEXTURE_COORD_ARRAY );
-	glClientActiveTexture( GL_TEXTURE1 );
-	glDisableClientState( GL_TEXTURE_COORD_ARRAY );*/
 }
 
 // low level API =====================================================================
 
 void LowLevel_EnableState( const GraphicsState& state, uint32& out_api_primitive_mode )
 {
-	// enable state
-	glEnable( GL_BLEND );
-	switch ( state.blend_mode )
-	{
-		case BLEND_MODE::NORMAL:					glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );								break;
-		case BLEND_MODE::ADDITIVE:					glBlendFunc( GL_SRC_ALPHA, GL_ONE );												break;
-		case BLEND_MODE::ADDITIVE_ADDITIVEALPHA:	glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE );					break;
-		case BLEND_MODE::ZERO_ADDITIVEALPHA:		glBlendFuncSeparate( GL_ZERO, GL_ONE, GL_ONE, GL_ONE );								break;
-		case BLEND_MODE::NORMAL_ADDITIVEALPHA:		glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE );	break;
-		case BLEND_MODE::ADDITIVE_ZEROALPHA:		glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE );						break;
-		default: poro_assert( false && "Invalid enum value" ); break;
-	}
-
 	switch ( state.primitive_mode )
 	{
 		case DRAW_PRIMITIVE_MODE::POINTS:			out_api_primitive_mode = GL_POINTS;											break;
@@ -1488,7 +1488,20 @@ void LowLevel_EnableState( const GraphicsState& state, uint32& out_api_primitive
 		case DRAW_PRIMITIVE_MODE::TRIANGLE_FAN:		out_api_primitive_mode = GL_TRIANGLE_FAN;									break;
 		case DRAW_PRIMITIVE_MODE::TRIANGLES:		out_api_primitive_mode = GL_TRIANGLES;										break;
 		case DRAW_PRIMITIVE_MODE::QUADS:			out_api_primitive_mode = GL_QUADS;											break;
-		default: poro_assert( false && "Invalid enum value" ); break;
+		default: poro_assert( false && "Invalid enum value" );																	break;
+	}
+
+	// enable state
+	glEnable( GL_BLEND );
+	switch ( state.blend_mode )
+	{
+		case BLEND_MODE::NORMAL:					glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );								break;
+		case BLEND_MODE::ADDITIVE:					glBlendFunc( GL_SRC_ALPHA, GL_ONE );												break;
+		case BLEND_MODE::ADDITIVE_ADDITIVEALPHA:	glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE );					break;
+		case BLEND_MODE::ZERO_ADDITIVEALPHA:		glBlendFuncSeparate( GL_ZERO, GL_ONE, GL_ONE, GL_ONE );								break;
+		case BLEND_MODE::NORMAL_ADDITIVEALPHA:		glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE );	break;
+		case BLEND_MODE::ADDITIVE_ZEROALPHA:		glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE );						break;
+		default: poro_assert( false && "Invalid enum value" );																			break;
 	}
 
 	if ( state.flags & DRAW_FLAGS::LINE_SMOOTH )
@@ -1523,6 +1536,13 @@ void GraphicsOpenGL::LegacyBindTexture( ITexture* texture )
 	}
 }
 
+
+//glBindBuffer( GL_ARRAY_BUFFER, mDynamicVboHandle );
+//glBufferData( GL_ARRAY_BUFFER, sizeof( types::Vertex_PosFloat2_ColorUint32 ) * num_vertices, vertices, GL_DYNAMIC_DRAW );
+//glVertexPointer( 2, GL_FLOAT, sizeof( types::Vertex_PosFloat2_ColorUint32 ), NULL );
+//glColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( types::Vertex_PosFloat2_ColorUint32 ), (GLvoid*)POSITION_SIZE );
+//glBindBuffer( GL_ARRAY_BUFFER, 0 );
+
 void GraphicsOpenGL::DrawVertices( const types::Vertex_PosFloat2_ColorUint32* vertices, uint32 num_vertices, const GraphicsState& state )
 {
 	uint32 api_primitive_mode = 0;
@@ -1532,22 +1552,15 @@ void GraphicsOpenGL::DrawVertices( const types::Vertex_PosFloat2_ColorUint32* ve
 	glEnableClientState( GL_VERTEX_ARRAY );
 	glEnableClientState( GL_COLOR_ARRAY );
 
-	//glBindBuffer( GL_ARRAY_BUFFER, mDynamicVboHandle );
-	//glBufferData( GL_ARRAY_BUFFER, sizeof( types::Vertex_PosFloat2_ColorUint32 ) * num_vertices, vertices, GL_DYNAMIC_DRAW );
-	//glVertexPointer( 2, GL_FLOAT, sizeof( types::Vertex_PosFloat2_ColorUint32 ), NULL );
-	//glColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( types::Vertex_PosFloat2_ColorUint32 ), (GLvoid*)POSITION_SIZE );
-
 	glVertexPointer( 2, GL_FLOAT, sizeof( types::Vertex_PosFloat2_ColorUint32 ), &vertices->x );
 	glColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( types::Vertex_PosFloat2_ColorUint32 ), &vertices->color );
 
 	// draw
 	glDrawArrays( api_primitive_mode, 0, num_vertices );
 
-	// disable buffer state
+	// disable state
 	glDisableClientState( GL_VERTEX_ARRAY );
 	glDisableClientState( GL_COLOR_ARRAY );
-
-	//glBindBuffer( GL_ARRAY_BUFFER, 0 );
 
 	LowLevel_DisableState( state );
 }
@@ -1569,7 +1582,7 @@ void GraphicsOpenGL::DrawVertices( const types::Vertex_PosFloat2_TexCoordFloat2_
 	// draw
 	glDrawArrays( api_primitive_mode, 0, num_vertices );
 
-	// disable buffer state
+	// disable state
 	glDisableClientState( GL_VERTEX_ARRAY );
 	glDisableClientState( GL_COLOR_ARRAY );
 	glDisableClientState( GL_TEXTURE_COORD_ARRAY );
