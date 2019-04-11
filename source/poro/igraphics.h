@@ -335,7 +335,6 @@ public:
 	void DrawVertices( const std::vector< types::Vertex_PosFloat2_ColorUint32 >& vertices, const poro::GraphicsState& state );
 
 	virtual void DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) { }
-	virtual void DrawQuads( float* vertices, int vertex_count, float* tex_coords, float* colors, ITexture* texture ) { }
 	virtual void DrawQuads( types::Vertex_PosFloat2_ColorUint32* vertices, int vertex_count ) { }
 	virtual void DrawQuads( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, int vertex_count, ITexture* texture ) { }
 
