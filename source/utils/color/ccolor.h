@@ -35,6 +35,7 @@
 #include <SDL.h>
 #include <math.h>
 #include "../staticarray/cstaticarray.h"
+#include "poro/poro_types.h"
 
 // for clamp
 #include "../math/math_functions.h"
