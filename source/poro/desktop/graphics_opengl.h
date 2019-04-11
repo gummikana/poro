@@ -140,10 +140,6 @@ public:
 	
 	//-------------------------------------------------------------------------
 
-	virtual void DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) PORO_OVERRIDE;
-
-	//-------------------------------------------------------------------------
-
 	virtual void LegacyBindTexture( ITexture* texture ) PORO_OVERRIDE;
 	virtual void DrawVertices( const types::Vertex_PosFloat2_ColorUint32* vertices, uint32 num_vertices, const poro::GraphicsState& state ) PORO_OVERRIDE;
 	virtual void DrawVertices( const types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, const poro::GraphicsState& state ) PORO_OVERRIDE;

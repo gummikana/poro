@@ -767,18 +767,18 @@ void DrawBox( poro::IGraphics* graphics, const types::vector2& min_pos, const ty
 
 void DrawFilledBox( poro::IGraphics* graphics, const types::vector2& min_pos, const types::vector2& max_pos, const poro::types::fcolor& color, types::camera* camera )
 {
-	static auto vertices = std::vector< poro::types::vec2 >( 4 );
+	const uint32 color32 = types::fcolor( poro::GetFColor( color[0], color[1], color[2], color[3] ) ).Get32();
 
-	auto fill_mode = graphics->GetDrawFillMode();
-	graphics->SetDrawFillMode( poro::DRAWFILL_MODE::TRIANGLE_STRIP );
+	const poro::types::Vertex_PosFloat2_ColorUint32 vertices[] {
+		poro::types::Vertex_PosFloat2_ColorUint32{ min_pos.x, max_pos.y, color32 },
+		poro::types::Vertex_PosFloat2_ColorUint32{ min_pos.x, min_pos.y, color32 },
+		poro::types::Vertex_PosFloat2_ColorUint32{ max_pos.x, max_pos.y, color32 },
+		poro::types::Vertex_PosFloat2_ColorUint32{ max_pos.x, min_pos.y, color32 },
+	};
 
-	vertices[0] = poro::types::vec2( min_pos.x, max_pos.y );
-	vertices[1] = poro::types::vec2( min_pos.x, min_pos.y );
-	vertices[2] = poro::types::vec2( max_pos.x, max_pos.y );
-	vertices[3] = poro::types::vec2( max_pos.x, min_pos.y );
-
-	graphics->DrawFill( vertices, color );
-	graphics->SetDrawFillMode( fill_mode );
+	poro::GraphicsState state;
+	state.primitive_mode = poro::DRAW_PRIMITIVE_MODE::TRIANGLE_STRIP;
+	graphics->DrawVertices( vertices, 4, state );
 }
 //-----------------------------------------------------------------------------
 

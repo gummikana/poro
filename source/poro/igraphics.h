@@ -297,9 +297,6 @@ public:
 	virtual void PushVertexMode( VERTEX_MODE::Enum vertex_mode);
 	virtual void PopVertexMode();
 
-	virtual void SetDrawFillMode( int drawfill_mode )	{ mDrawFillMode = drawfill_mode; }
-	virtual int  GetDrawFillMode() const				{ return mDrawFillMode; }
-
 	virtual void SetShader( IShader* shader ) = 0;
 
 	//-------------------------------------------------------------------------
@@ -333,11 +330,11 @@ public:
 	void DrawLines( const types::Vertex_PosFloat2_ColorUint32* vertices, uint32 num_vertices, bool smooth = false, float width = 1.0f, bool loop = false );
 	void DrawLines( const std::vector< types::Vertex_PosFloat2_ColorUint32 >& vertices, bool smooth = false, float width = 1.0f, bool loop = false );
 	void DrawLines( const std::vector< types::vec2 >& vertices, const poro::types::fcolor& color, bool smooth = false, float width = 1.0f, bool loop = false );
-	void DrawVertices( const std::vector< types::Vertex_PosFloat2_ColorUint32 >& vertices, const poro::GraphicsState& state );
 
-	virtual void DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) { }
 	void DrawQuads( types::Vertex_PosFloat2_ColorUint32* vertices, uint32 num_vertices );
 	void DrawQuads( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, ITexture* texture );
+
+	void DrawVertices( const std::vector< types::Vertex_PosFloat2_ColorUint32 >& vertices, const poro::GraphicsState& state );
 
 	// low level api -------------------------------------------------------------------------
 
@@ -376,8 +373,6 @@ protected:
 	std::stack< VERTEX_MODE::Enum > mVertexModes;
 
 	TEXTURE_FILTERING_MODE::Enum mMipmapMode = TEXTURE_FILTERING_MODE::LINEAR;
-
-	int mDrawFillMode = DRAWFILL_MODE::POLYGON;
 
 	IShader* mCurrentShader = NULL;
 };
