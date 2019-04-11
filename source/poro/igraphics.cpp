@@ -59,6 +59,103 @@ namespace poro
 		graphics->LegacyBindTexture( 0 );
 	}
 
+
+	void IGraphics::DrawRect( const poro::types::vec2& position, const poro::types::vec2& size, const types::vec2* tex_coords )
+	{
+		const uint32 NUM_VERTICES = 4;
+
+		poro_assert( tex_coords );
+
+		types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 vertices[NUM_VERTICES];
+		vertices[0].x = (float)position.x;
+		vertices[0].y = (float)position.y;
+		vertices[1].x = (float)position.x;
+		vertices[1].y = (float)( position.y + size.y );
+		vertices[2].x = (float)( position.x + size.x );
+		vertices[2].y = (float)position.y;
+		vertices[3].x = (float)( position.x + size.x );
+		vertices[3].y = (float)( position.y + size.y );
+
+		for ( int i = 0; i < NUM_VERTICES; i++ )
+		{
+			vertices[i].u = tex_coords[i].x;
+			vertices[i].v = tex_coords[i].y;
+		}
+
+		GraphicsState state;
+		state.blend_mode = mBlendMode;
+		state.primitive_mode = DRAW_PRIMITIVE_MODE::TRIANGLE_STRIP;
+
+		DrawVertices( vertices, NUM_VERTICES, state );
+	}
+
+	void IGraphics::DrawRect( const poro::types::vec2& position, const poro::types::vec2& size, const types::vec2* tex_coords, const types::vec2* tex_coords2 )
+	{
+		const uint32 NUM_VERTICES = 4;
+
+		poro_assert( tex_coords );
+		poro_assert( tex_coords2 );
+
+		types::Vertex_PosFloat2_2xTexCoordFloat2_ColorUint32 vertices[NUM_VERTICES];
+		vertices[0].x = (float)position.x;
+		vertices[0].y = (float)position.y;
+		vertices[1].x = (float)position.x;
+		vertices[1].y = (float)( position.y + size.y );
+		vertices[2].x = (float)( position.x + size.x );
+		vertices[2].y = (float)position.y;
+		vertices[3].x = (float)( position.x + size.x );
+		vertices[3].y = (float)( position.y + size.y );
+
+		for ( int i = 0; i < NUM_VERTICES; i++ )
+		{
+			vertices[i].u = tex_coords[i].x;
+			vertices[i].v = tex_coords[i].y;
+			vertices[i].u2 = tex_coords2[i].x;
+			vertices[i].v2 = tex_coords2[i].y;
+		}
+
+		GraphicsState state;
+		state.blend_mode = mBlendMode;
+		state.primitive_mode = DRAW_PRIMITIVE_MODE::TRIANGLE_STRIP;
+
+		DrawVertices( vertices, NUM_VERTICES, state );
+	}
+
+	void IGraphics::DrawRect( const poro::types::vec2& position, const poro::types::vec2& size, const types::vec2* tex_coords, const types::vec2* tex_coords2, const types::vec2* tex_coords3 )
+	{
+		const uint32 NUM_VERTICES = 4;
+
+		poro_assert( tex_coords );
+		poro_assert( tex_coords2 );
+		poro_assert( tex_coords3 );
+
+		types::Vertex_PosFloat2_3xTexCoordFloat2_ColorUint32 vertices[NUM_VERTICES];
+		vertices[0].x = (float)position.x;
+		vertices[0].y = (float)position.y;
+		vertices[1].x = (float)position.x;
+		vertices[1].y = (float)( position.y + size.y );
+		vertices[2].x = (float)( position.x + size.x );
+		vertices[2].y = (float)position.y;
+		vertices[3].x = (float)( position.x + size.x );
+		vertices[3].y = (float)( position.y + size.y );
+
+		for ( int i = 0; i < NUM_VERTICES; i++ )
+		{
+			vertices[i].u = tex_coords[i].x;
+			vertices[i].v = tex_coords[i].y;
+			vertices[i].u2 = tex_coords2[i].x;
+			vertices[i].v2 = tex_coords2[i].y;
+			vertices[i].u3 = tex_coords3[i].x;
+			vertices[i].v3 = tex_coords3[i].y;
+		}
+
+		GraphicsState state;
+		state.blend_mode = mBlendMode;
+		state.primitive_mode = DRAW_PRIMITIVE_MODE::TRIANGLE_STRIP;
+
+		DrawVertices( vertices, NUM_VERTICES, state );
+	}
+
 	void IGraphics::DrawTexture( ITexture* itexture, float x, float y, float w, float h, const types::fcolor& color, float rotation )
 	{
 		poro_assert( itexture );
@@ -151,7 +248,6 @@ namespace poro
 
 		IMPL_DrawSprite( this, itexture, vert, num_vertices, mBlendMode, primitive_mode );
 	}
-
 
 	void IGraphics::DrawLines( const types::Vertex_PosFloat2_ColorUint32* vertices, uint32 num_vertices, bool smooth, float width, bool loop ) 
 	{

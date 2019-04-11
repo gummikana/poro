@@ -1360,56 +1360,6 @@ void GraphicsOpenGL::EndRendering()
 
 //=============================================================================
 
-void GraphicsOpenGL::DrawRect( const poro::types::vec2& position, const poro::types::vec2& size, const types::vec2* tex_coords, const types::vec2* tex_coords2, const types::vec2* tex_coords3 )
-{
-	poro_assert( tex_coords );
-	if ( tex_coords2 )
-		poro_assert( tex_coords );
-	if ( tex_coords3 )
-		poro_assert( tex_coords2 );
-
-	struct Vertice
-	{
-		float x, y;
-		float uv0_x, uv0_y, uv0_z, uv0_w;
-		float uv1_x, uv1_y;
-	};
-
-	types::vec2 vertices[4];
-	vertices[0].x = (float)position.x;
-	vertices[0].y = (float)position.y;
-	vertices[1].x = (float)position.x;
-	vertices[1].y = (float)( position.y + size.y );
-	vertices[2].x = (float)( position.x + size.x );
-	vertices[2].y = (float)position.y;
-	vertices[3].x = (float)( position.x + size.x );
-	vertices[3].y = (float)( position.y + size.y );
-
-	glEnable( GL_TEXTURE_2D );
-	glEnable( GL_BLEND );
-	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-
-	glBegin( GL_TRIANGLE_STRIP );
-
-	for ( int i = 0; i < 4; i++ )
-	{
-		if ( tex_coords2 )
-			glTexCoord4f( tex_coords[i].x, tex_coords[i].y, tex_coords2[i].x, tex_coords2[i].y );
-		else
-			glTexCoord2f( tex_coords[i].x, tex_coords[i].y );
-
-		if ( tex_coords3 )
-			glMultiTexCoord2f( GL_TEXTURE1, tex_coords3[i].x, tex_coords3[i].y );
-
-		glVertex2f( vertices[i].x, vertices[i].y );
-	}
-
-	glEnd();
-
-	glDisable( GL_BLEND );
-	glDisable( GL_TEXTURE_2D );
-}
-
 void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture, const types::vec2* tex_coords, const poro::types::fcolor& color )
 {
 	poro_assert( itexture );

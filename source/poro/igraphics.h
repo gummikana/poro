@@ -275,7 +275,6 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual void DrawRect( const poro::types::vec2& position, const poro::types::vec2& size, const types::vec2* tex_coords, const types::vec2* tex_coords2 = NULL, const types::vec2* tex_coords3 = NULL ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); };
 	virtual void DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture, const types::vec2* tex_coords, const types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ) ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); };
 
 	//-------------------------------------------------------------------------
@@ -289,6 +288,10 @@ public:
 
 	void DrawQuads( types::Vertex_PosFloat2_ColorUint32* vertices, uint32 num_vertices );
 	void DrawQuads( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, ITexture* texture );
+
+	void DrawRect( const poro::types::vec2& position, const poro::types::vec2& size, const types::vec2* tex_coords );
+	void DrawRect( const poro::types::vec2& position, const poro::types::vec2& size, const types::vec2* tex_coords, const types::vec2* tex_coords2 );
+	void DrawRect( const poro::types::vec2& position, const poro::types::vec2& size, const types::vec2* tex_coords, const types::vec2* tex_coords2, const types::vec2* tex_coords3 );
 
 	void DrawVertices( const std::vector< types::Vertex_PosFloat2_ColorUint32 >& vertices, const poro::GraphicsState& state );
 

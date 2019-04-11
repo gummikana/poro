@@ -117,7 +117,6 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual void DrawRect( const poro::types::vec2& position, const poro::types::vec2& size, const types::vec2* tex_coords, const types::vec2* tex_coords2 = NULL, const types::vec2* tex_coords3 = NULL ) PORO_OVERRIDE;
 	virtual void DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture, const types::vec2* tex_coords, const types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ) ) PORO_OVERRIDE;
 
 	//-------------------------------------------------------------------------
