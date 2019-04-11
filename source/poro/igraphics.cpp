@@ -45,7 +45,7 @@ namespace poro
 		return D;
 	}
 
-	void IMPL_DrawSprite( IGraphics* graphics, ITexture* texture, types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, BLEND_MODE::Enum blend_mode, DRAW_PRIMITIVE_MODE::Enum primitive_mode )
+	void IMPL_DrawTexture( IGraphics* graphics, ITexture* texture, types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, BLEND_MODE::Enum blend_mode, DRAW_PRIMITIVE_MODE::Enum primitive_mode )
 	{
 		poro_assert( graphics );
 		poro_assert( texture );
@@ -246,8 +246,43 @@ namespace poro
 			vert[i].color = color32;
 		}
 
-		IMPL_DrawSprite( this, itexture, vert, num_vertices, mBlendMode, primitive_mode );
+		IMPL_DrawTexture( this, itexture, vert, num_vertices, mBlendMode, primitive_mode );
 	}
+
+	void IGraphics::DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture, const types::vec2* tex_coords, const poro::types::fcolor& color )
+	{
+		const uint32 NUM_VERTICES = 4;
+
+		poro_assert( itexture );
+		poro_assert( tex_coords );
+
+		types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 vertices[NUM_VERTICES];
+		vertices[0].x = (float)position.x;
+		vertices[0].y = (float)position.y;
+		vertices[1].x = (float)position.x;
+		vertices[1].y = (float)( position.y + size.y );
+		vertices[2].x = (float)( position.x + size.x );
+		vertices[2].y = (float)position.y;
+		vertices[3].x = (float)( position.x + size.x );
+		vertices[3].y = (float)( position.y + size.y );
+
+		//glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );	// TODO: do on texture init
+		//glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT ); // TODO: do on texture init
+
+		const uint32 color32 = ::types::fcolor( color ).Get32();
+		for ( int i = 0; i < NUM_VERTICES; i++ )
+		{
+			vertices[i].u = tex_coords[i].x / itexture->GetWidth();
+			vertices[i].v = tex_coords[i].y / itexture->GetHeight();
+			vertices[i].color = color32;
+		}
+
+		IMPL_DrawTexture( this, itexture, vertices, NUM_VERTICES, mBlendMode, DRAW_PRIMITIVE_MODE::TRIANGLE_STRIP );
+
+		//glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE ); // TODO:
+		//glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE ); // TODO:
+	}
+
 
 	void IGraphics::DrawLines( const types::Vertex_PosFloat2_ColorUint32* vertices, uint32 num_vertices, bool smooth, float width, bool loop ) 
 	{

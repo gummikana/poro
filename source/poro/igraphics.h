@@ -275,12 +275,9 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual void DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture, const types::vec2* tex_coords, const types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ) ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); };
-
-	//-------------------------------------------------------------------------
-
 	void DrawTexture( ITexture* texture, float x, float y, float w, float h, const types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ), float rotation = 0 );
 	void DrawTexture( ITexture* texture, types::vec2* vertices, types::vec2* tex_coords, uint32 num_vertices, const types::fcolor& color, DRAW_PRIMITIVE_MODE::Enum vertex_mode );
+	void DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture, const types::vec2* tex_coords, const types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ) );
 
 	void DrawLines( const types::Vertex_PosFloat2_ColorUint32* vertices, uint32 num_vertices, bool smooth = false, float width = 1.0f, bool loop = false );
 	void DrawLines( const std::vector< types::Vertex_PosFloat2_ColorUint32 >& vertices, bool smooth = false, float width = 1.0f, bool loop = false );
