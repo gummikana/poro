@@ -93,24 +93,6 @@ namespace {
 
 	GraphicsSettings OPENGL_SETTINGS;
 
-	types::vec2 Vec2Rotate( const types::vec2& point, const types::vec2& center, float angle )
-	{
-		types::vec2 D;
-		D.x = point.x - center.x;
-		D.y = point.y - center.y;
-
-		// D.Rotate( angle );
-		float tx = D.x;
-		D.x = (float)D.x * (float)cos(angle) - D.y * (float)sin(angle);
-		D.y = (float)tx * (float)sin(angle) + D.y * (float)cos(angle);
-
-		// D += centre;
-		D.x += center.x;
-		D.y += center.y;
-
-		return D;
-	}
-
 	//-------------------------------------------------------------------------
 
 	unsigned char* ResizeImage( unsigned char* pixels, int w, int h, int new_size_x, int new_size_y )
@@ -1342,7 +1324,8 @@ void GraphicsOpenGL::SetShader( IShader* shader )
 
 void GraphicsOpenGL::BeginRendering()
 {
-	if ( mClearBackground ) {
+	if ( mClearBackground ) 
+	{
 		glClearColor( mFillColor[0],
 			mFillColor[1],
 			mFillColor[2],
