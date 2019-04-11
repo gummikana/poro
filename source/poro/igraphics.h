@@ -76,19 +76,6 @@ namespace BLEND_MODE
 	};
 }
 
-namespace DRAWFILL_MODE
-{
-	enum Enum
-	{
-		POLYGON = 0,
-		TRIANGLE_STRIP = 1,
-		QUADS = 2,
-		LINES = 3,
-		LINE_STRIP = 4,
-		LINE_LOOP = 5,
-	};
-}
-
 //-----------------------------
 
 namespace DRAW_PRIMITIVE_MODE
