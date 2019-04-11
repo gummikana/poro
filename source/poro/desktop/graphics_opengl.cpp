@@ -93,23 +93,6 @@ namespace {
 
 	GraphicsSettings OPENGL_SETTINGS;
 
-	Uint32 GetGLVertexMode(int vertex_mode){
-		switch (vertex_mode) {
-			case VERTEX_MODE::TRIANGLE_FAN:
-				return GL_TRIANGLE_FAN;
-			case VERTEX_MODE::TRIANGLE_STRIP:
-				return GL_TRIANGLE_STRIP;
-			case VERTEX_MODE::TRIANGLES:
-				return GL_TRIANGLES;
-			default:
-				poro_assert(false);
-				break;
-		}
-
-		// as a default
-		return GL_TRIANGLE_FAN;
-	}
-
 	types::vec2 Vec2Rotate( const types::vec2& point, const types::vec2& center, float angle )
 	{
 		types::vec2 D;

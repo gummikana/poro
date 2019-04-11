@@ -1259,7 +1259,7 @@ void Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 		graphics->Shader_SetParameter( mShader, "tex_size", poro::types::vec2( (float)mTexture->GetDataWidth(), (float)mTexture->GetDataHeight() ) );
 	}
 
-	graphics->DrawTexture( mTexture, temp_verts, tex_coords, 4, color_me );
+	graphics->DrawTexture( mTexture, temp_verts, tex_coords, 4, color_me, poro::DRAW_PRIMITIVE_MODE::TRIANGLE_FAN );
 
 	graphics->SetShader( NULL );
 		

@@ -45,20 +45,14 @@ namespace poro
 		return D;
 	}
 
-	void IMPL_DrawSprite( IGraphics* graphics, ITexture* texture, types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, BLEND_MODE::Enum blend_mode, VERTEX_MODE::Enum vertex_mode )
+	void IMPL_DrawSprite( IGraphics* graphics, ITexture* texture, types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, BLEND_MODE::Enum blend_mode, DRAW_PRIMITIVE_MODE::Enum primitive_mode )
 	{
 		poro_assert( graphics );
 		poro_assert( texture );
 
 		GraphicsState state;
 		state.blend_mode = blend_mode;
-		switch ( vertex_mode )
-		{
-			case VERTEX_MODE::TRIANGLES: state.primitive_mode = DRAW_PRIMITIVE_MODE::TRIANGLES;				break;
-			case VERTEX_MODE::TRIANGLE_STRIP: state.primitive_mode = DRAW_PRIMITIVE_MODE::TRIANGLE_STRIP;	break;
-			case VERTEX_MODE::TRIANGLE_FAN: state.primitive_mode = DRAW_PRIMITIVE_MODE::TRIANGLE_FAN;		break;
-			default: poro_assert( false && "Invalid enum value" );
-		}
+		state.primitive_mode = primitive_mode;
 
 		graphics->LegacyBindTexture( texture );
 		graphics->DrawVertices( vertices, num_vertices, state );
@@ -116,12 +110,10 @@ namespace poro
 		tex_coords[3].x = tx2;
 		tex_coords[3].y = ty2;
 
-		PushVertexMode( VERTEX_MODE::TRIANGLE_STRIP );
-		DrawTexture( itexture, temp_verts, tex_coords, 4, color );
-		PopVertexMode();
+		DrawTexture( itexture, temp_verts, tex_coords, 4, color, DRAW_PRIMITIVE_MODE::TRIANGLE_STRIP );
 	}
 
-	void IGraphics::DrawTexture( ITexture* itexture, types::vec2* vertices, types::vec2* tex_coords, uint32 num_vertices, const types::fcolor& color )
+	void IGraphics::DrawTexture( ITexture* itexture, types::vec2* vertices, types::vec2* tex_coords, uint32 num_vertices, const types::fcolor& color, DRAW_PRIMITIVE_MODE::Enum primitive_mode )
 	{
 		poro_assert( itexture );
 		poro_assert( num_vertices <= 8 );
@@ -157,7 +149,7 @@ namespace poro
 			vert[i].color = color32;
 		}
 
-		IMPL_DrawSprite( this, itexture, vert, num_vertices, mBlendMode, mVertexMode );
+		IMPL_DrawSprite( this, itexture, vert, num_vertices, mBlendMode, primitive_mode );
 	}
 
 

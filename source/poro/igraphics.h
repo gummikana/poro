@@ -76,16 +76,6 @@ namespace BLEND_MODE
 	};
 }
 
-namespace VERTEX_MODE
-{
-	enum Enum
-	{
-		TRIANGLE_FAN = 0,
-		TRIANGLE_STRIP = 1,
-		TRIANGLES = 2
-	};
-}
-
 namespace DRAWFILL_MODE
 {
 	enum Enum
@@ -294,13 +284,9 @@ public:
 	virtual void PushBlendMode( BLEND_MODE::Enum blend_mode );
 	virtual void PopBlendMode();
 
-	virtual void PushVertexMode( VERTEX_MODE::Enum vertex_mode);
-	virtual void PopVertexMode();
-
 	virtual void SetShader( IShader* shader ) = 0;
 
 	//-------------------------------------------------------------------------
-
 
 	virtual void DrawTexturedRect( const poro::types::vec2& position, 
 											const poro::types::vec2& size, 
@@ -314,7 +300,7 @@ public:
 	//-------------------------------------------------------------------------
 
 	void DrawTexture( ITexture* texture, float x, float y, float w, float h, const types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ), float rotation = 0 );
-	void DrawTexture( ITexture* texture, types::vec2* vertices, types::vec2* tex_coords, uint32 num_vertices, const types::fcolor& color );
+	void DrawTexture( ITexture* texture, types::vec2* vertices, types::vec2* tex_coords, uint32 num_vertices, const types::fcolor& color, DRAW_PRIMITIVE_MODE::Enum vertex_mode );
 
 	void DrawLines( const types::Vertex_PosFloat2_ColorUint32* vertices, uint32 num_vertices, bool smooth = false, float width = 1.0f, bool loop = false );
 	void DrawLines( const std::vector< types::Vertex_PosFloat2_ColorUint32 >& vertices, bool smooth = false, float width = 1.0f, bool loop = false );
@@ -357,9 +343,6 @@ protected:
 	
 	BLEND_MODE::Enum mBlendMode = BLEND_MODE::NORMAL;
 	std::stack< BLEND_MODE::Enum > mBlendModes;
-	
-	VERTEX_MODE::Enum mVertexMode = VERTEX_MODE::TRIANGLE_FAN;
-	std::stack< VERTEX_MODE::Enum > mVertexModes;
 
 	TEXTURE_FILTERING_MODE::Enum mMipmapMode = TEXTURE_FILTERING_MODE::LINEAR;
 
@@ -382,16 +365,6 @@ inline void	IGraphics::PushBlendMode( BLEND_MODE::Enum blend_mode) {
 inline void	IGraphics::PopBlendMode() {
 	mBlendMode = mBlendModes.top();
 	mBlendModes.pop();
-}
-
-inline void	IGraphics::PushVertexMode( VERTEX_MODE::Enum vertex_mode) {
-	mVertexModes.push(mVertexMode);
-	mVertexMode=vertex_mode;
-}
-
-inline void	IGraphics::PopVertexMode() {
-	mVertexMode = mVertexModes.top();
-	mVertexModes.pop();
 }
 
 inline void	IGraphics::SetFillColor( const poro::types::fcolor& c ) { 
