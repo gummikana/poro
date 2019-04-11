@@ -45,7 +45,7 @@ namespace poro
 		return D;
 	}
 
-	void IMPL_DrawTexture( IGraphics* graphics, ITexture* texture, types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, BLEND_MODE::Enum blend_mode, DRAW_PRIMITIVE_MODE::Enum primitive_mode )
+	void IMPL_DrawTexture( IGraphics* graphics, const ITexture* texture, const types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, BLEND_MODE::Enum blend_mode, DRAW_PRIMITIVE_MODE::Enum primitive_mode )
 	{
 		poro_assert( graphics );
 		poro_assert( texture );
@@ -156,7 +156,7 @@ namespace poro
 		DrawVertices( vertices, NUM_VERTICES, state );
 	}
 
-	void IGraphics::DrawTexture( ITexture* itexture, float x, float y, float w, float h, const types::fcolor& color, float rotation )
+	void IGraphics::DrawTexture( const ITexture* itexture, float x, float y, float w, float h, const types::fcolor& color, float rotation )
 	{
 		poro_assert( itexture );
 
@@ -210,7 +210,7 @@ namespace poro
 		DrawTexture( itexture, temp_verts, tex_coords, 4, color, DRAW_PRIMITIVE_MODE::TRIANGLE_STRIP );
 	}
 
-	void IGraphics::DrawTexture( ITexture* itexture, types::vec2* vertices, types::vec2* tex_coords, uint32 num_vertices, const types::fcolor& color, DRAW_PRIMITIVE_MODE::Enum primitive_mode )
+	void IGraphics::DrawTexture( const ITexture* itexture, types::vec2* vertices, types::vec2* tex_coords, uint32 num_vertices, const types::fcolor& color, DRAW_PRIMITIVE_MODE::Enum primitive_mode )
 	{
 		poro_assert( itexture );
 		poro_assert( num_vertices <= 8 );
@@ -249,7 +249,7 @@ namespace poro
 		IMPL_DrawTexture( this, itexture, vert, num_vertices, mBlendMode, primitive_mode );
 	}
 
-	void IGraphics::DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture, const types::vec2* tex_coords, const poro::types::fcolor& color )
+	void IGraphics::DrawTexturedRect( const ITexture* itexture, const poro::types::vec2& position, const poro::types::vec2& size, const types::vec2* tex_coords, const poro::types::fcolor& color )
 	{
 		const uint32 NUM_VERTICES = 4;
 
@@ -266,9 +266,6 @@ namespace poro
 		vertices[3].x = (float)( position.x + size.x );
 		vertices[3].y = (float)( position.y + size.y );
 
-		//glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );	// TODO: do on texture init
-		//glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT ); // TODO: do on texture init
-
 		const uint32 color32 = ::types::fcolor( color ).Get32();
 		for ( int i = 0; i < NUM_VERTICES; i++ )
 		{
@@ -278,9 +275,6 @@ namespace poro
 		}
 
 		IMPL_DrawTexture( this, itexture, vertices, NUM_VERTICES, mBlendMode, DRAW_PRIMITIVE_MODE::TRIANGLE_STRIP );
-
-		//glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE ); // TODO:
-		//glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE ); // TODO:
 	}
 
 
@@ -314,7 +308,7 @@ namespace poro
 		DrawLines( pvertices, smooth, width, loop );
 	}
 
-	void IGraphics::DrawQuads( types::Vertex_PosFloat2_ColorUint32* vertices, uint32 num_vertices )
+	void IGraphics::DrawQuads( const types::Vertex_PosFloat2_ColorUint32* vertices, uint32 num_vertices )
 	{
 		GraphicsState state;
 		state.blend_mode = mBlendMode;
@@ -323,17 +317,11 @@ namespace poro
 		DrawVertices( vertices, num_vertices, state );
 	}
 
-	void IGraphics::DrawQuads( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, ITexture* texture )
+	void IGraphics::DrawQuads( const types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, const ITexture* texture )
 	{
 		cassert( texture );
 
-		GraphicsState state;
-		state.blend_mode = mBlendMode;
-		state.primitive_mode = DRAW_PRIMITIVE_MODE::QUADS;
-
-		LegacyBindTexture( texture );
-		DrawVertices( vertices, num_vertices, state );
-		LegacyBindTexture( 0 );
+		IMPL_DrawTexture( this, texture, vertices, num_vertices, mBlendMode, DRAW_PRIMITIVE_MODE::QUADS );
 	}
 
 	void IGraphics::DrawVertices( const std::vector< types::Vertex_PosFloat2_ColorUint32 >& vertices, const poro::GraphicsState& state )

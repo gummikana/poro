@@ -275,16 +275,16 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	void DrawTexture( ITexture* texture, float x, float y, float w, float h, const types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ), float rotation = 0 );
-	void DrawTexture( ITexture* texture, types::vec2* vertices, types::vec2* tex_coords, uint32 num_vertices, const types::fcolor& color, DRAW_PRIMITIVE_MODE::Enum vertex_mode );
-	void DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture, const types::vec2* tex_coords, const types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ) );
+	void DrawTexture( const ITexture* texture, float x, float y, float w, float h, const types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ), float rotation = 0 );
+	void DrawTexture( const ITexture* texture, types::vec2* vertices, types::vec2* tex_coords, uint32 num_vertices, const types::fcolor& color, DRAW_PRIMITIVE_MODE::Enum vertex_mode );
+	void DrawTexturedRect( const ITexture* texture, const poro::types::vec2& position, const poro::types::vec2& size, const types::vec2* tex_coords, const types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ) );
 
 	void DrawLines( const types::Vertex_PosFloat2_ColorUint32* vertices, uint32 num_vertices, bool smooth = false, float width = 1.0f, bool loop = false );
 	void DrawLines( const std::vector< types::Vertex_PosFloat2_ColorUint32 >& vertices, bool smooth = false, float width = 1.0f, bool loop = false );
 	void DrawLines( const std::vector< types::vec2 >& vertices, const poro::types::fcolor& color, bool smooth = false, float width = 1.0f, bool loop = false );
 
-	void DrawQuads( types::Vertex_PosFloat2_ColorUint32* vertices, uint32 num_vertices );
-	void DrawQuads( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, ITexture* texture );
+	void DrawQuads( const types::Vertex_PosFloat2_ColorUint32* vertices, uint32 num_vertices );
+	void DrawQuads( const types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, const ITexture* texture );
 
 	void DrawRect( const poro::types::vec2& position, const poro::types::vec2& size, const types::vec2* tex_coords );
 	void DrawRect( const poro::types::vec2& position, const poro::types::vec2& size, const types::vec2* tex_coords, const types::vec2* tex_coords2 );
@@ -294,7 +294,7 @@ public:
 
 	// low level api -------------------------------------------------------------------------
 
-	virtual void LegacyBindTexture( ITexture* texture ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
+	virtual void LegacyBindTexture( const ITexture* texture ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
 	virtual void DrawVertices( const types::Vertex_PosFloat2_ColorUint32* vertices, uint32 num_vertices, const poro::GraphicsState& state ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
 	virtual void DrawVertices( const types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, const poro::GraphicsState& state ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
 	virtual void DrawVertices( const types::Vertex_PosFloat2_2xTexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, const poro::GraphicsState& state ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); }

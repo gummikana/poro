@@ -66,7 +66,7 @@ public:
 
 	virtual void DeletePixelData() = 0;
 
-	inline float GetUV( uint32 index ) { poro_assert( index < 4 ); return mUv[index]; }
+	inline float GetUV( uint32 index ) const { poro_assert( index < 4 ); return mUv[index]; }
 
 public: // don't touch these
 	int				mWidth;

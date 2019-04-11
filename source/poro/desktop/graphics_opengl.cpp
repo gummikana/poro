@@ -1408,11 +1408,11 @@ void LowLevel_DisableState( const GraphicsState& state )
 }
 
 
-void GraphicsOpenGL::LegacyBindTexture( ITexture* texture )
+void GraphicsOpenGL::LegacyBindTexture( const ITexture* texture )
 {
 	if ( texture )
 	{
-		poro::TextureOpenGL* otexture = static_cast< poro::TextureOpenGL* >( texture );
+		const poro::TextureOpenGL* otexture = static_cast< const poro::TextureOpenGL* >( texture );
 		glBindTexture( GL_TEXTURE_2D, otexture->mTexture );
 		glEnable( GL_TEXTURE_2D );
 	}
