@@ -53,6 +53,9 @@ public:
 		// Must be implemented if used
 	}
 
+	virtual float GetExternalSizeX() const { poro_assert( false ); return 0.0f; }; // Must be implemented if used
+	virtual float GetExternalSizeY() const { poro_assert( false ); return 0.0f; }; // Must be implemented if used
+
 	virtual types::string GetFilename() const = 0;
 	/*{
 		assert( false ); 
@@ -62,6 +65,22 @@ public:
 	virtual unsigned char* GetPixelData() const = 0;
 
 	virtual void DeletePixelData() = 0;
+
+	inline float GetUV( uint32 index ) { poro_assert( index < 4 ); return mUv[index]; }
+
+public: // don't touch these
+	int				mWidth;
+	int				mHeight;
+	float			mUv[4];
+
+	float			mExternalSizeX;
+	float			mExternalSizeY;
+
+	int				mRealSizeX;
+	int				mRealSizeY;
+
+	unsigned char*	mPixelData;
+	types::string	mFilename;
 };
 
 } // end o namespace poro
