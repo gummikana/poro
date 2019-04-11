@@ -186,7 +186,7 @@ namespace poro
 	void IGraphics::DrawQuads( types::Vertex_PosFloat2_ColorUint32* vertices, uint32 num_vertices )
 	{
 		GraphicsState state;
-		state.blend_mode = BLEND_MODE::NORMAL;
+		state.blend_mode = mBlendMode;
 		state.primitive_mode = DRAW_PRIMITIVE_MODE::QUADS;
 
 		DrawVertices( vertices, num_vertices, state );
@@ -197,7 +197,7 @@ namespace poro
 		cassert( texture );
 
 		GraphicsState state;
-		state.blend_mode = BLEND_MODE::NORMAL;
+		state.blend_mode = mBlendMode;
 		state.primitive_mode = DRAW_PRIMITIVE_MODE::QUADS;
 
 		LegacyBindTexture( texture );
