@@ -1697,131 +1697,10 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 	}
 }
 
-void GraphicsOpenGL::DrawQuads( types::Vertex_PosFloat2_ColorUint32* vertices, int vertex_count )
-{
-	glPushMatrix();
-	glEnable( GL_BLEND );
-
-	switch ( mBlendMode )
-	{
-		case BLEND_MODE::NORMAL:
-			glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-			break;
-		case BLEND_MODE::ADDITIVE:
-			glBlendFunc( GL_SRC_ALPHA, GL_ONE );
-			break;
-		case BLEND_MODE::ADDITIVE_ADDITIVEALPHA:
-			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE );
-			break;
-		case BLEND_MODE::ZERO_ADDITIVEALPHA:
-			glBlendFuncSeparate( GL_ZERO, GL_ONE, GL_ONE, GL_ONE );
-			break;
-		case BLEND_MODE::NORMAL_ADDITIVEALPHA:
-			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE );
-			break;
-		case BLEND_MODE::ADDITIVE_ZEROALPHA:
-			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE );
-			break;
-
-		default:
-			poro_assert( false && "Invalid enum value" );
-			break;
-	}
-
-	const int POSITION_SIZE = sizeof( float ) * 2;
-
-	glEnableClientState( GL_VERTEX_ARRAY );
-	glEnableClientState( GL_COLOR_ARRAY );
-	glBindBuffer( GL_ARRAY_BUFFER, mDynamicVboHandle );
-	glBufferData( GL_ARRAY_BUFFER, sizeof( types::Vertex_PosFloat2_ColorUint32 ) * vertex_count, vertices, GL_DYNAMIC_DRAW );
-
-	glVertexPointer( 2, GL_FLOAT, sizeof( types::Vertex_PosFloat2_ColorUint32), NULL );
-	glColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( types::Vertex_PosFloat2_ColorUint32 ), (GLvoid*)POSITION_SIZE );
-
-	glDrawArrays( GL_QUADS, 0, vertex_count );
-
-	// ---
-	glDisableClientState( GL_VERTEX_ARRAY );
-	glDisableClientState( GL_COLOR_ARRAY );
-	glBindBuffer( GL_ARRAY_BUFFER, 0 );
-
-	glDisable( GL_BLEND );
-	glPopMatrix();
-}
-
-void GraphicsOpenGL::DrawQuads( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, int vertex_count, ITexture* texture )
-{
-	glPushMatrix();
-
-	glEnable( GL_BLEND );
-
-	switch ( mBlendMode )
-	{
-		case BLEND_MODE::NORMAL:
-			glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-			break;
-		case BLEND_MODE::ADDITIVE:
-			glBlendFunc( GL_SRC_ALPHA, GL_ONE );
-			break;
-		case BLEND_MODE::ADDITIVE_ADDITIVEALPHA:
-			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE );
-			break;
-		case BLEND_MODE::ZERO_ADDITIVEALPHA:
-			glBlendFuncSeparate( GL_ZERO, GL_ONE, GL_ONE, GL_ONE );
-			break;
-		case BLEND_MODE::NORMAL_ADDITIVEALPHA:
-			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE );
-			break;
-		case BLEND_MODE::ADDITIVE_ZEROALPHA:
-			glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE );
-			break;
-
-		default:
-			poro_assert( false && "Invalid enum value" );
-			break;
-	}
-
-	if ( texture )
-	{
-		poro::TextureOpenGL* otexture = static_cast< poro::TextureOpenGL* >(texture);
-		glBindTexture( GL_TEXTURE_2D, otexture->mTexture );
-		glEnable( GL_TEXTURE_2D );
-	}
-
-	const int POSITION_SIZE = sizeof( float ) * 2;
-	const int TEXCOORD_SIZE = sizeof( float ) * 2;
-
-	glEnableClientState( GL_VERTEX_ARRAY );
-	glEnableClientState( GL_TEXTURE_COORD_ARRAY );
-	glEnableClientState( GL_COLOR_ARRAY );
-	glBindBuffer( GL_ARRAY_BUFFER, mDynamicVboHandle );
-	glBufferData( GL_ARRAY_BUFFER, sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ) * vertex_count, vertices, GL_DYNAMIC_DRAW );
-
-	glVertexPointer( 2, GL_FLOAT, sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), NULL );
-	glTexCoordPointer( 2, GL_FLOAT, sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), (GLvoid*)POSITION_SIZE );
-	glColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), (GLvoid*)(POSITION_SIZE+TEXCOORD_SIZE) );
-
-	glDrawArrays( GL_QUADS, 0, vertex_count );
-
-	// ---
-	glDisableClientState( GL_VERTEX_ARRAY );
-	glDisableClientState( GL_TEXTURE_COORD_ARRAY );
-	glDisableClientState( GL_COLOR_ARRAY );
-	glBindBuffer( GL_ARRAY_BUFFER, NULL );
-
-	if ( texture )
-		glDisable( GL_TEXTURE_2D );
-
-	glDisable( GL_BLEND );
-	glPopMatrix();
-}
-
 // low level API =====================================================================
 
-void GraphicsOpenGL::DrawVertices( const types::Vertex_PosFloat2_ColorUint32* vertices, uint32 num_vertices, const GraphicsState& state )
+void LowLevel_EnableState( const GraphicsState& state, uint32& out_api_primitive_mode )
 {
-	uint32 api_primitive_mode = 0;
-
 	// enable state
 	glEnable( GL_BLEND );
 	switch ( state.blend_mode )
@@ -1837,13 +1716,14 @@ void GraphicsOpenGL::DrawVertices( const types::Vertex_PosFloat2_ColorUint32* ve
 
 	switch ( state.primitive_mode )
 	{
-		case DRAW_PRIMITIVE_MODE::POINTS:			api_primitive_mode = GL_POINTS;											break;
-		case DRAW_PRIMITIVE_MODE::LINES:			api_primitive_mode = GL_LINES;		glLineWidth( state.line_width );	break;
-		case DRAW_PRIMITIVE_MODE::LINE_LOOP:		api_primitive_mode = GL_LINE_LOOP;	glLineWidth( state.line_width );	break;
-		case DRAW_PRIMITIVE_MODE::LINE_STRIP:		api_primitive_mode = GL_LINE_STRIP;	glLineWidth( state.line_width );	break;
-		case DRAW_PRIMITIVE_MODE::TRIANGLE_STRIP:	api_primitive_mode = GL_TRIANGLE_STRIP;									break;
-		case DRAW_PRIMITIVE_MODE::TRIANGLE_FAN:		api_primitive_mode = GL_TRIANGLE_FAN;									break;
-		case DRAW_PRIMITIVE_MODE::TRIANGLES:		api_primitive_mode = GL_TRIANGLES;										break;
+		case DRAW_PRIMITIVE_MODE::POINTS:			out_api_primitive_mode = GL_POINTS;											break;
+		case DRAW_PRIMITIVE_MODE::LINES:			out_api_primitive_mode = GL_LINES;		glLineWidth( state.line_width );	break;
+		case DRAW_PRIMITIVE_MODE::LINE_LOOP:		out_api_primitive_mode = GL_LINE_LOOP;	glLineWidth( state.line_width );	break;
+		case DRAW_PRIMITIVE_MODE::LINE_STRIP:		out_api_primitive_mode = GL_LINE_STRIP;	glLineWidth( state.line_width );	break;
+		case DRAW_PRIMITIVE_MODE::TRIANGLE_STRIP:	out_api_primitive_mode = GL_TRIANGLE_STRIP;									break;
+		case DRAW_PRIMITIVE_MODE::TRIANGLE_FAN:		out_api_primitive_mode = GL_TRIANGLE_FAN;									break;
+		case DRAW_PRIMITIVE_MODE::TRIANGLES:		out_api_primitive_mode = GL_TRIANGLES;										break;
+		case DRAW_PRIMITIVE_MODE::QUADS:			out_api_primitive_mode = GL_QUADS;											break;
 		default: poro_assert( false && "Invalid enum value" ); break;
 	}
 
@@ -1852,10 +1732,39 @@ void GraphicsOpenGL::DrawVertices( const types::Vertex_PosFloat2_ColorUint32* ve
 		glEnable( GL_LINE_SMOOTH );
 		glHint( GL_LINE_SMOOTH_HINT, GL_NICEST );
 	}
+}
 
+void LowLevel_DisableState( const GraphicsState& state )
+{
+	glDisable( GL_BLEND );
+
+	if ( state.flags & DRAW_FLAGS::LINE_SMOOTH )
+	{
+		glDisable( GL_LINE_SMOOTH );
+	}
+}
+
+
+void GraphicsOpenGL::LegacyBindTexture( ITexture* texture )
+{
+	if ( texture )
+	{
+		poro::TextureOpenGL* otexture = static_cast< poro::TextureOpenGL* >( texture );
+		glBindTexture( GL_TEXTURE_2D, otexture->mTexture );
+		glEnable( GL_TEXTURE_2D );
+	}
+	else
+	{
+		glBindTexture( GL_TEXTURE_2D, 0 );
+	}
+}
+
+void GraphicsOpenGL::DrawVertices( const types::Vertex_PosFloat2_ColorUint32* vertices, uint32 num_vertices, const GraphicsState& state )
+{
+	uint32 api_primitive_mode = 0;
+	LowLevel_EnableState( state, api_primitive_mode );
+	
 	// buffer data
-	const int POSITION_SIZE = sizeof( float ) * 2;
-
 	glEnableClientState( GL_VERTEX_ARRAY );
 	glEnableClientState( GL_COLOR_ARRAY );
 
@@ -1864,7 +1773,7 @@ void GraphicsOpenGL::DrawVertices( const types::Vertex_PosFloat2_ColorUint32* ve
 	//glVertexPointer( 2, GL_FLOAT, sizeof( types::Vertex_PosFloat2_ColorUint32 ), NULL );
 	//glColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( types::Vertex_PosFloat2_ColorUint32 ), (GLvoid*)POSITION_SIZE );
 
-	glVertexPointer( 2, GL_FLOAT, sizeof( types::Vertex_PosFloat2_ColorUint32 ), vertices );
+	glVertexPointer( 2, GL_FLOAT, sizeof( types::Vertex_PosFloat2_ColorUint32 ), &vertices->x );
 	glColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( types::Vertex_PosFloat2_ColorUint32 ), &vertices->color );
 
 	// draw
@@ -1876,13 +1785,32 @@ void GraphicsOpenGL::DrawVertices( const types::Vertex_PosFloat2_ColorUint32* ve
 
 	//glBindBuffer( GL_ARRAY_BUFFER, 0 );
 
-	// disable state
-	glDisable( GL_BLEND );
+	LowLevel_DisableState( state );
+}
 
-	if ( state.flags & DRAW_FLAGS::LINE_SMOOTH )
-	{
-		glDisable( GL_LINE_SMOOTH );
-	}
+void GraphicsOpenGL::DrawVertices( const types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, const GraphicsState& state )
+{
+	uint32 api_primitive_mode = 0;
+	LowLevel_EnableState( state, api_primitive_mode );
+
+	// buffer data
+	glEnableClientState( GL_VERTEX_ARRAY );
+	glEnableClientState( GL_COLOR_ARRAY );
+	glEnableClientState( GL_TEXTURE_COORD_ARRAY );
+
+	glVertexPointer( 2, GL_FLOAT, sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), &vertices->x );
+	glTexCoordPointer( 2, GL_FLOAT, sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), &vertices->u );
+	glColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), &vertices->color );
+
+	// draw
+	glDrawArrays( api_primitive_mode, 0, num_vertices );
+
+	// disable buffer state
+	glDisableClientState( GL_VERTEX_ARRAY );
+	glDisableClientState( GL_COLOR_ARRAY );
+	glDisableClientState( GL_TEXTURE_COORD_ARRAY );
+
+	LowLevel_DisableState( state );
 }
 
 //=============================================================================

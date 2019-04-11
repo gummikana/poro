@@ -24,6 +24,28 @@
 
 namespace poro
 {
+	void IGraphics::DrawQuads( types::Vertex_PosFloat2_ColorUint32* vertices, uint32 num_vertices )
+	{
+		GraphicsState state;
+		state.blend_mode = BLEND_MODE::NORMAL;
+		state.primitive_mode = DRAW_PRIMITIVE_MODE::QUADS;
+
+		DrawVertices( vertices, num_vertices, state );
+	}
+
+	void IGraphics::DrawQuads( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, ITexture* texture )
+	{
+		cassert( texture );
+
+		GraphicsState state;
+		state.blend_mode = BLEND_MODE::NORMAL;
+		state.primitive_mode = DRAW_PRIMITIVE_MODE::QUADS;
+		
+		LegacyBindTexture( texture );
+		DrawVertices( vertices, num_vertices, state );
+		LegacyBindTexture( 0 );
+	}
+
 	void IGraphics::DrawLines( const types::Vertex_PosFloat2_ColorUint32* vertices, uint32 num_vertices, bool smooth, float width, bool loop ) 
 	{
 		GraphicsState state;

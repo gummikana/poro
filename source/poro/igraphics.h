@@ -111,7 +111,8 @@ namespace DRAW_PRIMITIVE_MODE
 		LINES,
 		TRIANGLE_STRIP,
 		TRIANGLE_FAN,
-		TRIANGLES
+		TRIANGLES,
+		QUADS
 	};
 };
 
@@ -335,12 +336,14 @@ public:
 	void DrawVertices( const std::vector< types::Vertex_PosFloat2_ColorUint32 >& vertices, const poro::GraphicsState& state );
 
 	virtual void DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) { }
-	virtual void DrawQuads( types::Vertex_PosFloat2_ColorUint32* vertices, int vertex_count ) { }
-	virtual void DrawQuads( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, int vertex_count, ITexture* texture ) { }
+	void DrawQuads( types::Vertex_PosFloat2_ColorUint32* vertices, uint32 num_vertices );
+	void DrawQuads( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, ITexture* texture );
 
 	// low level api -------------------------------------------------------------------------
 
+	virtual void LegacyBindTexture( ITexture* texture ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
 	virtual void DrawVertices( const types::Vertex_PosFloat2_ColorUint32* vertices, uint32 num_vertices, const poro::GraphicsState& state ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
+	virtual void DrawVertices( const types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, const poro::GraphicsState& state ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
 
 	//-------------------------------------------------------------------------
 
