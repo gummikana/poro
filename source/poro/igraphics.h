@@ -229,7 +229,7 @@ public:
 
 	virtual IRenderTexture* RenderTexture_Create( int width, int height, bool linear_filtering ) const = 0;
 	virtual void RenderTexture_Destroy( IRenderTexture* texture ) const = 0;
-	virtual void RenderTexture_BeginRendering( IRenderTexture* texture, bool clear_color = true, bool clear_depth = true, float clear_r = 0.f, float clear_g = 0.f, float clear_b = 0.f, float clear_a = 0.f ) const = 0;
+	virtual void RenderTexture_BeginRendering( IRenderTexture* texture, bool clear_color = false, bool clear_depth = false, float clear_r = 0.f, float clear_g = 0.f, float clear_b = 0.f, float clear_a = 0.f ) const = 0;
 	virtual void RenderTexture_EndRendering( IRenderTexture* texture ) const = 0;
 	virtual void RenderTexture_ReadTextureDataFromGPU( IRenderTexture* texture, uint8* out_pixels ) const = 0;
 	virtual void RenderTexture_AsyncReadTextureDataFromGPUBegin( IRenderTexture* texture ) const = 0;
