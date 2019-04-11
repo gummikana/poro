@@ -26,19 +26,14 @@
 
 #include "poro_types.h"
 #include "poro_macros.h"
-#include "itexture.h"
-#include "itexture3d.h"
-#include "ishader.h"
-
-//Number of vertices that can be stored in the DrawTextureBuffer.
-//6000 = 2000 triangles = 1000 quads, since we use GL_TRIANGLES.
-#ifndef PORO_DRAW_TEXTURE_BUFFER_SIZE
-	#define PORO_DRAW_TEXTURE_BUFFER_SIZE 6000 
-#endif
+//#include "itexture.h"
+//#include "itexture3d.h"
+//#include "ishader.h"
 
 namespace poro {
 
-class IGraphicsBuffer;
+class ITexture;
+class ITexture3d;
 class IRenderTexture;
 class IShader;
 
@@ -156,7 +151,6 @@ struct GraphicsSettings
 		icon_bmp("data/ui_gfx/icon.bmp"),
 		textures_resize_to_power_of_two( true ), 
 		textures_fix_alpha_channel( true ),
-		buffered_textures( false ),
 		vsync( false ),
 		current_display( 0 )
 	{
@@ -170,7 +164,6 @@ struct GraphicsSettings
 
 	bool textures_resize_to_power_of_two;
 	bool textures_fix_alpha_channel;
-	bool buffered_textures;
 	
 	bool vsync;
 	int current_display;	// opens fullscreen on this display index...
@@ -214,17 +207,14 @@ public:
 	virtual void				SetSettings( const GraphicsSettings& settings ) { }
 	virtual GraphicsSettings	GetSettings() const { poro_assert( false); /* you have to implement this */ return GraphicsSettings(); }
 
-	virtual void				SetFillColor( const poro::types::fcolor& c );
-	virtual poro::types::fcolor	GetFillColor() const;
-
 	//-------------------------------------------------------------------------
 
-	virtual ITexture*	CreateTexture( int width, int height );
-	virtual ITexture*	CloneTexture( ITexture* other ) { poro_assert( false ); return NULL; /* you should implement this */ }
+	virtual ITexture*	CreateTexture( int width, int height ) = 0;
+	virtual ITexture*	CloneTexture( ITexture* other ) = 0;
 	void				SetTextureData(ITexture* texture, unsigned char* data ){ SetTextureData(texture, (void*)data ); }
 	void				SetTextureData(ITexture* texture, float* data ){ SetTextureData(texture, (void*)data ); }
-	virtual void		SetTextureData(ITexture* texture, void* data );
-	virtual void		SetTextureData(ITexture* texture, void* data, int x, int y, int w, int h );
+	virtual void		SetTextureData(ITexture* texture, void* data ) = 0;
+	virtual void		SetTextureData( ITexture* texture, void* data, int x, int y, int w, int h ) = 0;
 
 	virtual ITexture*	LoadTexture( const types::string& filename ) = 0;
 	virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data ) = 0;
@@ -234,46 +224,63 @@ public:
 
 	//-------------------------------------------------------------------------
 	
-	virtual ITexture3d*	LoadTexture3d( const types::string& filename );
-	virtual void		DestroyTexture3d( ITexture3d* texture );
+	virtual ITexture3d*	LoadTexture3d( const types::string& filename ) = 0;
+	virtual void		DestroyTexture3d( ITexture3d* texture ) = 0;
 
 	//-------------------------------------------------------------------------
 
-	virtual void		BeginRendering() = 0;
-	virtual void		EndRendering() = 0;
-	virtual void		SetClearBackground( bool clear ) { mClearBackground = clear; }
+	virtual IRenderTexture* RenderTexture_Create( int width, int height, bool linear_filtering ) const = 0;
+	virtual void RenderTexture_Destroy( IRenderTexture* texture ) const = 0;
+	virtual void RenderTexture_BeginRendering( IRenderTexture* texture, bool clear_color = true, bool clear_depth = true, float clear_r = 0.f, float clear_g = 0.f, float clear_b = 0.f, float clear_a = 0.f ) const = 0;
+	virtual void RenderTexture_EndRendering( IRenderTexture* texture ) const = 0;
+	virtual void RenderTexture_ReadTextureDataFromGPU( IRenderTexture* texture, uint8* out_pixels ) const = 0;
+	virtual void RenderTexture_AsyncReadTextureDataFromGPUBegin( IRenderTexture* texture ) const = 0;
+	virtual void RenderTexture_AsyncReadTextureDataFromGPUFinish( IRenderTexture* texture, uint8* out_pixels ) const = 0;
 
 	//-------------------------------------------------------------------------
-	
+
+	virtual IShader* Shader_Create() const = 0;
+	virtual void Shader_Init( IShader* shader, const std::string& vertex_source_filename, const std::string& fragment_source_filename ) const = 0;
+	virtual void Shader_InitFromString( IShader* shader, const std::string& vertex_source, const std::string& fragment_source ) const = 0;
+	virtual void Shader_Release( IShader* shader ) const = 0;
+	virtual void Shader_Enable( IShader* shader ) const = 0;
+	virtual void Shader_Disable( IShader* shader ) const = 0;
+	virtual bool Shader_HasParameter( IShader* shader, const std::string& name ) const = 0;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, float value ) const = 0;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const types::vec2& value ) const = 0;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const types::vec3& value ) const = 0;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const types::vec2& value_xy, types::vec2& value_zw ) const = 0;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, float x, float y, float z, float w ) const = 0;
+	virtual void Shader_SetParameter( IShader* ishader, const std::string& name, const float* value_4_floats ) const = 0;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const ITexture* texture ) const = 0;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const ITexture3d* texture ) const = 0;
+	virtual bool Shader_GetIsCompiledAndLinked( IShader* shader ) const = 0;
+
+	//-------------------------------------------------------------------------
+
+	virtual void BeginRendering() = 0;
+	virtual void EndRendering() = 0;
+	virtual void SetClearBackground( bool clear ) { mClearBackground = clear; }
+
+	//-------------------------------------------------------------------------
+
+	virtual void				SetFillColor( const poro::types::fcolor& c );
+	virtual poro::types::fcolor	GetFillColor() const;
+
 	virtual void SetMipmapMode( TEXTURE_FILTERING_MODE::Enum mode ){ mMipmapMode = mode;}
 	virtual int GetMipmapMode(){ return mMipmapMode; }
 	
-	//-------------------------------------------------------------------------
-
 	virtual void PushBlendMode( BLEND_MODE::Enum blend_mode );
 	virtual void PopBlendMode();
-
-	//-------------------------------------------------------------------------
 
 	virtual void PushVertexMode( VERTEX_MODE::Enum vertex_mode);
 	virtual void PopVertexMode();
 
-	//-------------------------------------------------------------------------
-	 
-	// DrawTextureBuffer
-	// The DrawTextureBuffer works so that consecutive calls to DrawTexture are buffered. 
-	// The buffer is automatically flushed using a single draw call when one of the following things happen:
-	// - The used texture changes.
-	// - The used color changes.
-	// - The used blendmode changes.
-	// - EndRendering() is called.
-	// - Any other Draw function ecept the two DrawTexture() functions are called.
-	// - The buffer is full.
-	// - Turinging of the buffering.
-	
-	virtual void SetDrawTextureBuffering( bool buffering ) {}
-	virtual bool GetDrawTextureBuffering() const { return false; }
-	
+	virtual void SetDrawFillMode( int drawfill_mode )	{ mDrawFillMode = drawfill_mode; }
+	virtual int  GetDrawFillMode() const				{ return mDrawFillMode; }
+
+	virtual void SetShader( IShader* shader ) = 0;
+
 	//-------------------------------------------------------------------------
 
 	virtual void DrawTexture( ITexture* texture,
@@ -290,18 +297,6 @@ public:
 										types::vec2* tex_coords, 
 										int count, 
 										const types::fcolor& color ) = 0;
-
-	
-	virtual void DrawTextureWithAlpha( ITexture* texture, 
-												types::vec2* vertices, 
-												types::vec2* tex_coords, 
-												int count, 
-												const types::fcolor& color,
-												ITexture* alpha_texture, 
-												types::vec2* alpha_vertices, 
-												types::vec2* alpha_tex_coords, 
-												const types::fcolor& alpha_color ) { poro_assert( false && "Needs to be implemented" ); }
-
 
 	virtual void DrawTexturedRect( const poro::types::vec2& position, 
 											const poro::types::vec2& size, 
@@ -323,24 +318,6 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual void SetDrawFillMode( int drawfill_mode )	{ mDrawFillMode = drawfill_mode; }
-	virtual int  GetDrawFillMode() const				{ return mDrawFillMode; }
-
-	virtual IGraphicsBuffer* CreateGraphicsBuffer( int width, int height ) { return NULL; }
-	virtual void DestroyGraphicsBuffer(IGraphicsBuffer* buffer) { }
-
-	//-------------------------------------------------------------------------
-
-	virtual IRenderTexture* CreateRenderTexture( int width, int height, bool linear_filtering ); // , TEXTURE_FILTERING_MODE::Enum filtering_mode = TEXTURE_FILTERING_MODE::NEAREST, TEXTURE_WRAPPING_MODE::Enum wrapping_mode = TEXTURE_WRAPPING_MODE::CLAMP );
-	virtual void DestroyRenderTexture( IRenderTexture* buffer );
-
-	//-------------------------------------------------------------------------
-
-	virtual IShader* CreateShader() { return NULL; }
-	virtual void SetShader( IShader* shader ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
-
-	//-------------------------------------------------------------------------
-
 	// Save screen (only supports .png format)
 	virtual void SaveScreenshot( const std::string& filename )								{ poro_assert( false && "IMPLEMENTATION NEEDED" ); }
 	virtual void SaveScreenshot( const std::string& filename, int x, int y, int w, int h )	{ poro_assert( false && "IMPLEMENTATION NEEDED" ); }
@@ -356,7 +333,7 @@ protected:
 	void _EndRendering()
 	{
 		if ( mCurrentShader )
-			mCurrentShader->Disable();
+			Shader_Disable( mCurrentShader );
 		mCurrentShader = NULL;
 	}
 
@@ -403,43 +380,6 @@ inline void	IGraphics::PopVertexMode() {
 	mVertexMode = mVertexModes.top();
 	mVertexModes.pop();
 }
-
-inline ITexture* IGraphics::CreateTexture( int width, int height ) {
-	// If this fails, it means you have not implemented create texture
-	poro_assert( false );
-	return NULL;
-}
-
-inline void IGraphics::SetTextureData( ITexture* texture, void* data ) {
-	// If this fails, it means you have not implemented set texture data
-	poro_assert( false );
-}
-
-inline void IGraphics::SetTextureData( ITexture* texture, void* data, int x, int y, int w, int h ) {
-	// If this fails, it means you have not implemented set texture data
-	poro_assert( false );
-}
-
-inline ITexture3d* IGraphics::LoadTexture3d( const types::string& filename ) {
-	// If this fails, it means you should implement 3d texture on your end of things
-	poro_assert( false );
-	return NULL;
-}
-inline void IGraphics::DestroyTexture3d( ITexture3d* texture ) {
-	// If this fails, it means you should implement 3d texture on your end of things
-	poro_assert( false );
-}
-
-inline IRenderTexture* IGraphics::CreateRenderTexture( int width, int height, bool linear_filtering ) { // , TEXTURE_FILTERING_MODE::Enum filtering_mode, TEXTURE_WRAPPING_MODE::Enum wrapping_mode
-	// If this fails, it means you should implement render texture on your end of things
-	poro_assert( false );
-	return NULL;
-}
-inline void IGraphics::DestroyRenderTexture(IRenderTexture* buffer){
-	// If this fails, it means you should implement render texture on your end of things
-	poro_assert( false );
-}
-
 
 inline void	IGraphics::SetFillColor( const poro::types::fcolor& c ) { 
 	mFillColor = c; 

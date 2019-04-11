@@ -32,7 +32,6 @@ namespace poro {
 
 class ITexture;
 class ITexture3d;
-class IGraphicsBuffer;
 
 //-----------------------------------------------------------------------------
 
@@ -68,9 +67,6 @@ public:
 	virtual void				SetSettings( const GraphicsSettings& settings ) PORO_OVERRIDE;
 	virtual GraphicsSettings	GetSettings() const PORO_OVERRIDE;
 	
-	virtual void		SetDrawTextureBuffering( bool buffering ) PORO_OVERRIDE;
-	virtual bool		GetDrawTextureBuffering() const PORO_OVERRIDE;
-
 	//-------------------------------------------------------------------------
 
 	virtual ITexture*	CreateTexture( int width, int height ) PORO_OVERRIDE;
@@ -90,66 +86,71 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual void		DrawTexture( ITexture* texture, 
-									types::Float32 x, 
-									types::Float32 y, 
-									types::Float32 w, 
-									types::Float32 h, 
-									const types::fcolor& color, 
-									types::Float32 rotation = 0.0f ) PORO_OVERRIDE;
+	virtual IRenderTexture* RenderTexture_Create(int width, int height, bool linear_filtering) const PORO_OVERRIDE;
+	virtual void RenderTexture_Destroy( IRenderTexture* texture ) const PORO_OVERRIDE;
+	virtual void RenderTexture_BeginRendering( IRenderTexture* texture, bool clear_color = true, bool clear_depth = true, float clear_r = 0.f, float clear_g = 0.f, float clear_b = 0.f, float clear_a = 0.f ) const PORO_OVERRIDE;
+	virtual void RenderTexture_EndRendering( IRenderTexture* texture ) const PORO_OVERRIDE;
+	virtual void RenderTexture_ReadTextureDataFromGPU( IRenderTexture* texture, uint8* out_pixels ) const PORO_OVERRIDE;
+	virtual void RenderTexture_AsyncReadTextureDataFromGPUBegin( IRenderTexture* texture ) const PORO_OVERRIDE;
+	virtual void RenderTexture_AsyncReadTextureDataFromGPUFinish( IRenderTexture* texture, uint8* out_pixels ) const PORO_OVERRIDE;
 
-	virtual void		DrawTexture( ITexture* texture, 
-										types::vec2* vertices, 
-										types::vec2* tex_coords, 
-										int count, 
-										const types::fcolor& color ) PORO_OVERRIDE;
+	//-------------------------------------------------------------------------
+
+	virtual IShader* Shader_Create() const PORO_OVERRIDE;
+	virtual void Shader_Init( IShader* shader, const std::string& vertex_source_filename, const std::string& fragment_source_filename ) const PORO_OVERRIDE;
+	virtual void Shader_InitFromString( IShader* shader, const std::string& vertex_source, const std::string& fragment_source ) const PORO_OVERRIDE;
+	virtual void Shader_Release( IShader* shader ) const PORO_OVERRIDE;
+	virtual void Shader_Enable( IShader* shader ) const PORO_OVERRIDE;
+	virtual void Shader_Disable( IShader* shader ) const PORO_OVERRIDE;
+	virtual bool Shader_HasParameter( IShader* shader, const std::string& name ) const PORO_OVERRIDE;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, float value ) const PORO_OVERRIDE;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const types::vec2& value ) const PORO_OVERRIDE;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const types::vec3& value ) const PORO_OVERRIDE;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const types::vec2& value_xy, types::vec2& value_zw ) const PORO_OVERRIDE;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, float x, float y, float z, float w ) const PORO_OVERRIDE;
+	virtual void Shader_SetParameter( IShader* ishader, const std::string& name, const float* value_4_floats ) const PORO_OVERRIDE;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const ITexture* texture ) const PORO_OVERRIDE;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const ITexture3d* texture ) const PORO_OVERRIDE;
+	virtual bool Shader_GetIsCompiledAndLinked( IShader* shader ) const PORO_OVERRIDE;
+
+	virtual void SetShader( IShader* shader );
+
+	//-------------------------------------------------------------------------
+
+	virtual void DrawTexture( ITexture* texture, 
+								types::Float32 x, 
+								types::Float32 y, 
+								types::Float32 w, 
+								types::Float32 h, 
+								const types::fcolor& color, 
+								types::Float32 rotation = 0.0f ) PORO_OVERRIDE;
+
+	virtual void DrawTexture( ITexture* texture, 
+								types::vec2* vertices, 
+								types::vec2* tex_coords, 
+								int count, 
+								const types::fcolor& color ) PORO_OVERRIDE;
+
+	virtual void DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture,  const types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ), types::vec2* tex_coords = NULL, int count = 0, types::vec2* tex_coords2 = NULL, types::vec2* tex_coords3 = NULL ) PORO_OVERRIDE;
+
+	//-------------------------------------------------------------------------
+
+	virtual void BeginRendering() PORO_OVERRIDE;
+	virtual void EndRendering() PORO_OVERRIDE;
 	
-	virtual void		DrawTextureWithAlpha( 
-		ITexture* texture, 
-		types::vec2* vertices, 
-		types::vec2* tex_coords, 
-		int count, 
-		const types::fcolor& color,
-		ITexture* alpha_texture, 
-		types::vec2* alpha_vertices, 
-		types::vec2* alpha_tex_coords, 
-		const types::fcolor& alpha_color ) PORO_OVERRIDE;
-
-
 	//-------------------------------------------------------------------------
 
-	virtual void		BeginRendering() PORO_OVERRIDE;
-	virtual void		EndRendering() PORO_OVERRIDE;
+	virtual void DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth, float width, bool loop ) PORO_OVERRIDE;
+	virtual void DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) PORO_OVERRIDE;
+	virtual void DrawQuads( float* vertices, int vertex_count, float* tex_coords, float* colors, ITexture* texture ) PORO_OVERRIDE;
+	virtual void DrawQuads( Vertex_PosFloat2_ColorUint32* vertices, int vertex_count ) PORO_OVERRIDE;
+	virtual void DrawQuads( Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, int vertex_count, ITexture* texture ) PORO_OVERRIDE;
 	
-	//-------------------------------------------------------------------------
-
-	virtual void		DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth, float width, bool loop ) PORO_OVERRIDE;
-	virtual void		DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color ) PORO_OVERRIDE;
-	virtual void		DrawQuads( float* vertices, int vertex_count, float* tex_coords, float* colors, ITexture* texture ) PORO_OVERRIDE;
-	virtual void		DrawQuads( Vertex_PosFloat2_ColorUint32* vertices, int vertex_count ) PORO_OVERRIDE;
-	virtual void		DrawQuads( Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, int vertex_count, ITexture* texture ) PORO_OVERRIDE;
-	virtual void		DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture,  const types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ), types::vec2* tex_coords = NULL, int count = 0, types::vec2* tex_coords2 = NULL, types::vec2* tex_coords3 = NULL ) PORO_OVERRIDE;
-	
-	//-------------------------------------------------------------------------
-
-	virtual IGraphicsBuffer* CreateGraphicsBuffer(int width, int height) PORO_OVERRIDE;
-	virtual void DestroyGraphicsBuffer(IGraphicsBuffer* buffer) PORO_OVERRIDE;
-
-	//-------------------------------------------------------------------------
-
-	virtual IRenderTexture* CreateRenderTexture(int width, int height, bool linear_filtering) PORO_OVERRIDE;
-	virtual void DestroyRenderTexture(IRenderTexture* buffer) PORO_OVERRIDE;
-
-	//-------------------------------------------------------------------------
-
-	virtual IShader* CreateShader() PORO_OVERRIDE;
-	virtual void SetShader( IShader* shader ) PORO_OVERRIDE;
-
 	//-------------------------------------------------------------------------
 
 	types::vec2 ConvertToInternalPos( int x, int y );
-
 	void ResetWindow();
+	void LoadOpenGL();
 
 	//-------------------------------------------------------------------------
 
@@ -158,14 +159,13 @@ public:
 	int CaptureScreenshot( unsigned char* data, int max_size );
 
 	//-------------------------------------------------------------------------
+
 	virtual unsigned char*	ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp ) PORO_OVERRIDE;
 	virtual int				ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes ) PORO_OVERRIDE;
 
 private:
 
 	SDL_Window* mSDLWindow;
-	// bool	mFullscreen;
-	// bool	mVsync;
 	int		mWindowWidth;
 	int		mWindowHeight;
 	types::vec2 mViewportOffset;
@@ -175,12 +175,6 @@ private:
 	int mDesktopHeight;
 	
 	bool mGlContextInitialized;
-
-	void FlushDrawTextureBuffer();
-
-	class					DrawTextureBuffered;
-	DrawTextureBuffered*	mDrawTextureBuffered;
-	bool					mUseDrawTextureBuffering;
 
 	uint32 mDynamicVboHandle = 0;
 

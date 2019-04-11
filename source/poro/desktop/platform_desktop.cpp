@@ -815,23 +815,6 @@ types::Double32 PlatformDesktop::GetUpTime()
 	return GetPreciseTime();
 }
 
-void PlatformDesktop::SetWindowSize( int width, int height ) 
-{
-	mWidth = width;
-	mHeight = height;
-	mGraphics->SetWindowSize( width, height );
-}
-
-void PlatformDesktop::SetVsync( bool vsync_enabled )
-{
-	mGraphics->SetVsync( vsync_enabled );
-}
-
-bool PlatformDesktop::GetVsync()
-{
-	return mGraphics->GetVsync();
-}
-
 //-----------------------------------------------------------------------------
 
 Mouse* PlatformDesktop::GetMouse() {

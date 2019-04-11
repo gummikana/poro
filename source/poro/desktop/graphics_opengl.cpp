@@ -29,17 +29,19 @@
 #include "../poro_macros.h"
 #include "texture_opengl.h"
 #include "texture3d_opengl.h"
+#include "render_texture_opengl.h"
+#include "shader_opengl.h"
 
+// for opengl function loading (glew replacement)
+#define FGL_IMPLEMENTATION
+#include "../external/final_dynamic_opengl.h"
+#undef FGL_IMPLEMENTATION
+
+// ---
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_NO_STDIO
 #include "../external/stb_image.h"
 #undef STB_IMAGE_IMPLEMENTATION
-
-#ifndef PORO_DONT_USE_GLEW
-#	include "graphics_buffer_opengl.h"
-#	include "render_texture_opengl.h"
-#	include "shader_opengl.h"
-#endif
 
 #define PORO_ERROR "ERROR: "
 
@@ -48,6 +50,9 @@
 #include "../external/stb_image_write.h"
 #undef STB_IMAGE_WRITE_IMPLEMENTATION
 
+//#define RENDER_TEXTURE_ASYNC_READ_SUBDATA_IMPL
+
+//-------------------------------------------------------------------------
 
 //=============================================================================
 // Note( Petri ): This is to tell NVidia and AMD to use their proper graphics 
@@ -68,6 +73,7 @@ extern "C" {
 #endif
 
 //=============================================================================
+
 namespace poro {
 	
 	types::Uint32 GetNextPowerOfTwo(types::Uint32 input)
@@ -134,11 +140,8 @@ namespace {
 
 	//-------------------------------------------------------------------------
 
-	//static int drawcalls=0;
 	void drawsprite( TextureOpenGL* texture, Vertex* vertices, const types::fcolor& color, int count, Uint32 vertex_mode, int blend_mode )
 	{
-		//++drawcalls;
-		
 		Uint32 tex = texture->mTexture;
 		glBindTexture(GL_TEXTURE_2D, tex);
 		glEnable(GL_TEXTURE_2D);
@@ -184,72 +187,9 @@ namespace {
 		glEnd();
 		glDisable(GL_BLEND);
 		glDisable(GL_TEXTURE_2D);
-
-		//if (blend_mode == BLEND_MODE::NORMAL_ADDITIVEALPHA)
-		//	glBlendEquation(GL_FUNC_ADD);
 	}
-
-	//================================================================
-
-	void drawsprite_withalpha( TextureOpenGL* texture, Vertex* vertices, const types::fcolor& color, int count,
-		TextureOpenGL* alpha_texture, Vertex* alpha_vertices, const types::fcolor& alpha_color,
-		Uint32 vertex_mode )
-	{
-		
-#ifdef PORO_DONT_USE_GLEW
-		poro_logger << "Error: Glew isn't enable alpha masking, this means we can't do alpha masking. " << "\n";
-		return;
-#else
-		// no glew on mac? We'll maybe we need graphics_mac!?
-		if(!GLEW_VERSION_1_3)
-		{
-			poro_logger << "Error: OpenGL 1.3. isn't supported, this means we can't do alpha masking. " << "\n";
-			return;
-		}
-
-		Uint32 image_id = texture->mTexture;
-		Uint32 alpha_mask_id = alpha_texture->mTexture;
-
-		// alpha texture
-		glActiveTexture(GL_TEXTURE0);
-		glEnable(GL_TEXTURE_2D);
-		glColor4f(alpha_color[ 0 ], alpha_color[ 1 ], alpha_color[ 2 ], alpha_color[ 3 ] );
-		glBindTexture(GL_TEXTURE_2D, alpha_mask_id );
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		// sprite texture
-		glActiveTexture(GL_TEXTURE1);
-		glEnable(GL_TEXTURE_2D);
-		glColor4f(color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
-		glBindTexture(GL_TEXTURE_2D, image_id );
-
-		glDisable(GL_CULL_FACE);
-		glBegin( vertex_mode );
-		for( int i = 0; i < count; ++i )
-		{
-			// glTexCoord2f(vertices[ i ].tx, vertices[ i ].ty );
-			glMultiTexCoord2f(GL_TEXTURE0, alpha_vertices[ i ].tx, alpha_vertices[ i ].ty);
-			glMultiTexCoord2f(GL_TEXTURE1, vertices[i].tx, vertices[i].ty);
-			glVertex2f(vertices[ i ].x, vertices[ i ].y );
-		}
-
-		glEnd();
-
-
-		glDisable(GL_TEXTURE_2D);
-		glDisable( GL_BLEND );
-
-		glActiveTexture(GL_TEXTURE0);
-		glDisable(GL_TEXTURE_2D);
-#endif
-	}
-
 
 	//-------------------------------------------------------------------------
-
-
-	///////////////////////////////////////////////////////////////////////////
 
 	unsigned char* ResizeImage( unsigned char* pixels, int w, int h, int new_size_x, int new_size_y )
 	{
@@ -276,8 +216,8 @@ namespace {
 		}
 		return result;
 	}
-	
-	///////////////////////////////////////////////////////////////////////////
+
+	//-------------------------------------------------------------------------
 
 	TextureOpenGL* CreateImage( unsigned char* pixels, int w, int h, int bpp, bool store_raw_pixel_data )
 	{
@@ -364,7 +304,6 @@ namespace {
 		return result;
 	}
 			
-
 	//-----------------------------------------------------------------------------
 
 	// Thanks to Jetro Lauha for allowing me to use this. 
@@ -507,129 +446,13 @@ namespace {
 		glDisable(GL_TEXTURE_2D);
 	}
 
-} // end o namespace anon
-//-----------------------------------------------------------------------------
+} // end of namespace anon
 
-//=========================== DrawTextureBuffer ===============================
-//
-// Now the game pushes all the textures through the buffered pipeline...
-// Maybe a more intelligent way of doing this would be to draw the first 
-// "texture" through the normal pipeline. If the next draw call uses the same 
-// texture and the previous and the next one could be buffered, we draw the 
-// next one through the buffer. This way we skip unnecessary "optimization" 
-// of normal textured draw calls...
-//
-// Or maybe we just turn this on when we're using an atlas...
-//
-class GraphicsOpenGL::DrawTextureBuffered {
-public:
-
-	Vertex				vertex_buffer[PORO_DRAW_TEXTURE_BUFFER_SIZE];
-	int					vertex_buffer_count;
-	TextureOpenGL*		prev_texture;
-	Uint32				prev_texture_id;
-	types::fcolor		prev_color;
-	int					prev_vertex_mode;
-	int					prev_blend_mode;
-
-	DrawTextureBuffered() 
-	{
-		vertex_buffer_count = 0;
-		prev_texture = NULL;
-		prev_texture_id = 0;
-		prev_color = GetFColor(0,0,0,0);
-		prev_vertex_mode = 0;
-		prev_blend_mode = 0;
-	}
-
-	bool CanDrawSpriteToBuffer( TextureOpenGL* texture, const types::fcolor& color, int count, Uint32 vertex_mode, int blend_mode ) 
-	{
-		poro_assert( texture );
-		poro_assert( count > 0 );
-
-		if( vertex_buffer_count == 0 )
-			return true;
-		
-		if( prev_texture_id != texture->mTexture )
-			return false;
-		
-		if( vertex_buffer_count+(count-2)*3 >= PORO_DRAW_TEXTURE_BUFFER_SIZE )
-			return false;
-		
-		if( prev_color[0] != color[0] || prev_color[1] != color[1] || prev_color[2] != color[2] || prev_color[3] != color[3] )
-			return false;
-		
-		if( prev_blend_mode != blend_mode )
-			return false;
-		
-		return true;
-	}
-	
-	void DrawSpriteToBuffer( TextureOpenGL* texture, Vertex* vertices, const types::fcolor& color, int count, Uint32 vertex_mode, int blend_mode )
-	{
-		poro_assert( texture );
-		
-		prev_color = color;
-		prev_texture_id = texture->mTexture;
-		prev_texture = texture;
-		prev_vertex_mode = vertex_mode;
-		prev_blend_mode= blend_mode;
-		
-		//convert GL_TRIANGLE_FAN and GL_TRIANGLE_STRIP to GL_TRIANGLES
-		if(vertex_mode==GL_TRIANGLE_FAN){
-			for( int i=2; i<count; ++i ){
-				vertex_buffer[vertex_buffer_count] = vertices[0];
-				++vertex_buffer_count;
-				vertex_buffer[vertex_buffer_count] = vertices[i-1];
-				++vertex_buffer_count;
-				vertex_buffer[vertex_buffer_count] = vertices[i];
-				++vertex_buffer_count;
-			}
-		} else if(vertex_mode==GL_TRIANGLE_STRIP){
-			for( int i=2; i<count; ++i ){
-				vertex_buffer[vertex_buffer_count] = vertices[i-2];
-				++vertex_buffer_count;
-				vertex_buffer[vertex_buffer_count] = vertices[i-1];
-				++vertex_buffer_count;
-				vertex_buffer[vertex_buffer_count] = vertices[i];
-				++vertex_buffer_count;
-			}
-		} else if(vertex_mode==GL_TRIANGLES) {
-			for( int i=0; i<count; ++i ){
-				vertex_buffer[vertex_buffer_count] = vertices[i];
-				++vertex_buffer_count;
-			}
-		}
-	}
-	
-	void FlushDrawSpriteBuffer()
-	{
-		if( vertex_buffer_count > 0 ) {
-			drawsprite( prev_texture, vertex_buffer, prev_color, vertex_buffer_count, GL_TRIANGLES, prev_blend_mode );
-			/*if( vertex_buffer_count != 6 )
-				std::cout << "Buffered draw call: " << vertex_buffer_count << "\n";*/
-		}
-		vertex_buffer_count = 0;
-	}
-	
-	void BufferedDrawSprite( TextureOpenGL* texture, Vertex* vertices, const types::fcolor& color, int count, Uint32 vertex_mode, int blend_mode )
-	{
-		if( !CanDrawSpriteToBuffer( texture, color, count, vertex_mode, blend_mode ) ){
-			FlushDrawSpriteBuffer();
-		}
-		DrawSpriteToBuffer( texture, vertices, color, count, vertex_mode, blend_mode );
-	}
-	
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
+//=============================================================================
 
 GraphicsOpenGL::GraphicsOpenGL() :
 	IGraphics(),
 	mSDLWindow( NULL ),
-	// mFullscreen( false ),
-	// mVsync( false ),
 	mWindowWidth( 640 ),
 	mWindowHeight( 480 ),
 	mViewportOffset(),
@@ -638,31 +461,19 @@ GraphicsOpenGL::GraphicsOpenGL() :
 	mDesktopWidth( 640 ),
 	mDesktopHeight( 480 ),
 
-	mGlContextInitialized( false ),
-
-	mDrawTextureBuffered( NULL ),	
-	mUseDrawTextureBuffering( false )
+	mGlContextInitialized( false )
 {
 
-}
-
-int GraphicsOpenGL::GetFullscreen()
-{ 
-	return OPENGL_SETTINGS.fullscreen; 
-}
-
-bool GraphicsOpenGL::GetVsync() 
-{
-	return OPENGL_SETTINGS.vsync; 
 }
 
 //-----------------------------------------------------------------------------
 
-void GraphicsOpenGL::SetSettings( const GraphicsSettings& settings ) {
+void GraphicsOpenGL::SetSettings( const GraphicsSettings& settings )
+{
+	LoadOpenGL(); // SetFullscreen needs access to some opengl functions
 	SetFullscreen( settings.fullscreen );
 	SetVsync( settings.vsync );
 	OPENGL_SETTINGS = settings;
-	this->SetDrawTextureBuffering( settings.buffered_textures );
 }
 
 GraphicsSettings GraphicsOpenGL::GetSettings() const 
@@ -670,21 +481,7 @@ GraphicsSettings GraphicsOpenGL::GetSettings() const
 	return OPENGL_SETTINGS;
 }
 
-//-----------------------------------------------------------------------------
-	
-void GraphicsOpenGL::SetDrawTextureBuffering( bool buffering ) {
-	FlushDrawTextureBuffer();
-	mUseDrawTextureBuffering = buffering;
-
-	if( mUseDrawTextureBuffering && mDrawTextureBuffered == NULL ) 
-		mDrawTextureBuffered = new DrawTextureBuffered;
-}
-
-bool GraphicsOpenGL::GetDrawTextureBuffering() const {
-	return mUseDrawTextureBuffering;
-}
-
-//-----------------------------------------------------------------------------
+//=============================================================================
 
 bool GraphicsOpenGL::Init( int width, int height, int fullscreen, const types::string& caption )
 {
@@ -694,8 +491,6 @@ bool GraphicsOpenGL::Init( int width, int height, int fullscreen, const types::s
 	mDesktopWidth = 0;
 	mDesktopHeight = 0;
 	mGlContextInitialized = false;
-	mDrawTextureBuffered = NULL;	
-	mUseDrawTextureBuffering = false;
 
 	//const SDL_VideoInfo *info = NULL;
 
@@ -765,26 +560,21 @@ bool GraphicsOpenGL::Init( int width, int height, int fullscreen, const types::s
 	// vsync? 0 = no vsync, 1 = vsync
 	SDL_GL_SetSwapInterval( OPENGL_SETTINGS.vsync ? 1 : 0 );	// TODO: petri?
 	// mVsync = OPENGL_SETTINGS.vsync;								// TODO: petri?
-	
+
+	// ---
+	LoadOpenGL();
+
+	// ---
 	IPlatform::Instance()->SetInternalSize( (types::Float32)width, (types::Float32)height );
 	ResetWindow();
-	
-	// no glew for mac? this might cause some problems
-#ifndef PORO_DONT_USE_GLEW
-	GLenum glew_err = glewInit();
-	if (GLEW_OK != glew_err)
-	{
-		/* Problem: glewInit failed, something is seriously wrong. */
-		poro_logger << "Error: " << glewGetErrorString(glew_err) << "\n";
-	}
-#endif
 
 	poro_assert( mDynamicVboHandle == 0 );
 	glGenBuffers( 1, &mDynamicVboHandle );
 
 	return 1;
 }
-//-----------------------------------------------------------------------------
+
+//=============================================================================
 
 void GraphicsOpenGL::SetCaption( const types::string& capt )
 {
@@ -801,6 +591,7 @@ void GraphicsOpenGL::SetIcon( const std::string& icon_bmp_file )
 		SDL_SetWindowIcon(mSDLWindow, icon_surface);
 
 }
+
 //-----------------------------------------------------------------------------
 
 void GraphicsOpenGL::SetInternalSize( types::Float32 width, types::Float32 height )
@@ -809,7 +600,7 @@ void GraphicsOpenGL::SetInternalSize( types::Float32 width, types::Float32 heigh
 	{
 		glMatrixMode( GL_PROJECTION );
 		glLoadIdentity();
-		gluOrtho2D(0, (GLdouble)width, (GLdouble)height, 0);
+		glOrtho( 0.0,(GLdouble)width, (GLdouble)height, 0.0, -1.0, 1.0 );
 	}
 }
 
@@ -819,7 +610,7 @@ void GraphicsOpenGL::SetInternalSizeAdvanced( types::Float32 left, types::Float3
 	{
 		glMatrixMode( GL_PROJECTION );
 		glLoadIdentity();
-		gluOrtho2D((GLdouble)left, (GLdouble)right, (GLdouble)bottom, (GLdouble)top);
+		glOrtho( (GLdouble)left, (GLdouble)right, (GLdouble)bottom, (GLdouble)top, -1.0, 1.0 );
 	}
 }
 
@@ -913,6 +704,11 @@ void GraphicsOpenGL::SetFullscreen(int fullscreen)
 	}
 }
 
+int GraphicsOpenGL::GetFullscreen()
+{ 
+	return OPENGL_SETTINGS.fullscreen; 
+}
+
 void GraphicsOpenGL::SetVsync( bool vsync )
 {
 	if ( OPENGL_SETTINGS.vsync != vsync )
@@ -922,78 +718,9 @@ void GraphicsOpenGL::SetVsync( bool vsync )
 	}
 }
 
-void GraphicsOpenGL::ResetWindow()
+bool GraphicsOpenGL::GetVsync() 
 {
-	int flags = 0;
-	int window_width;
-	int window_height;
-	
-	//flags = SDL_WINDOW_OPENGL;
-	// OPENGL_SETTINGS.fullscreen = true;
-
-	if( OPENGL_SETTINGS.fullscreen == FULLSCREEN_MODE::STRETCHED || OPENGL_SETTINGS.fullscreen == FULLSCREEN_MODE::FULL )
-	{
-		// for real fullscreen
-		if( OPENGL_SETTINGS.fullscreen == FULLSCREEN_MODE::STRETCHED )
-			flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-		else 
-			flags |= SDL_WINDOW_FULLSCREEN;
-		// flags = SDL_WINDOW_FULLSCREEN;
-		window_width = (int)mDesktopWidth;
-		window_height = (int)mDesktopHeight;
-	} 
-	else 
-	{
-		window_width = mWindowWidth;
-		window_height = mWindowHeight;
-	// #ifdef _DEBUG
-		// this is not supported by SDL2.0 anymore 
-		// flags |= SDL_WINDOW_RESIZABLE;
-	// #endif
-
-		flags = 0;
-		// 0 = windowed mode
-	}
-
-	mGlContextInitialized = true;
-	
-	SDL_SetWindowSize( mSDLWindow, window_width, window_height );
-	SDL_SetWindowFullscreen( mSDLWindow, flags );
-	// SDL_SetWindowResizable(mSDLWindow, SDL_TRUE);
-
-	{ //OpenGL view setup
-		float internal_width = IPlatform::Instance()->GetInternalWidth();
-		float internal_height = IPlatform::Instance()->GetInternalHeight();
-		float screen_aspect = (float)window_width/(float)window_height;
-		float internal_aspect = (float)internal_width/(float)internal_height;
-		mViewportSize.x = (float)window_width;
-		mViewportSize.y = (float)window_height;
-		mViewportOffset = types::vec2(0, 0);
-		if(screen_aspect>internal_aspect){
-			//Widescreen, Black borders on left and right
-			mViewportSize.x = window_height*internal_aspect;
-			mViewportOffset.x = (window_width-mViewportSize.x)*0.5f;
-		} else {
-			//Tallscreen, Black borders on top and bottom
-			mViewportSize.y = window_width/internal_aspect;
-			mViewportOffset.y = (window_height-mViewportSize.y)*0.5f;
-		}
-		
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-
-		glViewport((GLint)mViewportOffset.x, (GLint)mViewportOffset.y, (GLint)mViewportSize.x, (GLint)mViewportSize.y);
-		
-		glClearColor(0,0,0,1.0f);
-		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-		
-		//(OpenGL actually wants the x offset from the bottom, but since we are centering the view the direction does not matter.)
-		// glEnable(GL_SCISSOR_TEST);
-		// glScissor((GLint)mViewportOffset.x, (GLint)mViewportOffset.y, (GLint)mViewportSize.x, (GLint)mViewportSize.y);
-
-		glScalef(1,-1,1); //Flip y axis
-		gluOrtho2D(0, internal_width, 0, internal_height);
-	}
+	return OPENGL_SETTINGS.vsync; 
 }
 
 //=============================================================================
@@ -1005,19 +732,22 @@ ITexture* GraphicsOpenGL::CreateTexture( int width, int height )
 
 ITexture* GraphicsOpenGL::CloneTexture( ITexture* other )
 {
-	return new TextureOpenGL( dynamic_cast< TextureOpenGL* >( other ) );
+	poro_assert( dynamic_cast<TextureOpenGL*>( other ) );
+	return new TextureOpenGL( static_cast<TextureOpenGL*>(other) );
 }
 
-void GraphicsOpenGL::SetTextureData( ITexture* texture, void* data )
+void GraphicsOpenGL::SetTextureData( ITexture* itexture, void* data )
 {
-	TextureOpenGL* texture_opengl = dynamic_cast< TextureOpenGL* >( texture );
-	SetTextureData_Impl( texture_opengl, data, 0, 0, texture_opengl->GetWidth(), texture_opengl->GetHeight() );
+	poro_assert( dynamic_cast<TextureOpenGL*>( itexture) );
+	TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
+	SetTextureData_Impl( texture, data, 0, 0, texture->GetWidth(), texture->GetHeight() );
 }
 
-void GraphicsOpenGL::SetTextureData( ITexture* texture, void* data, int x, int y, int w, int h )
+void GraphicsOpenGL::SetTextureData( ITexture* itexture, void* data, int x, int y, int w, int h )
 {
-	TextureOpenGL* texture_opengl = dynamic_cast< TextureOpenGL* >( texture );
-	SetTextureData_Impl( texture_opengl, data, x, y, w, h );
+	poro_assert( dynamic_cast<TextureOpenGL*>( itexture) );
+	TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
+    SetTextureData_Impl( texture, data, x, y, w, h );
 }
 
 ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename )
@@ -1031,29 +761,31 @@ ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename, bool store
 {
 	ITexture* result = LoadTexture_Impl( filename, store_raw_pixel_data );
 	
-	if( result == NULL )
-		poro_logger << "Couldn't load image: " << filename << "\n";
-		
-	TextureOpenGL* texture = dynamic_cast< TextureOpenGL* >( result );
-	if( texture )
+	if ( result )
+	{
+		poro_assert( dynamic_cast<TextureOpenGL*>( result ) );
+		TextureOpenGL* texture = static_cast<TextureOpenGL*>( result );
 		texture->SetFilename( filename );
+	}
+	else
+	{
+		poro_logger << "Couldn't load image: " << filename << "\n";
+	}
 
 	return result;
 }
 
 void GraphicsOpenGL::DestroyTexture( ITexture* itexture )
 {
-	TextureOpenGL* texture = dynamic_cast< TextureOpenGL* >( itexture );
-
-	if( texture )
-		glDeleteTextures(1, &texture->mTexture);
+	poro_assert( dynamic_cast<TextureOpenGL*>( itexture ) );
+	TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
+	glDeleteTextures(1, &texture->mTexture);
 }
 
 void GraphicsOpenGL::SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode )
 {
-	TextureOpenGL* texture = dynamic_cast< TextureOpenGL* >( itexture );
-	if( texture == NULL)
-		return;
+	poro_assert( dynamic_cast<TextureOpenGL*>( itexture ) );
+	TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
 
 	glEnable( GL_TEXTURE_2D );
 	glBindTexture( GL_TEXTURE_2D, texture->mTexture );
@@ -1086,9 +818,8 @@ void GraphicsOpenGL::SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTER
 
 void GraphicsOpenGL::SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum mode )
 {
-	TextureOpenGL* texture = dynamic_cast< TextureOpenGL* >( itexture );
-	if( texture == NULL)
-		return;
+	poro_assert( dynamic_cast<TextureOpenGL*>( itexture ) );
+	TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
 
 	glEnable( GL_TEXTURE_2D );
 	glBindTexture( GL_TEXTURE_2D, texture->mTexture );
@@ -1186,13 +917,506 @@ ITexture3d* GraphicsOpenGL::LoadTexture3d( const types::string& filename )
 
 void GraphicsOpenGL::DestroyTexture3d( ITexture3d* itexture )
 {
-	Texture3dOpenGL* texture = dynamic_cast< Texture3dOpenGL* >( itexture );
+	poro_assert( dynamic_cast<Texture3dOpenGL*>( itexture ) );
+	Texture3dOpenGL* texture = static_cast<Texture3dOpenGL*>( itexture );
 
 	if( texture )
 		glDeleteTextures(1, &texture->mTexture);
 }
 
 //=============================================================================
+
+IRenderTexture* GraphicsOpenGL::RenderTexture_Create( int width, int height, bool linear_filtering ) const
+{
+	const int filtering = linear_filtering ? GL_LINEAR : GL_NEAREST;
+
+	RenderTextureOpenGL* result = new RenderTextureOpenGL();
+	poro_assert( result );
+
+	// init texture
+	result->mTexture.mWidth = width;
+	result->mTexture.mHeight = height;
+	result->mTexture.mUv[0] = 0;
+	result->mTexture.mUv[1] = 0;
+	result->mTexture.mUv[2] = ((GLfloat)width) / (GLfloat)width;
+	result->mTexture.mUv[3] = ((GLfloat)height) / (GLfloat)height;
+
+	glGenTextures( 1, (GLuint*)&result->mTexture.mTexture );
+	glBindTexture( GL_TEXTURE_2D, result->mTexture.mTexture );
+
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtering );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filtering );
+
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
+
+	// init fbo
+	glGenFramebuffers( 1, &result->mBufferId );
+	glBindFramebuffer( GL_FRAMEBUFFER, result->mBufferId );
+
+	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, result->mTexture.mTexture, 0 );
+	GLenum status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
+	poro_assert( status == GL_FRAMEBUFFER_COMPLETE );
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+
+	// init pbo
+	glGenBuffers( 1, &result->mPboBufferId );
+	glBindBuffer( GL_PIXEL_PACK_BUFFER, result->mPboBufferId );
+	glBufferData( GL_PIXEL_PACK_BUFFER, width * height * 4, 0, GL_STATIC_COPY );
+	glBindBuffer( GL_PIXEL_PACK_BUFFER, 0 );
+
+	#ifdef RENDER_TEXTURE_ASYNC_READ_SUBDATA_IMPL
+	{
+		glGenBuffers( 1, &result->mPboBufferOutId );
+		glBindBuffer( GL_COPY_WRITE_BUFFER, result->mPboBufferOutId );
+		glBufferData( GL_COPY_WRITE_BUFFER, width * height * 4, NULL, GL_STREAM_READ );
+		glBindBuffer( GL_COPY_WRITE_BUFFER, 0 );
+	}
+	#endif
+
+	return result;
+}
+
+RenderTextureOpenGL::~RenderTextureOpenGL() 
+{ 
+	//Delete texture
+	glDeleteTextures(1, &mTexture.mTexture);
+	//Bind 0, which means render to back buffer, as a result, fb is unbound
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+	glDeleteFramebuffers( 1, &mBufferId );
+}
+
+void GraphicsOpenGL::RenderTexture_Destroy( IRenderTexture* itexture ) const
+{
+	poro_assert( dynamic_cast<RenderTextureOpenGL*>( itexture ) );
+	RenderTextureOpenGL* texture = static_cast<RenderTextureOpenGL*>( itexture );
+
+	glDeleteTextures(1, &texture->mTexture.mTexture);
+	glDeleteFramebuffers( 1, &texture->mBufferId );
+	glDeleteBuffers( 1, &texture->mPboBufferId );
+
+	#ifdef RENDER_TEXTURE_ASYNC_READ_SUBDATA_IMPL
+	{
+		glDeleteBuffers( 1, &texture->mPboBufferOutId );
+	}
+	#endif
+
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+
+	delete texture;
+}
+
+void GraphicsOpenGL::RenderTexture_BeginRendering( IRenderTexture* itexture, bool clear_color, bool clear_depth, float clear_r, float clear_g, float clear_b, float clear_a ) const
+{
+	poro_assert( dynamic_cast<RenderTextureOpenGL*>( itexture ) );
+	RenderTextureOpenGL* texture = static_cast<RenderTextureOpenGL*>( itexture );
+
+	glBindFramebuffer( GL_FRAMEBUFFER, texture->mBufferId );
+	glPushAttrib( GL_VIEWPORT_BIT );
+	glViewport( 0, 0, texture->mTexture.GetWidth(), texture->mTexture.GetHeight() );
+
+	if ( clear_color || clear_depth )
+	{
+		glClearColor( clear_r, clear_g, clear_b, clear_a );
+
+		int clear_bits = 0;
+		if ( clear_color )
+			clear_bits |= GL_COLOR_BUFFER_BIT;
+		if ( clear_depth )
+			clear_bits |= GL_DEPTH_BUFFER_BIT;
+
+		glClear( clear_bits );
+	}
+}
+
+void GraphicsOpenGL::RenderTexture_EndRendering( IRenderTexture* itexture ) const
+{
+	poro_assert( dynamic_cast<RenderTextureOpenGL*>( itexture ) );
+	RenderTextureOpenGL* texture = static_cast<RenderTextureOpenGL*>( itexture );
+
+	glPopAttrib();
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+}
+
+void GraphicsOpenGL::RenderTexture_ReadTextureDataFromGPU( IRenderTexture* itexture, uint8* out_pixels ) const
+{
+	poro_assert( dynamic_cast<RenderTextureOpenGL*>( itexture ) );
+	RenderTextureOpenGL* texture = static_cast<RenderTextureOpenGL*>( itexture );
+
+	glBindFramebuffer( GL_FRAMEBUFFER, texture->mBufferId );
+	glReadPixels( 0, 0, texture->mTexture.GetDataWidth(), texture->mTexture.GetDataHeight(), GL_BGRA, GL_UNSIGNED_BYTE, (void*)out_pixels );
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+}
+
+void GraphicsOpenGL::RenderTexture_AsyncReadTextureDataFromGPUBegin( IRenderTexture* itexture ) const
+{
+	poro_assert( dynamic_cast<RenderTextureOpenGL*>( itexture ) );
+	RenderTextureOpenGL* texture = static_cast<RenderTextureOpenGL*>( itexture );
+
+	glReadBuffer( GL_COLOR_ATTACHMENT0 );
+	glBindBuffer( GL_PIXEL_PACK_BUFFER, texture->mPboBufferId );
+	glBindFramebuffer( GL_FRAMEBUFFER, texture->mBufferId );
+	glReadPixels( 0, 0, texture->mTexture.GetDataWidth(), texture->mTexture.GetDataHeight(), GL_RGBA, GL_UNSIGNED_BYTE, 0 );
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+	glBindBuffer( GL_PIXEL_PACK_BUFFER, 0 );
+
+	#ifdef RENDER_TEXTURE_ASYNC_READ_SUBDATA_IMPL
+	{
+		const uint32 data_size_bytes = texture->mTexture.GetDataWidth() * texture->mTexture.GetDataHeight() * 4;
+		glBindBuffer( GL_COPY_READ_BUFFER, texture->mPboBufferId );
+		glBindBuffer( GL_COPY_WRITE_BUFFER, texture->mPboBufferOutId );
+		glCopyBufferSubData( GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, data_size_bytes );
+		glBindBuffer( GL_COPY_READ_BUFFER, 0 );
+		glBindBuffer( GL_COPY_WRITE_BUFFER, 0 );
+	}
+	#endif
+}
+
+void GraphicsOpenGL::RenderTexture_AsyncReadTextureDataFromGPUFinish( IRenderTexture* itexture, uint8* out_pixels ) const
+{
+	poro_assert( dynamic_cast<RenderTextureOpenGL*>( itexture ) );
+	RenderTextureOpenGL* texture = static_cast<RenderTextureOpenGL*>( itexture );
+
+	const uint32 data_size_bytes = texture->mTexture.GetDataWidth() * texture->mTexture.GetDataHeight() * 4;
+
+	#ifdef RENDER_TEXTURE_ASYNC_READ_SUBDATA_IMPL
+	{
+		glBindBuffer( GL_COPY_WRITE_BUFFER, texture->mPboBufferOutId );
+		glGetBufferSubData( GL_COPY_WRITE_BUFFER, 0, data_size_bytes, out_pixels );
+		glBindBuffer( GL_COPY_WRITE_BUFFER, 0 );
+	}
+	#else
+	{
+		glBindBuffer( GL_PIXEL_PACK_BUFFER, texture->mPboBufferId );
+		const uint8* src = (uint8*)glMapBufferRange( GL_PIXEL_PACK_BUFFER, 0, data_size_bytes, GL_MAP_READ_BIT );
+		if ( src )
+		{
+			const uint32 data_size = texture->mTexture.GetDataWidth() * texture->mTexture.GetDataHeight() * 4;
+			memcpy( out_pixels, src, data_size );
+			glUnmapBuffer( GL_PIXEL_PACK_BUFFER );
+		}
+		glBindBuffer( GL_PIXEL_PACK_BUFFER, 0 );
+	}
+	#endif
+}
+
+#undef RENDER_TEXTURE_ASYNC_READ_SUBDATA_IMPL
+
+//=============================================================================
+
+int LoadShaderFromString( ShaderOpenGL* shader, const char* source, const int source_length, bool is_vertex_shader )
+{
+	poro_assert( shader );
+
+	const int shader_handle = glCreateShader( is_vertex_shader ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER );
+	glShaderSource( shader_handle, 1, &source, &source_length );
+	glCompileShader( shader_handle );
+
+	//DEBUG
+	GLint status;
+	glGetShaderiv( shader_handle, GL_COMPILE_STATUS, &status );
+	if (status == GL_FALSE)
+	{
+		GLint infoLogLength;
+		glGetShaderiv( shader_handle, GL_INFO_LOG_LENGTH, &infoLogLength );
+
+		GLchar *strInfoLog = new GLchar[infoLogLength + 1];
+		glGetShaderInfoLog( shader_handle, infoLogLength, NULL, strInfoLog );
+
+
+		fprintf(stderr, "GLSL compile failure:\n%s\n", strInfoLog);
+		delete[] strInfoLog;
+
+		shader->isCompiledAndLinked = false;
+	}
+
+	return shader_handle;
+}
+
+int LoadShader( ShaderOpenGL* shader, const std::string& filename, bool is_vertex_shader )
+{
+	poro_assert( shader );
+
+	CharBufferAutoFree text;
+	StreamStatus::Enum read_status = Poro()->GetFileSystem()->ReadWholeFile( filename, text.memory, &text.size_bytes );
+	if ( read_status != StreamStatus::NoError )
+	{
+		shader->isCompiledAndLinked = false;
+		return 0;
+	}
+
+	return LoadShaderFromString( shader, text.memory, text.size_bytes, is_vertex_shader );
+}
+
+void Shader_Link( const GraphicsOpenGL* graphics, ShaderOpenGL* shader )
+{
+	poro_assert( graphics );
+	poro_assert( shader );
+
+	shader->program = glCreateProgram();
+	glAttachShader( shader->program, shader->vertexShader );
+	glAttachShader( shader->program, shader->fragmentShader );
+	glLinkProgram( shader->program);
+
+	//DEBUG
+	GLint status;
+	glGetProgramiv( shader->program, GL_LINK_STATUS, &status );
+	if (status == GL_FALSE)
+	{
+		GLint infoLogLength;
+		glGetProgramiv( shader->program, GL_INFO_LOG_LENGTH, &infoLogLength );
+
+		GLchar *strInfoLog = new GLchar[infoLogLength + 1];
+		glGetProgramInfoLog( shader->program, infoLogLength, NULL, strInfoLog );
+		fprintf(stderr, "GLSL link failure: %s\n", strInfoLog);
+		delete[] strInfoLog;
+
+		graphics->Shader_Release( shader );
+	}
+}
+
+int Shader_GetParameterLocation( ShaderOpenGL* shader, const std::string& name )
+{
+	poro_assert( shader );
+
+	int result;
+
+	auto it = shader->parameterLocationCache.find( name );
+	if ( it == shader->parameterLocationCache.end() )
+	{
+		result = glGetUniformLocation( shader->program, name.c_str() );
+		shader->parameterLocationCache.insert( std::make_pair( name, result ) );
+	}
+	else
+	{
+		result = it->second;
+	}
+
+	return result;
+}
+
+void Shader_Release( IShader* ishader )
+{
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+
+	shader->isCompiledAndLinked = false;
+
+	if ( shader->program != 0 )
+	{
+		glDeleteProgram( shader->program );
+		shader->program = 0;
+	}
+
+	if ( shader->vertexShader != 0 )
+	{
+		glDeleteShader( shader->vertexShader );
+		shader->vertexShader = 0;
+	}
+
+	if ( shader->fragmentShader != 0 )
+	{
+		glDeleteShader( shader->fragmentShader );
+		shader->fragmentShader = 0;
+	}
+
+	shader->parameterLocationCache.clear();
+}
+
+//=============================================================================
+
+IShader* GraphicsOpenGL::Shader_Create() const
+{
+	return new ShaderOpenGL();
+}
+
+ShaderOpenGL::~ShaderOpenGL()
+{ 
+	poro::Shader_Release( this );
+}
+
+void GraphicsOpenGL::Shader_Init( IShader* ishader, const std::string& vertex_source_filename, const std::string& fragment_source_filename ) const
+{
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+
+	Shader_Release( ishader );
+
+	shader->vertexShader = LoadShader( shader, vertex_source_filename, true );
+	shader->fragmentShader = LoadShader( shader, fragment_source_filename, false );
+
+	poro::Shader_Link( this, shader );
+}
+
+void GraphicsOpenGL::Shader_InitFromString( IShader* ishader, const std::string& vertex_source, const std::string& fragment_source ) const
+{ 
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+
+	Shader_Release( ishader );
+
+	shader->vertexShader = LoadShaderFromString( shader, vertex_source.c_str(), vertex_source.size(), true );
+	shader->fragmentShader = LoadShaderFromString( shader, fragment_source.c_str(), fragment_source.size(), false );
+
+	if ( shader->vertexShader == 0 || shader->fragmentShader == 0)
+	{
+		Shader_Release( shader );
+		return;
+	}
+
+	poro::Shader_Link( this, shader );
+}	
+
+void GraphicsOpenGL::Shader_Release( IShader* ishader ) const
+{
+	poro::Shader_Release( ishader );
+}
+
+void GraphicsOpenGL::Shader_Enable( IShader* ishader ) const
+{
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+
+	shader->lastAllocatedTextureUnit = 2;
+	glUseProgram( shader->program );
+}
+
+void GraphicsOpenGL::Shader_Disable( IShader* ishader ) const
+{
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+
+	shader->lastAllocatedTextureUnit = 2;
+	glUseProgram( 0 );
+	glDisable( GL_TEXTURE_2D );
+	glDisable( GL_TEXTURE_3D );
+}
+
+bool GraphicsOpenGL::Shader_HasParameter( IShader* ishader, const std::string& name) const
+{
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+
+	const int location = Shader_GetParameterLocation( shader, name );
+	return location > -1;
+}
+
+void GraphicsOpenGL::Shader_SetParameter( IShader* ishader, const std::string& name, float value ) const
+{
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+
+	const int location = Shader_GetParameterLocation( shader, name );
+	glUniform1f( location, value );
+}
+
+void GraphicsOpenGL::Shader_SetParameter( IShader* ishader, const std::string& name, const types::vec2& value ) const
+{
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+
+	const int location = Shader_GetParameterLocation( shader, name );
+	glUniform2f( location, value.x, value.y );
+}
+
+void GraphicsOpenGL::Shader_SetParameter( IShader* ishader, const std::string& name, const types::vec3& value ) const
+{
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+
+	const int location = Shader_GetParameterLocation( shader, name );
+	glUniform3f( location, value.x, value.y, value.z );
+}
+
+void GraphicsOpenGL::Shader_SetParameter( IShader* ishader, const std::string& name, const types::vec2& value_xy, types::vec2& value_zw ) const
+{
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+
+	const int location = Shader_GetParameterLocation( shader, name );
+	glUniform4f( location, value_xy.x, value_xy.y, value_zw.x, value_zw.y );
+}
+
+void GraphicsOpenGL::Shader_SetParameter( IShader* ishader, const std::string& name, float x, float y, float z, float w ) const
+{
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+
+	const int location = Shader_GetParameterLocation( shader, name );
+	glUniform4f( location, x, y, z, w );
+}
+
+void GraphicsOpenGL::Shader_SetParameter( IShader* ishader, const std::string& name, const float* value_4_floats ) const
+{
+	poro_assert( dynamic_cast<ShaderOpenGL*>(ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>(ishader);
+
+	const int location = Shader_GetParameterLocation( shader, name );
+	glUniform4fv( location, 1, value_4_floats );
+}
+
+void GraphicsOpenGL::Shader_SetParameter( IShader* ishader, const std::string& name, const ITexture* itexture ) const
+{
+	poro_assert( itexture );
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+	poro_assert( dynamic_cast<const TextureOpenGL*>( itexture) );
+	const TextureOpenGL* texture = static_cast<const TextureOpenGL*>( itexture );
+
+	const int location = Shader_GetParameterLocation( shader, name );
+
+	glEnable( GL_TEXTURE_2D );
+	glUniform1i( location, shader->lastAllocatedTextureUnit );
+	glActiveTexture( GL_TEXTURE0 + shader->lastAllocatedTextureUnit );
+	shader->lastAllocatedTextureUnit++;
+
+	glBindTexture( GL_TEXTURE_2D, texture->mTexture );
+	glActiveTexture( GL_TEXTURE0 );
+}
+
+void GraphicsOpenGL::Shader_SetParameter( IShader* ishader, const std::string& name, const ITexture3d* itexture ) const
+{
+	poro_assert( itexture );
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+	poro_assert( dynamic_cast<const Texture3dOpenGL*>( itexture) );
+	const Texture3dOpenGL* texture = static_cast<const Texture3dOpenGL*>( itexture );
+
+	const int location = Shader_GetParameterLocation( shader, name );
+
+	glEnable( GL_TEXTURE_3D );
+	glUniform1i( location, shader->lastAllocatedTextureUnit );
+	glActiveTexture( GL_TEXTURE0 + shader->lastAllocatedTextureUnit );
+	shader->lastAllocatedTextureUnit++;
+
+	glBindTexture( GL_TEXTURE_3D, texture->mTexture );
+	glActiveTexture( GL_TEXTURE0 );
+}
+
+bool GraphicsOpenGL::Shader_GetIsCompiledAndLinked( IShader* ishader ) const
+{
+	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
+
+	return shader->isCompiledAndLinked;
+}
+
+void GraphicsOpenGL::SetShader( IShader* shader )
+{
+	if ( shader != mCurrentShader )
+	{
+		if ( mCurrentShader )
+			Shader_Disable( mCurrentShader );
+
+		mCurrentShader = shader;
+
+		if ( shader )
+			Shader_Enable( shader );
+	}
+}
+
+//===================================================================================
 
 void GraphicsOpenGL::BeginRendering()
 {
@@ -1209,11 +1433,7 @@ void GraphicsOpenGL::BeginRendering()
 void GraphicsOpenGL::EndRendering()
 {
 	_EndRendering();
-	FlushDrawTextureBuffer();
 	SDL_GL_SwapWindow( mSDLWindow );
-
-	// std::cout << "DrawCalls:" << drawcalls << "\n";
-	// drawcalls=0;
 }
 
 //=============================================================================
@@ -1228,8 +1448,8 @@ void GraphicsOpenGL::DrawTexture( ITexture* itexture, float x, float y, float w,
 
 	TextureOpenGL* texture = (TextureOpenGL*)itexture;
 
-	static types::vec2 temp_verts[ 4 ];
-	static types::vec2 tex_coords[ 4 ];
+	types::vec2 temp_verts[ 4 ];
+	types::vec2 tex_coords[ 4 ];
 
 	temp_verts[ 0 ].x = (float)x;
 	temp_verts[ 0 ].y = (float)y;
@@ -1295,8 +1515,7 @@ void GraphicsOpenGL::DrawTexture( ITexture* itexture, types::vec2* vertices, typ
 		tex_coords[ i ].y *= texture->mExternalSizeY;
 	}
 
-
-	static Vertex vert[8];
+	Vertex vert[8];
 
 	float x_text_conv = ( 1.f / texture->mWidth ) * ( texture->mUv[ 2 ] - texture->mUv[ 0 ] );
 	float y_text_conv = ( 1.f / texture->mHeight ) * ( texture->mUv[ 3 ] - texture->mUv[ 1 ] );
@@ -1308,73 +1527,115 @@ void GraphicsOpenGL::DrawTexture( ITexture* itexture, types::vec2* vertices, typ
 		vert[i].ty = texture->mUv[ 1 ] + ( tex_coords[i].y * y_text_conv );
 	}
 
-	if( mUseDrawTextureBuffering && mDrawTextureBuffered )
-		mDrawTextureBuffered->BufferedDrawSprite( texture, vert, color, count, GetGLVertexMode(mVertexMode), mBlendMode );
-	else
-		drawsprite( texture, vert, color, count, GetGLVertexMode(mVertexMode), mBlendMode );
+	drawsprite( texture, vert, color, count, GetGLVertexMode(mVertexMode), mBlendMode );
 }
 
-void GraphicsOpenGL::DrawTextureWithAlpha(
-		ITexture* itexture, types::vec2* vertices, types::vec2* tex_coords, int count, const types::fcolor& color,
-		ITexture* ialpha_texture, types::vec2* alpha_vertices, types::vec2* alpha_tex_coords, const types::fcolor& alpha_color )
+void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture, const poro::types::fcolor& color, types::vec2* tex_coords, int count, types::vec2* tex_coords2, types::vec2* tex_coords3 )
 {
-	if( itexture == NULL || ialpha_texture == NULL )
-		return;
-
-	if( color[3] <= 0 || alpha_color[3] <= 0 )
-		return;
-	FlushDrawTextureBuffer();
-
-	TextureOpenGL* texture = (TextureOpenGL*)itexture;
-	TextureOpenGL* alpha_texture = (TextureOpenGL*)ialpha_texture;
-
-	for( int i = 0; i < 4; ++i )
+	struct Vertice
 	{
-		tex_coords[ i ].x *= texture->mExternalSizeX;
-		tex_coords[ i ].y *= texture->mExternalSizeY;
-		alpha_tex_coords[ i ].x *= alpha_texture->mExternalSizeX;
-		alpha_tex_coords[ i ].y *= alpha_texture->mExternalSizeY;
+		float x, y;
+		float uv0_x, uv0_y, uv0_z, uv0_w;
+		float uv1_x, uv1_y;
+	};
+
+	TextureOpenGL* texture;
+	if( itexture != NULL )
+	{
+		texture = (TextureOpenGL*)itexture;
 	}
 
+	types::vec2 vertices[ 4 ];
+	vertices[ 0 ].x = (float) position.x;
+	vertices[ 0 ].y = (float) position.y;
+	vertices[ 1 ].x = (float) position.x;
+	vertices[ 1 ].y = (float) (position.y + size.y);
+	vertices[ 2 ].x = (float) (position.x + size.x);
+	vertices[ 2 ].y = (float) position.y;
+	vertices[ 3 ].x = (float) (position.x + size.x);
+	vertices[ 3 ].y = (float) (position.y + size.y);
 
-	static Vertex vert[8];
-	static Vertex alpha_vert[8];
-
-	poro_assert( count > 2 );
-	poro_assert( count <= 8 );
-
-	// vertices
-	float x_text_conv = ( 1.f / texture->mWidth ) * ( texture->mUv[ 2 ] - texture->mUv[ 0 ] );
-	float y_text_conv = ( 1.f / texture->mHeight ) * ( texture->mUv[ 3 ] - texture->mUv[ 1 ] );
-	float x_alpha_text_conv = ( 1.f / alpha_texture->mWidth ) * ( alpha_texture->mUv[ 2 ] - alpha_texture->mUv[ 0 ] );
-	float y_alpha_text_conv = ( 1.f / alpha_texture->mHeight ) * ( alpha_texture->mUv[ 3 ] - alpha_texture->mUv[ 1 ] );
-
-	for( int i = 0; i < count; ++i )
+	if( itexture != NULL )
 	{
-		vert[i].x = vertices[ i ].x;
-		vert[i].y = vertices[ i ].y;
-		vert[i].tx = texture->mUv[ 0 ] + ( tex_coords[ i ].x * x_text_conv );
-		vert[i].ty = texture->mUv[ 1 ] + ( tex_coords[ i ].y * y_text_conv );
+		Uint32 tex = texture->mTexture;
 
-		alpha_vert[i].x = alpha_vertices[i].x;
-		alpha_vert[i].y = alpha_vertices[i].y;
-		alpha_vert[i].tx = alpha_texture->mUv[ 0 ] + ( alpha_tex_coords[ i ].x * x_alpha_text_conv );
-		alpha_vert[i].ty = alpha_texture->mUv[ 1 ] + ( alpha_tex_coords[ i ].y * y_alpha_text_conv );
+		glBindTexture(GL_TEXTURE_2D, tex);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	}
 
-	drawsprite_withalpha( texture, vert, color, count,
-		alpha_texture, alpha_vert, alpha_color,
-		GetGLVertexMode(mVertexMode) );
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_BLEND);
+	glColor4f( color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
+	glBegin( GL_TRIANGLE_STRIP );
+
+	for( int i = 0; i < 4; i++)
+	{
+		if( itexture != NULL )
+		{ 
+			if ( tex_coords == NULL || i >= count )
+			{
+				if (tex_coords2)
+					glTexCoord4f( vertices[i].x / texture->GetWidth(), vertices[i].y / texture->GetHeight(), vertices[i].x / texture->GetWidth(), vertices[i].y / texture->GetHeight() );
+				else
+					glTexCoord2f( vertices[i].x / texture->GetWidth(), vertices[i].y / texture->GetHeight() );
+
+				if ( tex_coords3 )
+					glMultiTexCoord2f( GL_TEXTURE1, vertices[ i ].x / texture->GetWidth(), vertices[ i ].y / texture->GetHeight() );
+			}
+			else
+			{
+				if (tex_coords2)
+					glTexCoord4f( tex_coords[i].x / texture->GetWidth(), tex_coords[i].y / texture->GetHeight(), tex_coords2[i].x / texture->GetWidth(), tex_coords2[i].y / texture->GetHeight() );
+				else
+					glTexCoord2f( tex_coords[i].x / texture->GetWidth(), tex_coords[i].y / texture->GetHeight() );
+
+				if ( tex_coords3 )
+					glMultiTexCoord2f( GL_TEXTURE1, tex_coords3[ i ].x / texture->GetWidth(), tex_coords3[ i ].y / texture->GetHeight() );
+			}
+		}
+		else
+		{
+			if ( tex_coords2 )
+				glTexCoord4f( tex_coords[i].x, tex_coords[i].y, tex_coords2[i].x, tex_coords2[i].y );
+			else
+				glTexCoord2f( tex_coords[i].x, tex_coords[i].y );
+
+			if ( tex_coords3 )
+				glMultiTexCoord2f( GL_TEXTURE1, tex_coords3[ i ].x, tex_coords3[ i ].y );
+		}
+
+		glVertex2f( vertices[ i ].x, vertices[ i ].y );
+	}
+	
+	glEnd();
+
+	// ---
+	if( itexture != NULL )
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	}
+
+	glDisable(GL_BLEND);
+	glDisable(GL_TEXTURE_2D);
+
+	// clean up
+	/*glDisableClientState( GL_VERTEX_ARRAY );
+	glClientActiveTexture( GL_TEXTURE0 );
+	glDisableClientState( GL_TEXTURE_COORD_ARRAY );
+	glClientActiveTexture( GL_TEXTURE1 );
+	glDisableClientState( GL_TEXTURE_COORD_ARRAY );*/
 }
-
-//=============================================================================
 
 void GraphicsOpenGL::DrawLines( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color, bool smooth, float width, bool loop )
 {
 	//float xPlatformScale, yPlatformScale;
 	//xPlatformScale = (float)mViewportSize.x / (float)poro::IPlatform::Instance()->GetInternalWidth();
 	//yPlatformScale = (float)mViewportSize.y / (float)poro::IPlatform::Instance()->GetInternalHeight();
-	FlushDrawTextureBuffer();
 	
 	glEnable(GL_BLEND);
 
@@ -1402,10 +1663,8 @@ void GraphicsOpenGL::DrawLines( const std::vector< poro::types::vec2 >& vertices
 
 void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices, const types::fcolor& color )
 {
-	FlushDrawTextureBuffer();
-
 	const int max_buffer_size = 256;
-	static GLfloat glVertices[ max_buffer_size ];
+	GLfloat glVertices[ max_buffer_size ];
 
 	if( this->GetDrawFillMode() == DRAWFILL_MODE::POLYGON )
 	{
@@ -1414,11 +1673,6 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 		if(vertCount == 0)
 			return;
 		
-		//Internal rescale
-		// float xPlatformScale, yPlatformScale;
-		// xPlatformScale = (float)mViewportSize.x / (float)poro::IPlatform::Instance()->GetInternalWidth();
-		// yPlatformScale = (float)mViewportSize.y / (float)poro::IPlatform::Instance()->GetInternalHeight();
-
 		const float xPlatformScale = 1.f;
 		const float yPlatformScale = 1.f;
 
@@ -1432,13 +1686,10 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 
 		glEnable(GL_BLEND);
 		glColor4f(color[0], color[1], color[2], color[3]);
-		// glColor4f(1, 1, 1, 1);
-		// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		glEnable(GL_POLYGON_SMOOTH);
 		glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		// glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ZERO);
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glBegin(GL_POLYGON);
@@ -1462,16 +1713,10 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 	}
 	else if( GetDrawFillMode() == DRAWFILL_MODE::TRIANGLE_STRIP )
 	{
-
 		int vertCount = vertices.size();
 
 		if(vertCount == 0)
 			return;
-
-		// Internal rescale
-		// float xPlatformScale, yPlatformScale;
-		// xPlatformScale = (float)mViewportSize.x / (float)poro::IPlatform::Instance()->GetInternalWidth();
-		// yPlatformScale = (float)mViewportSize.y / (float)poro::IPlatform::Instance()->GetInternalHeight();
 
 		const float xPlatformScale = 1.f;
 		const float yPlatformScale = 1.f;
@@ -1493,7 +1738,7 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 
 		glColor4f(color[0], color[1], color[2], color[3]);
 		glPushMatrix();
-			/// glEnable(GL_POLYGON_SMOOTH);
+
 		if( color[3] < 1.f ) {
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1506,7 +1751,6 @@ void GraphicsOpenGL::DrawFill( const std::vector< poro::types::vec2 >& vertices,
 		
 		if( color[3] < 1.f ) 
 			glDisable(GL_BLEND);
-			// glDisable(GL_POLYGON_SMOOTH);
 		glPopMatrix();
 	}
 }
@@ -1701,208 +1945,6 @@ void GraphicsOpenGL::DrawQuads( Vertex_PosFloat2_TexCoordFloat2_ColorUint32* ver
 	glPopMatrix();
 }
 
-void GraphicsOpenGL::DrawTexturedRect( const poro::types::vec2& position, const poro::types::vec2& size, ITexture* itexture, const poro::types::fcolor& color, types::vec2* tex_coords, int count, types::vec2* tex_coords2, types::vec2* tex_coords3 )
-{
-	struct Vertice
-	{
-		float x, y;
-		float uv0_x, uv0_y, uv0_z, uv0_w;
-		float uv1_x, uv1_y;
-	};
-
-	TextureOpenGL* texture;
-	if( itexture != NULL )
-	{
-		FlushDrawTextureBuffer();
-		texture = (TextureOpenGL*)itexture;
-	}
-
-	static types::vec2 vertices[ 4 ];
-	vertices[ 0 ].x = (float) position.x;
-	vertices[ 0 ].y = (float) position.y;
-	vertices[ 1 ].x = (float) position.x;
-	vertices[ 1 ].y = (float) (position.y + size.y);
-	vertices[ 2 ].x = (float) (position.x + size.x);
-	vertices[ 2 ].y = (float) position.y;
-	vertices[ 3 ].x = (float) (position.x + size.x);
-	vertices[ 3 ].y = (float) (position.y + size.y);
-
-	if( itexture != NULL )
-	{
-		Uint32 tex = texture->mTexture;
-
-		glBindTexture(GL_TEXTURE_2D, tex);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	}
-
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_BLEND);
-	glColor4f( color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] );
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
-	glBegin( GL_TRIANGLE_STRIP );
-
-	for( int i = 0; i < 4; i++)
-	{
-		if( itexture != NULL )
-		{ 
-			if ( tex_coords == NULL || i >= count )
-			{
-				if (tex_coords2)
-					glTexCoord4f( vertices[i].x / texture->GetWidth(), vertices[i].y / texture->GetHeight(), vertices[i].x / texture->GetWidth(), vertices[i].y / texture->GetHeight() );
-				else
-					glTexCoord2f( vertices[i].x / texture->GetWidth(), vertices[i].y / texture->GetHeight() );
-
-				if ( tex_coords3 )
-					glMultiTexCoord2f( GL_TEXTURE1, vertices[ i ].x / texture->GetWidth(), vertices[ i ].y / texture->GetHeight() );
-			}
-			else
-			{
-				if (tex_coords2)
-					glTexCoord4f( tex_coords[i].x / texture->GetWidth(), tex_coords[i].y / texture->GetHeight(), tex_coords2[i].x / texture->GetWidth(), tex_coords2[i].y / texture->GetHeight() );
-				else
-					glTexCoord2f( tex_coords[i].x / texture->GetWidth(), tex_coords[i].y / texture->GetHeight() );
-
-				if ( tex_coords3 )
-					glMultiTexCoord2f( GL_TEXTURE1, tex_coords3[ i ].x / texture->GetWidth(), tex_coords3[ i ].y / texture->GetHeight() );
-			}
-		}
-		else
-		{
-			if ( tex_coords2 )
-				glTexCoord4f( tex_coords[i].x, tex_coords[i].y, tex_coords2[i].x, tex_coords2[i].y );
-			else
-				glTexCoord2f( tex_coords[i].x, tex_coords[i].y );
-
-			if ( tex_coords3 )
-				glMultiTexCoord2f( GL_TEXTURE1, tex_coords3[ i ].x, tex_coords3[ i ].y );
-		}
-
-		glVertex2f( vertices[ i ].x, vertices[ i ].y );
-	}
-	
-	glEnd();
-
-	/*static Vertice vertices[ 4 ];
-
-	vertices[ 0 ].x = (float) position.x;
-	vertices[ 0 ].y = (float) position.y;
-	vertices[ 1 ].x = (float) position.x;
-	vertices[ 1 ].y = (float) (position.y + size.y);
-	vertices[ 2 ].x = (float) (position.x + size.x);
-	vertices[ 2 ].y = (float) position.y;
-	vertices[ 3 ].x = (float) (position.x + size.x);
-	vertices[ 3 ].y = (float) (position.y + size.y);
-
-	vertices[ 0 ].uv0_x = 0.25f;
-	vertices[ 0 ].uv0_y = 0.5f;
-	vertices[ 1 ].uv0_x = 0.25f;
-	vertices[ 1 ].uv0_y = 0.5f;
-	vertices[ 2 ].uv0_x = 0.25f;
-	vertices[ 2 ].uv0_y = 0.5f;
-	vertices[ 3 ].uv0_x = 0.25f;
-	vertices[ 3 ].uv0_y = 0.5f;
-
-	vertices[ 0 ].uv1_x = 0.75f;
-	vertices[ 0 ].uv1_y = 0.75f;
-	vertices[ 1 ].uv1_x = 0.75f;
-	vertices[ 1 ].uv1_y = 0.75f;
-	vertices[ 2 ].uv1_x = 0.75f;
-	vertices[ 2 ].uv1_y = 0.75f;
-	vertices[ 3 ].uv1_x = 0.75f;
-	vertices[ 3 ].uv1_y = 0.75f;
-
-	for ( int i = 0; i < 4; i++ )
-	{
-		Vertice& v = vertices[ i ];
-
-		if ( itexture != NULL )
-		{
-			if ( tex_coords == NULL || i >= count )
-			{
-				if ( tex_coords2 )
-				{
-					v.uv0_x = vertices[ i ].x / texture->GetWidth();
-					v.uv0_y = vertices[ i ].y / texture->GetHeight();
-					v.uv0_z = vertices[ i ].x / texture->GetWidth();
-					v.uv0_w = vertices[ i ].y / texture->GetHeight();
-				}
-				else
-				{
-					v.uv0_x = vertices[ i ].x / texture->GetWidth();
-					v.uv0_y = vertices[ i ].y / texture->GetHeight();
-				}
-			}
-			else
-			{
-				if ( tex_coords2 )
-				{
-					v.uv0_x = tex_coords[ i ].x / texture->GetWidth();
-					v.uv0_y = tex_coords[ i ].y / texture->GetHeight();
-					v.uv0_z = tex_coords2[ i ].x / texture->GetWidth();
-					v.uv0_w = tex_coords2[ i ].y / texture->GetHeight();
-				}
-				else
-				{
-					v.uv0_x = vertices[ i ].x / texture->GetWidth();
-					v.uv0_y = vertices[ i ].y / texture->GetHeight();
-				}
-			}
-		}
-		else
-		{
-			if ( tex_coords2 )
-			{
-				v.uv0_x = tex_coords[ i ].x;
-				v.uv0_y = tex_coords[ i ].y;
-				v.uv0_z = tex_coords2[ i ].x;
-				v.uv0_w = tex_coords2[ i ].y;
-			}
-			else
-			{
-				v.uv0_x = tex_coords[ i ].x;
-				v.uv0_y = tex_coords[ i ].y;
-			}
-		}
-
-		v.uv1_x = 0.1f;
-		v.uv1_x = 0.9f;
-	}
-
-	// upload data to opengl, draw it
-	glEnableClientState( GL_VERTEX_ARRAY );
-	glVertexPointer( 2, GL_FLOAT, sizeof( Vertice ), &vertices[ 0 ].x );
-
-	glClientActiveTexture( GL_TEXTURE0 );
-	glEnableClientState( GL_TEXTURE_COORD_ARRAY );
-	glTexCoordPointer( 4, GL_FLOAT, sizeof( Vertice ), &vertices[ 0 ].uv0_x );
-
-	glClientActiveTexture( GL_TEXTURE1 );
-	glEnableClientState( GL_TEXTURE_COORD_ARRAY );
-	glTexCoordPointer( 2, GL_FLOAT, sizeof( Vertice ), &vertices[ 0 ].uv1_x );
-
-	glDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );*/
-
-	// ---
-	if( itexture != NULL )
-	{
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	}
-
-	glDisable(GL_BLEND);
-	glDisable(GL_TEXTURE_2D);
-
-	// clean up
-	/*glDisableClientState( GL_VERTEX_ARRAY );
-	glClientActiveTexture( GL_TEXTURE0 );
-	glDisableClientState( GL_TEXTURE_COORD_ARRAY );
-	glClientActiveTexture( GL_TEXTURE1 );
-	glDisableClientState( GL_TEXTURE_COORD_ARRAY );*/
-}
-
 //=============================================================================
 
 types::vec2	GraphicsOpenGL::ConvertToInternalPos( int x, int y ) 
@@ -1931,82 +1973,94 @@ types::vec2	GraphicsOpenGL::ConvertToInternalPos( int x, int y )
 	return result;
 }
 
-//=============================================================================
-
-IGraphicsBuffer* GraphicsOpenGL::CreateGraphicsBuffer(int width, int height)
+void GraphicsOpenGL::ResetWindow()
 {
-#ifdef PORO_DONT_USE_GLEW
-	poro_assert(false); //Buffer implementation needs glew.
-	return NULL;
-#else
-	GraphicsBufferOpenGL* buffer = new GraphicsBufferOpenGL;
-	buffer->Init(width, height, false, "");
-	return buffer;
-#endif
-}
+	int flags = 0;
+	int window_width;
+	int window_height;
 
-void GraphicsOpenGL::DestroyGraphicsBuffer(IGraphicsBuffer* buffer)
-{
-#ifdef PORO_DONT_USE_GLEW
-	poro_assert(false); //Buffer implementation needs glew.
-#else
-	delete buffer;
-#endif
-}
+	//flags = SDL_WINDOW_OPENGL;
+	// OPENGL_SETTINGS.fullscreen = true;
 
-//=============================================================================
-
-IRenderTexture* GraphicsOpenGL::CreateRenderTexture(int width, int height, bool linear_filtering)
-{
-#ifdef PORO_DONT_USE_GLEW
-	poro_assert(false); //Buffer implementation needs glew.
-	return NULL;
-#else
-	RenderTextureOpenGL* buffer = new RenderTextureOpenGL;
-	buffer->InitRenderTexture(width, height, linear_filtering);
-	return buffer;
-#endif
-}
-
-void GraphicsOpenGL::DestroyRenderTexture(IRenderTexture* buffer)
-{
-#ifdef PORO_DONT_USE_GLEW
-	poro_assert(false); //Buffer implementation needs glew.
-#else
-	delete buffer;
-#endif
-}
-
-//=============================================================================
-
-IShader* GraphicsOpenGL::CreateShader()
-{
-	return new ShaderOpenGL();
-}
-
-void GraphicsOpenGL::SetShader( IShader* shader )
-{
-	if ( shader != mCurrentShader )
+	if( OPENGL_SETTINGS.fullscreen == FULLSCREEN_MODE::STRETCHED || OPENGL_SETTINGS.fullscreen == FULLSCREEN_MODE::FULL )
 	{
-		if ( mCurrentShader )
-			mCurrentShader->Disable();
+		// for real fullscreen
+		if( OPENGL_SETTINGS.fullscreen == FULLSCREEN_MODE::STRETCHED )
+			flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+		else 
+			flags |= SDL_WINDOW_FULLSCREEN;
+		// flags = SDL_WINDOW_FULLSCREEN;
+		window_width = (int)mDesktopWidth;
+		window_height = (int)mDesktopHeight;
+	} 
+	else 
+	{
+		window_width = mWindowWidth;
+		window_height = mWindowHeight;
+		// #ifdef _DEBUG
+		// this is not supported by SDL2.0 anymore 
+		// flags |= SDL_WINDOW_RESIZABLE;
+		// #endif
 
-		mCurrentShader = shader;
+		flags = 0;
+		// 0 = windowed mode
+	}
 
-		if ( shader )
-			shader->Enable();
+	SDL_SetWindowSize( mSDLWindow, window_width, window_height );
+	SDL_SetWindowFullscreen( mSDLWindow, flags );
+	// SDL_SetWindowResizable(mSDLWindow, SDL_TRUE);
+
+	{ //OpenGL view setup
+		float internal_width = IPlatform::Instance()->GetInternalWidth();
+		float internal_height = IPlatform::Instance()->GetInternalHeight();
+		float screen_aspect = (float)window_width/(float)window_height;
+		float internal_aspect = (float)internal_width/(float)internal_height;
+		mViewportSize.x = (float)window_width;
+		mViewportSize.y = (float)window_height;
+		mViewportOffset = types::vec2(0, 0);
+		if(screen_aspect>internal_aspect){
+			//Widescreen, Black borders on left and right
+			mViewportSize.x = window_height*internal_aspect;
+			mViewportOffset.x = (window_width-mViewportSize.x)*0.5f;
+		} else {
+			//Tallscreen, Black borders on top and bottom
+			mViewportSize.y = window_width/internal_aspect;
+			mViewportOffset.y = (window_height-mViewportSize.y)*0.5f;
+		}
+
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+
+		glViewport((GLint)mViewportOffset.x, (GLint)mViewportOffset.y, (GLint)mViewportSize.x, (GLint)mViewportSize.y);
+
+		glClearColor(0,0,0,1.0f);
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+		//(OpenGL actually wants the x offset from the bottom, but since we are centering the view the direction does not matter.)
+		// glEnable(GL_SCISSOR_TEST);
+		// glScissor((GLint)mViewportOffset.x, (GLint)mViewportOffset.y, (GLint)mViewportSize.x, (GLint)mViewportSize.y);
+
+		glScalef(1,-1,1); //Flip y axis
+		glOrtho( 0.0, internal_width, 0.0, internal_height, -1.0, 1.0 );
 	}
 }
 
-//=============================================================================
-
-void GraphicsOpenGL::FlushDrawTextureBuffer() 
+void GraphicsOpenGL::LoadOpenGL()
 {
-	if( mDrawTextureBuffered ) 
-		mDrawTextureBuffered->FlushDrawSpriteBuffer();
-}
-//=============================================================================
+	if ( mGlContextInitialized )
+		return;
 
+	const bool fgl_init_ok = fglLoadOpenGL( true );
+	if ( fgl_init_ok == false )
+	{
+		// Problem: fgl init failed, something is seriously wrong.
+		poro_logger << "FGL init error: " << fglGetLastError() << "\n";
+	}
+
+	mGlContextInitialized = fgl_init_ok;
+}
+
+//=============================================================================
 
 void GraphicsOpenGL::SaveScreenshot( const std::string& filename, int pos_x, int pos_y, int w, int h )
 {
@@ -2016,7 +2070,7 @@ void GraphicsOpenGL::SaveScreenshot( const std::string& filename, int pos_x, int
 	const int bpp = 3;
 
 	static unsigned char* pixels = new unsigned char[ bpp * (int)mViewportSize.x * (int)mViewportSize.y ];
-	static int pixels_size = bpp * (int)mViewportSize.x * (int)mViewportSize.y;
+	int pixels_size = bpp * (int)mViewportSize.x * (int)mViewportSize.y;
 
 	if( ( bpp * (int)mViewportSize.x * (int)mViewportSize.y ) !=  pixels_size )
 	{
