@@ -1590,6 +1590,61 @@ void GraphicsOpenGL::DrawVertices( const types::Vertex_PosFloat2_TexCoordFloat2_
 	LowLevel_DisableState( state );
 }
 
+void GraphicsOpenGL::DrawVertices( const types::Vertex_PosFloat2_2xTexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, const GraphicsState& state )
+{
+	uint32 api_primitive_mode = 0;
+	LowLevel_EnableState( state, api_primitive_mode );
+
+	// buffer data
+	glEnableClientState( GL_VERTEX_ARRAY );
+	glEnableClientState( GL_COLOR_ARRAY );
+	glEnableClientState( GL_TEXTURE_COORD_ARRAY );
+
+	glVertexPointer( 2, GL_FLOAT, sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), &vertices->x );
+	glTexCoordPointer( 4, GL_FLOAT, sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), &vertices->u );
+	glColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), &vertices->color );
+
+	// draw
+	glDrawArrays( api_primitive_mode, 0, num_vertices );
+
+	// disable state
+	glDisableClientState( GL_VERTEX_ARRAY );
+	glDisableClientState( GL_COLOR_ARRAY );
+	glDisableClientState( GL_TEXTURE_COORD_ARRAY );
+
+	LowLevel_DisableState( state );
+}
+
+void GraphicsOpenGL::DrawVertices( const types::Vertex_PosFloat2_3xTexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, const GraphicsState& state )
+{
+	uint32 api_primitive_mode = 0;
+	LowLevel_EnableState( state, api_primitive_mode );
+
+	// buffer data
+	glEnableClientState( GL_VERTEX_ARRAY );
+	glEnableClientState( GL_COLOR_ARRAY );
+	glEnableClientState( GL_TEXTURE_COORD_ARRAY );
+
+	glVertexPointer( 2, GL_FLOAT, sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), &vertices->x );
+	glTexCoordPointer( 4, GL_FLOAT, sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), &vertices->u );
+	glClientActiveTexture( GL_TEXTURE1 );
+	glEnableClientState( GL_TEXTURE_COORD_ARRAY ); // for texture unit 1
+	glTexCoordPointer( 2, GL_FLOAT, sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), &vertices->u3 );
+	glColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), &vertices->color );
+
+	// draw
+	glDrawArrays( api_primitive_mode, 0, num_vertices );
+
+	// disable state
+	glDisableClientState( GL_VERTEX_ARRAY );
+	glDisableClientState( GL_COLOR_ARRAY );
+	glDisableClientState( GL_TEXTURE_COORD_ARRAY ); // for texture unit 1
+	glClientActiveTexture( GL_TEXTURE0 );
+	glDisableClientState( GL_TEXTURE_COORD_ARRAY ); // for texture unit 0
+
+	LowLevel_DisableState( state );
+}
+
 //=============================================================================
 
 types::vec2	GraphicsOpenGL::ConvertToInternalPos( int x, int y ) 
