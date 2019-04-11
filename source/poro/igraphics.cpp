@@ -156,7 +156,7 @@ namespace poro
 	void IGraphics::DrawLines( const types::Vertex_PosFloat2_ColorUint32* vertices, uint32 num_vertices, bool smooth, float width, bool loop ) 
 	{
 		GraphicsState state;
-		state.blend_mode = BLEND_MODE::NORMAL;
+		state.blend_mode = mBlendMode;
 		state.line_width = width;
 		if ( smooth )
 			state.flags = DRAW_FLAGS::LINE_SMOOTH;
