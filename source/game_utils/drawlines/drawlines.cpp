@@ -22,6 +22,7 @@
 #include "drawlines.h"
 
 #include "../../poro/igraphics.h"
+#include "../../poro/source/utils/color/ccolor.h"
 
 #include "../../utils/math/math_utils.h"
 #include "../../utils/debug.h"
@@ -827,3 +828,94 @@ float DrawHersheyText( poro::IGraphics* graphics, const std::string& text, const
 }
 
 //-----------------------------------------------------------------------------
+
+void LineDrawBuffer::AddLine( const vec2& start, const vec2& end, uint32 color32 )
+{
+	vertices.push_back( poro::types::Vertex_PosFloat2_ColorUint32{ start.x, start.y, color32 } );
+	vertices.push_back( poro::types::Vertex_PosFloat2_ColorUint32{ end.x, end.y, color32 } );
+}
+
+void LineDrawBuffer::AddLine( const vec2& start, const vec2& end, const poro::types::fcolor& color )
+{
+	AddLine( start, end, types::fcolor( color ).Get32() );
+}
+
+void LineDrawBuffer::AddLine( const vec2& start, const vec2& end, uint32 color32, const types::camera* camera )
+{
+	cassert( camera );
+	AddLine( camera->Transform( start ), camera->Transform( end ), color32 );
+}
+
+void LineDrawBuffer::AddLine( const vec2& start, const vec2& end, const poro::types::fcolor& color, const types::camera* camera )
+{
+	cassert( camera );
+	AddLine( start, end, types::fcolor( color ).Get32(), camera );
+}
+
+void LineDrawBuffer::Clear()
+{
+	vertices.clear();
+}
+
+void LineDrawBuffer::Draw( poro::IGraphics* graphics, float line_width ) const
+{
+	cassert( graphics );
+
+	poro::GraphicsState state;
+	state.primitive_mode = poro::DRAW_PRIMITIVE_MODE::LINES;
+	state.line_width = line_width;
+	state.flags = poro::DRAW_FLAGS::LINE_SMOOTH;
+
+	graphics->DrawVertices( vertices, state );
+}
+
+float DrawHersheyText( LineDrawBuffer& buffer, const std::string& text, const types::vector2& pos, float text_size, const poro::types::fcolor& color )
+{
+	float width = 0;
+	float tx = pos.x;
+	float ty = pos.y;
+	const float scale = text_size / 24.0f;
+
+
+	for ( std::size_t i = 0; i < text.size(); ++i )
+	{
+		char npts, adv, j, count = 0, px, py;
+		char c = text[i] - 32;
+		const char* glyph;
+
+		if ( c < 0 || c > 95 ) continue;
+
+		glyph = &g_simplex[(int)c*GLYPH_SIZE];
+		npts = *glyph++;
+		adv = *glyph++;
+		
+		for ( j = 0; j < npts; ++j )
+		{
+			const char gx = glyph[j * 2 + 0];
+			char gy = glyph[j * 2 + 1];
+
+			if ( gx == -1 && gy == -1 )
+			{
+				count = 0;
+				continue;
+			}
+
+			gy = 24 - gy;
+
+			if ( count > 0 )
+			{
+				buffer.AddLine( types::vector2( tx + px*scale, ty + py*scale ), types::vector2( tx + gx*scale, ty + gy*scale ), color );
+			}
+
+			count++;
+
+			px = gx;
+			py = gy;
+		}
+
+		width += adv*scale;
+		tx += adv*scale;
+	}
+
+	return width;
+}
