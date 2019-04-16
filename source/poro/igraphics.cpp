@@ -80,6 +80,7 @@ namespace poro
 		{
 			vertices[i].u = tex_coords[i].x;
 			vertices[i].v = tex_coords[i].y;
+			vertices[i].color = 0xFFffFFff;
 		}
 
 		GraphicsState state;
@@ -112,6 +113,7 @@ namespace poro
 			vertices[i].v = tex_coords[i].y;
 			vertices[i].u2 = tex_coords2[i].x;
 			vertices[i].v2 = tex_coords2[i].y;
+			vertices[i].color = 0xFFffFFff;
 		}
 
 		GraphicsState state;
@@ -147,6 +149,7 @@ namespace poro
 			vertices[i].v2 = tex_coords2[i].y;
 			vertices[i].u3 = tex_coords3[i].x;
 			vertices[i].v3 = tex_coords3[i].y;
+			vertices[i].color = 0xFFffFFff;
 		}
 
 		GraphicsState state;
