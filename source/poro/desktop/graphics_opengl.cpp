@@ -1370,6 +1370,7 @@ void LowLevel_EnableState( const GraphicsState& state, uint32& out_api_primitive
 		case BLEND_MODE::ZERO_ADDITIVEALPHA:		glBlendFuncSeparate( GL_ZERO, GL_ONE, GL_ONE, GL_ONE );								break;
 		case BLEND_MODE::NORMAL_ADDITIVEALPHA:		glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE );	break;
 		case BLEND_MODE::ADDITIVE_ZEROALPHA:		glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE );						break;
+		case BLEND_MODE::ONE:						glBlendFunc( GL_ONE, GL_ONE );														break;
 		default: poro_assert( false && "Invalid enum value" );																			break;
 	}
 
