@@ -1056,6 +1056,7 @@ Sprite::Sprite() :
 	mVisible( true ),
 	mRect( NULL ),
 	mShader( NULL ),
+	mMainTextureFilteringMode( poro::TEXTURE_FILTERING_MODE::NEAREST ),
 	mRectAnimations( NULL ),
 	mRectAnimation( NULL ),
 	mAnimations( NULL ),
@@ -1255,7 +1256,7 @@ void Sprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types
 	graphics->SetShader( mShader );
 	if ( mShader )
 	{
-		graphics->Shader_SetParameter( mShader, "tex", mTexture );
+		graphics->Shader_SetParameter( mShader, "tex", mTexture, mMainTextureFilteringMode );
 		graphics->Shader_SetParameter( mShader, "tex_size", poro::types::vec2( (float)mTexture->GetDataWidth(), (float)mTexture->GetDataHeight() ) );
 	}
 
