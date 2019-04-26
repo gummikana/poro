@@ -613,12 +613,14 @@ int GraphicsOpenGL::GetFullscreen()
 	return OPENGL_SETTINGS.fullscreen; 
 }
 
-void GraphicsOpenGL::SetVsync( bool vsync )
+void GraphicsOpenGL::SetVsync( VSYNC_MODE::Enum vsync )
 {
 	if ( OPENGL_SETTINGS.vsync != vsync )
 	{
 		OPENGL_SETTINGS.vsync = vsync;
-		SDL_GL_SetSwapInterval( OPENGL_SETTINGS.vsync ? 1 : 0 );
+
+		if ( vsync != VSYNC_MODE::ADAPTIVE )
+			IMPL_SetVSyncEnabled( vsync );
 	}
 }
 
@@ -1335,10 +1337,14 @@ void GraphicsOpenGL::BeginRendering()
 	}
 }
 
-void GraphicsOpenGL::EndRendering()
+void GraphicsOpenGL::IMPL_EndRendering()
 {
-	_EndRendering();
 	SDL_GL_SwapWindow( mSDLWindow );
+}
+
+void GraphicsOpenGL::IMPL_SetVSyncEnabled( bool enabled )
+{
+	SDL_GL_SetSwapInterval( enabled ? 1 : 0 );
 }
 
 //=============================================================================

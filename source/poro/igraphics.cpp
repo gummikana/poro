@@ -21,6 +21,7 @@
 #include "igraphics.h"
 #include "itexture.h"
 #include "utils/color/ccolor.h"
+#include "poro.h"
 
 
 namespace poro
@@ -59,6 +60,7 @@ namespace poro
 		graphics->LegacyBindTexture( 0 );
 	}
 
+	// ---
 
 	void IGraphics::DrawRect( const poro::types::vec2& position, const poro::types::vec2& size, const types::vec2* tex_coords )
 	{
@@ -330,5 +332,52 @@ namespace poro
 	void IGraphics::DrawVertices( const std::vector< types::Vertex_PosFloat2_ColorUint32 >& vertices, const poro::GraphicsState& state )
 	{
 		DrawVertices( &vertices[0], vertices.size(), state );
+	}
+
+
+	void IGraphics::EndRendering()
+	{
+		const auto app_config = Poro()->GetApplicationConfig();
+		poro_assert( app_config );
+
+		// adaptive vsync
+		if ( app_config->graphics_settings.vsync == VSYNC_MODE::ADAPTIVE )
+		{
+			const float vsync_off_threshold = 0.9f * app_config->framerate;
+			const float vsync_on_threshold = (float)app_config->framerate - 1.0f;
+
+			const auto graphics = Poro()->GetGraphics();
+
+			const uint32 NUM_FPS_SAMPLES = 32;
+			static float fps_samples[NUM_FPS_SAMPLES] = { 0 };
+			static uint32 sample_index = 0;
+
+			fps_samples[sample_index] = (float)Poro()->GetFrameRate();
+
+			sample_index++;
+			if ( sample_index >= NUM_FPS_SAMPLES )
+				sample_index = 0;
+
+			float fps_average = 0;
+			for ( auto sample : fps_samples )
+				fps_average += sample;
+
+			fps_average /= NUM_FPS_SAMPLES;
+
+			const bool vsync_enabled = graphics->GetVsync();
+
+			if ( fps_average <= vsync_off_threshold && vsync_enabled )
+				IMPL_SetVSyncEnabled( false );
+			else if ( fps_average >= vsync_on_threshold && ( vsync_enabled == false ) )
+				IMPL_SetVSyncEnabled( true );
+		}
+
+		// ---
+		if ( mCurrentShader )
+			Shader_Disable( mCurrentShader );
+		mCurrentShader = NULL;
+
+		// ---
+		IMPL_EndRendering();
 	}
 }

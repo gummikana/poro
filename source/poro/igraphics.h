@@ -123,6 +123,16 @@ namespace FULLSCREEN_MODE
 	};
 }
 
+namespace VSYNC_MODE
+{
+	enum Enum
+	{
+		OFF,
+		ON,
+		ADAPTIVE,
+	};
+}
+
 //-----------------------------
 
 struct DisplayMode
@@ -142,30 +152,18 @@ struct DisplayMode
 
 struct GraphicsSettings
 {
-	GraphicsSettings() : 
-		window_width(1024),
-		window_height(768),
-		fullscreen(FULLSCREEN_MODE::WINDOWED),
-		caption("poro window"),
-		icon_bmp("data/ui_gfx/icon.bmp"),
-		textures_resize_to_power_of_two( true ), 
-		textures_fix_alpha_channel( true ),
-		vsync( false ),
-		current_display( 0 )
-	{
-	}
+	int				window_width = 1024;
+	int				window_height = 768;
+	int				fullscreen = FULLSCREEN_MODE::WINDOWED;
+	types::string	caption = "poro window";
+	types::string	icon_bmp = "data/ui_gfx/icon.bmp";
 
-	int				window_width;
-	int				window_height;
-	int				fullscreen;
-	types::string	caption;
-	types::string	icon_bmp;
-
-	bool textures_resize_to_power_of_two;
-	bool textures_fix_alpha_channel;
+	bool textures_resize_to_power_of_two = true;
+	bool textures_fix_alpha_channel = true;
 	
-	bool vsync;
-	int current_display;	// opens fullscreen on this display index...
+	VSYNC_MODE::Enum vsync = VSYNC_MODE::OFF;
+
+	int current_display = 0;	// opens fullscreen on this display index
 };
 //-----------------------------
 
@@ -197,7 +195,7 @@ public:
 	virtual void				GetDisplayModes( std::vector<DisplayMode>* out_modes )				{ poro_assert( false ); /* You have to implement this */ }
 	virtual void				SetFullscreen( int fullscreen )										{ poro_assert( false ); /* You have to implement this */ }
 	virtual int					GetFullscreen()														{ poro_assert( false ); return 0;/* You have to implement this */ }
-	virtual void				SetVsync( bool vsync )												{ poro_assert( false ); /* You have to implement this */ }
+	virtual void				SetVsync( VSYNC_MODE::Enum vsync )									{ poro_assert( false ); /* You have to implement this */ }
 	virtual bool				GetVsync()															{ poro_assert( false ); return false;/* You have to implement this */ }
 	virtual poro::types::vec2	GetViewPortSize()													{ poro_assert( false ); return poro::types::vec2(0,0); /* You have to implement this */ }
 
@@ -258,7 +256,7 @@ public:
 	//-------------------------------------------------------------------------
 
 	virtual void BeginRendering() = 0;
-	virtual void EndRendering() = 0;
+	void EndRendering();
 	virtual void SetClearBackground( bool clear ) { mClearBackground = clear; }
 
 	//-------------------------------------------------------------------------
@@ -315,12 +313,8 @@ public:
 	virtual int				ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes )	{ poro_assert( false && "IMPLEMENTATION NEEDED" ); return -1; }
 
 protected:
-	void _EndRendering()
-	{
-		if ( mCurrentShader )
-			Shader_Disable( mCurrentShader );
-		mCurrentShader = NULL;
-	}
+	virtual void IMPL_SetVSyncEnabled( bool enabled ) = 0;
+	virtual void IMPL_EndRendering() = 0;
 
 	bool mClearBackground = true;
 	poro::types::fcolor mFillColor = poro::types::fcolor();

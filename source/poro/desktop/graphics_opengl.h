@@ -58,7 +58,7 @@ public:
 	virtual void				GetDisplayModes( std::vector<DisplayMode>* out_modes ) PORO_OVERRIDE;
 	virtual void				SetFullscreen(int fullscreen) PORO_OVERRIDE;
 	virtual int					GetFullscreen() PORO_OVERRIDE;
-	virtual void				SetVsync( bool vsync ) PORO_OVERRIDE;
+	virtual void				SetVsync( VSYNC_MODE::Enum vsync ) PORO_OVERRIDE;
 	virtual bool				GetVsync() PORO_OVERRIDE;
 	virtual poro::types::vec2	GetViewPortSize() PORO_OVERRIDE { return mViewportSize; }
 
@@ -118,7 +118,8 @@ public:
 	//-------------------------------------------------------------------------
 
 	virtual void BeginRendering() PORO_OVERRIDE;
-	virtual void EndRendering() PORO_OVERRIDE;
+	virtual void IMPL_EndRendering() PORO_OVERRIDE;
+	virtual void IMPL_SetVSyncEnabled( bool enabled ) PORO_OVERRIDE;
 	
 	//-------------------------------------------------------------------------
 
