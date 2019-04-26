@@ -95,7 +95,7 @@ namespace {
 
 	//-------------------------------------------------------------------------
 
-	unsigned char* ResizeImage( unsigned char* pixels, int w, int h, int new_size_x, int new_size_y )
+	unsigned char* ResizeImage( const uint8* pixels, int w, int h, int new_size_x, int new_size_y )
 	{
 		const int bpp = 4;
 
@@ -123,7 +123,7 @@ namespace {
 
 	//-------------------------------------------------------------------------
 
-	TextureOpenGL* CreateImage( unsigned char* pixels, int w, int h, int bpp, bool store_raw_pixel_data )
+	TextureOpenGL* CreateImage( GraphicsOpenGL* graphics, uint8* pixels, int w, int h, int bpp, bool store_raw_pixel_data )
 	{
 		Uint32 oTexture = 0;
 		float uv[4];
@@ -141,9 +141,8 @@ namespace {
 		bool resize_to_power_of_two = OPENGL_SETTINGS.textures_resize_to_power_of_two;
 
 		bool image_resized = false;
-		unsigned char* new_pixels = pixels;
+		uint8* new_pixels = pixels;
 		
-	
 		// --- power of 2
 		if( resize_to_power_of_two )
 		{
@@ -173,21 +172,16 @@ namespace {
 	
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	
-		if( IPlatform::Instance()->GetGraphics()->GetMipmapMode()== TEXTURE_FILTERING_MODE::NEAREST ){
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		} else {
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		}
-		
+
 		TextureOpenGL* result = new TextureOpenGL;
 		result->mTexture = oTexture;
 		result->mWidth = w;
 		result->mHeight = h;
 		result->mRealSizeX = real_size[ 0 ];
 		result->mRealSizeY = real_size[ 1 ];
+		result->mFilteringMode = poro::TEXTURE_FILTERING_MODE::UNDEFINED;
+
+		graphics->SetTextureFilteringMode( result, graphics->GetMipmapMode() );
 
 		if ( !store_raw_pixel_data )
 		{
@@ -277,7 +271,7 @@ namespace {
 		return "";
 	}
 
-	TextureOpenGL* LoadTexture_Impl( const types::string& filename, bool store_raw_pixel_data )
+	TextureOpenGL* LoadTexture_Impl( GraphicsOpenGL* graphics, const types::string& filename, bool store_raw_pixel_data )
 	{
 		TextureOpenGL* result = NULL;
 		
@@ -287,7 +281,7 @@ namespace {
 			return NULL;
 
 		int x,y,bpp;
-		unsigned char *data = stbi_load_from_memory( (stbi_uc*)texture_data.memory, texture_data.size_bytes, &x, &y, &bpp, 4);
+		uint8* data = stbi_load_from_memory( (stbi_uc*)texture_data.memory, texture_data.size_bytes, &x, &y, &bpp, 4);
 
 		if( data == NULL ) 
 			return NULL;
@@ -309,20 +303,20 @@ namespace {
 #endif
 		}
 
-		result = CreateImage( data, x, y, bpp, store_raw_pixel_data );
+		result = CreateImage( graphics, data, x, y, bpp, store_raw_pixel_data );
 
 		return result;
 	}
 
 	//-----------------------------------------------------------------------------
 
-	TextureOpenGL* CreateTexture_Impl(int width,int height)
+	TextureOpenGL* CreateTexture_Impl( GraphicsOpenGL* graphics, int width,int height )
 	{
 		TextureOpenGL* result = NULL;
 		
 		int bpp = 4;
 		int char_size = width * height * bpp;
-		unsigned char* data = new unsigned char[ char_size ];
+		uint8* data = new uint8[ char_size ];
 		if( data == NULL ) 
 			return NULL;
 
@@ -331,7 +325,7 @@ namespace {
 			data[ i ] = 0;
 		}
 
-		result = CreateImage( data, width, height, bpp , false);
+		result = CreateImage( graphics, data, width, height, bpp , false);
 
 		return result;
 	}
@@ -531,6 +525,8 @@ void GraphicsOpenGL::SetWindowSize(int window_width, int window_height)
 	{
 		mWindowWidth = window_width;
 		mWindowHeight = window_height;
+		OPENGL_SETTINGS.window_width = window_width;
+		OPENGL_SETTINGS.window_height = window_height;
 		ResetWindow();
 	}
 }
@@ -633,7 +629,7 @@ bool GraphicsOpenGL::GetVsync()
 
 ITexture* GraphicsOpenGL::CreateTexture( int width, int height )
 {
-	return CreateTexture_Impl(width,height);
+	return CreateTexture_Impl( this, width, height );
 }
 
 ITexture* GraphicsOpenGL::CloneTexture( ITexture* other )
@@ -665,7 +661,7 @@ ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename )
 
 ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename, bool store_raw_pixel_data )
 {
-	ITexture* result = LoadTexture_Impl( filename, store_raw_pixel_data );
+	ITexture* result = LoadTexture_Impl( this, filename, store_raw_pixel_data );
 	
 	if ( result )
 	{
@@ -688,10 +684,14 @@ void GraphicsOpenGL::DestroyTexture( ITexture* itexture )
 	glDeleteTextures(1, &texture->mTexture);
 }
 
-void GraphicsOpenGL::SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode )
+void GraphicsOpenGL::SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode ) const
 {
+	poro_assert( mode != TEXTURE_FILTERING_MODE::UNDEFINED );
 	poro_assert( dynamic_cast<TextureOpenGL*>( itexture ) );
 	TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
+
+	if ( texture->mFilteringMode == mode )
+		return;
 
 	glEnable( GL_TEXTURE_2D );
 	glBindTexture( GL_TEXTURE_2D, texture->mTexture );
@@ -720,9 +720,11 @@ void GraphicsOpenGL::SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTER
 	}
 		
 	glBindTexture( GL_TEXTURE_2D, 0 );
+
+	texture->mFilteringMode = mode;
 }
 
-void GraphicsOpenGL::SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum mode )
+void GraphicsOpenGL::SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum mode ) const
 {
 	poro_assert( dynamic_cast<TextureOpenGL*>( itexture ) );
 	TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
@@ -832,10 +834,8 @@ void GraphicsOpenGL::DestroyTexture3d( ITexture3d* itexture )
 
 //=============================================================================
 
-IRenderTexture* GraphicsOpenGL::RenderTexture_Create( int width, int height, bool linear_filtering ) const
+IRenderTexture* GraphicsOpenGL::RenderTexture_Create( int width, int height, TEXTURE_FILTERING_MODE::Enum filtering_mode ) const
 {
-	const int filtering = linear_filtering ? GL_LINEAR : GL_NEAREST;
-
 	RenderTextureOpenGL* result = new RenderTextureOpenGL();
 	poro_assert( result );
 
@@ -846,12 +846,13 @@ IRenderTexture* GraphicsOpenGL::RenderTexture_Create( int width, int height, boo
 	result->mTexture.mUv[1] = 0;
 	result->mTexture.mUv[2] = ((GLfloat)width) / (GLfloat)width;
 	result->mTexture.mUv[3] = ((GLfloat)height) / (GLfloat)height;
+	result->mTexture.mFilteringMode = TEXTURE_FILTERING_MODE::UNDEFINED;
 
 	glGenTextures( 1, (GLuint*)&result->mTexture.mTexture );
 	glBindTexture( GL_TEXTURE_2D, result->mTexture.mTexture );
 
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtering );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filtering );
+	SetTextureFilteringMode( &result->mTexture, filtering_mode );
+	glBindTexture( GL_TEXTURE_2D, result->mTexture.mTexture );
 
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
@@ -1262,12 +1263,15 @@ void GraphicsOpenGL::Shader_SetParameter( IShader* ishader, const std::string& n
 	glUniform4fv( location, 1, value_4_floats );
 }
 
-void GraphicsOpenGL::Shader_SetParameter( IShader* ishader, const std::string& name, const ITexture* itexture ) const
+void GraphicsOpenGL::Shader_SetParameter( IShader* ishader, const std::string& name, ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode )
 {
 	poro_assert( itexture );
 	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
-	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
 	poro_assert( dynamic_cast<const TextureOpenGL*>( itexture) );
+
+	SetTextureFilteringMode( itexture, mode );
+
+	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
 	const TextureOpenGL* texture = static_cast<const TextureOpenGL*>( itexture );
 
 	const int location = Shader_GetParameterLocation( shader, name );
@@ -1398,12 +1402,12 @@ void LowLevel_DisableState( const GraphicsState& state )
 }
 
 
-void GraphicsOpenGL::LegacyBindTexture( const ITexture* texture )
+void GraphicsOpenGL::LegacyBindTexture( const ITexture* itexture )
 {
-	if ( texture )
+	if ( itexture )
 	{
-		const poro::TextureOpenGL* otexture = static_cast< const poro::TextureOpenGL* >( texture );
-		glBindTexture( GL_TEXTURE_2D, otexture->mTexture );
+		const poro::TextureOpenGL* texture = static_cast< const poro::TextureOpenGL* >( itexture );
+		glBindTexture( GL_TEXTURE_2D, texture->mTexture );
 		glEnable( GL_TEXTURE_2D );
 	}
 	else

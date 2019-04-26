@@ -41,11 +41,12 @@ public:
 		mRealSizeX = 0;
 		mRealSizeY = 0;
 		mPixelData = NULL;
+		mFilteringMode = 0;
 
 		mUv[ 0 ] = 0; 
 		mUv[ 1 ] = 0; 
 		mUv[ 2 ] = 0; 
-		mUv[ 3 ] = 0; 
+		mUv[ 3 ] = 0;
 	}
 
 	TextureOpenGL( TextureOpenGL* other ) : 
@@ -58,6 +59,7 @@ public:
 		mRealSizeX = other->mRealSizeX;
 		mRealSizeY = other->mRealSizeY;
 		mPixelData = other->mPixelData;
+		mFilteringMode = other->mFilteringMode;
 
 		mUv[ 0 ] = other->mUv[0]; 
 		mUv[ 1 ] = other->mUv[1]; 

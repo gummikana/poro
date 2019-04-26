@@ -81,6 +81,8 @@ public: // don't touch these
 
 	unsigned char*	mPixelData;
 	types::string	mFilename;
+
+	int mFilteringMode;
 };
 
 } // end o namespace poro

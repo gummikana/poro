@@ -76,8 +76,8 @@ public:
 	virtual ITexture*	LoadTexture( const types::string& filename ) PORO_OVERRIDE;
 	virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data ) PORO_OVERRIDE;
 	virtual void		DestroyTexture( ITexture* texture ) PORO_OVERRIDE;
-	virtual void		SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode ) PORO_OVERRIDE;
-	virtual void		SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum  mode ) PORO_OVERRIDE;
+	virtual void		SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode ) const PORO_OVERRIDE;
+	virtual void		SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum  mode ) const PORO_OVERRIDE;
 
 	//-------------------------------------------------------------------------
 
@@ -86,7 +86,7 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual IRenderTexture* RenderTexture_Create(int width, int height, bool linear_filtering) const PORO_OVERRIDE;
+	virtual IRenderTexture* RenderTexture_Create( int width, int height, TEXTURE_FILTERING_MODE::Enum filtering_mode ) const PORO_OVERRIDE;
 	virtual void RenderTexture_Destroy( IRenderTexture* texture ) const PORO_OVERRIDE;
 	virtual void RenderTexture_BeginRendering( IRenderTexture* texture, bool clear_color = false, bool clear_depth = false, float clear_r = 0.f, float clear_g = 0.f, float clear_b = 0.f, float clear_a = 0.f ) const PORO_OVERRIDE;
 	virtual void RenderTexture_EndRendering( IRenderTexture* texture ) const PORO_OVERRIDE;
@@ -109,7 +109,7 @@ public:
 	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const types::vec2& value_xy, types::vec2& value_zw ) const PORO_OVERRIDE;
 	virtual void Shader_SetParameter( IShader* shader, const std::string& name, float x, float y, float z, float w ) const PORO_OVERRIDE;
 	virtual void Shader_SetParameter( IShader* ishader, const std::string& name, const float* value_4_floats ) const PORO_OVERRIDE;
-	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const ITexture* texture ) const PORO_OVERRIDE;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, ITexture* texture, TEXTURE_FILTERING_MODE::Enum mode ) PORO_OVERRIDE;
 	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const ITexture3d* texture ) const PORO_OVERRIDE;
 	virtual bool Shader_GetIsCompiledAndLinked( IShader* shader ) const PORO_OVERRIDE;
 

@@ -45,8 +45,9 @@ namespace TEXTURE_FILTERING_MODE
 {
 	enum Enum 
 	{
-		LINEAR = 0,
-		NEAREST = 1
+		UNDEFINED = 0,
+		LINEAR = 1,
+		NEAREST = 2,
 	};
 }
 
@@ -216,8 +217,8 @@ public:
 	virtual ITexture*	LoadTexture( const types::string& filename ) = 0;
 	virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data ) = 0;
 	virtual void		DestroyTexture( ITexture* texture ) = 0;
-	virtual void		SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode ) = 0;
-	virtual void		SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum mode ) = 0;
+	virtual void		SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode ) const = 0;
+	virtual void		SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum mode ) const = 0;
 
 	//-------------------------------------------------------------------------
 	
@@ -226,7 +227,7 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual IRenderTexture* RenderTexture_Create( int width, int height, bool linear_filtering ) const = 0;
+	virtual IRenderTexture* RenderTexture_Create( int width, int height, TEXTURE_FILTERING_MODE::Enum mode ) const = 0;
 	virtual void RenderTexture_Destroy( IRenderTexture* texture ) const = 0;
 	virtual void RenderTexture_BeginRendering( IRenderTexture* texture, bool clear_color = false, bool clear_depth = false, float clear_r = 0.f, float clear_g = 0.f, float clear_b = 0.f, float clear_a = 0.f ) const = 0;
 	virtual void RenderTexture_EndRendering( IRenderTexture* texture ) const = 0;
@@ -249,7 +250,7 @@ public:
 	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const types::vec2& value_xy, types::vec2& value_zw ) const = 0;
 	virtual void Shader_SetParameter( IShader* shader, const std::string& name, float x, float y, float z, float w ) const = 0;
 	virtual void Shader_SetParameter( IShader* ishader, const std::string& name, const float* value_4_floats ) const = 0;
-	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const ITexture* texture ) const = 0;
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, ITexture* texture, TEXTURE_FILTERING_MODE::Enum mode ) = 0;
 	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const ITexture3d* texture ) const = 0;
 	virtual bool Shader_GetIsCompiledAndLinked( IShader* shader ) const = 0;
 
@@ -265,7 +266,7 @@ public:
 	virtual poro::types::fcolor	GetFillColor() const;
 
 	virtual void SetMipmapMode( TEXTURE_FILTERING_MODE::Enum mode ){ mMipmapMode = mode;}
-	virtual int GetMipmapMode(){ return mMipmapMode; }
+	virtual poro::TEXTURE_FILTERING_MODE::Enum GetMipmapMode() const { return mMipmapMode; }
 	
 	virtual void PushBlendMode( BLEND_MODE::Enum blend_mode );
 	virtual void PopBlendMode();
