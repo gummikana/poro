@@ -615,14 +615,18 @@ void GraphicsOpenGL::SetVsync( VSYNC_MODE::Enum vsync )
 	{
 		OPENGL_SETTINGS.vsync = vsync;
 
-		if ( vsync != VSYNC_MODE::ADAPTIVE )
-			IMPL_SetVSyncEnabled( vsync );
+		IMPL_SetVSyncEnabled( vsync > VSYNC_MODE::OFF );
 	}
 }
 
-bool GraphicsOpenGL::GetVsync() 
+VSYNC_MODE::Enum GraphicsOpenGL::GetVsync() 
 {
 	return OPENGL_SETTINGS.vsync; 
+}
+
+bool GraphicsOpenGL::GetVsyncCurrentlyEnabled()
+{
+	return mVsyncEnabled;
 }
 
 //=============================================================================
@@ -1349,6 +1353,7 @@ void GraphicsOpenGL::IMPL_EndRendering()
 void GraphicsOpenGL::IMPL_SetVSyncEnabled( bool enabled )
 {
 	SDL_GL_SetSwapInterval( enabled ? 1 : 0 );
+	mVsyncEnabled = enabled;
 }
 
 //=============================================================================

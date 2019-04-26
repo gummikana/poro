@@ -364,7 +364,7 @@ namespace poro
 
 			fps_average /= NUM_FPS_SAMPLES;
 
-			const bool vsync_enabled = graphics->GetVsync();
+			const bool vsync_enabled = graphics->GetVsyncCurrentlyEnabled();
 
 			if ( fps_average <= vsync_off_threshold && vsync_enabled )
 				IMPL_SetVSyncEnabled( false );

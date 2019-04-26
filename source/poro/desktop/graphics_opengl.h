@@ -59,7 +59,8 @@ public:
 	virtual void				SetFullscreen(int fullscreen) PORO_OVERRIDE;
 	virtual int					GetFullscreen() PORO_OVERRIDE;
 	virtual void				SetVsync( VSYNC_MODE::Enum vsync ) PORO_OVERRIDE;
-	virtual bool				GetVsync() PORO_OVERRIDE;
+	virtual VSYNC_MODE::Enum	GetVsync() PORO_OVERRIDE;
+	virtual bool GetVsyncCurrentlyEnabled() PORO_OVERRIDE;
 	virtual poro::types::vec2	GetViewPortSize() PORO_OVERRIDE { return mViewportSize; }
 
 	//-------------------------------------------------------------------------
@@ -159,6 +160,7 @@ private:
 	
 	bool mGlContextInitialized;
 
+	bool mVsyncEnabled = false;
 	uint32 mDynamicVboHandle = 0;
 
 };
