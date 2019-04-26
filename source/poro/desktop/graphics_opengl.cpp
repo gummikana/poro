@@ -525,6 +525,8 @@ void GraphicsOpenGL::SetWindowSize(int window_width, int window_height)
 	{
 		mWindowWidth = window_width;
 		mWindowHeight = window_height;
+		OPENGL_SETTINGS.window_width = window_width;
+		OPENGL_SETTINGS.window_height = window_height;
 		ResetWindow();
 	}
 }
