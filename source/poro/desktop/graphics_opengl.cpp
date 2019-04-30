@@ -956,7 +956,7 @@ void GraphicsOpenGL::RenderTexture_ReadTextureDataFromGPU( IRenderTexture* itext
 	RenderTextureOpenGL* texture = static_cast<RenderTextureOpenGL*>( itexture );
 
 	glBindFramebuffer( GL_FRAMEBUFFER, texture->mBufferId );
-	glReadPixels( 0, 0, texture->mTexture.GetDataWidth(), texture->mTexture.GetDataHeight(), GL_BGRA, GL_UNSIGNED_BYTE, (void*)out_pixels );
+	glReadPixels( 0, 0, texture->mTexture.GetDataWidth(), texture->mTexture.GetDataHeight(), GL_RGBA, GL_UNSIGNED_BYTE, (void*)out_pixels );
 	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 }
 
