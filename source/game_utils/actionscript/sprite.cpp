@@ -1018,8 +1018,9 @@ int Sprite::total_sprites = 0;
 
 //-----------------------------------------------------------------------------
 
-Sprite* LoadSprite( const std::string& filename )
+Sprite* LoadSpriteLegacy( const std::string& filename )
 {
+	poro_assert( false && "Deprecated" );
 	Sprite* result = new Sprite;
 	LoadSpriteTo( filename, result );
 	return result;
