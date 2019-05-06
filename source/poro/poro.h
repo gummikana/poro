@@ -12,7 +12,6 @@
 #include "isound.h"
 #include "itexture.h"
 #include "itexture3d.h"
-#include "igraphics_buffer.h"
 #include "irender_texture.h"
 #include "ishader.h"
 

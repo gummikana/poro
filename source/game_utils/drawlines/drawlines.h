@@ -70,4 +70,22 @@ float DrawHersheyText( poro::IGraphics* graphics, const std::string& text, const
 
 //-----------------------------------------------------------------------------
 
+// --- API v2 -----------------------------------------------------------------
+
+struct LineDrawBuffer
+{
+	void AddLine( const vec2& start, const vec2& end, uint32 color32 );
+	void AddLine( const vec2& start, const vec2& end, const poro::types::fcolor& color );
+	void AddLine( const vec2& start, const vec2& end, uint32 color32, const types::camera* camera );
+	void AddLine( const vec2& start, const vec2& end, const poro::types::fcolor& color, const types::camera* camera );
+
+	void Clear();
+	void Draw( poro::IGraphics* graphics, float line_width ) const;
+
+private:
+	std::vector<poro::types::Vertex_PosFloat2_ColorUint32> vertices;
+};
+
+float DrawHersheyText( LineDrawBuffer& buffer, const std::string& text, const types::vector2& start_pos = types::vector2( 0, 0 ), float text_size = 24.f, const poro::types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ) );
+
 #endif
