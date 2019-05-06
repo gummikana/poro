@@ -127,7 +127,7 @@ bool IsPointInsidePolygon_Better( const CVector2< PointType >& point, const CVec
 
 	CVector2< PointType > vtx0 = pgon[numverts - 1];
 	
-/* get test bit for above/below X axis */
+	/* get test bit for above/below X axis */
 	yflag0 = ( vtx0.y >= ty ) ;
 	CVector2< PointType > vtx1 = pgon[0];
 

@@ -268,7 +268,7 @@ struct VectorXmlSerializer
 template< class T >
 struct VectorXmlSerializerObjects
 {
-	VectorXmlSerializerObjects( std::vector< T >& array, const std::string& name ) : array( array ), name( name ) { }
+	VectorXmlSerializerObjects( std::vector< T >& array, const std::string& name, bool clear_on_read = true ) : array( array ), name( name ), clear_on_read( clear_on_read ) { }
 
 	void Serialize( ceng::CXmlFileSys* filesys )
 	{
@@ -282,7 +282,9 @@ struct VectorXmlSerializerObjects
 		else if ( filesys->IsReading() )
 		{
 			// clears the vector
-			array.clear();
+			if( clear_on_read )
+				array.clear();
+
 			int i = 0;
 			for( i = 0; i < filesys->GetNode()->GetChildCount(); i++ )
 			{
@@ -296,6 +298,7 @@ struct VectorXmlSerializerObjects
 		}
 	}
 
+	bool clear_on_read;
 	std::vector< T >& array;
 	std::string name;
 };
