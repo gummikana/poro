@@ -474,6 +474,7 @@ void MoveFileCeng( const std::string& from, const std::string& to )
 
 void DeleteFileCeng( const std::string& filepath )
 {
+	return;
 	int DeleteFile_result = DeleteFile( filepath.c_str() );
 
 	if( DeleteFile_result == 0) 

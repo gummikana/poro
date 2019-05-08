@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
 *
 * Copyright (c) 2015 Olli Harjola, Petri Purho
 *
@@ -31,6 +31,13 @@
 
 #ifdef PORO_PLAT_WINDOWS
 #include "external/poro_windows.h"
+
+#include <shlwapi.h>
+#pragma comment(lib,"shlwapi.lib")
+#pragma comment(lib,"Pathcch.lib")
+#include "shlobj.h"
+#include "strsafe.h"
+
 #endif
 
 #include "poro_macros.h"
@@ -43,16 +50,17 @@ namespace poro {
 namespace platform_impl
 {
 	void Init();
-	void GetFiles( const std::string& full_path, std::vector<std::string>* out_files );
-	void GetDirectories( const std::string& full_path, std::vector<std::string>* out_directories );
-	std::string GetFullPath( FileLocation::Enum location, const std::string& relative_path );
-	std::string GetFullPath( FileLocation::Enum location );
+	void InitAndSetUserDataFolderName( const std::string& name );
+	void ListFiles( const std::wstring& full_path, std::vector<std::string>* out_files, bool list_directories );
+	std::wstring GetFullPath( FileLocation::Enum location, const std::string& relative_path );
+	std::wstring GetFullPath( FileLocation::Enum location );
+	std::wstring CombinePath( std::wstring root, std::wstring relative_to_root );
 	std::string CombinePath( std::string root, std::string relative_to_root );
 
 
 	struct StreamInternal
 	{
-		StreamInternal( std::string filename, bool read, StreamStatus::Enum* out_status, u32 write_mode )
+		StreamInternal( std::wstring filename, bool read, StreamStatus::Enum* out_status, u32 write_mode )
 		{
 			*out_status = StreamStatus::AccessFailed;
 
@@ -206,6 +214,7 @@ namespace platform_impl
 			mFile.close();
 		}
 
+
 		const unsigned int WRITE_BUFFER_SIZE_BYTES = 8192;
 
 		std::fstream mFile;
@@ -220,54 +229,16 @@ namespace platform_impl
 
 	namespace platform_impl
 	{
-		void Init()
+		// utils
+
+		void NormalizeSeparators( std::wstring& path )
 		{
-
-		}
-
-		void ListFiles( const std::string& full_path, std::vector<std::string>* out_files, bool list_directories )
-		{
-			poro_assert( out_files );
-
-			struct _finddata_t file_info;
-			int file_handle;
-			std::string find_path = CombinePath( full_path, "*.*" );
-
-			if( (file_handle = _findfirst( find_path.c_str(), &file_info )) != -1 )
+			for ( size_t i = 0; i < path.size(); i++ )
 			{
-				int i = 0;
-				do 
-				{
-					i++;
-					if( (file_info.attrib & _A_SUBDIR) )
-					{
-						if ( i < 3 )
-							continue;
-
-						if( list_directories ) 
-							out_files->push_back( CombinePath( full_path, file_info.name ) );
-					}
-					else
-					{
-						if( list_directories == false ) 
-							out_files->push_back( CombinePath( full_path, file_info.name ) );
-					}
-				} 
-				while( _findnext( file_handle, &file_info ) == 0 );
-
-				_findclose( file_handle );
-			}
-			else
-			{
-				// nothing found, or an error happened
+				if ( path[i] == L'\\' )
+					path[i] = L'/';
 			}
 		}
-
-		/*void GetDirectories( const std::string& full_path, std::vector<std::string>* out_directories )
-		{
-			// TODO:
-		}*/
-
 
 		void NormalizeSeparators( std::string& path )
 		{
@@ -278,48 +249,219 @@ namespace platform_impl
 			}
 		}
 
-		std::string GetFullPath( FileLocation::Enum location, const std::string& relative_path )
+		std::wstring StringToWString( const std::string& str )
 		{
-			std::string a = GetFullPath( location );
-			return CombinePath( a, relative_path );
+			std::wstring result( str.length(), L' ' );
+			std::copy( str.begin(), str.end(), result.begin() );
+			return result;
 		}
 
-		std::string GetFullPath( FileLocation::Enum location )
+		std::string WStringToString( const std::wstring& str )
 		{
-			TCHAR path[ MAX_PATH ];
-			std::string result;
-			if ( location == FileLocation::UserDocumentsDirectory )
+			return std::string ( str.begin(), str.end() );
+		}
+
+		std::wstring CleanPath( std::wstring& str )
+		{
+			return str;
+			if ( str.empty() == false )
 			{
-				if ( SUCCEEDED( SHGetFolderPath( NULL,
-					CSIDL_PERSONAL | CSIDL_FLAG_CREATE,
-					NULL,
-					0,
-					path ) ) )
-				{
-					result = std::string( path );
-				}
+				NormalizeSeparators( str );
+				if ( str[str.length() - 1] != L'/' )
+					str = str + L'/';
 			}
-			else
-			{
-				GetCurrentDirectory( MAX_PATH, path );
-				result = std::string( path );
-			}
-		
-			// clean the path
-			NormalizeSeparators( result );
-			if ( result[ result.length() - 1 ] != '/' )
-				result = result + '/';
-			return result;
+
+			return str;
 		}
 
 		static bool IsSeparator( char c )
 		{
-			return c == '\\' ||c == '/';
+			return c == '\\' || c == '/';
+		}
+
+		static bool IsSeparator( WCHAR c )
+		{
+			return c == L'\\' || c == L'/';
+		}
+
+		static WCHAR GetSeparator( const std::wstring& path )
+		{
+			return L'/';
 		}
 
 		static char GetSeparator( const std::string& path )
 		{
 			return '/';
+		}
+
+		static std::wstring GetWorkingDirectory()
+		{
+			WCHAR path[MAX_PATH];
+			GetCurrentDirectoryW( MAX_PATH, path );
+			return CleanPath( std::wstring( path ) );
+		}
+
+
+		// impl
+
+		std::wstring user_directory;
+		std::wstring working_directory = GetWorkingDirectory();
+
+
+		void Init()
+		{
+			working_directory = GetWorkingDirectory();
+		}
+
+		void InitAndSetUserDataFolderName( const std::string& name )
+		{
+			WCHAR path[MAX_PATH];
+			path[0] = '\0';
+
+			PWSTR appdata_path_ptr = NULL;
+
+			if ( SUCCEEDED( SHGetKnownFolderPath( FOLDERID_LocalAppDataLow, CSIDL_FLAG_CREATE, NULL, &appdata_path_ptr ) ) )
+			{
+				auto namew = StringToWString( name );
+				StringCchCatW( path, MAX_PATH, appdata_path_ptr );
+				PathCchAppend( path, MAX_PATH, namew.c_str() );
+				StringCchCatW( path, MAX_PATH, L"\\" );
+
+				CoTaskMemFree( appdata_path_ptr );
+			}
+
+			user_directory = CleanPath( std::wstring( path ) );
+		}
+
+		void ListFiles( const std::wstring& full_path_where, std::vector<std::string>* out_files, bool list_directories )
+		{
+			poro_assert( out_files );
+
+			std::wstring find_path = CombinePath( full_path_where, L"*.*" );
+
+			WIN32_FIND_DATAW file_info;
+			auto file_handle = FindFirstFileW( find_path.c_str(), &file_info );
+			if ( file_handle != INVALID_HANDLE_VALUE )
+			{
+				int i = 0;
+				do 
+				{
+					i++;
+					if( (file_info.dwFileAttributes & _A_SUBDIR) )
+					{
+						if ( i < 3 )
+							continue;
+
+						if( list_directories ) 
+							out_files->push_back( WStringToString( file_info.cFileName ) );
+					}
+					else
+					{
+						if( list_directories == false ) 
+							out_files->push_back( WStringToString( file_info.cFileName ) );
+					}
+				} 
+				while( FindNextFileW( file_handle, &file_info ) == 0 );
+
+				FindClose( file_handle );
+			}
+			else
+			{
+				// nothing found, or an error occurred
+			}
+		}
+
+		std::wstring GetFullPath( FileLocation::Enum location, const std::string& relative_path )
+		{
+			std::wstring a = GetFullPath( location );
+			return CombinePath( a, StringToWString( relative_path ) );
+		}
+
+		std::wstring GetFullPath( FileLocation::Enum location )
+		{
+			if ( location == FileLocation::UserDocumentsDirectory )
+				return user_directory;
+			else
+				return working_directory;
+		}
+
+		std::wstring CombinePath( std::wstring root, std::wstring relative_to_root )
+		{
+			WCHAR path[MAX_PATH];
+			path[0] = '\0';
+			PathCchAppend( path, MAX_PATH, root.c_str() );
+			PathCchAppend( path, MAX_PATH, relative_to_root.c_str() );
+			return std::wstring( path );
+
+			// check if the paths are combined properly
+			/*if ( root.empty() ) return relative_to_root;
+			if ( relative_to_root.empty() ) return relative_to_root;
+
+			// detect full path
+			WCHAR c = 0;
+			WCHAR prev = 0;
+			for ( size_t i = 0; i < relative_to_root.length(); i++ )
+			{
+				c = relative_to_root[i];
+				if ( prev == L':' && c == L'\\' )
+					return relative_to_root;
+				prev = c;
+			}
+
+			// ideally we would use this but WinAPI wants more
+			//if ( PathIsRelative( relative_to_root.c_str() ) == false )
+			//	return relative_to_root;
+			if ( root.size() > 1 && IsSeparator( root.back() ) && IsSeparator( relative_to_root[0] ) )
+				root.pop_back();
+
+			if ( !IsSeparator( root.back() ) && !IsSeparator( relative_to_root[0] ) )
+				return root + GetSeparator( root ) + relative_to_root;
+
+			poro_assert( IsSeparator( root.back() ) || IsSeparator( relative_to_root[0] ) );
+
+			auto result = root + relative_to_root;
+			NormalizeSeparators( result );
+			return result;*/
+		}
+
+		std::wstring CombinePath( std::wstring root, std::string relative_to_root_ )
+		{
+			std::wstring relative_to_root = StringToWString( relative_to_root_ );
+			WCHAR path[MAX_PATH];
+			path[0] = '\0';
+			PathCchAppend( path, MAX_PATH, root.c_str() );
+			PathCchAppend( path, MAX_PATH, relative_to_root.c_str() );
+			return std::wstring( path );
+
+			// check if the paths are combined properly
+			/*if ( root.empty() ) return relative_to_root;
+			if ( relative_to_root.empty() ) return relative_to_root;
+
+			// detect full path
+			WCHAR c = 0;
+			WCHAR prev = 0;
+			for ( size_t i = 0; i < relative_to_root.length(); i++ )
+			{
+				c = relative_to_root[i];
+				if ( prev == L':' && c == L'\\' )
+					return relative_to_root;
+				prev = c;
+			}
+
+			// ideally we would use this but WinAPI wants more
+			//if ( PathIsRelative( relative_to_root.c_str() ) == false )
+			//	return relative_to_root;
+			if ( root.size() > 1 && IsSeparator( root.back() ) && IsSeparator( relative_to_root[0] ) )
+				root.pop_back();
+
+			if ( !IsSeparator( root.back() ) && !IsSeparator( relative_to_root[0] ) )
+				return root + GetSeparator( root ) + relative_to_root;
+
+			poro_assert( IsSeparator( root.back() ) || IsSeparator( relative_to_root[0] ) );
+
+			auto result = root + relative_to_root;
+			NormalizeSeparators( result );
+			return result;*/
 		}
 
 		std::string CombinePath( std::string root, std::string relative_to_root )
@@ -354,6 +496,58 @@ namespace platform_impl
 			NormalizeSeparators( result );
 			return result;
 		}
+
+		void DeleteFileImpl( const std::wstring& path )
+		{
+			return;
+			const int result = DeleteFileW( path.c_str() );
+
+			if ( result == 0 )
+			{
+				LogError << "DeleteFileImp(" << WStringToString( path ) << ") file failed - error code: " << GetLastError() << "\n";
+			}
+		}
+
+		std::string GetDateForFile( const std::wstring& filename )
+		{
+			std::string result;
+			/*struct _finddata_t c_file;
+			long hFile;
+
+			if ( ( hFile = _findfirst( filename.c_str(), &c_file ) ) == -1L )
+			{
+				return "";
+			}
+			else
+			{
+				std::stringstream ss;
+
+				__time64_t time;
+				if ( c_file.time_write )
+					time = c_file.time_write;
+				else if ( c_file.time_create )
+					time = c_file.time_create;
+				else
+					time = c_file.time_access;
+
+				tm* timeinfo = localtime( &time );
+
+				ss << std::setfill( '0' ) << std::setw( 2 ) << ( timeinfo->tm_year - 100 );
+				ss << std::setfill( '0' ) << std::setw( 2 ) << timeinfo->tm_mon + 1;
+				ss << std::setfill( '0' ) << std::setw( 2 ) << timeinfo->tm_mday;
+				ss << std::setfill( '0' ) << std::setw( 2 ) << timeinfo->tm_hour;
+				ss << std::setfill( '0' ) << std::setw( 2 ) << timeinfo->tm_min;
+				ss << std::setfill( '0' ) << std::setw( 2 ) << timeinfo->tm_sec;
+
+
+				result = ss.str();
+
+				_findclose( hFile );
+			}*/
+
+			return "1";
+			return result;
+		}
 	}
 #endif
 
@@ -369,18 +563,18 @@ namespace impl
 {
 	// path handling
 	// thread local storage for immediate mode API
-	struct ImContext
+	struct FileImContext
 	{
 		ReadStream            readStream;
 		std::string           readPath;
 	};
 
-	PORO_THREAD_LOCAL ImContext* gImCtx;
+	PORO_THREAD_LOCAL FileImContext* gImCtx;
 
 	void UpdateReadImContext( FileSystem* file_system, const std::string& new_path )
 	{
 		if ( gImCtx == NULL )
-			gImCtx = new ImContext();
+			gImCtx = new FileImContext();
 
 		if ( new_path != gImCtx->readPath )
 		{
@@ -393,7 +587,7 @@ namespace impl
 	void CloseReadImContext( FileSystem* file_system )
 	{
 		if ( gImCtx == NULL )
-			gImCtx = new ImContext();
+			gImCtx = new FileImContext();
 
 		if ( gImCtx->readPath != "" )
 		{
@@ -711,7 +905,7 @@ StreamStatus::Enum FileSystem::WriteWholeTextFile( const std::string& path, cons
 
 // ===
 
-std::string FileSystem::GetFullPathFromRelativePath( FileLocation::Enum location, const std::string& relative_path )
+std::wstring FileSystem::GetFullPathFromRelativePath( FileLocation::Enum location, const std::string& relative_path )
 {
 	return platform_impl::GetFullPath( location, relative_path );
 }
@@ -738,44 +932,40 @@ std::vector<std::string> FileSystem::GetDirectories( FileLocation::Enum location
 	return result;
 }
 
-std::vector<std::string> FileSystem::GetDirectories( std::string full_path )
+/*std::vector<std::string> FileSystem::GetDirectories( std::string full_path )
 {
 	std::vector<std::string> result;
 	GetDirectories( full_path, &result );
 	return result;
-}
+}*/
 
 void FileSystem::GetFiles( FileLocation::Enum location, std::vector<std::string>* out_files )
 {
-	const std::string full_path = platform_impl::GetFullPath( location );
+	const std::wstring full_path = platform_impl::GetFullPath( location );
 	platform_impl::ListFiles( full_path, out_files, false );
 }
 
 void FileSystem::GetFiles( FileLocation::Enum location, const std::string& path_relative_to_location, std::vector<std::string>* out_files )
 {
-	const std::string full_path = platform_impl::GetFullPath( location, path_relative_to_location );
+	const std::wstring full_path = platform_impl::GetFullPath( location, path_relative_to_location );
 	platform_impl::ListFiles( full_path, out_files, false );
 }
 
-void FileSystem::GetFiles( std::string full_path, std::vector<std::string>* out_files )
+void FileSystem::GetFiles( std::string path_relative_to_working_directory, std::vector<std::string>* out_files )
 {
+	const std::wstring full_path = platform_impl::GetFullPath( poro::FileLocation::WorkingDirectory, path_relative_to_working_directory );
 	platform_impl::ListFiles( full_path, out_files, false );
 }
 
 void FileSystem::GetDirectories( FileLocation::Enum location, std::vector<std::string>* out_directories )
 {
-	const std::string full_path = platform_impl::GetFullPath( location );
+	const std::wstring full_path = platform_impl::GetFullPath( location );
 	platform_impl::ListFiles( full_path, out_directories, true );
 }
 
 void FileSystem::GetDirectories( FileLocation::Enum location, const std::string& path_relative_to_location, std::vector<std::string>* out_directories )
 {
-	const std::string full_path = platform_impl::GetFullPath( location, path_relative_to_location );
-	platform_impl::ListFiles( full_path, out_directories, true );
-}
-
-void FileSystem::GetDirectories( std::string full_path, std::vector<std::string>* out_directories )
-{
+	const std::wstring full_path = platform_impl::GetFullPath( location, path_relative_to_location );
 	platform_impl::ListFiles( full_path, out_directories, true );
 }
 
@@ -808,15 +998,20 @@ std::string FileSystem::GetDateForFile( const std::string& path_relative_to_devi
 		if ( stream.IsValid() )
 		{
 			const auto full_path = device->GetFullPath( path_relative_to_device_root );
-			return ceng::GetDateForFile( full_path );
+			return platform_impl::GetDateForFile( full_path );
 		}
-
 	}
 
+	cassert( false && "not implemented" );
 	return "";
 }
 
 // ===
+
+void FileSystem::InitAndSetUserDataFolderName( const std::string& name )
+{
+	platform_impl::InitAndSetUserDataFolderName( name );
+}
 
 std::vector<IFileDevice*> FileSystem::GetDeviceList()
 {
@@ -849,7 +1044,7 @@ FileSystem::~FileSystem()
 
 DiskFileDevice::DiskFileDevice( const std::string& read_root_path_full )
 {
-	mReadRootPath = read_root_path_full;
+	mReadRootPath = platform_impl::StringToWString( read_root_path_full );
 }
 
 DiskFileDevice::DiskFileDevice( FileLocation::Enum read_location, const std::string& read_root_path_relative_to_location )
@@ -861,7 +1056,7 @@ DiskFileDevice::DiskFileDevice( FileLocation::Enum read_location, const std::str
 
 ReadStream DiskFileDevice::OpenRead( const std::string& path_relative_to_device_root )
 {
-	const std::string full_path = GetFullPath( path_relative_to_device_root );
+	const std::wstring full_path = GetFullPath( path_relative_to_device_root );
 	StreamStatus::Enum status;
 	ReadStream result;
 	result.mDevice = this;
@@ -876,7 +1071,7 @@ ReadStream DiskFileDevice::OpenRead( const std::string& path_relative_to_device_
 
 WriteStream DiskFileDevice::OpenWrite( FileLocation::Enum location, const std::string& path_relative_to_location, u32 write_mode )
 {
-	const std::string full_path = platform_impl::GetFullPath( location, path_relative_to_location );
+	const std::wstring full_path = platform_impl::GetFullPath( location, path_relative_to_location );
 	StreamStatus::Enum status;
 	WriteStream result;
 	result.mDevice = this;
@@ -889,21 +1084,15 @@ WriteStream DiskFileDevice::OpenWrite( FileLocation::Enum location, const std::s
 	return result;
 }
 
-std::string DiskFileDevice::GetReadRootPath()
-{
-	return mReadRootPath;
-}
-
-std::string DiskFileDevice::GetFullPath( const std::string& path_relative_to_device_root )
+std::wstring DiskFileDevice::GetFullPath( const std::string& path_relative_to_device_root )
 {
 	return platform_impl::CombinePath( mReadRootPath, path_relative_to_device_root );
 }
 
 void DiskFileDevice::RemoveFile( FileLocation::Enum location, const std::string& path_relative_to_location )
 {
-	const std::string full_path = platform_impl::GetFullPath( location, path_relative_to_location );
-
-	ceng::DeleteFileCeng( full_path );
+	const std::wstring full_path = platform_impl::GetFullPath( location, path_relative_to_location );
+	platform_impl::DeleteFileImpl( full_path );
 }
 
 } // end of namespace
