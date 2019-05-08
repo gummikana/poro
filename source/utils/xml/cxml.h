@@ -218,11 +218,11 @@ namespace ceng {
 */
 
 	template< class T >
-	void XmlLoadFromFile( T& mesh, poro::FileLocation::Enum location, const std::string& file, const std::string& rootnodename = "rootelement", bool report_error_if_file_doesnt_exist = true );
+	void XmlLoadFromFile( T& mesh, const std::string& file, const std::string& rootnodename = "rootelement", bool report_error_if_file_doesnt_exist = true );
 
 #ifndef PORO_XCODE_ERROR_HACK_TOGGLE
 	template< class T >
-	inline void XmlLoadFromFile( T& mesh, poro::FileLocation::Enum location, const std::string& file, const std::string& rootnodename, bool report_error_if_file_doesnt_exist )
+	inline void XmlLoadFromFile( T& mesh, const std::string& file, const std::string& rootnodename, bool report_error_if_file_doesnt_exist )
 	{
 #ifdef WIZARD_DEBUG
 		if( ceng::DoesExist( file ) == false )

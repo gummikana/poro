@@ -46,7 +46,7 @@ static char* ReadWholeFile(const char *FileName)
 }
 #else
 
-static char* ReadWholeFile( poro::FileLocation::Enum location, const char* filename )
+static char* ReadWholeFile( const char* filename )
 {
 	using namespace poro;
 
