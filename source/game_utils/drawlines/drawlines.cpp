@@ -868,6 +868,9 @@ void LineDrawBuffer::Draw( poro::IGraphics* graphics, float line_width ) const
 {
 	cassert( graphics );
 
+	if ( vertices.empty() )
+		return;
+
 	poro::GraphicsState state;
 	state.primitive_mode = poro::DRAW_PRIMITIVE_MODE::LINES;
 	state.line_width = line_width;
