@@ -74,6 +74,7 @@ namespace poro {
 			UserDocumentsDirectory,
 			// Current working directory of the executable.
 			WorkingDirectory,
+			UserDirectory = WorkingDirectory, // HACK: temp hack for WIP code
 		};
 	}
 
@@ -237,31 +238,12 @@ namespace poro {
 		std::wstring GetFullPathFromRelativePath( FileLocation::Enum location, const std::string& relative_path );
 
 		// Get a list of files at the location specified by the parameters.
-		std::vector<std::string> GetFiles( FileLocation::Enum location, const std::string& path_relative_to_location = "" );
-		
-		// Get a list of files at the location specified by the parameters.
-		std::vector<std::string> GetFiles( std::string full_path );
-		
-		// Get a list of directories at the location specified by the parameters.
-		std::vector<std::string> GetDirectories( FileLocation::Enum location, const std::string& path_relative_to_location = "" );
-		
-		// Get a list of directories at the location specified by the parameters.
-		//std::vector<std::string> GetDirectories( std::string full_path );
-
-		// Get a list of files at the location specified by the parameters.
-		void GetFiles( FileLocation::Enum location, std::vector<std::string>* out_files );
-		
-		// Get a list of files at the location specified by the parameters.
 		void GetFiles( FileLocation::Enum location, const std::string& path_relative_to_location, std::vector<std::string>* out_files );
+		std::vector<std::string> GetFiles( FileLocation::Enum location, const std::string& path_relative_to_location );
 
-		// Get a list of files at the location specified by the parameters.
-		void GetFiles( std::string path_relative_to_working_directory, std::vector<std::string>* out_files );
-		
-		// Get a list of directories at the location specified by the parameters.
-        void GetDirectories( FileLocation::Enum location, std::vector<std::string>* out_directories );
-		
 		// Get a list of directories at the location specified by the parameters.
 		void GetDirectories( FileLocation::Enum location, const std::string& path_relative_to_location, std::vector<std::string>* out_directories );
+		std::vector<std::string> GetDirectories( FileLocation::Enum location, const std::string& path_relative_to_location );
 		
 		// returns true if file at 'relative_path' exists in some of the file devices
 		bool DoesExist( const std::string& path_relative_to_device_root );

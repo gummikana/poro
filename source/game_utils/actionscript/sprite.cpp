@@ -672,7 +672,7 @@ struct SpriteLoadHelper
 					}
 				}
 
-				std::vector< std::string > files = Poro()->GetFileSystem()->GetFiles( ragdoll_folder );
+				auto files = Poro()->GetFileSystem()->GetFiles( poro::FileLocation::WorkingDirectory, ragdoll_folder );
 				for ( std::string& file : files )		
 				{
 					if( ceng::GetFileExtension( file ) != "png" )
