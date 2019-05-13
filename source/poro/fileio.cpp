@@ -867,16 +867,6 @@ bool FileSystem::RenameFile( const std::string& file_, const std::string& new_na
 	return platform_impl::RenameFile( file, new_name );
 }
 
-}
-
-bool FileSystem::RenameFile( const std::string& file_, const std::string& new_name_, FileLocation::Enum location )
-{
-	auto file = CompleteWritePath( location, file_ );
-	auto new_name = CompleteWritePath( location, new_name_ );
-
-	return platform_impl::RenameFile( file, new_name );
-}
-
 // ===
 
 StreamStatus::Enum FileSystem::Read( const std::string& path, char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read )
