@@ -867,6 +867,15 @@ bool FileSystem::RenameFile( const std::string& file_, const std::string& new_na
 	return platform_impl::RenameFile( file, new_name );
 }
 
+}
+
+bool FileSystem::RenameFile( const std::string& file_, const std::string& new_name_, FileLocation::Enum location )
+{
+	auto file = CompleteWritePath( location, file_ );
+	auto new_name = CompleteWritePath( location, new_name_ );
+
+	return platform_impl::RenameFile( file, new_name );
+}
 
 // ===
 
