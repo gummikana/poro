@@ -314,6 +314,9 @@ namespace platform_impl
 
 		// impl
 
+		#pragma warning (push)
+		#pragma warning(disable:4995)
+
 		std::wstring user_directory;
 		std::wstring working_directory = GetWorkingDirectory();
 
@@ -515,7 +518,6 @@ namespace platform_impl
 
 		void DeleteFileImpl( const std::wstring& path )
 		{
-			return;
 			const int result = DeleteFileW( path.c_str() );
 
 			if ( result == 0 )
@@ -564,6 +566,19 @@ namespace platform_impl
 			return "1";
 			return result;
 		}
+
+		bool RenameFile( const std::wstring& file, const std::wstring new_name )
+		{
+			/* add | MOVEFILE_WRITE_THROUGH  if you want to make this block until the operation is done*/
+			int result = MoveFileExW( file.c_str(), new_name.c_str(), MOVEFILE_REPLACE_EXISTING );
+			if ( result == 0 )
+			{
+				LogError << "RenameFile(" << WStringToString( file ) << ", " << WStringToString( new_name ) << ") failed - error code: " << GetLastError() << "\n";
+			}
+			return result == 1 ? true : false;
+		}
+
+		#pragma warning(pop)
 	}
 #endif
 
@@ -828,8 +843,18 @@ void FileSystem::OpenReadOnAllMatchingFiles( const std::string& path, std::vecto
 
 void FileSystem::RemoveFile( const std::string& relative_path, FileLocation::Enum location )
 {
-	mDefaultDevice->RemoveFile( location, relative_path );
+	auto file = CompleteWritePath( location, relative_path );
+	platform_impl::DeleteFileImpl( file );
 }
+
+bool FileSystem::RenameFile( const std::string& file_, const std::string& new_name_, FileLocation::Enum location )
+{
+	auto file = CompleteWritePath( location, file_ );
+	auto new_name = CompleteWritePath( location, new_name_ );
+
+	return platform_impl::RenameFile( file, new_name );
+}
+
 
 // ===
 
@@ -1019,7 +1044,7 @@ std::wstring FileSystem::CompleteReadPath( const std::string& path, const std::w
 	return platform_impl::CombinePath( root_path, path );
 }
 
-std::wstring FileSystem::CompletePath( const poro::FileLocation::Enum location, const std::string& path, const std::wstring& root_path )
+std::wstring FileSystem::CompleteWritePath( const poro::FileLocation::Enum location, const std::string& path )
 {
 	if ( path.empty() )
 		return platform_impl::StringToWString( path );
@@ -1152,7 +1177,7 @@ ReadStream DiskFileDevice::OpenRead( const std::string& path_relative_to_device_
 
 WriteStream DiskFileDevice::OpenWrite( FileLocation::Enum location, const std::string& path_relative_to_location, u32 write_mode )
 {
-	const std::wstring full_path = Poro()->GetFileSystem()->CompletePath( location, path_relative_to_location, mReadRootPath );
+	const std::wstring full_path = Poro()->GetFileSystem()->CompleteWritePath( location, path_relative_to_location );
 	//const std::wstring full_path = platform_impl::GetFullPath( location, path_relative_to_location );
 	StreamStatus::Enum status;
 	WriteStream result;
@@ -1170,12 +1195,6 @@ WriteStream DiskFileDevice::OpenWrite( FileLocation::Enum location, const std::s
 std::wstring DiskFileDevice::GetFullPath( const std::string& path_relative_to_device_root )
 {
 	return Poro()->GetFileSystem()->CompleteReadPath( path_relative_to_device_root, mReadRootPath );
-}
-
-void DiskFileDevice::RemoveFile( FileLocation::Enum location, const std::string& path_relative_to_location )
-{
-	const std::wstring full_path = platform_impl::GetFullPath( location, path_relative_to_location );
-	platform_impl::DeleteFileImpl( full_path );
 }
 
 } // end of namespace

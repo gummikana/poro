@@ -601,7 +601,7 @@ struct SpriteLoadHelper
 
 			for( size_t k = 0; k < filenames_to_fix.size(); ++k )
 			{
-				if( ceng::DoesExist( filenames_to_fix[k] ) == false )
+				if( Poro()->GetFileSystem()->DoesExist( filenames_to_fix[k] ) == false )
 					continue;
 
 				const std::string src_filename = filenames_to_fix[k];
@@ -656,7 +656,7 @@ struct SpriteLoadHelper
 		{
 			// god damn ragdolls
 			std::string ragdoll_folder = "data/ragdolls/" + ceng::GetFilenameWithoutExtension( filename );
-			if( ceng::DoesExist( ragdoll_folder ) ) 
+			if( Poro()->GetFileSystem()->DoesExist( ragdoll_folder ) ) 
 			{
 				// logger_error << "Found ragdoll: " << ragdoll_folder << "\n";
 

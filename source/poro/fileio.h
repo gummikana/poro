@@ -91,7 +91,6 @@ namespace poro {
         virtual ReadStream  OpenRead( const std::string& path ) = 0;
         virtual WriteStream OpenWrite( FileLocation::Enum location, const std::string& read_path_relative_to_location, poro::types::Uint32 write_mode = StreamWriteMode::Enum::Recreate ) = 0;
 		virtual std::wstring GetFullPath( const std::string& path_relative_to_device_root ) = 0;
-		virtual void		RemoveFile( FileLocation::Enum location, const std::string& path_relative_to_location ) = 0;
 	};
 
     // ================================
@@ -196,6 +195,8 @@ namespace poro {
 
 		void RemoveFile( const std::string& relative_path, FileLocation::Enum location = FileLocation::UserDocumentsDirectory );
 
+		bool RenameFile( const std::string& file, const std::string& new_name, poro::FileLocation::Enum location = FileLocation::UserDocumentsDirectory );
+
 		// === immediate mode reading api ===
 		// Read 'buffer_capacity_bytes' bytes from the file in 'relative_path' to 'out_buffer'. Actual number of bytes read is written to 'out_bytes_read'
 		StreamStatus::Enum Read( const std::string& relative_path, char* out_buffer, poro::types::Uint32 buffer_capacity_bytes, poro::types::Uint32* out_bytes_read );
@@ -274,7 +275,7 @@ namespace poro {
 		friend class DiskFileDevice;
 
 		std::wstring CompleteReadPath( const std::string& path, const std::wstring& root_path );
-		std::wstring CompletePath( const poro::FileLocation::Enum to_location, const std::string& path, const std::wstring& root_path );
+		std::wstring CompleteWritePath( const poro::FileLocation::Enum to_location, const std::string& path );
 
 		struct PathProxy
 		{
@@ -302,7 +303,6 @@ namespace poro {
         virtual ReadStream  OpenRead( const std::string& path_relative_to_device_root ) override;
         virtual WriteStream	OpenWrite( FileLocation::Enum location, const std::string& path_relative_to_location, poro::types::Uint32 write_mode = StreamWriteMode::Enum::Recreate ) override;
 		virtual std::wstring GetFullPath( const std::string& path_relative_to_device_root ) override;
-		virtual void		RemoveFile( FileLocation::Enum location, const std::string& path_relative_to_location );
 
     private:
         std::wstring mReadRootPath;
