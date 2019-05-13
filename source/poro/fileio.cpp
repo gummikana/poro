@@ -19,6 +19,7 @@
 ***************************************************************************/
 
 #include "fileio.h"
+#include "iplatform.h"
 
 #ifndef PORO_CONSERVATIVE
 #include <mutex>
@@ -34,7 +35,7 @@
 
 #include <shlwapi.h>
 #pragma comment(lib,"shlwapi.lib")
-#pragma comment(lib,"Pathcch.lib")
+//#pragma comment(lib,"Pathcch.lib")
 #include "shlobj.h"
 #include "strsafe.h"
 
@@ -60,7 +61,7 @@ namespace platform_impl
 
 	struct StreamInternal
 	{
-		StreamInternal( std::wstring filename, bool read, StreamStatus::Enum* out_status, u32 write_mode )
+		StreamInternal( const std::wstring& filename, bool read, StreamStatus::Enum* out_status, u32 write_mode )
 		{
 			*out_status = StreamStatus::AccessFailed;
 
@@ -71,6 +72,15 @@ namespace platform_impl
 			}
 			else
 			{
+				auto directory_path = filename;
+				const size_t last_slash_index = filename.rfind( '\\' );
+				if ( std::string::npos != last_slash_index )
+					directory_path = filename.substr( 0, last_slash_index );
+
+				const int code  = SHCreateDirectoryExW( NULL, directory_path.c_str(), NULL );
+				//if ( code != ERROR_SUCCESS )
+				//	std::cout << "Path creation failed - " << code;	
+
 				mWriteBuffer = (char*)malloc( WRITE_BUFFER_SIZE_BYTES );
 				mWriteBufferPos = 0;
 
@@ -235,8 +245,8 @@ namespace platform_impl
 		{
 			for ( size_t i = 0; i < path.size(); i++ )
 			{
-				if ( path[i] == L'\\' )
-					path[i] = L'/';
+				if ( path[i] == L'/' )
+					path[i] = L'\\';
 			}
 		}
 
@@ -244,8 +254,8 @@ namespace platform_impl
 		{
 			for ( size_t i = 0; i < path.size(); i++ )
 			{
-				if ( path[i] == '\\' )
-					path[i] = '/';
+				if ( path[i] == '/' )
+					path[i] = '\\';
 			}
 		}
 
@@ -323,8 +333,8 @@ namespace platform_impl
 			if ( SUCCEEDED( SHGetKnownFolderPath( FOLDERID_LocalAppDataLow, CSIDL_FLAG_CREATE, NULL, &appdata_path_ptr ) ) )
 			{
 				auto namew = StringToWString( name );
-				StringCchCatW( path, MAX_PATH, appdata_path_ptr );
-				PathCchAppend( path, MAX_PATH, namew.c_str() );
+				StringCchCatW( path,MAX_PATH, appdata_path_ptr );
+				PathAppendW( path, namew.c_str() );
 				StringCchCatW( path, MAX_PATH, L"\\" );
 
 				CoTaskMemFree( appdata_path_ptr );
@@ -389,9 +399,12 @@ namespace platform_impl
 		{
 			WCHAR path[MAX_PATH];
 			path[0] = '\0';
-			PathCchAppend( path, MAX_PATH, root.c_str() );
-			PathCchAppend( path, MAX_PATH, relative_to_root.c_str() );
-			return std::wstring( path );
+			PathAppendW( path, root.c_str() );
+			PathAppendW( path, relative_to_root.c_str() );
+
+			auto result = std::wstring( path );
+			NormalizeSeparators( result );
+			return result;
 
 			// check if the paths are combined properly
 			/*if ( root.empty() ) return relative_to_root;
@@ -429,9 +442,12 @@ namespace platform_impl
 			std::wstring relative_to_root = StringToWString( relative_to_root_ );
 			WCHAR path[MAX_PATH];
 			path[0] = '\0';
-			PathCchAppend( path, MAX_PATH, root.c_str() );
-			PathCchAppend( path, MAX_PATH, relative_to_root.c_str() );
-			return std::wstring( path );
+			PathAppendW( path, root.c_str() );
+			PathAppendW( path, relative_to_root.c_str() );
+
+			auto result = std::wstring( path );
+			NormalizeSeparators( result );
+			return result;
 
 			// check if the paths are combined properly
 			/*if ( root.empty() ) return relative_to_root;
@@ -977,9 +993,105 @@ std::string FileSystem::GetDateForFile( const std::string& path_relative_to_devi
 
 // ===
 
+std::wstring FileSystem::CompleteReadPath( const std::string& path, const std::wstring& root_path )
+{
+	if ( path.empty() )
+		return platform_impl::StringToWString( path );
+
+	if ( path.size() > 5 && path[0] == '?' && path[1] == '?' )
+	{
+		std::lock_guard<std::mutex> lock( mMutex );
+
+		const auto name = path.substr( 0, 5 );
+
+		for ( auto& proxy : mPathProxies )
+		{
+			if ( proxy.name == name )
+			{
+				const std::string new_path = proxy.path + path.substr( 5, path.size() - 5 );
+				return platform_impl::GetFullPath( proxy.location, new_path );
+			}
+		}
+
+		poro_assert( false && "Path proxy not found" );
+	}
+
+	return platform_impl::CombinePath( root_path, path );
+}
+
+std::wstring FileSystem::CompletePath( const poro::FileLocation::Enum location, const std::string& path, const std::wstring& root_path )
+{
+	if ( path.empty() )
+		return platform_impl::StringToWString( path );
+
+	if ( path.size() > 5 && path[0] == '?' && path[1] == '?' )
+	{
+		std::lock_guard<std::mutex> lock( mMutex );
+
+		const auto name = path.substr( 0, 5 );
+
+		for ( auto& proxy : mPathProxies )
+		{
+			if ( proxy.name == name )
+			{
+				const std::string new_path = proxy.path + path.substr( 5, path.size() - 5 );
+				return platform_impl::GetFullPath( proxy.location, new_path );
+			}
+		}
+
+		poro_assert( false && "Path proxy not found" );
+	}
+
+	return platform_impl::GetFullPath( location, path );
+}
+
+// ===
+
 void FileSystem::InitAndSetUserDataFolderName( const std::string& name )
 {
 	platform_impl::InitAndSetUserDataFolderName( name );
+}
+
+void FileSystem::SetPathProxy( const std::string& name, const poro::FileLocation::Enum to_location, const std::string& to_path )
+{
+	std::lock_guard<std::mutex> lock( mMutex );
+
+	poro_assert( name.size() == 5 );
+
+	PathProxy* proxy = NULL;
+
+	for ( uint32 i = 0; i < mPathProxies.size(); i++ )
+	{
+		if ( mPathProxies[i].name == name )
+		{
+			proxy = &mPathProxies[i];
+			break;
+		}
+	}
+
+	if ( proxy == NULL )
+	{
+		mPathProxies.push_back( PathProxy() );
+		proxy = &mPathProxies.back();
+	}
+
+	proxy->name = name;
+	proxy->location = to_location;
+	proxy->path = to_path;
+}
+
+void FileSystem::RemovePathProxy( const std::string& name )
+{
+	std::lock_guard<std::mutex> lock( mMutex );
+
+	for ( uint32 i = 0; i < mPathProxies.size(); i++ )
+	{
+		if ( mPathProxies[i].name == name )
+		{
+			mPathProxies.erase( mPathProxies.begin()+i );
+			break;
+		}
+	}
 }
 
 std::vector<IFileDevice*> FileSystem::GetDeviceList()
@@ -1008,7 +1120,6 @@ FileSystem::~FileSystem()
 	mDevices.clear();
 }
 
-
 // === DiskFileDevice ================================
 
 DiskFileDevice::DiskFileDevice( const std::string& read_root_path_full )
@@ -1025,7 +1136,8 @@ DiskFileDevice::DiskFileDevice( FileLocation::Enum read_location, const std::str
 
 ReadStream DiskFileDevice::OpenRead( const std::string& path_relative_to_device_root )
 {
-	const std::wstring full_path = GetFullPath( path_relative_to_device_root );
+	const std::wstring full_path = Poro()->GetFileSystem()->CompleteReadPath( path_relative_to_device_root, mReadRootPath );
+
 	StreamStatus::Enum status;
 	ReadStream result;
 	result.mDevice = this;
@@ -1040,10 +1152,12 @@ ReadStream DiskFileDevice::OpenRead( const std::string& path_relative_to_device_
 
 WriteStream DiskFileDevice::OpenWrite( FileLocation::Enum location, const std::string& path_relative_to_location, u32 write_mode )
 {
-	const std::wstring full_path = platform_impl::GetFullPath( location, path_relative_to_location );
+	const std::wstring full_path = Poro()->GetFileSystem()->CompletePath( location, path_relative_to_location, mReadRootPath );
+	//const std::wstring full_path = platform_impl::GetFullPath( location, path_relative_to_location );
 	StreamStatus::Enum status;
 	WriteStream result;
 	result.mDevice = this;
+
 	result.mStreamImpl = new platform_impl::StreamInternal( full_path, false, &status, write_mode ); // TODO: allocate from a pool
 	if ( status != StreamStatus::NoError )
 	{
@@ -1055,7 +1169,7 @@ WriteStream DiskFileDevice::OpenWrite( FileLocation::Enum location, const std::s
 
 std::wstring DiskFileDevice::GetFullPath( const std::string& path_relative_to_device_root )
 {
-	return platform_impl::CombinePath( mReadRootPath, path_relative_to_device_root );
+	return Poro()->GetFileSystem()->CompleteReadPath( path_relative_to_device_root, mReadRootPath );
 }
 
 void DiskFileDevice::RemoveFile( FileLocation::Enum location, const std::string& path_relative_to_location )

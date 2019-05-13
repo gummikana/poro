@@ -25,6 +25,7 @@
 #define INC_FILEIO_H
 
 #include <vector>
+#include <mutex>
 #include "poro_types.h"
 
 // define PORO_CONSERVATIVE if you only need a single-threaded API
@@ -256,6 +257,11 @@ namespace poro {
 		// Inits working directory and sets the name of the folder that contains user data, inside user data directory. Should be provided without slashes. For example "poro_game".
 		void InitAndSetUserDataFolderName( const std::string& name );
 
+		// Adds a path proxy. A proxy should start with "??" folloed by a name, for example "??save_game"
+		void SetPathProxy( const std::string& name, const poro::FileLocation::Enum to_location, const std::string& to_path );
+
+		void RemovePathProxy( const std::string& name );
+
 		// Get the list of file devices currently available NOTE: this shouldn't be called while any file operations started via this API are in progress. Only devices created by the user should be destroyed by the user.
 		std::vector<IFileDevice*> GetDeviceList();
 		
@@ -265,8 +271,22 @@ namespace poro {
         FileSystem();
         ~FileSystem();
 	private:
+		friend class DiskFileDevice;
+
+		std::wstring CompleteReadPath( const std::string& path, const std::wstring& root_path );
+		std::wstring CompletePath( const poro::FileLocation::Enum to_location, const std::string& path, const std::wstring& root_path );
+
+		struct PathProxy
+		{
+			std::string name;
+			poro::FileLocation::Enum location;
+			std::string path;
+		};
+
         // data
         std::vector<IFileDevice*> mDevices;
+		std::vector<PathProxy> mPathProxies;
+		std::mutex mMutex;
         IFileDevice* mDefaultDevice;
 		IFileDevice* mDefaultDevice2;
 	};
