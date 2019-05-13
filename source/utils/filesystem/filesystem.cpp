@@ -409,12 +409,12 @@ std::string GetFilenameWithoutExtension( const std::string& filename )
 
 std::string MakeUniqueFilename( const std::string& file, const std::string& extension )
 {
-	if( ceng::DoesExist( file + "." + extension ) == false )
+	if( Poro()->GetFileSystem()->DoesExist( file + "." + extension ) == false )
 		return file;
 
 	int i = 1;
 	std::string filename = file + "1";
-	while( ceng::DoesExist( filename + "." + extension ) )
+	while( Poro()->GetFileSystem()->DoesExist( filename + "." + extension ) )
 	{
 		i++;
 		filename = file + ceng::CastToString( i );

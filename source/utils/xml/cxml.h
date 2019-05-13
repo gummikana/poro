@@ -225,14 +225,14 @@ namespace ceng {
 	inline void XmlLoadFromFile( T& mesh, const std::string& file, const std::string& rootnodename, bool report_error_if_file_doesnt_exist )
 	{
 #ifdef WIZARD_DEBUG
-		if( ceng::DoesExist( file ) == false )
+		if( Poro()->GetFileSystem()->DoesExist( file ) == false )
 		{
 			if ( report_error_if_file_doesnt_exist )
 				LogError << "Failed to load XML file - " << file << "\n";
 
 			return;
 		}
-		// cassert( ceng::DoesExist( file ) );
+		// cassert( Poro()->GetFileSystem()->DoesExist( file ) );
 #endif
 		CXmlParser parser;
 		parser.ParseFile( file.c_str() );
