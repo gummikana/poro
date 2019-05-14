@@ -28,6 +28,7 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include <iomanip>
 #include <utils/filesystem/filesystem.h>
 
 #ifdef PORO_PLAT_WINDOWS
@@ -541,10 +542,10 @@ namespace platform_impl
 		std::string GetDateForFile( const std::wstring& filename )
 		{
 			std::string result;
-			/*struct _finddata_t c_file;
-			long hFile;
 
-			if ( ( hFile = _findfirst( filename.c_str(), &c_file ) ) == -1L )
+			WIN32_FIND_DATAW file_info;
+			auto file_handle = FindFirstFileW( filename.c_str(), &file_info );
+			if ( file_handle == INVALID_HANDLE_VALUE )
 			{
 				return "";
 			}
@@ -552,30 +553,35 @@ namespace platform_impl
 			{
 				std::stringstream ss;
 
-				__time64_t time;
-				if ( c_file.time_write )
-					time = c_file.time_write;
-				else if ( c_file.time_create )
-					time = c_file.time_create;
-				else
-					time = c_file.time_access;
+				FILETIME file_time = file_info.ftLastWriteTime;
+				if ( file_time.dwHighDateTime == 0 && file_time.dwLowDateTime == 0 )
+					file_time = file_info.ftCreationTime;
+				if ( file_time.dwHighDateTime == 0 && file_time.dwLowDateTime == 0 )
+					file_time = file_info.ftLastAccessTime;
 
-				tm* timeinfo = localtime( &time );
+				SYSTEMTIME system_time = { 0 };
+				SYSTEMTIME local_time = { 0 };
 
-				ss << std::setfill( '0' ) << std::setw( 2 ) << ( timeinfo->tm_year - 100 );
-				ss << std::setfill( '0' ) << std::setw( 2 ) << timeinfo->tm_mon + 1;
-				ss << std::setfill( '0' ) << std::setw( 2 ) << timeinfo->tm_mday;
-				ss << std::setfill( '0' ) << std::setw( 2 ) << timeinfo->tm_hour;
-				ss << std::setfill( '0' ) << std::setw( 2 ) << timeinfo->tm_min;
-				ss << std::setfill( '0' ) << std::setw( 2 ) << timeinfo->tm_sec;
+				FileTimeToSystemTime( &file_time, &system_time );
+				SystemTimeToTzSpecificLocalTime( NULL, &system_time, &local_time );
 
+				ss << std::setfill( '0' ) << std::setw( 2 ) << ( local_time.wYear - 2000 ); // "-2000" so the output matches the format used by ceng::GetDateForFile()
+				ss << std::setfill( '0' ) << std::setw( 2 ) << local_time.wMonth;
+				ss << std::setfill( '0' ) << std::setw( 2 ) << local_time.wDay;
+				ss << std::setfill( '0' ) << std::setw( 2 ) << local_time.wHour;
+				ss << std::setfill( '0' ) << std::setw( 2 ) << local_time.wMinute;
+				ss << std::setfill( '0' ) << std::setw( 2 ) << local_time.wSecond;
 
 				result = ss.str();
 
-				_findclose( hFile );
-			}*/
+				FindClose( file_handle );
 
-			return "1";
+				#ifdef WIZARD_DEBUG
+					const auto cengresult = ceng::GetDateForFile( platform_impl::WStringToString( filename  ) );
+					poro_assert( result == cengresult );
+				#endif
+			}
+
 			return result;
 		}
 
