@@ -1093,6 +1093,8 @@ void FileSystem::SetPathProxy( const std::string& name, const poro::FileLocation
 	std::lock_guard<std::mutex> lock( mMutex );
 
 	poro_assert( name.size() == 5 );
+	poro_assert( name[0] == '?' );
+	poro_assert( name[1] == '?' );
 
 	PathProxy* proxy = NULL;
 

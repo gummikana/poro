@@ -258,7 +258,7 @@ namespace poro {
 		// Inits working directory and sets the name of the folder that contains user data, inside user data directory. Should be provided without slashes. For example "poro_game".
 		void InitAndSetUserDataFolderName( const std::string& name );
 
-		// Adds a path proxy. A proxy should start with "??" folloed by a name, for example "??save_game"
+		// Adds a path proxy. A proxy should start with "??" followed by a three-letter name, for example "??SAV"
 		void SetPathProxy( const std::string& name, const poro::FileLocation::Enum to_location, const std::string& to_path );
 
 		void RemovePathProxy( const std::string& name );
