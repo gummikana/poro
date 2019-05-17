@@ -654,8 +654,11 @@ void PlatformDesktop::HandleEvents()
 		mEventRecorder->DoPlaybacksForFrame();
 
 	//----------
-	for( std::size_t i = 0; i < mJoysticks.size(); ++i ) {
-		mJoysticks[i]->Update();
+	if ( mInputDisabled == false )
+	{
+		for ( std::size_t i = 0; i < mJoysticks.size(); ++i ) {
+			mJoysticks[i]->Update();
+		}
 	}
 
 	//---------
@@ -667,6 +670,9 @@ void PlatformDesktop::HandleEvents()
 		{
 			case SDL_KEYDOWN:
 			{
+				if ( mInputDisabled )
+					break;
+
 				mEventRecorder->FireKeyDownEvent(
 					ConvertSDLKeySymToPoroKey( static_cast< int >(event.key.keysym.sym) ),
 					static_cast< types::charset >( event.key.keysym.sym ) );
@@ -675,6 +681,9 @@ void PlatformDesktop::HandleEvents()
 
 			case SDL_KEYUP:
 			{
+				if ( mInputDisabled )
+					break;
+
 				mEventRecorder->FireKeyUpEvent(
 					ConvertSDLKeySymToPoroKey( static_cast< int >(event.key.keysym.sym) ),
 					static_cast< types::charset >( event.key.keysym.sym )  );
@@ -701,6 +710,9 @@ void PlatformDesktop::HandleEvents()
 			break;
 
 			case SDL_MOUSEWHEEL:
+				if ( mInputDisabled )
+					break;
+
 				if( event.wheel.y > 0)
 				{
 					mEventRecorder->FireMouseDownEvent( mMousePos, Mouse::MOUSE_BUTTON_WHEEL_UP );
@@ -712,6 +724,9 @@ void PlatformDesktop::HandleEvents()
 			break;
 
 			case SDL_MOUSEBUTTONDOWN:
+				if ( mInputDisabled )
+					break;
+
 				if( event.button.button == SDL_BUTTON_LEFT )
 				{
 					mEventRecorder->FireMouseDownEvent( mMousePos, Mouse::MOUSE_BUTTON_LEFT );
@@ -728,6 +743,9 @@ void PlatformDesktop::HandleEvents()
 				break;
 
 			case SDL_MOUSEBUTTONUP:
+				if ( mInputDisabled )
+					break;
+
 				if( event.button.button == SDL_BUTTON_LEFT )
 				{
 					mEventRecorder->FireMouseUpEvent( mMousePos, Mouse::MOUSE_BUTTON_LEFT );

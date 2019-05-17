@@ -25,6 +25,7 @@
 #define INC_FILEIO_H
 
 #include <vector>
+#include <mutex>
 #include "poro_types.h"
 
 // define PORO_CONSERVATIVE if you only need a single-threaded API
@@ -32,7 +33,7 @@
 
 
 namespace poro {
-    namespace impl { struct ImContext;  }
+    namespace impl { struct FileImContext;  }
     namespace platform_impl { struct StreamInternal; }
     // ================================
 
@@ -55,7 +56,8 @@ namespace poro {
 
 	namespace StreamStatus
 	{
-		enum Enum {
+		enum Enum
+		{
 			// Stream operation succeeded.
 			NoError = 1,
 			// Stream operation failed.
@@ -67,11 +69,13 @@ namespace poro {
 
 	namespace FileLocation
 	{
-		enum Enum { 
+		enum Enum
+		{ 
 			// User documents directory. i.e. "My Documents" on windows.
 			UserDocumentsDirectory,
 			// Current working directory of the executable.
 			WorkingDirectory,
+			UserDirectory = WorkingDirectory, // HACK: temp hack for WIP code
 		};
 	}
 
@@ -86,9 +90,7 @@ namespace poro {
 
         virtual ReadStream  OpenRead( const std::string& path ) = 0;
         virtual WriteStream OpenWrite( FileLocation::Enum location, const std::string& read_path_relative_to_location, poro::types::Uint32 write_mode = StreamWriteMode::Enum::Recreate ) = 0;
-        virtual std::string GetReadRootPath() = 0;
-		virtual std::string GetFullPath( const std::string& path_relative_to_device_root ) = 0;
-		virtual void		RemoveFile( FileLocation::Enum location, const std::string& path_relative_to_location ) = 0;
+		virtual std::wstring GetFullPath( const std::string& path_relative_to_device_root ) = 0;
 	};
 
     // ================================
@@ -100,23 +102,30 @@ namespace poro {
 	    friend class IFileDevice;
         friend class FileSystem;
         friend class DiskFileDevice;
-        friend struct poro::impl::ImContext;
+        friend struct poro::impl::FileImContext;
 	public:
 		WriteStream() { mDevice = NULL; mStreamImpl = NULL; }
 		WriteStream( const WriteStream& other ) { operator=( other ); }
         WriteStream& operator= ( const WriteStream& other );
+		
 		// write 'length_bytes' bytes from 'data' to the stream.
 		StreamStatus::Enum Write( char* data, poro::types::Uint32 length_bytes );
+		
 		// write 'text' to the stream.
 		StreamStatus::Enum Write( const std::string& text );
+		
 		// write 'text' to the stream, then a line ending.
 		StreamStatus::Enum WriteLine( const std::string& text );
+		
 		// write a line ending to the stream.
 		StreamStatus::Enum WriteEndOfLine();
+		
 		// flush all buffered writes to the file
 		StreamStatus::Enum FlushWrites();
+		
 		// Returns true if the stream was succesfully opened and has not been closed.
 		bool IsValid() { return mStreamImpl != NULL; }
+		
 		// close the stream and clean up all resources used by it.
         ~WriteStream();
 	private:
@@ -135,18 +144,23 @@ namespace poro {
 		friend class IFileDevice;
 		friend class FileSystem;
 		friend class DiskFileDevice;
-		friend struct poro::impl::ImContext;
+		friend struct poro::impl::FileImContext;
 	public:
 		ReadStream( const ReadStream& other ) { operator=( other ); }
 		ReadStream& operator= ( const ReadStream& other );
+		
 		// Read 'buffer_capacity_bytes' bytes from the stream to 'out_buffer'. Actual number of bytes read is written to 'out_bytes_read'.
 		StreamStatus::Enum Read             ( char* out_buffer, poro::types::Uint32 buffer_capacity_bytes, poro::types::Uint32* out_bytes_read );
+		
 		// Read one line of text from the stream to to 'out_buffer'. Actual number of bytes read is written to 'out_bytes_read'. 'buffer_capacity' specifies the maximum capacity of the buffer.
 		StreamStatus::Enum ReadTextLine     ( char* out_buffer, poro::types::Uint32 buffer_capacity, poro::types::Uint32* out_length_read );
+		
 		// Read one line of text from the stream to 'out_text'.
 		StreamStatus::Enum ReadTextLine     ( std::string& out_text );
+		
 		// Returns true if the stream was succesfully opened and has not been closed.
 		bool IsValid() { return mStreamImpl != NULL; }
+		
 		// Close the stream and clean up all resources used by it.
 		~ReadStream();
 	private:
@@ -175,83 +189,105 @@ namespace poro {
 		// === reading API ===
 		// Open a file at 'relative_path' for reading. file is looked up from each FileDevice in current device list, starting with the first device.
 		ReadStream OpenRead            ( const std::string& relative_path );
+
 		// Open all files matching 'relative_path'. File is looked up from each FileDevice in current device list, starting with the first device. Device list can be modified using GetDeviceList and SetDeviceList.
-		void       OpenReadOnAllMatchingFiles( const std::string& relative_path, std::vector<ReadStream>* out_files );
+		void OpenReadOnAllMatchingFiles( const std::string& relative_path, std::vector<ReadStream>* out_files );
 
 		void RemoveFile( const std::string& relative_path, FileLocation::Enum location = FileLocation::UserDocumentsDirectory );
 
+		bool RenameFile( const std::string& file, const std::string& new_name, poro::FileLocation::Enum location = FileLocation::UserDocumentsDirectory );
+
 		// === immediate mode reading api ===
 		// Read 'buffer_capacity_bytes' bytes from the file in 'relative_path' to 'out_buffer'. Actual number of bytes read is written to 'out_bytes_read'
-		StreamStatus::Enum		 Read             ( const std::string& relative_path, char* out_buffer, poro::types::Uint32 buffer_capacity_bytes, poro::types::Uint32* out_bytes_read );
+		StreamStatus::Enum Read( const std::string& relative_path, char* out_buffer, poro::types::Uint32 buffer_capacity_bytes, poro::types::Uint32* out_bytes_read );
+
 		// Read the entire contents of file at 'relative_path' to 'out_buffer'. 'out_buffer' is allocated during the call using 'malloc' and must be released by the user using 'free' when they're done with it. Number of bytes read is written to 'out_bytes_read'
-		StreamStatus::Enum		 ReadWholeFile    ( const std::string& relative_path, char*& out_buffer, poro::types::Uint32* out_bytes_read );
+		StreamStatus::Enum ReadWholeFile( const std::string& relative_path, char*& out_buffer, poro::types::Uint32* out_bytes_read );
+		
 		// Reads the entire file and adds a '\0' to the end
-		StreamStatus::Enum		 ReadWholeFileAndNullTerminate( const std::string& relative_path, char*& out_buffer, poro::types::Uint32* out_bytes_read );
+		StreamStatus::Enum ReadWholeFileAndNullTerminate( const std::string& relative_path, char*& out_buffer, poro::types::Uint32* out_bytes_read );
+		
 		// Reads one line of text from the file at 'relative_path' to 'out_buffer'. consecutive calls to this function from current thread will continue reading from the same stream.
-		StreamStatus::Enum		 ReadTextLine     ( const std::string& relative_path, char* out_buffer, poro::types::Uint32 buffer_capacity, poro::types::Uint32* out_length_read );
+		StreamStatus::Enum ReadTextLine( const std::string& relative_path, char* out_buffer, poro::types::Uint32 buffer_capacity, poro::types::Uint32* out_length_read );
+		
 		// Reads one line of text from the file at 'relative_path' to 'out_text'. consecutive calls to this function from current thread will continue reading from the same stream.
-		StreamStatus::Enum		 ReadTextLine     ( const std::string& relative_path, std::string& out_text );
+		StreamStatus::Enum ReadTextLine( const std::string& relative_path, std::string& out_text );
+		
 		// Reads the entire contents of the file at 'relative_path' to 'out_text'.
-		StreamStatus::Enum		 ReadWholeTextFile( const std::string& relative_path, std::string& out_text );
+		StreamStatus::Enum ReadWholeTextFile( const std::string& relative_path, std::string& out_text );
 
 		// Reads the entire contents of the file at 'relative_path' to 'out_text_lines'.
-		void					 ReadTextLines    ( const std::string& relative_path, std::vector<std::string>& out_text_lines );
+		void ReadTextLines( const std::string& relative_path, std::vector<std::string>& out_text_lines );
+		
 		// Reads the entire contents of the file at 'relative_path' to a vector and returns the vector.
-		std::vector<std::string> ReadTextLines    ( const std::string& relative_path );
+		std::vector<std::string> ReadTextLines( const std::string& relative_path );
 
 		// === writing API ===
+
 		// Open a file at 'relative_path' for reading.
 		WriteStream OpenWrite( const std::string& relative_path, poro::types::Uint32 write_mode = StreamWriteMode::Recreate, FileLocation::Enum location = FileLocation::UserDocumentsDirectory );
 
 		// === immediate mode writing api ===
+
 		// Write 'length_bytes' bytes from data to the file at 'relative_path'.
 		StreamStatus::Enum WriteWholeFile( const std::string& relative_path, char* data, poro::types::Uint32 length_bytes, StreamWriteMode::Enum write_mode = StreamWriteMode::Enum::Recreate, FileLocation::Enum location = FileLocation::Enum::UserDocumentsDirectory );
 		// Write 'text' to the file at 'relative_path'.
-		StreamStatus::Enum WriteWholeTextFile( const std::string& relative_path, const std::string& text,                      StreamWriteMode::Enum write_mode = StreamWriteMode::Enum::Recreate, FileLocation::Enum location = FileLocation::Enum::UserDocumentsDirectory );
+		StreamStatus::Enum WriteWholeTextFile( const std::string& relative_path, const std::string& text, StreamWriteMode::Enum write_mode = StreamWriteMode::Enum::Recreate, FileLocation::Enum location = FileLocation::Enum::UserDocumentsDirectory );
 
 		// === file browsing API ===
+
 		// Get the full location of a file.
-		std::string GetFullPathFromRelativePath( FileLocation::Enum location, const std::string& relative_path );
+		std::wstring GetFullPathFromRelativePath( FileLocation::Enum location, const std::string& relative_path );
 
 		// Get a list of files at the location specified by the parameters.
-		std::vector<std::string> GetFiles      ( FileLocation::Enum location, const std::string& path_relative_to_location = "" );
-		// Get a list of files at the location specified by the parameters.
-		std::vector<std::string> GetFiles      ( std::string full_path );
-		// Get a list of directories at the location specified by the parameters.
-		std::vector<std::string> GetDirectories( FileLocation::Enum location, const std::string& path_relative_to_location = "" );
-		// Get a list of directories at the location specified by the parameters.
-		std::vector<std::string> GetDirectories( std::string full_path );
+		void GetFiles( FileLocation::Enum location, const std::string& path_relative_to_location, std::vector<std::string>* out_files );
+		std::vector<std::string> GetFiles( FileLocation::Enum location, const std::string& path_relative_to_location );
 
-		// Get a list of files at the location specified by the parameters.
-		void 					 GetFiles      ( FileLocation::Enum location, std::vector<std::string>* out_files );
-		// Get a list of files at the location specified by the parameters.
-		void 					 GetFiles      ( FileLocation::Enum location, const std::string& path_relative_to_location, std::vector<std::string>* out_files );
-		// Get a list of files at the location specified by 'full_path'.
-		void                     GetFiles      ( std::string full_path, std::vector<std::string>* out_files );
 		// Get a list of directories at the location specified by the parameters.
-        void                     GetDirectories( FileLocation::Enum location, std::vector<std::string>* out_directories );
-		// Get a list of directories at the location specified by the parameters.
-		void                     GetDirectories( FileLocation::Enum location, const std::string& path_relative_to_location, std::vector<std::string>* out_directories );
-		// Get a list of directories at the location specified by 'full_path'.
-		void                     GetDirectories( std::string full_path, std::vector<std::string>* out_directories );
-
+		void GetDirectories( FileLocation::Enum location, const std::string& path_relative_to_location, std::vector<std::string>* out_directories );
+		std::vector<std::string> GetDirectories( FileLocation::Enum location, const std::string& path_relative_to_location );
+		
 		// returns true if file at 'relative_path' exists in some of the file devices
 		bool DoesExist( const std::string& path_relative_to_device_root );
 
-		// 
+		// ---
 		std::string GetDateForFile( const std::string& path_relative_to_device_root );
 
 		// === initialization API ===
+
+		// Inits working directory and sets the name of the folder that contains user data, inside user data directory. Should be provided without slashes. For example "poro_game".
+		void InitAndSetUserDataFolderName( const std::string& name );
+
+		// Adds a path proxy. A proxy should start with "??" followed by a three-letter name, for example "??SAV"
+		void SetPathProxy( const std::string& name, const poro::FileLocation::Enum to_location, const std::string& to_path );
+
+		void RemovePathProxy( const std::string& name );
+
 		// Get the list of file devices currently available NOTE: this shouldn't be called while any file operations started via this API are in progress. Only devices created by the user should be destroyed by the user.
 		std::vector<IFileDevice*> GetDeviceList();
+		
 		// set the list of file devices currently available. NOTE: this shouldn't be called while any file operations started via this API are in progress.
 		void SetDeviceList( std::vector<IFileDevice*> devices );
 
         FileSystem();
         ~FileSystem();
 	private:
+		friend class DiskFileDevice;
+
+		std::wstring CompleteReadPath( const std::string& path, const std::wstring& root_path );
+		std::wstring CompleteWritePath( const poro::FileLocation::Enum to_location, const std::string& path );
+
+		struct PathProxy
+		{
+			std::string name;
+			poro::FileLocation::Enum location;
+			std::string path;
+		};
+
         // data
         std::vector<IFileDevice*> mDevices;
+		std::vector<PathProxy> mPathProxies;
+		std::mutex mMutex;
         IFileDevice* mDefaultDevice;
 		IFileDevice* mDefaultDevice2;
 	};
@@ -266,12 +302,10 @@ namespace poro {
 
         virtual ReadStream  OpenRead( const std::string& path_relative_to_device_root ) override;
         virtual WriteStream	OpenWrite( FileLocation::Enum location, const std::string& path_relative_to_location, poro::types::Uint32 write_mode = StreamWriteMode::Enum::Recreate ) override;
-        virtual std::string	GetReadRootPath() override;
-		virtual std::string	GetFullPath( const std::string& path_relative_to_device_root ) override;
-		virtual void		RemoveFile( FileLocation::Enum location, const std::string& path_relative_to_location );
+		virtual std::wstring GetFullPath( const std::string& path_relative_to_device_root ) override;
 
     private:
-        std::string mReadRootPath;
+        std::wstring mReadRootPath;
 	};
 
 	// ================================

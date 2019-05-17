@@ -288,7 +288,6 @@ size_t StringFindFirstOf( const std::string& what, const std::string& line, size
 
 std::string StringReplace( const std::string& what, const std::string& with, const std::string& in_here, int limit )
 {
-
 	int i = 0;
 	std::string return_value = in_here;
 	size_t pos = return_value.find( what, 0 );
