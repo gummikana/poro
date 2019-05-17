@@ -297,6 +297,7 @@ namespace poro
 
 	void IGraphics::DrawLines( const std::vector< types::Vertex_PosFloat2_ColorUint32 >& vertices, bool smooth, float width, bool loop )
 	{ 
+		if( vertices.empty() ) return;
 		DrawLines( &vertices[0], vertices.size(), smooth, width, loop ); 
 	}
 
@@ -331,6 +332,7 @@ namespace poro
 
 	void IGraphics::DrawVertices( const std::vector< types::Vertex_PosFloat2_ColorUint32 >& vertices, const poro::GraphicsState& state )
 	{
+		if( vertices.empty() ) return;
 		DrawVertices( &vertices[0], vertices.size(), state );
 	}
 
