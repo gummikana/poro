@@ -21,9 +21,7 @@
 #include "fileio.h"
 #include "iplatform.h"
 
-#ifndef PORO_CONSERVATIVE
 #include <mutex>
-#endif
 
 #include <fstream>
 #include <sstream>

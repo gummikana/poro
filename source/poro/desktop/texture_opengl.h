@@ -32,7 +32,8 @@ class TextureOpenGL : public ITexture
 {
 public:
 	TextureOpenGL() : 
-		mTexture( 0 )
+		mTexture( 0 ),
+		mStorePixelData( false )
 	{
 		mWidth = 0;
 		mHeight = 0;
@@ -42,6 +43,7 @@ public:
 		mRealSizeY = 0;
 		mPixelData = NULL;
 		mFilteringMode = 0;
+		mWrappingMode = 0;
 
 		mUv[ 0 ] = 0; 
 		mUv[ 1 ] = 0; 
@@ -50,7 +52,8 @@ public:
 	}
 
 	TextureOpenGL( TextureOpenGL* other ) : 
-		mTexture( other->mTexture )
+		mTexture( other->mTexture ),
+		mStorePixelData( other->mStorePixelData )
 	{
 		mWidth = other->mWidth;
 		mHeight = other->mHeight;
@@ -60,6 +63,7 @@ public:
 		mRealSizeY = other->mRealSizeY;
 		mPixelData = other->mPixelData;
 		mFilteringMode = other->mFilteringMode;
+		mWrappingMode = other->mWrappingMode;
 
 		mUv[ 0 ] = other->mUv[0]; 
 		mUv[ 1 ] = other->mUv[1]; 
@@ -120,6 +124,7 @@ public:
     // ------------------------------------
     
 	types::Uint32	mTexture;
+	bool 			mStorePixelData;
 };
 
 } // end o namespace poro

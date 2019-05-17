@@ -867,6 +867,8 @@ void LineDrawBuffer::Clear()
 void LineDrawBuffer::Draw( poro::IGraphics* graphics, float line_width ) const
 {
 	cassert( graphics );
+	if( vertices.empty() )
+		return;
 
 	if ( vertices.empty() )
 		return;
