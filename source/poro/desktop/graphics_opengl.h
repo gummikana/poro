@@ -32,6 +32,7 @@ namespace poro {
 
 class ITexture;
 class ITexture3d;
+class TextureOpenGL;
 
 //-----------------------------------------------------------------------------
 
@@ -147,6 +148,14 @@ public:
 	virtual unsigned char*	ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp ) PORO_OVERRIDE;
 	virtual int				ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes ) PORO_OVERRIDE;
 
+	//-------------------------------------------------------------------------
+
+	virtual void SetMultithreadLock( bool multithreaded_lock ) PORO_OVERRIDE { mBufferLoadTextures = multithreaded_lock; }
+	virtual bool GetMultithreadLock() const PORO_OVERRIDE { return mBufferLoadTextures; }
+
+	virtual bool UpdateBufferedMultithreaded() PORO_OVERRIDE;
+
+	void IMPL_AddTextureToBuffer( TextureOpenGL* buffer_me );
 private:
 
 	SDL_Window* mSDLWindow;
@@ -163,6 +172,9 @@ private:
 	bool mVsyncEnabled = false;
 	uint32 mDynamicVboHandle = 0;
 
+	// for multithreaded loading of things
+	bool mBufferLoadTextures;
+	std::vector< TextureOpenGL* > mBufferedLoadTextures;
 };
 
 types::Uint32 GetNextPowerOfTwo(types::Uint32 input);

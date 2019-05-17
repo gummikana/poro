@@ -860,7 +860,26 @@ Joystick* PlatformDesktop::GetJoystick( int n ) {
 
 //-----------------------------------------------------------------------------
 
+GraphicsOpenGL* mGraphicsOpenGL = NULL;
+IGraphics* mNullGraphics = NULL;
+bool mIsNullGraphics = false;
+
+void PlatformDesktop::SetGraphicsToNull( bool null_graphics )
+{
+	if( mGraphicsOpenGL == NULL )
+		mGraphicsOpenGL = mGraphics;
+	if( mNullGraphics == NULL )
+		mNullGraphics = new IGraphics;
+
+	mIsNullGraphics = null_graphics;
+}
+
+//-----------------------------------------------------------------------------
+
 IGraphics* PlatformDesktop::GetGraphics() {
+	if( mIsNullGraphics )
+		return mNullGraphics;
+	
 	return mGraphics;
 }
 

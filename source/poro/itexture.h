@@ -83,6 +83,7 @@ public: // don't touch these
 	types::string	mFilename;
 
 	int mFilteringMode;
+	int mWrappingMode;
 };
 
 } // end o namespace poro

@@ -165,21 +165,34 @@ namespace {
 		}
 		// --- /power of 2 
 
-		glGenTextures(1, (GLuint*)&oTexture);
-		glBindTexture(GL_TEXTURE_2D, oTexture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, nw, nh, 0,
-			 GL_RGBA, GL_UNSIGNED_BYTE, new_pixels);
-	
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
 		TextureOpenGL* result = new TextureOpenGL;
+
+		if( graphics->GetMultithreadLock() == false )
+		{
+			glGenTextures(1, (GLuint*)&oTexture);
+			glBindTexture(GL_TEXTURE_2D, oTexture);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, nw, nh, 0,
+				 GL_RGBA, GL_UNSIGNED_BYTE, new_pixels);
+		
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		}
+		else
+		{
+			graphics->IMPL_AddTextureToBuffer( result );
+			result->mStorePixelData = store_raw_pixel_data;
+
+			// this is so that we have the data to parse it later
+			store_raw_pixel_data = true;
+		}
+
 		result->mTexture = oTexture;
 		result->mWidth = w;
 		result->mHeight = h;
 		result->mRealSizeX = real_size[ 0 ];
 		result->mRealSizeY = real_size[ 1 ];
 		result->mFilteringMode = poro::TEXTURE_FILTERING_MODE::UNDEFINED;
+		result->mWrappingMode = poro::TEXTURE_WRAPPING_MODE::CLAMP_TO_EDGE;
 
 		graphics->SetTextureFilteringMode( result, graphics->GetMipmapMode() );
 
@@ -310,7 +323,7 @@ namespace {
 
 	//-----------------------------------------------------------------------------
 
-	TextureOpenGL* CreateTexture_Impl( GraphicsOpenGL* graphics, int width,int height )
+	TextureOpenGL* CreateTexture_Impl( GraphicsOpenGL* graphics, int width, int height )
 	{
 		TextureOpenGL* result = NULL;
 		
@@ -325,7 +338,7 @@ namespace {
 			data[ i ] = 0;
 		}
 
-		result = CreateImage( graphics, data, width, height, bpp , false);
+		result = CreateImage( graphics, data, width, height, bpp, false );
 
 		return result;
 	}
@@ -359,7 +372,13 @@ GraphicsOpenGL::GraphicsOpenGL() :
 	mDesktopWidth( 640 ),
 	mDesktopHeight( 480 ),
 
-	mGlContextInitialized( false )
+	mGlContextInitialized( false ),
+	mVsyncEnabled( false ),
+	mDynamicVboHandle( 0 ),
+
+	mBufferLoadTextures( false ),
+	mBufferedLoadTextures()
+
 {
 
 }
@@ -688,59 +707,100 @@ void GraphicsOpenGL::DestroyTexture( ITexture* itexture )
 	glDeleteTextures(1, &texture->mTexture);
 }
 
+//-----------------------------------------------------------------------------
+
 void GraphicsOpenGL::SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode ) const
 {
-	poro_assert( mode != TEXTURE_FILTERING_MODE::UNDEFINED );
-	poro_assert( dynamic_cast<TextureOpenGL*>( itexture ) );
-	TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
-
-	if ( texture->mFilteringMode == mode )
-		return;
-
-	glEnable( GL_TEXTURE_2D );
-	glBindTexture( GL_TEXTURE_2D, texture->mTexture );
-	
-	switch ( mode )
+	if( GetMultithreadLock() )
 	{
-		case TEXTURE_FILTERING_MODE::LINEAR:
+		poro_assert( dynamic_cast<TextureOpenGL*>( itexture ) );
+		TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
+		texture->mFilteringMode = (int)mode;
+
+		// debug make sure it's in the list
+		bool found = false;
+		for( size_t i = 0; i < mBufferedLoadTextures.size(); ++i )
 		{
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-			break;
+			if( mBufferedLoadTextures[i] == itexture )
+				found = true;
 		}
 
-		case TEXTURE_FILTERING_MODE::NEAREST:
-		{
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-			break;
-		}
-
-		default:
-		{
-			poro_assert( "Unsupported texture filtering mode used." );
-			break;
-		}
+		poro_assert( found );
 	}
-		
-	glBindTexture( GL_TEXTURE_2D, 0 );
+	else
+	{
 
-	texture->mFilteringMode = mode;
+		poro_assert( mode != TEXTURE_FILTERING_MODE::UNDEFINED );
+		poro_assert( dynamic_cast<TextureOpenGL*>( itexture ) );
+		TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
+
+		if ( texture->mFilteringMode == mode )
+			return;
+
+		glEnable( GL_TEXTURE_2D );
+		glBindTexture( GL_TEXTURE_2D, texture->mTexture );
+		
+		switch ( mode )
+		{
+			case TEXTURE_FILTERING_MODE::LINEAR:
+			{
+				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+				break;
+			}
+
+			case TEXTURE_FILTERING_MODE::NEAREST:
+			{
+				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+				break;
+			}
+
+			default:
+			{
+				poro_assert( "Unsupported texture filtering mode used." );
+				break;
+			}
+		}
+			
+		glBindTexture( GL_TEXTURE_2D, 0 );
+
+		texture->mFilteringMode = mode;
+	}
 }
 
 void GraphicsOpenGL::SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum mode ) const
 {
-	poro_assert( dynamic_cast<TextureOpenGL*>( itexture ) );
-	TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
+	if( GetMultithreadLock() )
+	{
+		poro_assert( dynamic_cast<TextureOpenGL*>( itexture ) );
+		TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
+		texture->mWrappingMode = (int)mode;
 
-	glEnable( GL_TEXTURE_2D );
-	glBindTexture( GL_TEXTURE_2D, texture->mTexture );
+		// debug make sure it's in the list
+		bool found = false;
+		for( size_t i = 0; i < mBufferedLoadTextures.size(); ++i )
+		{
+			if( mBufferedLoadTextures[i] == itexture )
+				found = true;
+		}
 
-	int mode_gl = (int)mode; // the enum is mapped to GL constants, no need for conversion
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mode_gl );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mode_gl );
+		poro_assert( found );
+	}
+	else
+	{
+		poro_assert( dynamic_cast<TextureOpenGL*>( itexture ) );
+		TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
 
-	glBindTexture( GL_TEXTURE_2D, 0 );
+		glEnable( GL_TEXTURE_2D );
+		glBindTexture( GL_TEXTURE_2D, texture->mTexture );
+
+		int mode_gl = (int)mode; // the enum is mapped to GL constants, no need for conversion
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mode_gl );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mode_gl );
+
+		glBindTexture( GL_TEXTURE_2D, 0 );
+	}
 }
 
 //=============================================================================
@@ -1740,7 +1800,7 @@ unsigned char*	GraphicsOpenGL::ImageLoad( char const *filename, int *x, int *y, 
 	poro_assert( filename );
 
 	char* filedata = NULL;
-	poro::types::Uint32 data_size_bytes;
+	poro::types::Uint32 data_size_bytes = 0;
 	StreamStatus::Enum read_status = Poro()->GetFileSystem()->ReadWholeFile( filename, filedata, &data_size_bytes );
 	if ( read_status != StreamStatus::NoError )
 		return NULL;
@@ -1798,6 +1858,57 @@ int	GraphicsOpenGL::ImageSave( char const *filename, int x, int y, int comp, con
 	free( png_memory );
 
 	return 1;
+}
+
+//=============================================================================
+
+bool GraphicsOpenGL::UpdateBufferedMultithreaded()
+{
+	poro_assert( GetMultithreadLock() == false );
+
+	for( size_t i = 0; i < mBufferedLoadTextures.size(); ++i )
+	{
+		TextureOpenGL* result = mBufferedLoadTextures[i];
+		Uint32 oTexture = 0;
+		int nw = result->mRealSizeX;
+		int nh = result->mRealSizeY;
+
+
+		glGenTextures(1, (GLuint*)&oTexture);
+		glBindTexture(GL_TEXTURE_2D, oTexture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, nw, nh, 0,
+			 GL_RGBA, GL_UNSIGNED_BYTE, result->mPixelData );
+	
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		result->mTexture = oTexture;
+
+		int filter_mode = result->mFilteringMode;
+		result->mFilteringMode = -1;
+		SetTextureFilteringMode( result, (poro::TEXTURE_FILTERING_MODE::Enum)filter_mode );
+
+		int wrapping_mode = result->mWrappingMode;
+		result->mWrappingMode = -1;
+		SetTextureWrappingMode( result, (poro::TEXTURE_WRAPPING_MODE::Enum)wrapping_mode );
+
+		bool store_raw_pixel_data = result->mStorePixelData;
+		if( !store_raw_pixel_data )
+		{
+			delete [] result->mPixelData;
+			result->mPixelData = NULL;
+		}
+
+	}
+
+	mBufferedLoadTextures.clear();
+
+	return false;
+}
+
+void GraphicsOpenGL::IMPL_AddTextureToBuffer( TextureOpenGL* buffer_me )
+{
+	mBufferedLoadTextures.push_back( buffer_me );
 }
 
 //=============================================================================
