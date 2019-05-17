@@ -138,6 +138,9 @@
 #include "cxmlnode.h"
 #include "cxmlparser.h"
 
+#ifdef WIZARD_DEBUG
+#include "../filesystem/filesystem.h"
+#endif
 
 //#define PORO_XCODE_ERROR_HACK_TOGGLE
 
@@ -215,12 +218,22 @@ namespace ceng {
 */
 
 	template< class T >
-	void XmlLoadFromFile( T& mesh, const std::string& file, const std::string& rootnodename = "rootelement" );
+	void XmlLoadFromFile( T& mesh, const std::string& file, const std::string& rootnodename = "rootelement", bool report_error_if_file_doesnt_exist = true );
 
 #ifndef PORO_XCODE_ERROR_HACK_TOGGLE
 	template< class T >
-	inline void XmlLoadFromFile( T& mesh, const std::string& file, const std::string& rootnodename )
+	inline void XmlLoadFromFile( T& mesh, const std::string& file, const std::string& rootnodename, bool report_error_if_file_doesnt_exist )
 	{
+#ifdef WIZARD_DEBUG
+		if( Poro()->GetFileSystem()->DoesExist( file ) == false )
+		{
+			if ( report_error_if_file_doesnt_exist )
+				LogError << "Failed to load XML file - " << file << "\n";
+
+			return;
+		}
+		// cassert( Poro()->GetFileSystem()->DoesExist( file ) );
+#endif
 		CXmlParser parser;
 		parser.ParseFile( file.c_str() );
 		/*CXmlParser	parser;

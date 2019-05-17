@@ -33,6 +33,7 @@
 #ifndef INC_MATH_FUNCTIONS_H
 #define INC_MATH_FUNCTIONS_H
 
+#include <math.h>
 
 namespace ceng {
 namespace math {
@@ -50,7 +51,7 @@ inline float Round( float value )
 {
 	if( value < 0 ) value -= 0.5f;
 	else value += 0.5f;
-	return floor( value );
+	return floorf( value );
 }
 
 inline double Round( double value )

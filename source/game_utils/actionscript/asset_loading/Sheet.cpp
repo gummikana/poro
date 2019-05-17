@@ -103,6 +103,8 @@ void DoAnimationTo( Sprite* sprite, int frameCount, int width, int height, float
 
 Sprite* TextureSheet::AsSprite( const std::string& path, bool use_atlas )
 {
+	cassert( false && "This shouldn't be used because this uses legacy sprite implementation which doesn't implement pixel filtering." );
+
 	Sprite* result = new Sprite;
 
 	for( int i = (int)mTextures.size() - 1; i >= 0; --i )
@@ -112,7 +114,7 @@ Sprite* TextureSheet::AsSprite( const std::string& path, bool use_atlas )
 		if( use_atlas )
 			child = LoadSpriteFromAtlas( mTextures[i] );
 		else
-			child = LoadSprite( filename );
+			child = LoadSpriteLegacy( filename );
 
 		if( child == NULL ||
 			child->Empty() )
@@ -142,6 +144,8 @@ Sprite* TextureSheet::AsSprite( const std::string& path, bool use_atlas )
 
 Sprite* TextureSheet::LoadSpriteFromSheet( const std::string& path, const std::string& sprite_label, bool use_atlas )
 {
+	cassert( false && "This shouldn't be used because this uses legacy sprite implementation which doesn't implement pixel filtering." );
+
 	for( int i = (int)mTextures.size() - 1; i >= 0; --i )
 	{
 		if( mTextures[ i ].name == sprite_label )
@@ -151,7 +155,7 @@ Sprite* TextureSheet::LoadSpriteFromSheet( const std::string& path, const std::s
 			if( use_atlas )
 				child = LoadSpriteFromAtlas( mTextures[i] );
 			else
-				child = LoadSprite( filename );
+				child = LoadSpriteLegacy( filename );
 
 			if( child == NULL ||
 				child->Empty() )

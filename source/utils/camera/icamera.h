@@ -55,7 +55,7 @@ public:
 	virtual bool IsNull() const = 0;
 
 	template< class T > 
-	T Transform( const T& what ) 
+	T Transform( const T& what ) const
 	{
 		Vec2 temp;
 		temp.x = what.x;
@@ -71,7 +71,7 @@ public:
 	}
 
 
-	virtual Vec2 Transform( const Vec2& point ) = 0;
+	virtual Vec2 Transform( const Vec2& point ) const = 0;
 
 	virtual CPoint< int > ConvertMousePosition( const CPoint< int >& p )
 	{

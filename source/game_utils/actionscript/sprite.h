@@ -130,7 +130,7 @@ public:
 	void		SetClearTweens( bool value )	{ mClearTweens = value; }
 	bool		GetClearTweens() const			{ return mClearTweens; }
 
-	void		SetShader( poro::IShader* shader ) { mShader = shader;  }
+	void		SetShader( poro::IShader* shader, poro::TEXTURE_FILTERING_MODE::Enum main_texture_filtering_mode ) { mShader = shader; mMainTextureFilteringMode = main_texture_filtering_mode; }
 
 	inline int	GetLastFrameRendered() const { return mLastFrameRendered; }
 
@@ -476,6 +476,7 @@ protected:
 	types::rect*				mRect;
 
 	poro::IShader*				mShader;
+	poro::TEXTURE_FILTERING_MODE::Enum mMainTextureFilteringMode;
 
 	// animation stuff
 	Animations*								mAnimations;

@@ -654,8 +654,11 @@ void PlatformDesktop::HandleEvents()
 		mEventRecorder->DoPlaybacksForFrame();
 
 	//----------
-	for( std::size_t i = 0; i < mJoysticks.size(); ++i ) {
-		mJoysticks[i]->Update();
+	if ( mInputDisabled == false )
+	{
+		for ( std::size_t i = 0; i < mJoysticks.size(); ++i ) {
+			mJoysticks[i]->Update();
+		}
 	}
 
 	//---------
@@ -667,6 +670,9 @@ void PlatformDesktop::HandleEvents()
 		{
 			case SDL_KEYDOWN:
 			{
+				if ( mInputDisabled )
+					break;
+
 				mEventRecorder->FireKeyDownEvent(
 					ConvertSDLKeySymToPoroKey( static_cast< int >(event.key.keysym.sym) ),
 					static_cast< types::charset >( event.key.keysym.sym ) );
@@ -675,6 +681,9 @@ void PlatformDesktop::HandleEvents()
 
 			case SDL_KEYUP:
 			{
+				if ( mInputDisabled )
+					break;
+
 				mEventRecorder->FireKeyUpEvent(
 					ConvertSDLKeySymToPoroKey( static_cast< int >(event.key.keysym.sym) ),
 					static_cast< types::charset >( event.key.keysym.sym )  );
@@ -701,6 +710,9 @@ void PlatformDesktop::HandleEvents()
 			break;
 
 			case SDL_MOUSEWHEEL:
+				if ( mInputDisabled )
+					break;
+
 				if( event.wheel.y > 0)
 				{
 					mEventRecorder->FireMouseDownEvent( mMousePos, Mouse::MOUSE_BUTTON_WHEEL_UP );
@@ -712,6 +724,9 @@ void PlatformDesktop::HandleEvents()
 			break;
 
 			case SDL_MOUSEBUTTONDOWN:
+				if ( mInputDisabled )
+					break;
+
 				if( event.button.button == SDL_BUTTON_LEFT )
 				{
 					mEventRecorder->FireMouseDownEvent( mMousePos, Mouse::MOUSE_BUTTON_LEFT );
@@ -728,6 +743,9 @@ void PlatformDesktop::HandleEvents()
 				break;
 
 			case SDL_MOUSEBUTTONUP:
+				if ( mInputDisabled )
+					break;
+
 				if( event.button.button == SDL_BUTTON_LEFT )
 				{
 					mEventRecorder->FireMouseUpEvent( mMousePos, Mouse::MOUSE_BUTTON_LEFT );
@@ -815,23 +833,6 @@ types::Double32 PlatformDesktop::GetUpTime()
 	return GetPreciseTime();
 }
 
-void PlatformDesktop::SetWindowSize( int width, int height ) 
-{
-	mWidth = width;
-	mHeight = height;
-	mGraphics->SetWindowSize( width, height );
-}
-
-void PlatformDesktop::SetVsync( bool vsync_enabled )
-{
-	mGraphics->SetVsync( vsync_enabled );
-}
-
-bool PlatformDesktop::GetVsync()
-{
-	return mGraphics->GetVsync();
-}
-
 //-----------------------------------------------------------------------------
 
 Mouse* PlatformDesktop::GetMouse() {
@@ -859,7 +860,26 @@ Joystick* PlatformDesktop::GetJoystick( int n ) {
 
 //-----------------------------------------------------------------------------
 
+GraphicsOpenGL* mGraphicsOpenGL = NULL;
+IGraphics* mNullGraphics = NULL;
+bool mIsNullGraphics = false;
+
+void PlatformDesktop::SetGraphicsToNull( bool null_graphics )
+{
+	if( mGraphicsOpenGL == NULL )
+		mGraphicsOpenGL = mGraphics;
+	if( mNullGraphics == NULL )
+		mNullGraphics = new IGraphics;
+
+	mIsNullGraphics = null_graphics;
+}
+
+//-----------------------------------------------------------------------------
+
 IGraphics* PlatformDesktop::GetGraphics() {
+	if( mIsNullGraphics )
+		return mNullGraphics;
+	
 	return mGraphics;
 }
 

@@ -55,12 +55,7 @@ public:
 	virtual void Destroy();
 
 	// window / screen
-	virtual void	SetWindowSize( int width, int height );
-	virtual int		GetWidth();
-	virtual int		GetHeight();
-	virtual void	SetVsync( bool vsync_enabled );
-	virtual bool	GetVsync();
-	virtual bool	GetOrientationIsLandscape();
+	virtual bool GetOrientationIsLandscape();
 
 	// global pointers
 	virtual void			SetApplication( IApplication* application );
@@ -108,6 +103,9 @@ public:
 	void SingleLoop();
 	void HandleEvents();
 
+	// Note( Petri ): 17.5.2019 - This is probably useless. Was used to debug multithreaded loading
+	void SetGraphicsToNull( bool null_graphics );
+
 protected:
 
 	types::vec2		ConvertMouseToInternalSize( int x, int y );
@@ -152,14 +150,6 @@ private:
 
 inline void PlatformDesktop::Exit() {
 	mRunning = false;
-}
-
-inline int PlatformDesktop::GetWidth() { 
-	return mWidth; 
-}
-
-inline int PlatformDesktop::GetHeight() { 
-	return mHeight; 
 }
 
 inline bool PlatformDesktop::GetOrientationIsLandscape() { 

@@ -32,31 +32,39 @@ class TextureOpenGL : public ITexture
 {
 public:
 	TextureOpenGL() : 
-		mTexture( 0 ), 
-		mWidth( 0 ), 
-		mHeight( 0 ), 
-		mExternalSizeX( 1.f ), 
-		mExternalSizeY( 1.f ),
-		mRealSizeX( 0 ),
-		mRealSizeY( 0 ),
-		mPixelData( NULL )
-	{ 
+		mTexture( 0 ),
+		mStorePixelData( false )
+	{
+		mWidth = 0;
+		mHeight = 0;
+		mExternalSizeX = 1.f;
+		mExternalSizeY = 1.f;
+		mRealSizeX = 0;
+		mRealSizeY = 0;
+		mPixelData = NULL;
+		mFilteringMode = 0;
+		mWrappingMode = 0;
+
 		mUv[ 0 ] = 0; 
 		mUv[ 1 ] = 0; 
 		mUv[ 2 ] = 0; 
-		mUv[ 3 ] = 0; 
+		mUv[ 3 ] = 0;
 	}
 
 	TextureOpenGL( TextureOpenGL* other ) : 
-		mTexture( other->mTexture ), 
-		mWidth( other->mWidth ), 
-		mHeight( other->mHeight ), 
-		mExternalSizeX( other->mExternalSizeX ), 
-		mExternalSizeY( other->mExternalSizeY ),
-		mRealSizeX( other->mRealSizeX ),
-		mRealSizeY( other->mRealSizeY ),
-		mPixelData( other->mPixelData )
-	{ 
+		mTexture( other->mTexture ),
+		mStorePixelData( other->mStorePixelData )
+	{
+		mWidth = other->mWidth;
+		mHeight = other->mHeight;
+		mExternalSizeX = other->mExternalSizeX;
+		mExternalSizeY = other->mExternalSizeY;
+		mRealSizeX = other->mRealSizeX;
+		mRealSizeY = other->mRealSizeY;
+		mPixelData = other->mPixelData;
+		mFilteringMode = other->mFilteringMode;
+		mWrappingMode = other->mWrappingMode;
+
 		mUv[ 0 ] = other->mUv[0]; 
 		mUv[ 1 ] = other->mUv[1]; 
 		mUv[ 2 ] = other->mUv[2]; 
@@ -70,6 +78,9 @@ public:
 		mExternalSizeX = (float)mWidth / (float)width;
 		mExternalSizeY = (float)mHeight / (float)height;
 	}
+
+	virtual float GetExternalSizeX() const PORO_OVERRIDE { return mExternalSizeX; };
+	virtual float GetExternalSizeY() const PORO_OVERRIDE { return mExternalSizeX; };
 
 	virtual std::string GetFilename() const	 PORO_OVERRIDE				{ return mFilename; }
 	void				SetFilename( const types::string& filename )	{ mFilename = filename; }
@@ -113,18 +124,7 @@ public:
     // ------------------------------------
     
 	types::Uint32	mTexture;
-	int				mWidth;
-	int				mHeight;
-	float			mUv[4];
-
-	float			mExternalSizeX;
-	float			mExternalSizeY;
-
-	int				mRealSizeX;
-	int				mRealSizeY;
-
-	unsigned char*	mPixelData;
-	types::string	mFilename;
+	bool 			mStorePixelData;
 };
 
 } // end o namespace poro

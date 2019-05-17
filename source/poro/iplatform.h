@@ -93,13 +93,9 @@ public:
 	virtual bool			GetJoysticksEnabled() const { return true; }
 	virtual void			SetJoysticksEnabled( bool enabled ) { poro_assert( false ); }
 
-	// window / screen
-	virtual void SetWindowSize( int width, int height ) { poro_assert( false ); }
-	virtual int GetWidth()								{ poro_assert( false ); return 0; }
-	virtual int GetHeight()								{ poro_assert( false ); return 0; }
-	virtual void SetVsync( bool vsync_enabled )			{ poro_assert( false ); }
-	virtual bool GetVsync()								{ poro_assert( false ); return false; }
+	void					SetInputDisabled() { mInputDisabled = true; }
 
+	// window / screen
 	virtual bool GetOrientationIsLandscape()			{ poro_assert( false ); return 0; }
 
 	// InternalScale
@@ -123,7 +119,6 @@ public:
 	virtual void			SetPrintFramerate( bool fps )		{ }
 	virtual types::Double32 GetLastFrameExecutionTime() const	{ return 0; }
 	virtual types::Double32 GetAverageFrameExecutionTime() const { return 0; }
-
 
 	// event recording
 	virtual void SetEventRecording( bool record_events, bool flush_every_frame ) { }
@@ -161,13 +156,12 @@ protected:
 	// instance of a platform
 	IPlatform();
 
-
 	// the game:
 	IApplication* mApplication;
 	AppConfig* mAppConfig;
 	types::Float32 mInternalWidth;
 	types::Float32 mInternalHeight;
-
+	bool mInputDisabled = false;
 };
 
 //-------------------------- inlined stuff ------------------------------------

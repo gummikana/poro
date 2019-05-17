@@ -35,6 +35,7 @@
 #include <SDL.h>
 #include <math.h>
 #include "../staticarray/cstaticarray.h"
+#include "poro/poro_types.h"
 
 // for clamp
 #include "../math/math_functions.h"
@@ -93,6 +94,16 @@ public:
 		g( other.g ),
 		b( other.b ),
 		a( other.a ),
+		multiplied_with_alpha( false )
+	{
+	}
+
+
+	CColorFloat( const poro::types::fcolor& other ) :
+		r( other[0] ),
+		g( other[1] ),
+		b( other[2] ),
+		a( other[3] ),
 		multiplied_with_alpha( false )
 	{
 	}

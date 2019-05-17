@@ -22,6 +22,7 @@
 #include "drawlines.h"
 
 #include "../../poro/igraphics.h"
+#include "../../poro/source/utils/color/ccolor.h"
 
 #include "../../utils/math/math_utils.h"
 #include "../../utils/debug.h"
@@ -646,23 +647,29 @@ float GetLineWidth() {
 
 void DrawLine( poro::IGraphics* graphics, const types::vector2& i_p1, const types::vector2& i_p2, const poro::types::fcolor& color, types::camera* camera )
 {
-	if( color[ 3 ] <= 0.01f ) return;
+	if( color[ 3 ] <= 0.01f ) 
+		return;
 
-	static std::vector< poro::types::vec2 > line( 2 );
+	auto color32 = types::fcolor( color ).Get32();
+
+	poro::types::Vertex_PosFloat2_ColorUint32 line[2];
 
 	types::vector2 p1 = i_p1;
 	types::vector2 p2 = i_p2;
-	if( camera ) {
+	if( camera )
+	{
 		p1 = camera->Transform( i_p1 );
 		p2 = camera->Transform( i_p2 );
 	}
 
 	line[ 0 ].x = p1.x;
 	line[ 0 ].y = p1.y;
+	line[ 0 ].color = color32;
 	line[ 1 ].x = p2.x;
 	line[ 1 ].y = p2.y;
+	line[ 1 ].color = color32;
 
-	graphics->DrawLines( line, color, smooth_lines, line_width );
+	graphics->DrawLines( line, 2, smooth_lines, line_width );
 }
 
 void DrawLines( poro::IGraphics* graphics, const std::vector< poro::types::vec2 >& lines, const poro::types::fcolor& color, types::camera* camera )
@@ -705,9 +712,10 @@ void DrawArrow( poro::IGraphics* graphics, const types::vector2& p1, const types
 
 void DrawCircle( poro::IGraphics* graphics, const types::vector2& position, float r, const poro::types::fcolor& color, types::camera* camera )
 {
-	std::vector< poro::types::vec2 > debug_drawing;
+	std::vector< poro::types::Vertex_PosFloat2_ColorUint32 > debug_drawing;
 	const float k_segments = 16.0f;
 	const float k_increment = 2.0f * ceng::math::pi / k_segments;
+	const uint32 color32 = types::fcolor( color ).Get32();
 
 	float theta = 0.0f;
 	for( int i = 0; i < k_segments; ++i )
@@ -720,7 +728,7 @@ void DrawCircle( poro::IGraphics* graphics, const types::vector2& position, floa
 
 		// types::vector2 p = types::vector2( v.x, v.y );
 
-		debug_drawing.push_back( ToPoro( v ) );
+		debug_drawing.push_back( poro::types::Vertex_PosFloat2_ColorUint32{ v.x, v.y, color32 } );
 
 		theta += k_increment;
 	}
@@ -734,7 +742,7 @@ void DrawCircle( poro::IGraphics* graphics, const types::vector2& position, floa
 
 
 	cassert( graphics );
-	graphics->DrawLines( debug_drawing, color, smooth_lines, line_width );
+	graphics->DrawLines( debug_drawing, smooth_lines, line_width );
 }
 
 //-----------------------------------------------------------------------------
@@ -759,18 +767,18 @@ void DrawBox( poro::IGraphics* graphics, const types::vector2& min_pos, const ty
 
 void DrawFilledBox( poro::IGraphics* graphics, const types::vector2& min_pos, const types::vector2& max_pos, const poro::types::fcolor& color, types::camera* camera )
 {
-	static auto vertices = std::vector< poro::types::vec2 >( 4 );
+	const uint32 color32 = types::fcolor( poro::GetFColor( color[0], color[1], color[2], color[3] ) ).Get32();
 
-	auto fill_mode = graphics->GetDrawFillMode();
-	graphics->SetDrawFillMode( poro::DRAWFILL_MODE::TRIANGLE_STRIP );
+	const poro::types::Vertex_PosFloat2_ColorUint32 vertices[] {
+		poro::types::Vertex_PosFloat2_ColorUint32{ min_pos.x, max_pos.y, color32 },
+		poro::types::Vertex_PosFloat2_ColorUint32{ min_pos.x, min_pos.y, color32 },
+		poro::types::Vertex_PosFloat2_ColorUint32{ max_pos.x, max_pos.y, color32 },
+		poro::types::Vertex_PosFloat2_ColorUint32{ max_pos.x, min_pos.y, color32 },
+	};
 
-	vertices[0] = poro::types::vec2( min_pos.x, max_pos.y );
-	vertices[1] = poro::types::vec2( min_pos.x, min_pos.y );
-	vertices[2] = poro::types::vec2( max_pos.x, max_pos.y );
-	vertices[3] = poro::types::vec2( max_pos.x, min_pos.y );
-
-	graphics->DrawFill( vertices, color );
-	graphics->SetDrawFillMode( fill_mode );
+	poro::GraphicsState state;
+	state.primitive_mode = poro::DRAW_PRIMITIVE_MODE::TRIANGLE_STRIP;
+	graphics->DrawVertices( vertices, 4, state );
 }
 //-----------------------------------------------------------------------------
 
@@ -827,3 +835,99 @@ float DrawHersheyText( poro::IGraphics* graphics, const std::string& text, const
 }
 
 //-----------------------------------------------------------------------------
+
+void LineDrawBuffer::AddLine( const vec2& start, const vec2& end, uint32 color32 )
+{
+	vertices.push_back( poro::types::Vertex_PosFloat2_ColorUint32{ start.x, start.y, color32 } );
+	vertices.push_back( poro::types::Vertex_PosFloat2_ColorUint32{ end.x, end.y, color32 } );
+}
+
+void LineDrawBuffer::AddLine( const vec2& start, const vec2& end, const poro::types::fcolor& color )
+{
+	AddLine( start, end, types::fcolor( color ).Get32() );
+}
+
+void LineDrawBuffer::AddLine( const vec2& start, const vec2& end, uint32 color32, const types::camera* camera )
+{
+	cassert( camera );
+	AddLine( camera->Transform( start ), camera->Transform( end ), color32 );
+}
+
+void LineDrawBuffer::AddLine( const vec2& start, const vec2& end, const poro::types::fcolor& color, const types::camera* camera )
+{
+	cassert( camera );
+	AddLine( start, end, types::fcolor( color ).Get32(), camera );
+}
+
+void LineDrawBuffer::Clear()
+{
+	vertices.clear();
+}
+
+void LineDrawBuffer::Draw( poro::IGraphics* graphics, float line_width ) const
+{
+	cassert( graphics );
+	if( vertices.empty() )
+		return;
+
+	if ( vertices.empty() )
+		return;
+
+	poro::GraphicsState state;
+	state.primitive_mode = poro::DRAW_PRIMITIVE_MODE::LINES;
+	state.line_width = line_width;
+	state.flags = poro::DRAW_FLAGS::LINE_SMOOTH;
+
+	graphics->DrawVertices( vertices, state );
+}
+
+float DrawHersheyText( LineDrawBuffer& buffer, const std::string& text, const types::vector2& pos, float text_size, const poro::types::fcolor& color )
+{
+	float width = 0;
+	float tx = pos.x;
+	float ty = pos.y;
+	const float scale = text_size / 24.0f;
+
+
+	for ( std::size_t i = 0; i < text.size(); ++i )
+	{
+		char npts, adv, j, count = 0, px, py;
+		char c = text[i] - 32;
+		const char* glyph;
+
+		if ( c < 0 || c > 95 ) continue;
+
+		glyph = &g_simplex[(int)c*GLYPH_SIZE];
+		npts = *glyph++;
+		adv = *glyph++;
+		
+		for ( j = 0; j < npts; ++j )
+		{
+			const char gx = glyph[j * 2 + 0];
+			char gy = glyph[j * 2 + 1];
+
+			if ( gx == -1 && gy == -1 )
+			{
+				count = 0;
+				continue;
+			}
+
+			gy = 24 - gy;
+
+			if ( count > 0 )
+			{
+				buffer.AddLine( types::vector2( tx + px*scale, ty + py*scale ), types::vector2( tx + gx*scale, ty + gy*scale ), color );
+			}
+
+			count++;
+
+			px = gx;
+			py = gy;
+		}
+
+		width += adv*scale;
+		tx += adv*scale;
+	}
+
+	return width;
+}
