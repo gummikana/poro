@@ -103,6 +103,9 @@ public:
 	void SingleLoop();
 	void HandleEvents();
 
+	// Note( Petri ): 17.5.2019 - This is probably useless. Was used to debug multithreaded loading
+	void SetGraphicsToNull( bool null_graphics );
+
 protected:
 
 	types::vec2		ConvertMouseToInternalSize( int x, int y );
