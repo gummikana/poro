@@ -26,9 +26,6 @@
 
 #include "poro_types.h"
 #include "poro_macros.h"
-//#include "itexture.h"
-//#include "itexture3d.h"
-//#include "ishader.h"
 
 namespace poro {
 
@@ -36,6 +33,7 @@ class ITexture;
 class ITexture3d;
 class IRenderTexture;
 class IShader;
+class IVertexBuffer;
 
 //-----------------------------
 
@@ -101,6 +99,17 @@ namespace DRAW_FLAGS
 	{
 		NONE = 0,
 		LINE_SMOOTH = 1	<< 1,
+	};
+};
+
+namespace VERTEX_FORMAT
+{
+	enum Enum
+	{
+		VertexFormat_PosFloat2_ColorUint32,
+		VertexFormat_PosFloat2_TexCoordFloat2_ColorUint32,
+		VertexFormat_PosFloat2_2xTexCoordFloat2_ColorUint32,
+		VertexFormat_PosFloat2_3xTexCoordFloat2_ColorUint32,
 	};
 };
 
@@ -257,6 +266,12 @@ public:
 
 	//-------------------------------------------------------------------------
 
+	virtual IVertexBuffer* VertexBuffer_Create( VERTEX_FORMAT::Enum vertex_format ) const { return NULL; }
+	virtual void VertexBuffer_Destroy( IVertexBuffer* buffer ) const { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
+	virtual void VertexBuffer_SetData( IVertexBuffer* buffer, void* vertices, uint16* indices, uint32 num_indices ) const { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
+
+	//-------------------------------------------------------------------------
+
 	virtual void BeginRendering() = 0;
 	void EndRendering();
 	virtual void SetClearBackground( bool clear ) { mClearBackground = clear; }
@@ -300,6 +315,7 @@ public:
 	virtual void DrawVertices( const types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, const poro::GraphicsState& state ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
 	virtual void DrawVertices( const types::Vertex_PosFloat2_2xTexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, const poro::GraphicsState& state ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
 	virtual void DrawVertices( const types::Vertex_PosFloat2_3xTexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, const poro::GraphicsState& state ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
+	virtual void DrawVertices( const IVertexBuffer* buffer, uint32 start_index, uint32 num_indices, const poro::GraphicsState& state ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
 
 	//-------------------------------------------------------------------------
 
