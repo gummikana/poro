@@ -190,7 +190,7 @@ public:
 	//-------------------------------------------------------------------------
 
 	bool						Init( int width, int height, int fullscreen, const types::string& caption, const GraphicsSettings& settings );
-	virtual bool				Init( int width, int height, int fullscreen, const types::string& caption ) = 0;
+	virtual bool				Init( int width, int height, int fullscreen, const types::string& caption ) { poro_assert( false ); return true; }
 	virtual void				SetCaption( const types::string& caption ) 							{ poro_assert( false ); /* implement for this platform*/ }
 	virtual void				SetIcon( const types::string& bmp_icon )							{ poro_assert( false ); /* implement for this platform*/ }
 	virtual void				SetInternalSize( types::Float32 width, types::Float32 height )		{ poro_assert( false ); /* You have to implement this */ }
@@ -217,52 +217,52 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual ITexture*	CreateTexture( int width, int height ) = 0;
-	virtual ITexture*	CloneTexture( ITexture* other ) = 0;
+	virtual ITexture*	CreateTexture( int width, int height ) { poro_assert( false ); return 0; }
+	virtual ITexture*	CloneTexture( ITexture* other ) { poro_assert( false ); return 0; }
 	void				SetTextureData(ITexture* texture, unsigned char* data ){ SetTextureData(texture, (void*)data ); }
 	void				SetTextureData(ITexture* texture, float* data ){ SetTextureData(texture, (void*)data ); }
-	virtual void		SetTextureData(ITexture* texture, void* data ) = 0;
-	virtual void		SetTextureData( ITexture* texture, void* data, int x, int y, int w, int h ) = 0;
+	virtual void		SetTextureData(ITexture* texture, void* data ) { poro_assert( false );  }
+	virtual void		SetTextureData( ITexture* texture, void* data, int x, int y, int w, int h ) { poro_assert( false );  }
 
-	virtual ITexture*	LoadTexture( const types::string& filename ) = 0;
-	virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data ) = 0;
-	virtual void		DestroyTexture( ITexture* texture ) = 0;
-	virtual void		SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode ) const = 0;
-	virtual void		SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum mode ) const = 0;
+	virtual ITexture*	LoadTexture( const types::string& filename ){ poro_assert( false ); return 0; }
+	virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data ){ poro_assert( false ); return 0; }
+	virtual void		DestroyTexture( ITexture* texture ){ poro_assert( false );  }
+	virtual void		SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode ) const{ poro_assert( false );  };
+	virtual void		SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum mode ) const{ poro_assert( false );  };
 
 	//-------------------------------------------------------------------------
 	
-	virtual ITexture3d*	LoadTexture3d( const types::string& filename ) = 0;
-	virtual void		DestroyTexture3d( ITexture3d* texture ) = 0;
+	virtual ITexture3d*	LoadTexture3d( const types::string& filename ){ poro_assert( false ); return 0; };
+	virtual void		DestroyTexture3d( ITexture3d* texture ){ poro_assert( false );  };
 
 	//-------------------------------------------------------------------------
 
-	virtual IRenderTexture* RenderTexture_Create( int width, int height, TEXTURE_FILTERING_MODE::Enum mode ) const = 0;
-	virtual void RenderTexture_Destroy( IRenderTexture* texture ) const = 0;
-	virtual void RenderTexture_BeginRendering( IRenderTexture* texture, bool clear_color = false, bool clear_depth = false, float clear_r = 0.f, float clear_g = 0.f, float clear_b = 0.f, float clear_a = 0.f ) const = 0;
-	virtual void RenderTexture_EndRendering( IRenderTexture* texture ) const = 0;
-	virtual void RenderTexture_ReadTextureDataFromGPU( IRenderTexture* texture, uint8* out_pixels ) const = 0;
-	virtual void RenderTexture_AsyncReadTextureDataFromGPUBegin( IRenderTexture* texture ) const = 0;
-	virtual void RenderTexture_AsyncReadTextureDataFromGPUFinish( IRenderTexture* texture, uint8* out_pixels ) const = 0;
+	virtual IRenderTexture* RenderTexture_Create( int width, int height, TEXTURE_FILTERING_MODE::Enum mode ) const{ poro_assert( false ); return 0; };
+	virtual void RenderTexture_Destroy( IRenderTexture* texture ) const{ poro_assert( false );  };
+	virtual void RenderTexture_BeginRendering( IRenderTexture* texture, bool clear_color = false, bool clear_depth = false, float clear_r = 0.f, float clear_g = 0.f, float clear_b = 0.f, float clear_a = 0.f ) const { poro_assert( false );  };
+	virtual void RenderTexture_EndRendering( IRenderTexture* texture ) const{ poro_assert( false );  };
+	virtual void RenderTexture_ReadTextureDataFromGPU( IRenderTexture* texture, uint8* out_pixels ) const{ poro_assert( false );  };
+	virtual void RenderTexture_AsyncReadTextureDataFromGPUBegin( IRenderTexture* texture ) const{ poro_assert( false );  };
+	virtual void RenderTexture_AsyncReadTextureDataFromGPUFinish( IRenderTexture* texture, uint8* out_pixels ) const{ poro_assert( false );  };
 
 	//-------------------------------------------------------------------------
 
-	virtual IShader* Shader_Create() const = 0;
-	virtual void Shader_Init( IShader* shader, const std::string& vertex_source_filename, const std::string& fragment_source_filename ) const = 0;
-	virtual void Shader_InitFromString( IShader* shader, const std::string& vertex_source, const std::string& fragment_source ) const = 0;
-	virtual void Shader_Release( IShader* shader ) const = 0;
-	virtual void Shader_Enable( IShader* shader ) const = 0;
-	virtual void Shader_Disable( IShader* shader ) const = 0;
-	virtual bool Shader_HasParameter( IShader* shader, const std::string& name ) const = 0;
-	virtual void Shader_SetParameter( IShader* shader, const std::string& name, float value ) const = 0;
-	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const types::vec2& value ) const = 0;
-	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const types::vec3& value ) const = 0;
-	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const types::vec2& value_xy, types::vec2& value_zw ) const = 0;
-	virtual void Shader_SetParameter( IShader* shader, const std::string& name, float x, float y, float z, float w ) const = 0;
-	virtual void Shader_SetParameter( IShader* ishader, const std::string& name, const float* value_4_floats ) const = 0;
-	virtual void Shader_SetParameter( IShader* shader, const std::string& name, ITexture* texture, TEXTURE_FILTERING_MODE::Enum mode ) = 0;
-	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const ITexture3d* texture ) const = 0;
-	virtual bool Shader_GetIsCompiledAndLinked( IShader* shader ) const = 0;
+	virtual IShader* Shader_Create() const{ poro_assert( false ); return 0; };
+	virtual void Shader_Init( IShader* shader, const std::string& vertex_source_filename, const std::string& fragment_source_filename ) const{ poro_assert( false );  };
+	virtual void Shader_InitFromString( IShader* shader, const std::string& vertex_source, const std::string& fragment_source ) const{ poro_assert( false );  };
+	virtual void Shader_Release( IShader* shader ) const{ poro_assert( false );  };
+	virtual void Shader_Enable( IShader* shader ) const{ poro_assert( false );  };
+	virtual void Shader_Disable( IShader* shader ) const{ poro_assert( false );  };
+	virtual bool Shader_HasParameter( IShader* shader, const std::string& name ) const{ poro_assert( false ); return 0; };
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, float value ) const{ poro_assert( false );  };
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const types::vec2& value ) const{ poro_assert( false );  };
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const types::vec3& value ) const{ poro_assert( false );  };
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const types::vec2& value_xy, types::vec2& value_zw ) const{ poro_assert( false );  };
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, float x, float y, float z, float w ) const{ poro_assert( false );  };
+	virtual void Shader_SetParameter( IShader* ishader, const std::string& name, const float* value_4_floats ) const{ poro_assert( false );  };
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, ITexture* texture, TEXTURE_FILTERING_MODE::Enum mode ){ poro_assert( false );  };
+	virtual void Shader_SetParameter( IShader* shader, const std::string& name, const ITexture3d* texture ) const{ poro_assert( false );  };
+	virtual bool Shader_GetIsCompiledAndLinked( IShader* shader ) const{ poro_assert( false ); return 0; };
 
 	//-------------------------------------------------------------------------
 
@@ -272,7 +272,7 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual void BeginRendering() = 0;
+	virtual void BeginRendering(){ poro_assert( false );  };
 	void EndRendering();
 	virtual void SetClearBackground( bool clear ) { mClearBackground = clear; }
 
@@ -287,7 +287,7 @@ public:
 	virtual void PushBlendMode( BLEND_MODE::Enum blend_mode );
 	virtual void PopBlendMode();
 
-	virtual void SetShader( IShader* shader ) = 0;
+	virtual void SetShader( IShader* shader ){ poro_assert( false );  };
 
 	//-------------------------------------------------------------------------
 
@@ -330,9 +330,19 @@ public:
 	virtual unsigned char*	ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp )						{ poro_assert( false && "IMPLEMENTATION NEEDED" ); return NULL; }
 	virtual int				ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes )	{ poro_assert( false && "IMPLEMENTATION NEEDED" ); return -1; }
 
+	//-------------------------------------------------------------------------
+	// this is haxed here... because we needed multithreaded loading of assets
+	//
+	virtual void SetMultithreadLock( bool multithreaded_lock ) { }
+	virtual bool GetMultithreadLock() const { return false; }
+
+	virtual bool UpdateBufferedMultithreaded() { return true; }
+
+
+
 protected:
-	virtual void IMPL_SetVSyncEnabled( bool enabled ) = 0;
-	virtual void IMPL_EndRendering() = 0;
+	virtual void IMPL_SetVSyncEnabled( bool enabled ){ poro_assert( false );  };
+	virtual void IMPL_EndRendering(){ poro_assert( false );  };
 
 	bool mClearBackground = true;
 	poro::types::fcolor mFillColor = poro::types::fcolor();

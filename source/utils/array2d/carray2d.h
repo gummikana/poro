@@ -83,21 +83,21 @@ public:
 	};
 
 	CArray2D() :
-	  myWidth( 0 ),
-	  myHeight( 0 ),
-	  mySize( 0 ),
-	  myArraysLittleHelper( *this ),
-	  myNullReference( _Ty() )
+		myWidth( 0 ),
+		myHeight( 0 ),
+		mySize( 0 ),
+		myArraysLittleHelper( *this ),
+		myNullReference( _Ty() )
 	{
 
 	}
 
 	CArray2D( int _width, int _height ) :
-	  myWidth( _width ),
-	  myHeight( _height ),
-	  mySize( 0 ),
-	  myArraysLittleHelper( *this ),
-	  myNullReference( _Ty() )
+		myWidth( _width ),
+		myHeight( _height ),
+		mySize( 0 ),
+		myArraysLittleHelper( *this ),
+		myNullReference( _Ty() )
 	{
 
 		Allocate();
@@ -109,7 +109,7 @@ public:
 		mySize( other.mySize ),
 		myArraysLittleHelper( *this ),
 		myDataArray( other.myDataArray ),
-	  myNullReference( _Ty() )
+		myNullReference( _Ty() )
 	{
 
 	}
