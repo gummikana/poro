@@ -93,7 +93,8 @@ public:
 	virtual bool			GetJoysticksEnabled() const { return true; }
 	virtual void			SetJoysticksEnabled( bool enabled ) { poro_assert( false ); }
 
-	void					SetInputDisabled() { mInputDisabled = true; }
+	virtual void			SetInputDisabled( bool disabled ) { mInputDisabled = disabled; }
+	virtual bool			GetInputDisabled() const { return mInputDisabled; }
 
 	// window / screen
 	virtual bool GetOrientationIsLandscape()			{ poro_assert( false ); return 0; }
@@ -161,7 +162,7 @@ protected:
 	AppConfig* mAppConfig;
 	types::Float32 mInternalWidth;
 	types::Float32 mInternalHeight;
-	bool mInputDisabled = false;
+	bool mInputDisabled;
 };
 
 //-------------------------- inlined stuff ------------------------------------

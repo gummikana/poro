@@ -764,6 +764,9 @@ void PlatformDesktop::HandleEvents()
 			case SDL_MOUSEMOTION:
 				{
 					mMousePos = mGraphics->ConvertToInternalPos( event.motion.x, event.motion.y );
+					if ( mInputDisabled )
+						break;
+					
 					mEventRecorder->FireMouseMoveEvent( mMousePos );
 					if( mTouch && mTouch->IsTouchIdDown( 0 ) ) 
 						mEventRecorder->FireTouchMoveEvent( mMousePos, 0 );

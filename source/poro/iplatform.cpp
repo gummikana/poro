@@ -62,8 +62,10 @@ IPlatform* IPlatform::gInstance = &platform;
 
 IPlatform::IPlatform() :
 	mApplication( NULL ),
+	mAppConfig( NULL ),
 	mInternalWidth( 0.f ),
-	mInternalHeight( 0.f )
+	mInternalHeight( 0.f ),
+	mInputDisabled( false )
 {
 }
 
