@@ -26,10 +26,10 @@ namespace poro {
 	class IVertexBuffer
 	{
 	public:
-		uint32 impl_data;
-		uint32 num_vertices;
-		uint32 format;
-		uint32 vertex_size;
+		uint32 impl_data = 0;
+		uint32 num_vertices = 0;
+		uint32 format = 0;
+		uint32 vertex_size = 0;
 	};
 
 } // end of namespace poro

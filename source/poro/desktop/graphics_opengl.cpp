@@ -1433,8 +1433,11 @@ void GraphicsOpenGL::VertexBuffer_SetData( IVertexBuffer* buffer, void* vertices
 	poro_assert( buffer );
 
 	glBindBuffer( GL_ARRAY_BUFFER, buffer->impl_data );
+	glBufferData( GL_ARRAY_BUFFER, buffer->vertex_size * buffer->num_vertices, NULL, GL_DYNAMIC_DRAW ); // orphan the old buffer
 	glBufferData( GL_ARRAY_BUFFER, buffer->vertex_size * num_vertices, vertices, GL_DYNAMIC_DRAW );
 	glBindBuffer( GL_ARRAY_BUFFER, 0 );
+
+	buffer->num_vertices = num_vertices;
 }
 
 //===================================================================================
@@ -1648,6 +1651,7 @@ void GraphicsOpenGL::DrawVertices( const types::Vertex_PosFloat2_3xTexCoordFloat
 void GraphicsOpenGL::DrawVertices( const IVertexBuffer* buffer, uint32 start_vertice, uint32 num_vertices, const poro::GraphicsState& state )
 {
 	poro_assert( buffer );
+	poro_assert( start_vertice + num_vertices <= buffer->num_vertices );
 
 	uint32 api_primitive_mode = 0;
 	LowLevel_EnableState( state, api_primitive_mode );
