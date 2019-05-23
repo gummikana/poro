@@ -27,8 +27,9 @@ namespace poro {
 	{
 	public:
 		uint32 impl_data;
-		uint32 format;
 		uint32 num_vertices;
+		uint32 format;
+		uint32 vertex_size;
 	};
 
 } // end of namespace poro

@@ -268,7 +268,7 @@ public:
 
 	virtual IVertexBuffer* VertexBuffer_Create( VERTEX_FORMAT::Enum vertex_format ) const { return NULL; }
 	virtual void VertexBuffer_Destroy( IVertexBuffer* buffer ) const { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
-	virtual void VertexBuffer_SetData( IVertexBuffer* buffer, void* vertices, uint16* indices, uint32 num_indices ) const { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
+	virtual void VertexBuffer_SetData( IVertexBuffer* buffer, void* vertices, uint32 num_vertices ) const { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
 
 	//-------------------------------------------------------------------------
 
@@ -315,7 +315,7 @@ public:
 	virtual void DrawVertices( const types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, const poro::GraphicsState& state ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
 	virtual void DrawVertices( const types::Vertex_PosFloat2_2xTexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, const poro::GraphicsState& state ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
 	virtual void DrawVertices( const types::Vertex_PosFloat2_3xTexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, const poro::GraphicsState& state ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
-	virtual void DrawVertices( const IVertexBuffer* buffer, uint32 start_index, uint32 num_indices, const poro::GraphicsState& state ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
+	virtual void DrawVertices( const IVertexBuffer* buffer, uint32 start_vertice, uint32 num_vertices, const poro::GraphicsState& state ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
 
 	//-------------------------------------------------------------------------
 

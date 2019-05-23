@@ -119,6 +119,12 @@ public:
 
 	//-------------------------------------------------------------------------
 
+	virtual IVertexBuffer* VertexBuffer_Create( VERTEX_FORMAT::Enum vertex_format ) const PORO_OVERRIDE;
+	virtual void VertexBuffer_Destroy( IVertexBuffer* buffer ) const PORO_OVERRIDE;
+	virtual void VertexBuffer_SetData( IVertexBuffer* buffer, void* vertices, uint32 num_vertices ) const PORO_OVERRIDE;
+
+	//-------------------------------------------------------------------------
+
 	virtual void BeginRendering() PORO_OVERRIDE;
 	virtual void IMPL_EndRendering() PORO_OVERRIDE;
 	virtual void IMPL_SetVSyncEnabled( bool enabled ) PORO_OVERRIDE;
@@ -130,6 +136,7 @@ public:
 	virtual void DrawVertices( const types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, const poro::GraphicsState& state ) PORO_OVERRIDE;
 	virtual void DrawVertices( const types::Vertex_PosFloat2_2xTexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, const poro::GraphicsState& state ) PORO_OVERRIDE;
 	virtual void DrawVertices( const types::Vertex_PosFloat2_3xTexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, const poro::GraphicsState& state ) PORO_OVERRIDE;
+	virtual void DrawVertices( const IVertexBuffer* buffer, uint32 start_vertice, uint32 num_vertices, const poro::GraphicsState& state ) PORO_OVERRIDE;
 	
 	//-------------------------------------------------------------------------
 

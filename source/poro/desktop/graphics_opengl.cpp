@@ -27,6 +27,7 @@
 #include "../fileio.h"
 #include "../libraries.h"
 #include "../poro_macros.h"
+#include "../ivertexbuffer.h"
 #include "texture_opengl.h"
 #include "texture3d_opengl.h"
 #include "render_texture_opengl.h"
@@ -956,6 +957,11 @@ RenderTextureOpenGL::~RenderTextureOpenGL()
 	//Bind 0, which means render to back buffer, as a result, fb is unbound
 	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 	glDeleteFramebuffers( 1, &mBufferId );
+	glDeleteBuffers( 1, &mPboBufferId );
+
+	#ifdef RENDER_TEXTURE_ASYNC_READ_SUBDATA_IMPL
+		glDeleteBuffers( 1, &mPboBufferOutId );
+	#endif
 }
 
 void GraphicsOpenGL::RenderTexture_Destroy( IRenderTexture* itexture ) const
@@ -1392,6 +1398,47 @@ void GraphicsOpenGL::SetShader( IShader* shader )
 
 //===================================================================================
 
+IVertexBuffer* GraphicsOpenGL::VertexBuffer_Create( VERTEX_FORMAT::Enum vertex_format ) const
+{
+	auto result = new IVertexBuffer();
+	result->format = vertex_format;
+	result->vertex_size = 0;
+	switch ( vertex_format )
+	{
+		case VERTEX_FORMAT::VertexFormat_PosFloat2_ColorUint32:						result->vertex_size = sizeof( types::Vertex_PosFloat2_ColorUint32 ); break;
+		case VERTEX_FORMAT::VertexFormat_PosFloat2_TexCoordFloat2_ColorUint32:		result->vertex_size = sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ); break;
+		case VERTEX_FORMAT::VertexFormat_PosFloat2_2xTexCoordFloat2_ColorUint32:	result->vertex_size = sizeof( types::Vertex_PosFloat2_2xTexCoordFloat2_ColorUint32 ); break;
+		case VERTEX_FORMAT::VertexFormat_PosFloat2_3xTexCoordFloat2_ColorUint32:	result->vertex_size = sizeof( types::Vertex_PosFloat2_3xTexCoordFloat2_ColorUint32 ); break;
+		default: poro_assert( false && "Invalid vertex format" ); break;
+	}
+
+	// opengl specific code
+	glGenBuffers( 1, &result->impl_data );
+	glBindBuffer( GL_ARRAY_BUFFER, result->impl_data );
+	glBufferData( GL_ARRAY_BUFFER, 0, NULL, GL_DYNAMIC_DRAW );
+	glBindBuffer( GL_ARRAY_BUFFER, 0 );
+
+	return result;
+}
+
+void GraphicsOpenGL::VertexBuffer_Destroy( IVertexBuffer* buffer ) const
+{
+	poro_assert( buffer );
+	glDeleteBuffers( 1, &buffer->impl_data );
+	delete buffer;
+}
+
+void GraphicsOpenGL::VertexBuffer_SetData( IVertexBuffer* buffer, void* vertices, uint32 num_vertices ) const
+{
+	poro_assert( buffer );
+
+	glBindBuffer( GL_ARRAY_BUFFER, buffer->impl_data );
+	glBufferData( GL_ARRAY_BUFFER, buffer->vertex_size * num_vertices, vertices, GL_DYNAMIC_DRAW );
+	glBindBuffer( GL_ARRAY_BUFFER, 0 );
+}
+
+//===================================================================================
+
 void GraphicsOpenGL::BeginRendering()
 {
 	if ( mClearBackground ) 
@@ -1490,6 +1537,8 @@ void GraphicsOpenGL::LegacyBindTexture( const ITexture* itexture )
 
 void GraphicsOpenGL::DrawVertices( const types::Vertex_PosFloat2_ColorUint32* vertices, uint32 num_vertices, const GraphicsState& state )
 {
+	poro_assert( vertices );
+
 	uint32 api_primitive_mode = 0;
 	LowLevel_EnableState( state, api_primitive_mode );
 	
@@ -1537,6 +1586,8 @@ void GraphicsOpenGL::DrawVertices( const types::Vertex_PosFloat2_TexCoordFloat2_
 
 void GraphicsOpenGL::DrawVertices( const types::Vertex_PosFloat2_2xTexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, const GraphicsState& state )
 {
+	poro_assert( vertices );
+
 	uint32 api_primitive_mode = 0;
 	LowLevel_EnableState( state, api_primitive_mode );
 
@@ -1562,6 +1613,8 @@ void GraphicsOpenGL::DrawVertices( const types::Vertex_PosFloat2_2xTexCoordFloat
 
 void GraphicsOpenGL::DrawVertices( const types::Vertex_PosFloat2_3xTexCoordFloat2_ColorUint32* vertices, uint32 num_vertices, const GraphicsState& state )
 {
+	poro_assert( vertices );
+
 	uint32 api_primitive_mode = 0;
 	LowLevel_EnableState( state, api_primitive_mode );
 
@@ -1586,6 +1639,71 @@ void GraphicsOpenGL::DrawVertices( const types::Vertex_PosFloat2_3xTexCoordFloat
 	glDisableClientState( GL_TEXTURE_COORD_ARRAY ); // for texture unit 1
 	glClientActiveTexture( GL_TEXTURE0 );
 	glDisableClientState( GL_TEXTURE_COORD_ARRAY ); // for texture unit 0
+
+	LowLevel_DisableState( state );
+}
+
+
+
+void GraphicsOpenGL::DrawVertices( const IVertexBuffer* buffer, uint32 start_vertice, uint32 num_vertices, const poro::GraphicsState& state )
+{
+	poro_assert( buffer );
+
+	uint32 api_primitive_mode = 0;
+	LowLevel_EnableState( state, api_primitive_mode );
+
+	glBindBuffer( GL_ARRAY_BUFFER, buffer->impl_data );
+	glEnableClientState( GL_VERTEX_ARRAY );
+	glEnableClientState( GL_COLOR_ARRAY );
+
+	switch ( buffer->format )
+	{
+		case VERTEX_FORMAT::VertexFormat_PosFloat2_ColorUint32:
+		{
+			glVertexPointer( 2, GL_FLOAT, sizeof( types::Vertex_PosFloat2_ColorUint32 ), NULL );
+			glColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( types::Vertex_PosFloat2_ColorUint32 ), (GLvoid*)offsetof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32, u ) );
+
+			// draw
+			glDrawArrays( api_primitive_mode, start_vertice, num_vertices );
+
+			break;
+		}
+
+		case VERTEX_FORMAT::VertexFormat_PosFloat2_TexCoordFloat2_ColorUint32:
+		{
+			glEnableClientState( GL_TEXTURE_COORD_ARRAY );
+
+			glVertexPointer( 2, GL_FLOAT, sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), NULL );
+			glTexCoordPointer( 2, GL_FLOAT, sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), (GLvoid*)offsetof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32, u ) );
+			glColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32 ), (GLvoid*)offsetof( types::Vertex_PosFloat2_TexCoordFloat2_ColorUint32, color ) );
+
+			// draw
+			glDrawArrays( api_primitive_mode, start_vertice, num_vertices );
+
+			// disable state
+			glDisableClientState( GL_TEXTURE_COORD_ARRAY );
+
+			break;
+		}
+
+		case VERTEX_FORMAT::VertexFormat_PosFloat2_2xTexCoordFloat2_ColorUint32:
+		{
+			poro_assert( false && "Not implemented" );
+			break;
+		}
+
+		case VERTEX_FORMAT::VertexFormat_PosFloat2_3xTexCoordFloat2_ColorUint32:
+		{
+			poro_assert( false && "Not implemented" );
+			break;
+		}
+
+		default: poro_assert( false && "Invalid enum value" );
+	}
+
+	glBindBuffer( GL_ARRAY_BUFFER, 0 );
+	glDisableClientState( GL_VERTEX_ARRAY );
+	glDisableClientState( GL_COLOR_ARRAY );
 
 	LowLevel_DisableState( state );
 }

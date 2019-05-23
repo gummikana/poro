@@ -14,6 +14,7 @@
 #include "itexture3d.h"
 #include "irender_texture.h"
 #include "ishader.h"
+#include "ivertexbuffer.h"
 
 #include "mouse.h"
 #include "keyboard.h"
