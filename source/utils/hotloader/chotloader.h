@@ -81,7 +81,7 @@ public:
 // this is copied from chotloader.cpp and can be moved into .cpp file if that's
 // better, but I'm tired of linking problems right now :)
 // chotloader.cpp 
-#include "../filesystem/filesystem.h"
+#include "../../poro/poro.h"
 #include "../vector_utils/vector_utils.h"
 
 namespace ceng { 
@@ -99,11 +99,12 @@ inline void CHotloader::Update( float dt )
 
 inline void CHotloader::CheckFiles()
 {
+	auto filesystem = Poro()->GetFileSystem();
 	std::map< std::string, std::string >::iterator i;
 	std::string timestamp;
 	for( i = mTimeStamps.begin(); i != mTimeStamps.end(); ++i ) 
 	{
-		timestamp = GetDateForFile( i->first );
+		timestamp = filesystem->GetDateForFile( i->first );
 		if( timestamp != i->second ) 
 		{
 			FileChanged( i->first );
@@ -136,7 +137,7 @@ inline void CHotloader::AddListener( IHotloaderListener* hot_listener )
 	{
 		for( std::size_t i = 0; i < hot_listener->mHotloadingFilenames.size(); ++i ) 
 		{
-			std::string timestamp = GetDateForFile( hot_listener->mHotloadingFilenames[ i ] );
+			std::string timestamp = Poro()->GetFileSystem()->GetDateForFile( hot_listener->mHotloadingFilenames[ i ] );
 			mTimeStamps[ hot_listener->mHotloadingFilenames[ i ] ] = timestamp;
 		}
 	}
@@ -157,7 +158,7 @@ inline void CHotloader::AddHotFile( const std::string& filename, IHotloaderListe
 			std::string filename = hot_listener->mHotloadingFilenames[ i ];
 			if( mTimeStamps.find( filename ) == mTimeStamps.end() ) 
 			{
-				std::string timestamp = GetDateForFile( hot_listener->mHotloadingFilenames[ i ] );
+				std::string timestamp = Poro()->GetFileSystem()->GetDateForFile( hot_listener->mHotloadingFilenames[ i ] );
 				mTimeStamps[ hot_listener->mHotloadingFilenames[ i ] ] = timestamp;
 			}
 		}
