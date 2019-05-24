@@ -555,7 +555,6 @@ struct Transform
 
 	TransformHelper mTop;
 	std::vector< TransformHelper > mQueue;
-	
 };
 
 //-----------------------------------------------------------------------------
