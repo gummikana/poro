@@ -1027,7 +1027,6 @@ std::string FileSystem::GetDateForFile( const std::string& path_relative_to_devi
 		}
 	}
 
-	cassert( false && "not implemented" );
 	return "";
 }
 
