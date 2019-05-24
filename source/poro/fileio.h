@@ -109,7 +109,7 @@ namespace poro {
         WriteStream& operator= ( const WriteStream& other );
 		
 		// write 'length_bytes' bytes from 'data' to the stream.
-		StreamStatus::Enum Write( char* data, poro::types::Uint32 length_bytes );
+		StreamStatus::Enum Write( const char* data, poro::types::Uint32 length_bytes );
 		
 		// write 'text' to the stream.
 		StreamStatus::Enum Write( const std::string& text );

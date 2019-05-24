@@ -647,7 +647,7 @@ namespace impl
 
 // === WriteStream ================================
 
-StreamStatus::Enum WriteStream::Write( char* data, u32 length_bytes )
+StreamStatus::Enum WriteStream::Write( const char* data, u32 length_bytes )
 {
 	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
 	
