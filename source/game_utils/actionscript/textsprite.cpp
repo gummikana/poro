@@ -62,6 +62,99 @@ as::TextSprite* LoadTextSprite( const std::string& font_file )
 	return mTextSprite;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
+//-------------------------------------------------------------------------------------------------
+//
+// https://github.com/skeeto/branchless-utf8
+// https://nullprogram.com/blog/2017/10/06/
+//
+/*
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
+
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <http://unlicense.org/>
+*/
+
+/* Decode the next character, C, from BUF, reporting errors in E.
+ *
+ * Since this is a branchless decoder, four bytes will be read from the
+ * buffer regardless of the actual length of the next character. This
+ * means the buffer _must_ have at least three bytes of zero padding
+ * following the end of the data stream.
+ *
+ * Errors are reported in E, which will be non-zero if the parsed
+ * character was somehow invalid: invalid byte sequence, non-canonical
+ * encoding, or a surrogate half.
+ *
+ * The function returns a pointer to the next character. When an error
+ * occurs, this pointer will be a guess that depends on the particular
+ * error, but it will always advance at least one byte.
+ */
+
+static void* utf8_decode(void *buf, poro::types::Uint32 *c, int *e)
+{
+    static const char lengths[] = {
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 3, 3, 4, 0
+    };
+    static const int masks[]  = {0x00, 0x7f, 0x1f, 0x0f, 0x07};
+    static const uint32 mins[] = {4194304, 0, 128, 2048, 65536};
+    static const int shiftc[] = {0, 18, 12, 6, 0};
+    static const int shifte[] = {0, 6, 4, 2, 0};
+
+    unsigned char *s = (unsigned char *)buf;
+    int len = lengths[s[0] >> 3];
+
+    /* Compute the pointer to the next character early so that the next
+     * iteration can start working on the next character. Neither Clang
+     * nor GCC figure out this reordering on their own.
+     */
+    unsigned char *next = s + len + !len;
+
+    /* Assume a four-byte character and load four bytes. Unused bits are
+     * shifted out.
+     */
+    *c  = (uint32)(s[0] & masks[len]) << 18;
+    *c |= (uint32)(s[1] & 0x3f) << 12;
+    *c |= (uint32)(s[2] & 0x3f) <<  6;
+    *c |= (uint32)(s[3] & 0x3f) <<  0;
+    *c >>= shiftc[len];
+
+    /* Accumulate the various error conditions. */
+    *e  = (*c < mins[len]) << 6; // non-canonical encoding
+    *e |= ((*c >> 11) == 0x1b) << 7;  // surrogate half?
+    *e |= (*c > 0x10FFFF) << 8;  // out of range?
+    *e |= (s[1] & 0xc0) >> 2;
+    *e |= (s[2] & 0xc0) >> 4;
+    *e |= (s[3]       ) >> 6;
+    *e ^= 0x2a; // top two bits of each tail byte correct?
+    *e >>= shifte[len];
+
+    return next;
+}
+//-------------------------------------------------------------------------------------------------
+
 	
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -72,6 +165,8 @@ TextSprite::TextSprite() :
 	mSingleLine( false ),
 	mCursorPosition( -1 ),
 	mRealSize(),
+	mTextStr(),
+	mTextUnicode( false ),
 	mText(),
 	mInRects(),
 	mOutRects(),
@@ -198,21 +293,67 @@ void TextSprite::RecalcuateRects()
 		{
 			// mInRects = mFont->GetRectsForText( mText );
 			// mOutRects = 
-			mFontAlign->GetRectPositions( mText, types::rect( 0, 0, mTextBox.w, mTextBox.h ), mFont, mInRects, mOutRects );
-			mRealSize.x = mTextBox.w;
-			mRealSize.y = mTextBox.h;
+			if( mTextUnicode == false )
+			{
+				mFontAlign->GetRectPositions( mTextStr, types::rect( 0, 0, mTextBox.w, mTextBox.h ), mFont, mInRects, mOutRects );
+				mRealSize.x = mTextBox.w;
+				mRealSize.y = mTextBox.h;
+			}
+			else
+			{
+				poro_assert( false && "needs to be implemented, but currently isn't used in wizard?" );
+			}
 		}
 	}
 }
 
+//-----------------------------------------------------------------------------
+
 void TextSprite::SetText( const std::string& text )
 {
-	if( mFont && mText != text )
+	if( mFont && mTextStr != text )
 	{
-		mText = text;
+		mTextStr = text;
+		mTextUnicode = false;
+
+		mText.resize( mTextStr.size() );
+		for( size_t i = 0; i < mTextStr.size(); ++i )
+		{
+			mText[ i ] = (CFont::CharType)mTextStr[ i ];
+		}
+
 		RecalcuateRects();
 	}
 }
+
+void TextSprite::SetTextUnicode( const std::string& utf8_text )
+{
+	if( mFont && mTextStr != utf8_text )
+	{
+		mTextStr = utf8_text;
+		mTextUnicode = true;
+
+		mTextStr.reserve( mTextStr.size() + 4 );
+
+		// utf8_decode
+		mText.reserve( mTextStr.size() );
+
+		char* i = &(mTextStr[0]);
+		char* end = &(mTextStr[ mTextStr.size() - 1 ] );
+		// CFont::CharType code = 0;
+		poro::types::Uint32 code = 0;
+		int errors = 0;
+		while( i <= end )
+		{
+			i = (char*)utf8_decode( i, &code, &errors );
+			mText.push_back( (CFont::CharType)code );
+		}
+
+		RecalcuateRects();
+	}
+}
+
+//-----------------------------------------------------------------------------
 
 void TextSprite::DrawRect( const types::rect& rect, poro::IGraphics* graphics, types::camera* camera, const Transform& transform )
 {

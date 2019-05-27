@@ -27,6 +27,7 @@
 #include <string>
 
 #include "sprite.h"
+#include "../font/cfont.h"
 
 class CFont;
 class IFontAlign;
@@ -58,6 +59,7 @@ public:
 
 	//-------------------------------------------------------------------------
 	virtual void		SetText( const std::string& text );
+	virtual void		SetTextUnicode( const std::string& utf8_text );
 	virtual std::string	GetText() const;
 	
 	virtual void				MoveCenterTo( const types::vector2& p );
@@ -97,7 +99,10 @@ protected:
 	
 	types::vector2	mRealSize;
 
-	std::string	mText;
+	std::string	mTextStr;
+	bool		mTextUnicode;
+	std::vector< CFont::CharType > mText;
+
 	std::vector< types::rect > mInRects;
 	std::vector< types::rect > mOutRects;
 	types::rect mTextBox;
@@ -110,7 +115,7 @@ inline CFont* TextSprite::GetFont() {
 }
 
 inline std::string TextSprite::GetText() const {
-	return mText;
+	return mTextStr;
 }
 
 // ----------------------------------------------------------------------------
