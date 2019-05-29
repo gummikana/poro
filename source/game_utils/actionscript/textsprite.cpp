@@ -242,17 +242,19 @@ void TextSprite::RecalcuateRects()
 		if( mFontAlign == NULL || mTextBox.w < 0 )
 		{
 			mOutRects.clear();
+			mInRects.clear(); // 
+			mOutRects.reserve( mText.size() );
+			mInRects.reserve( mText.size() );
 
 			types::vector2 f_pos( 0, 0 );
 
-			mInRects.resize( mText.size() );
 			for( std::size_t i = 0; i < mText.size(); i++ )
 			{
 				CFont::CharType c = (CFont::CharType)mText[ i ];
 				CFont::CharQuad* char_quad = mFont->GetCharQuad( c );
 				// cassert( char_quad );
 				if( char_quad == NULL ) continue;
-				mInRects[ i ] = char_quad->rect;
+				
 
 				/*
 				int round_x = (int)floor(f_pos.x + char_quad->offset.x);
@@ -261,15 +263,18 @@ void TextSprite::RecalcuateRects()
 				float round_x = f_pos.x + char_quad->offset.x;
 				float round_y = f_pos.y + char_quad->offset.y + mFont->GetOffsetLineHeight();
 
-				types::rect font_rect = mInRects[ i ];
+				types::rect font_rect = char_quad->rect;
+				mInRects.push_back( font_rect );
 				font_rect.x = (float)round_x;
 				font_rect.y = (float)round_y;
-				font_rect.w = mInRects[ i ].w;
-				font_rect.h = mInRects[ i ].h;
 				
 				mOutRects.push_back( font_rect );
 				f_pos.x += char_quad->width + mFont->GetCharSpace();
+
+				cassert( mInRects.size() == mOutRects.size() );
 			}
+
+
 
 			// figure out mRealSize.x && mRealSize.y
 			types::vector2 min_p( FLT_MAX, FLT_MAX );
