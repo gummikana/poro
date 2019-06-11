@@ -63,7 +63,7 @@ namespace types {
 	{
 		float x;
 		float y;
-		uint32 color;
+		Uint32 color;
 	};
 
 	struct Vertex_PosFloat2_TexCoordFloat2_ColorUint32
@@ -72,7 +72,7 @@ namespace types {
 		float y;
 		float u;
 		float v;
-		uint32 color;
+		Uint32 color;
 	};
 
 	struct Vertex_PosFloat2_2xTexCoordFloat2_ColorUint32
@@ -83,7 +83,7 @@ namespace types {
 		float v;
 		float u2;
 		float v2;
-		uint32 color;
+		Uint32 color;
 	};
 
 	struct Vertex_PosFloat2_3xTexCoordFloat2_ColorUint32
@@ -96,7 +96,7 @@ namespace types {
 		float v2;
 		float u3;
 		float v3;
-		uint32 color;
+		Uint32 color;
 	};
 
 } // end o types
