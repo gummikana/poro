@@ -53,6 +53,7 @@ namespace ceng {
 
 namespace {
 std::string separator = "/";
+std::string separator2 = "\\";
 
 bool FolderExists( const std::string& directory )
 {
@@ -358,7 +359,7 @@ void ReadFileToVector( const std::string& filename, std::vector< std::string >& 
 
 std::string GetFilename( const std::string& filename )
 {
-	unsigned int p = filename.find_last_of( separator );
+	const size_t p = std::min( filename.find_last_of( separator ), filename.find_last_of( separator2 ) );
 	if( p < filename.size() )
 		return filename.substr( p + 1 );
 
