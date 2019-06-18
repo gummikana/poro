@@ -1457,6 +1457,7 @@ void GraphicsOpenGL::BeginRendering()
 
 void GraphicsOpenGL::IMPL_EndRendering()
 {
+	// BUG 18.06.2019 - game got stuck in here...
 	SDL_GL_SwapWindow( mSDLWindow );
 }
 
