@@ -124,7 +124,21 @@ namespace {
 
 	//-------------------------------------------------------------------------
 
-	TextureOpenGL* CreateImage( GraphicsOpenGL* graphics, uint8* pixels, int w, int h, int bpp, bool store_raw_pixel_data )
+	uint32 GetGLTextureFormat( TEXTURE_FORMAT::Enum format )
+	{
+		uint32 result = 0;
+
+		switch ( format )
+		{
+			case TEXTURE_FORMAT::RGBA:		result = GL_RGBA;		break;
+			case TEXTURE_FORMAT::Luminance: result = GL_LUMINANCE;	break;
+			default: poro_assert( false && "Invalid enum value" );	break;
+		}
+
+		return result;
+	}
+
+	TextureOpenGL* CreateImage( GraphicsOpenGL* graphics, uint8* pixels, int w, int h, TEXTURE_FORMAT::Enum format, bool store_raw_pixel_data )
 	{
 		Uint32 oTexture = 0;
 		float uv[4];
@@ -170,10 +184,11 @@ namespace {
 
 		if( graphics->GetMultithreadLock() == false )
 		{
+			const uint32 gl_format = GetGLTextureFormat( format );
+
 			glGenTextures(1, (GLuint*)&oTexture);
 			glBindTexture(GL_TEXTURE_2D, oTexture);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, nw, nh, 0,
-				 GL_RGBA, GL_UNSIGNED_BYTE, new_pixels);
+			glTexImage2D(GL_TEXTURE_2D, 0, gl_format, nw, nh, 0, gl_format, GL_UNSIGNED_BYTE, new_pixels);
 		
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -194,6 +209,7 @@ namespace {
 		result->mRealSizeY = real_size[ 1 ];
 		result->mFilteringMode = poro::TEXTURE_FILTERING_MODE::UNDEFINED;
 		result->mWrappingMode = poro::TEXTURE_WRAPPING_MODE::CLAMP_TO_EDGE;
+		result->mFormat = format;
 
 		graphics->SetTextureFilteringMode( result, graphics->GetMipmapMode() );
 
@@ -317,14 +333,14 @@ namespace {
 #endif
 		}
 
-		result = CreateImage( graphics, data, x, y, bpp, store_raw_pixel_data );
+		result = CreateImage( graphics, data, x, y, TEXTURE_FORMAT::RGBA, store_raw_pixel_data );
 
 		return result;
 	}
 
 	//-----------------------------------------------------------------------------
 
-	TextureOpenGL* CreateTexture_Impl( GraphicsOpenGL* graphics, int width, int height )
+	TextureOpenGL* CreateTexture_Impl( GraphicsOpenGL* graphics, int width, int height, TEXTURE_FORMAT::Enum format = TEXTURE_FORMAT::RGBA )
 	{
 		TextureOpenGL* result = NULL;
 		
@@ -339,7 +355,7 @@ namespace {
 			data[ i ] = 0;
 		}
 
-		result = CreateImage( graphics, data, width, height, bpp, false );
+		result = CreateImage( graphics, data, width, height, format, false );
 
 		return result;
 	}
@@ -351,10 +367,11 @@ namespace {
 		poro_assert( x+w <= texture->GetDataWidth() );
 		poro_assert( y+h <= texture->GetDataHeight() );
 
-		// update the texture image:
+		const uint32 gl_format = GetGLTextureFormat( (TEXTURE_FORMAT::Enum)texture->mFormat );
+
 		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, (GLuint)texture->mTexture);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, gl_format, GL_UNSIGNED_BYTE, data);
 		glDisable(GL_TEXTURE_2D);
 	}
 
@@ -651,9 +668,9 @@ bool GraphicsOpenGL::GetVsyncCurrentlyEnabled()
 
 //=============================================================================
 
-ITexture* GraphicsOpenGL::CreateTexture( int width, int height )
+ITexture* GraphicsOpenGL::CreateTexture( int width, int height, TEXTURE_FORMAT::Enum format )
 {
-	return CreateTexture_Impl( this, width, height );
+	return CreateTexture_Impl( this, width, height, format );
 }
 
 ITexture* GraphicsOpenGL::CloneTexture( ITexture* other )

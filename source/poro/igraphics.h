@@ -61,6 +61,15 @@ namespace TEXTURE_WRAPPING_MODE
 	};
 }
 
+namespace TEXTURE_FORMAT
+{
+	enum Enum
+	{
+		RGBA,
+		Luminance,
+	};
+};
+
 namespace BLEND_MODE
 {
 	enum Enum 
@@ -217,7 +226,7 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual ITexture*	CreateTexture( int width, int height ) { poro_assert( false ); return 0; }
+	virtual ITexture*	CreateTexture( int width, int height, TEXTURE_FORMAT::Enum format = TEXTURE_FORMAT::RGBA ) { poro_assert( false ); return 0; }
 	virtual ITexture*	CloneTexture( ITexture* other ) { poro_assert( false ); return 0; }
 	void				SetTextureData(ITexture* texture, unsigned char* data ){ SetTextureData(texture, (void*)data ); }
 	void				SetTextureData(ITexture* texture, float* data ){ SetTextureData(texture, (void*)data ); }

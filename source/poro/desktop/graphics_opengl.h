@@ -71,7 +71,7 @@ public:
 	
 	//-------------------------------------------------------------------------
 
-	virtual ITexture*	CreateTexture( int width, int height ) PORO_OVERRIDE;
+	virtual ITexture*	CreateTexture( int width, int height, TEXTURE_FORMAT::Enum format = TEXTURE_FORMAT::RGBA ) PORO_OVERRIDE;
 	virtual ITexture*	CloneTexture( ITexture* other ) PORO_OVERRIDE;
 	virtual void		SetTextureData(ITexture* texture, void* data ) PORO_OVERRIDE;
 	virtual void		SetTextureData(ITexture* texture, void* data, int x, int y, int w, int h ) PORO_OVERRIDE;

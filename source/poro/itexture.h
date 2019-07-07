@@ -84,6 +84,7 @@ public: // don't touch these
 
 	int mFilteringMode;
 	int mWrappingMode;
+	uint32 mFormat;
 };
 
 } // end o namespace poro
