@@ -43,7 +43,7 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual bool				Init( int width, int height, int fullscreen, const types::string& caption ) PORO_OVERRIDE;
+	virtual bool				Init( int width, int height, int internal_width, int internal_height, int fullscreen, const types::string& caption ) PORO_OVERRIDE;
 	virtual void				SetCaption( const types::string& caption ) PORO_OVERRIDE;
 	virtual void				SetIcon( const std::string& icon_bmp_file );
 

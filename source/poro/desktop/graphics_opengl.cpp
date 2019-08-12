@@ -418,7 +418,7 @@ GraphicsSettings GraphicsOpenGL::GetSettings() const
 
 //=============================================================================
 
-bool GraphicsOpenGL::Init( int width, int height, int fullscreen, const types::string& caption )
+bool GraphicsOpenGL::Init( int width, int height, int internal_width, int internal_height, int fullscreen, const types::string& caption )
 {
 	OPENGL_SETTINGS.fullscreen = fullscreen;
 	mWindowWidth = width;
@@ -500,7 +500,7 @@ bool GraphicsOpenGL::Init( int width, int height, int fullscreen, const types::s
 	LoadOpenGL();
 
 	// ---
-	IPlatform::Instance()->SetInternalSize( (types::Float32)width, (types::Float32)height );
+	IPlatform::Instance()->SetInternalSize( (types::Float32)internal_width, (types::Float32)internal_height );
 	ResetWindow();
 
 	poro_assert( mDynamicVboHandle == 0 );

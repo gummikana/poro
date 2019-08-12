@@ -451,7 +451,7 @@ void PlatformDesktop::Init( IApplication* application, const GraphicsSettings& s
 
 	mGraphics = new GraphicsOpenGL;
 	mGraphics->SetSettings( settings );
-	mGraphics->Init(w, h, fullscreen, settings.caption);
+	mGraphics->Init( w, h, config->internal_size_w, config->internal_size_h, fullscreen, settings.caption );
 
 #ifdef PORO_USE_SDL_MIXER
 	mSoundPlayer = new SoundPlayerSDL;

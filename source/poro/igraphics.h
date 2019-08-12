@@ -198,8 +198,8 @@ public:
 	virtual ~IGraphics() { }
 	//-------------------------------------------------------------------------
 
-	bool						Init( int width, int height, int fullscreen, const types::string& caption, const GraphicsSettings& settings );
-	virtual bool				Init( int width, int height, int fullscreen, const types::string& caption ) { poro_assert( false ); return true; }
+	bool						Init( int width, int height, int internal_width, int internal_height, int fullscreen, const types::string& caption, const GraphicsSettings& settings );
+	virtual bool				Init( int width, int height, int internal_width, int internal_height, int fullscreen, const types::string& caption ) { poro_assert( false ); return true; }
 	virtual void				SetCaption( const types::string& caption ) 							{ poro_assert( false ); /* implement for this platform*/ }
 	virtual void				SetIcon( const types::string& bmp_icon )							{ poro_assert( false ); /* implement for this platform*/ }
 	virtual void				SetInternalSize( types::Float32 width, types::Float32 height )		{ poro_assert( false ); /* You have to implement this */ }
@@ -366,10 +366,10 @@ protected:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline bool IGraphics::Init( int width, int height, int fullscreen, const types::string& caption, const GraphicsSettings& settings )
+inline bool IGraphics::Init( int width, int height, int internal_width, int internal_height, int fullscreen, const types::string& caption, const GraphicsSettings& settings )
 {
 	SetSettings( settings );
-	return Init( width, height, fullscreen, caption );
+	return Init( width, height, internal_width, internal_height, fullscreen, caption );
 }
 
 inline void	IGraphics::PushBlendMode( BLEND_MODE::Enum blend_mode) {
