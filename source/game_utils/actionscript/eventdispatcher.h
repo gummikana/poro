@@ -88,7 +88,7 @@ public:
 
 	virtual void Call( Event* event ) 
 	{ 
-		assert( false ); 
+		cassert( false ); 
 		// Hasn't been implented, you called the wrong type
 		
 	}

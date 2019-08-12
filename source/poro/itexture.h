@@ -58,7 +58,7 @@ public:
 
 	virtual types::string GetFilename() const = 0;
 	/*{
-		assert( false ); 
+		poro_assert( false ); 
 		// Implement this ! 
 	}*/
 

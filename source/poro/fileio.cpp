@@ -113,6 +113,11 @@ namespace platform_impl
 		{
 		}
 
+		~StreamInternal()
+		{
+			poro_assert( mWriteBuffer == NULL );
+		}
+
 		StreamStatus::Enum Read( char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read )
 		{
 			if (mFile.good() == false )

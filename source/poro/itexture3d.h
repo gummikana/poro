@@ -36,7 +36,7 @@ public:
 	virtual int GetDepth() const = 0;
 	virtual types::string GetFilename() const = 0;
 	/*{
-		assert( false ); 
+		poro_assert( false ); 
 		// Implement this ! 
 	}*/
 };

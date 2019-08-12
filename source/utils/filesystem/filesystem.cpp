@@ -48,6 +48,7 @@
 #include "../string/string.h"
 
 #include "../debug.h"
+#include "../../poro/poro.h"
 
 namespace ceng {
 
