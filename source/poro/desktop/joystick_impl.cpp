@@ -21,6 +21,7 @@
 
 #include "joystick_impl.h"
 #include "../libraries.h"
+#include "../run_poro.h"
 
 namespace poro {
 namespace {
@@ -148,11 +149,17 @@ void JoystickImpl::Exit()
 // right_value is the force (max 65535)
 void JoystickImpl::Vibrate(const types::vec2& motor_forces, float time_in_seconds )
 {
-	if (mSDLHaptic == NULL)
+	poro_assert( IPlatform::Instance() );
+	poro_assert( IPlatform::Instance()->GetApplicationConfig() );
+
+	if ( mSDLHaptic == NULL )
+		return;
+
+	if ( IPlatform::Instance()->GetApplicationConfig()->joystick_rumble_enabled == false )
 		return;
 
 	const float length = ClampValue(sqrtf(motor_forces.x * motor_forces.x + motor_forces.y * motor_forces.y), 0.f, 1.f);
-	SDL_HapticRumblePlay(mSDLHaptic, length, (Uint32)( time_in_seconds * 1000.f ));
+	SDL_HapticRumblePlay( mSDLHaptic, length, (Uint32)( time_in_seconds * 1000.f ) );
 }
 
 //=============================================================================
