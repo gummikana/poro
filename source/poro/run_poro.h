@@ -35,7 +35,7 @@ struct AppConfig
 		graphics_settings(),
 		report_fps( false ),
 		joysticks_enabled( true ),
-		joystick_rumble_enabled( true ),
+		joystick_rumble_intensity( 1.0f ),
 		SetRandomSeed( NULL )
 	{
 	}
@@ -64,7 +64,7 @@ struct AppConfig
 
 	bool			report_fps;
 	bool			joysticks_enabled;
-	bool			joystick_rumble_enabled;
+	float			joystick_rumble_intensity;
 
 	GraphicsSettings graphics_settings;
 

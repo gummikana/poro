@@ -155,10 +155,12 @@ void JoystickImpl::Vibrate(const types::vec2& motor_forces, float time_in_second
 	if ( mSDLHaptic == NULL )
 		return;
 
-	if ( IPlatform::Instance()->GetApplicationConfig()->joystick_rumble_enabled == false )
+	const float global_rumble_intensity = IPlatform::Instance()->GetApplicationConfig()->joystick_rumble_intensity;
+
+	if ( global_rumble_intensity <= 0.0f )
 		return;
 
-	const float length = ClampValue(sqrtf(motor_forces.x * motor_forces.x + motor_forces.y * motor_forces.y), 0.f, 1.f);
+	const float length = ClampValue(sqrtf(motor_forces.x * motor_forces.x + motor_forces.y * motor_forces.y), 0.f, 1.f) * global_rumble_intensity;
 	SDL_HapticRumblePlay( mSDLHaptic, length, (Uint32)( time_in_seconds * 1000.f ) );
 }
 
