@@ -479,7 +479,6 @@ void PlatformDesktop::Init( IApplication* application, const GraphicsSettings& s
 
 void PlatformDesktop::Destroy() 
 {
-
 	delete mGraphics;
 	mGraphics = NULL;
 
@@ -845,9 +844,6 @@ Mouse* PlatformDesktop::GetMouse() {
 //-----------------------------------------------------------------------------
 
 int PlatformDesktop::GetJoystickCount() const  {
-	if( mJoysticksEnabled == false )
-		return 0;
-
 	return (int)mJoysticks.size();
 }
 
@@ -855,9 +851,6 @@ Joystick* PlatformDesktop::GetJoystick( int n ) {
 	poro_assert( n >= 0 && n < (int)mJoysticks.size() );
 	poro_assert( mJoysticks[ n ] );
 	
-	if( mJoysticksEnabled == false ) 
-		return NULL;
-
 	return mJoysticks[ n ];
 }
 

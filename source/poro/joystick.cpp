@@ -19,6 +19,7 @@
  ***************************************************************************/
 
 #include "joystick.h"
+#include "run_poro.h"
 
 namespace poro {
 namespace {
@@ -68,7 +69,8 @@ void Joystick::RemoveListener( IJoystickListener* listener )
 
 void Joystick::SetConnected( bool value ) 
 { 
-	if( mConnected != value ) {
+	if( mConnected != value ) 
+	{
 		mConnected = value; 
 		
 		for( std::size_t i = 0; i < mListeners.size(); ++i ) {
@@ -89,11 +91,14 @@ void Joystick::SetButtonState( int button, bool is_down )
 	{
 		mButtonsDown[ button ] = is_down;
 	
-		for( std::size_t i = 0; i < mListeners.size(); ++i ) {
-			if( is_down )
-				mListeners[ i ]->OnJoystickButtonDown( this, button );
-			else
-				mListeners[ i ]->OnJoystickButtonUp( this, button );
+		if ( IPlatform::Instance()->GetJoysticksEnabled() )
+		{
+			for ( std::size_t i = 0; i < mListeners.size(); ++i ) {
+				if ( is_down )
+					mListeners[i]->OnJoystickButtonDown( this, button );
+				else
+					mListeners[i]->OnJoystickButtonUp( this, button );
+			}
 		}
 	}
 }
@@ -106,8 +111,11 @@ void Joystick::SetLeftStick( const types::vec2& value )
 		mLeftStick.x = value.x;
 		mLeftStick.y = value.y;
 
-		for( std::size_t i = 0; i < mListeners.size(); ++i ) {
-			mListeners[ i ]->OnJoystickButtonDown( this, Joystick::JOY_BUTTON_LEFT_STICK_MOVED );
+		if ( IPlatform::Instance()->GetJoysticksEnabled() )
+		{
+			for ( std::size_t i = 0; i < mListeners.size(); ++i ) {
+				mListeners[i]->OnJoystickButtonDown( this, Joystick::JOY_BUTTON_LEFT_STICK_MOVED );
+			}
 		}
 	}
 }
@@ -120,8 +128,11 @@ void Joystick::SetRightStick( const types::vec2& value )
 		mRightStick.x = value.x;
 		mRightStick.y = value.y;
 
-		for( std::size_t i = 0; i < mListeners.size(); ++i ) {
-			mListeners[ i ]->OnJoystickButtonDown( this, Joystick::JOY_BUTTON_RIGHT_STICK_MOVED );
+		if ( IPlatform::Instance()->GetJoysticksEnabled() )
+		{
+			for ( std::size_t i = 0; i < mListeners.size(); ++i ) {
+				mListeners[i]->OnJoystickButtonDown( this, Joystick::JOY_BUTTON_RIGHT_STICK_MOVED );
+			}
 		}
 	}
 }
@@ -135,8 +146,11 @@ void Joystick::SetAnalogButton( int button, float value )
 	{
 		mAnalogButtons[ button ] = value;
 
-		for( std::size_t i = 0; i < mListeners.size(); ++i ) {
-			mListeners[ i ]->OnJoystickButtonDown( this, ( Joystick::JOY_BUTTON_ANALOG_00_MOVED + button ) );
+		if ( IPlatform::Instance()->GetJoysticksEnabled() )
+		{
+			for ( std::size_t i = 0; i < mListeners.size(); ++i ) {
+				mListeners[i]->OnJoystickButtonDown( this, ( Joystick::JOY_BUTTON_ANALOG_00_MOVED + button ) );
+			}
 		}
 	}
 }
