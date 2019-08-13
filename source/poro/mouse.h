@@ -62,6 +62,7 @@ public:
 	virtual bool		IsButtonDown( int button ) const;
 	virtual bool		IsButtonJustDown( int button ) const;
 	virtual bool		IsButtonJustUp( int button ) const;
+	virtual int			LastFrameHasMoved() const;
 
 	// -1 is up and +1 is down
 	virtual int			GetMouseWheelJustAxis() const;
@@ -76,6 +77,7 @@ private:
 	
 	bool							mCursorVisible;
 	types::vec2						mMousePos;
+	int								mLastFrameHasMoved;
 };
 
 } // end of namespace poro

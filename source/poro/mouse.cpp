@@ -21,6 +21,7 @@
 #include "mouse.h"
 #include "poro_macros.h"
 #include <algorithm>
+#include "run_poro.h"
 
 namespace poro {
 //-----------------------------------------------------------------------------
@@ -31,7 +32,8 @@ Mouse::Mouse() :
 	mMouseButtonsJustDown( _MOUSE_BUTTON_COUNT ),
 	mMouseButtonsJustUp( _MOUSE_BUTTON_COUNT ),
 	mCursorVisible( true ),
-	mMousePos( 0, 0 ) 
+	mMousePos( 0, 0 ),
+	mLastFrameHasMoved( INT_MIN )
 { 
 	for( std::size_t i = 0; i < mMouseButtonsDown.size(); ++i )
 	{
@@ -82,6 +84,7 @@ void Mouse::OnFrameStart()
 void Mouse::FireMouseMoveEvent( const types::vec2& pos )
 {
 	mMousePos = pos;
+	mLastFrameHasMoved = IPlatform::Instance()->GetFrameNum();
 	for( std::size_t i = 0; i < mMouseListeners.size(); i++ )
 		mMouseListeners[i]->MouseMove( pos );
 }
@@ -175,6 +178,10 @@ bool Mouse::IsButtonJustUp( int button ) const
 	return false;
 }
 
+int Mouse::LastFrameHasMoved() const
+{
+	return mLastFrameHasMoved;
+}
 //-----------------------------------------------------------------------------
 
 int	Mouse::GetMouseWheelJustAxis() const
