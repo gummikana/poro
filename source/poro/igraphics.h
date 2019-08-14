@@ -253,6 +253,7 @@ public:
 	virtual void RenderTexture_ReadTextureDataFromGPU( IRenderTexture* texture, uint8* out_pixels ) const{ poro_assert( false );  };
 	virtual void RenderTexture_AsyncReadTextureDataFromGPUBegin( IRenderTexture* texture ) const{ poro_assert( false );  };
 	virtual void RenderTexture_AsyncReadTextureDataFromGPUFinish( IRenderTexture* texture, uint8* out_pixels ) const{ poro_assert( false );  };
+	virtual void RenderTexture_Blit( IRenderTexture* from, IRenderTexture* to ) const { poro_assert( false ); };
 
 	//-------------------------------------------------------------------------
 

@@ -1095,6 +1095,25 @@ void GraphicsOpenGL::RenderTexture_AsyncReadTextureDataFromGPUFinish( IRenderTex
 	#endif
 }
 
+
+void GraphicsOpenGL::RenderTexture_Blit( IRenderTexture* ifrom, IRenderTexture* ito ) const
+{
+	poro_assert( dynamic_cast<RenderTextureOpenGL*>( ifrom ) );
+	RenderTextureOpenGL* from = static_cast<RenderTextureOpenGL*>( ifrom );
+
+	poro_assert( dynamic_cast<RenderTextureOpenGL*>( ito ) );
+	RenderTextureOpenGL* to = static_cast<RenderTextureOpenGL*>( ito );
+
+	glBindFramebuffer( GL_READ_FRAMEBUFFER, from->mBufferId );
+	glBindFramebuffer( GL_DRAW_FRAMEBUFFER, to->mBufferId );
+	glReadBuffer( GL_COLOR_ATTACHMENT0 );
+
+	glBlitFramebuffer( 0, 0, from->mTexture.GetWidth(), from->mTexture.GetHeight(), 0, 0, to->mTexture.GetWidth(), to->mTexture.GetHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST );
+
+	glBindFramebuffer( GL_READ_FRAMEBUFFER, 0 );
+	glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
+}
+
 #undef RENDER_TEXTURE_ASYNC_READ_SUBDATA_IMPL
 
 //=============================================================================
