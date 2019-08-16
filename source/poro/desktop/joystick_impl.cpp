@@ -174,6 +174,9 @@ void JoystickImpl::Update()
 	const float MAXBYTE_P = 32767.f;
 	const float MAXBYTE_N = 32768.f; 
 
+	for ( auto& button_just_down : mButtonsJustDown )
+		button_just_down = false;
+
 	if (mSDLGameController)
 	{
 		SetButtonState(Joystick::JOY_BUTTON_DPAD_UP, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_DPAD_UP) != 0);

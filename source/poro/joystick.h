@@ -108,6 +108,7 @@ public:
 	// Fires an event about the new button state	
 	void SetButtonState( int button, bool is_down );
 	bool IsButtonDown( int button ) const;
+	bool IsButtonJustDown( int button ) const;
 
 	// Fires an event through JOY_BUTTON_LEFT_STICK_MOVED && JOY_BUTTON_RIGHT_STICK_MOVED
 	// values are between [-1 and 1] 
@@ -150,10 +151,13 @@ private:
 	types::vec2 mLeftStick;
 	types::vec2 mRightStick;
 
-	std::vector< bool >		mButtonsDown;
-	std::vector< float >	mAnalogButtons;
 	bool mConnected;
 	bool mIsGamePad;
+
+protected:
+	std::vector< bool >		mButtonsDown;
+	std::vector< bool >		mButtonsJustDown;
+	std::vector< float >	mAnalogButtons;
 };
 
 //---------------------- inlined functions ------------------------------------
@@ -175,6 +179,13 @@ inline bool Joystick::IsButtonDown( int button ) const {
 	poro_assert( button < (int)mButtonsDown.size() );
 
 	return mButtonsDown[ button ];
+}
+
+inline bool Joystick::IsButtonJustDown( int button ) const {
+	poro_assert( button >= 0 );
+	poro_assert( button < (int)mButtonsJustDown.size() );
+
+	return mButtonsJustDown[button];
 }
 
 inline types::vec2 Joystick::GetLeftStick() const { 

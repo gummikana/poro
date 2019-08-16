@@ -35,6 +35,7 @@ Joystick::Joystick( int id ) :
 	mLeftStick( 0, 0 ),
 	mRightStick( 0, 0 ),
 	mButtonsDown( Joystick::JOY_BUTTON_COUNT ),
+	mButtonsJustDown( Joystick::JOY_BUTTON_COUNT ),
 	mAnalogButtons( JOYSTICK_ANALOG_BUTTON_COUNT ),
 	mConnected( false ),
 	mIsGamePad( false)
@@ -42,6 +43,9 @@ Joystick::Joystick( int id ) :
 	// just making sure everything is set to 0
 	for( std::size_t i = 0; i < mButtonsDown.size(); ++i )
 		mButtonsDown[ i ] = false;
+
+	for ( std::size_t i = 0; i < mButtonsDown.size(); ++i )
+		mButtonsJustDown[i] = false;
 
 	for( std::size_t i = 0; i < mAnalogButtons.size(); ++i )
 		mAnalogButtons[ i ] = 0.f;
@@ -89,6 +93,9 @@ void Joystick::SetButtonState( int button, bool is_down )
 
 	if( mButtonsDown[ button ] != is_down )
 	{
+		if ( mButtonsDown[ button ] == false )
+			mButtonsJustDown[ button ] = is_down;
+
 		mButtonsDown[ button ] = is_down;
 	
 		if ( IPlatform::Instance()->GetJoysticksEnabled() )
