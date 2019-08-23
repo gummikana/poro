@@ -34,8 +34,8 @@
 
 namespace poro {
     namespace impl { struct FileImContext;  }
-    namespace platform_impl { struct StreamInternal; }
-    // ================================
+
+	// ================================
 
 	namespace StreamWriteMode
 	{
@@ -81,6 +81,24 @@ namespace poro {
 
     // ================================
 
+	namespace platform_impl
+	{
+		struct IStreamInternal
+		{
+			virtual StreamStatus::Enum Read( char* out_buffer, poro::types::Uint32 buffer_capacity_bytes, poro::types::Uint32* out_bytes_read ) = 0;
+			virtual StreamStatus::Enum ReadTextLine( std::string* out_text ) = 0;
+			virtual StreamStatus::Enum Write( const char* buffer, poro::types::Uint32 buffer_size_bytes ) = 0;
+			virtual StreamStatus::Enum WriteLineEnding() = 0;
+			virtual void SeekToBeginning() = 0;
+			virtual void FlushWrites() = 0;
+			virtual void Close() = 0;
+
+			long mSize = 0;
+		};
+	}
+
+	// ================================
+
 	class IFileDevice
 	{
         friend class ReadStream;
@@ -91,6 +109,11 @@ namespace poro {
         virtual ReadStream  OpenRead( const std::string& path ) = 0;
         virtual WriteStream OpenWrite( FileLocation::Enum location, const std::string& read_path_relative_to_location, poro::types::Uint32 write_mode = StreamWriteMode::Enum::Recreate ) = 0;
 		virtual std::wstring GetFullPath( const std::string& path_relative_to_device_root ) = 0;
+		virtual void GetFiles( FileLocation::Enum location, const std::string& path_relative_to_location, std::vector<std::string>* out_files ) { }
+		virtual void GetDirectories( FileLocation::Enum location, const std::string& path_relative_to_location, std::vector<std::string>* out_directories ) { }
+		virtual bool DoesExist( const std::string& path ) = 0;
+		virtual bool SupportsFileDates() = 0;
+		virtual bool SupportsFileListing() { return false; } // this being false makes the code fall back to the non IFileDevice path 
 	};
 
     // ================================
@@ -131,8 +154,8 @@ namespace poro {
 	private:
 		void Close();
         // data
-        IFileDevice*                   mDevice;
-        platform_impl::StreamInternal* mStreamImpl;
+        IFileDevice* mDevice;
+        platform_impl::IStreamInternal* mStreamImpl;
 	};
 
     // ================================
@@ -146,6 +169,8 @@ namespace poro {
 		friend class DiskFileDevice;
 		friend struct poro::impl::FileImContext;
 	public:
+		ReadStream( IFileDevice* device, platform_impl::IStreamInternal* stream ) { mDevice = device; mStreamImpl = stream; }
+		ReadStream() { mDevice = NULL; mStreamImpl = NULL; }
 		ReadStream( const ReadStream& other ) { operator=( other ); }
 		ReadStream& operator= ( const ReadStream& other );
 		
@@ -167,10 +192,9 @@ namespace poro {
 		StreamStatus::Enum ReadWholeFile( char*& out_buffer, poro::types::Uint32* out_bytes_read, bool add_null_terminate );
 		StreamStatus::Enum ReadWholeTextFile( std::string& out_text );
 		void Close();
-		ReadStream() { mDevice = NULL; mStreamImpl = NULL; }
 		// data
-		IFileDevice*                   mDevice;
-		platform_impl::StreamInternal* mStreamImpl;
+		IFileDevice* mDevice = NULL;
+		platform_impl::IStreamInternal* mStreamImpl = NULL;
 	};
 
 	// ================================
@@ -303,6 +327,8 @@ namespace poro {
         virtual ReadStream  OpenRead( const std::string& path_relative_to_device_root ) override;
         virtual WriteStream	OpenWrite( FileLocation::Enum location, const std::string& path_relative_to_location, poro::types::Uint32 write_mode = StreamWriteMode::Enum::Recreate ) override;
 		virtual std::wstring GetFullPath( const std::string& path_relative_to_device_root ) override;
+		virtual bool DoesExist( const std::string& path ) override;
+		virtual bool SupportsFileDates() override;
 
     private:
         std::wstring mReadRootPath;

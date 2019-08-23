@@ -56,9 +56,8 @@ namespace platform_impl
 	std::wstring GetFullPath( FileLocation::Enum location );
 	std::wstring CombinePath( std::wstring root, std::wstring relative_to_root );
 	std::string CombinePath( std::string root, std::string relative_to_root );
-
-
-	struct StreamInternal
+	
+	struct StreamInternal : public IStreamInternal
 	{
 		StreamInternal( const std::wstring& filename, bool read, StreamStatus::Enum* out_status, u32 write_mode )
 		{
@@ -108,7 +107,6 @@ namespace platform_impl
 		StreamInternal() : 
 			mWriteBuffer( NULL ),
 			mWriteBufferPos( 0 ),
-			mSize( 0 ),
 			mPosition( 0 )
 		{
 		}
@@ -118,7 +116,7 @@ namespace platform_impl
 			poro_assert( mWriteBuffer == NULL );
 		}
 
-		StreamStatus::Enum Read( char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read )
+		StreamStatus::Enum Read( char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read ) override
 		{
 			if (mFile.good() == false )
 				return StreamStatus::AccessFailed;
@@ -130,7 +128,7 @@ namespace platform_impl
 			return StreamStatus::NoError;
 		}
 
-		StreamStatus::Enum ReadTextLine( std::string* out_text )
+		StreamStatus::Enum ReadTextLine( std::string* out_text ) override
 		{
 			if ( mFile.good() == false )
 				return StreamStatus::AccessFailed;
@@ -162,7 +160,7 @@ namespace platform_impl
 			return StreamStatus::NoError;
 		}
 
-		StreamStatus::Enum Write( const char* buffer, u32 buffer_size_bytes )
+		StreamStatus::Enum Write( const char* buffer, u32 buffer_size_bytes ) override
 		{
 			if ( mFile.good() == false )
 				return StreamStatus::AccessFailed;
@@ -193,19 +191,19 @@ namespace platform_impl
 			return StreamStatus::NoError;
 		}
 
-		StreamStatus::Enum WriteLineEnding()
+		StreamStatus::Enum WriteLineEnding() override
 		{
 			const char* LINE_ENDING = "\r\n";
 			return Write( LINE_ENDING, 2 );
 		}
 
-		void SeekToBeginning()
+		void SeekToBeginning() override
 		{
 			mFile.seekg( 0, std::ios::beg );
 			mWriteBufferPos = 0;
 		}
 
-		void FlushWrites()
+		void FlushWrites() override
 		{
 			if ( mWriteBufferPos > 0 )
 			{
@@ -216,7 +214,7 @@ namespace platform_impl
 			mFile.flush();
 		}
 
-		void Close()
+		void Close() override
 		{
 			if ( mWriteBuffer )
 			{
@@ -234,7 +232,6 @@ namespace platform_impl
 		std::fstream mFile;
 		char* mWriteBuffer;
 		u32   mWriteBufferPos;
-		long mSize;
 		long mPosition;
 	};
 }
@@ -784,16 +781,16 @@ StreamStatus::Enum ReadStream::ReadTextLine( std::string& out_text )
 
 StreamStatus::Enum ReadStream::ReadWholeTextFile( std::string& out_text )
 {
-	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
+	if ( mStreamImpl == NULL ) 
+		return StreamStatus::AccessFailed;
 
 	mStreamImpl->SeekToBeginning();
-	std::stringstream text;
-	char c;
-	// TODO! This really should be used, this is pretty slow...
-	while ( mStreamImpl->mFile.get( c ).good() )
-		text.put( c );
 
-	out_text = text.str();
+	u32 num_bytes_read = 0;
+	out_text.resize( mStreamImpl->mSize + 1 );
+	mStreamImpl->Read( &out_text[0], mStreamImpl->mSize, &num_bytes_read );
+	out_text[out_text.size() - 1] = '\0';
+
 	return StreamStatus::NoError;
 }
 
@@ -1007,8 +1004,7 @@ bool FileSystem::DoesExist( const std::string& path_relative_to_device_root )
 
 	for ( auto& device : mDevices )
 	{
-		ReadStream stream = device->OpenRead( path_relative_to_device_root );
-		if ( stream.IsValid() )
+		if ( device->DoesExist( path_relative_to_device_root ) )
 		{
 			result = true;
 			break;
@@ -1024,6 +1020,9 @@ std::string FileSystem::GetDateForFile( const std::string& path_relative_to_devi
 
 	for ( auto& device : mDevices )
 	{
+		if ( device->SupportsFileDates() == false )
+			continue;
+
 		ReadStream stream = device->OpenRead( path_relative_to_device_root );
 		if ( stream.IsValid() )
 		{
@@ -1215,6 +1214,16 @@ WriteStream DiskFileDevice::OpenWrite( FileLocation::Enum location, const std::s
 std::wstring DiskFileDevice::GetFullPath( const std::string& path_relative_to_device_root )
 {
 	return Poro()->GetFileSystem()->CompleteReadPath( path_relative_to_device_root, mReadRootPath );
+}
+
+bool DiskFileDevice::DoesExist( const std::string& path )
+{
+	return OpenRead( path ).IsValid();
+}
+
+bool DiskFileDevice::SupportsFileDates()
+{
+	return true;
 }
 
 } // end of namespace
