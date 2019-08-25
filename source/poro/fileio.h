@@ -110,10 +110,11 @@ namespace poro {
         virtual WriteStream OpenWrite( FileLocation::Enum location, const std::string& read_path_relative_to_location, poro::types::Uint32 write_mode = StreamWriteMode::Enum::Recreate ) = 0;
 		virtual std::wstring GetFullPath( const std::string& path_relative_to_device_root ) = 0;
 		virtual void GetFiles( FileLocation::Enum location, const std::string& path_relative_to_location, std::vector<std::string>* out_files ) { }
-		virtual void GetDirectories( FileLocation::Enum location, const std::string& path_relative_to_location, std::vector<std::string>* out_directories ) { }
 		virtual bool DoesExist( const std::string& path ) = 0;
-		virtual bool SupportsFileDates() = 0;
-		virtual bool SupportsFileListing() { return false; } // this being false makes the code fall back to the non IFileDevice path 
+		virtual std::string GetDateForFile( const std::string& filename ) { return ""; }
+		virtual bool SupportsFileDates() { return false;  }
+		virtual bool SupportsLegacyFileDates() { return false; }
+		virtual bool SupportsGetFiles( FileLocation::Enum location, const std::string& path_relative_to_location ) { return false; } // this being false makes the code fall back to the non IFileDevice path 
 	};
 
     // ================================
@@ -328,7 +329,7 @@ namespace poro {
         virtual WriteStream	OpenWrite( FileLocation::Enum location, const std::string& path_relative_to_location, poro::types::Uint32 write_mode = StreamWriteMode::Enum::Recreate ) override;
 		virtual std::wstring GetFullPath( const std::string& path_relative_to_device_root ) override;
 		virtual bool DoesExist( const std::string& path ) override;
-		virtual bool SupportsFileDates() override;
+		virtual bool SupportsLegacyFileDates() override;
 
     private:
         std::wstring mReadRootPath;

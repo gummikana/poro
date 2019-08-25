@@ -1951,7 +1951,7 @@ int GraphicsOpenGL::CaptureScreenshot( unsigned char* data, int max_size )
 	return pixels_size;	
 }
 
-unsigned char*	GraphicsOpenGL::ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp )
+unsigned char* GraphicsOpenGL::ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp )
 {
 	// comp might be NULL
 	poro_assert( x );

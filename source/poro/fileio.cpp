@@ -978,6 +978,16 @@ void FileSystem::GetFiles( FileLocation::Enum location, const std::string& path_
 std::vector<std::string> FileSystem::GetFiles( FileLocation::Enum location, const std::string& path_relative_to_location )
 {
 	std::vector<std::string> result;
+
+	for ( auto& device : mDevices )
+	{
+		if ( device->SupportsGetFiles( location, path_relative_to_location ) )
+		{
+			device->GetFiles( location, path_relative_to_location, &result );
+			return result;
+		}
+	}
+
 	GetFiles( location, path_relative_to_location, &result );
 	return result;
 }
@@ -992,6 +1002,7 @@ void FileSystem::GetDirectories( FileLocation::Enum location, const std::string&
 std::vector<std::string> FileSystem::GetDirectories( FileLocation::Enum location, const std::string& path_relative_to_location )
 {
 	std::vector<std::string> result;
+
 	GetDirectories( location, path_relative_to_location, &result );
 	return result;
 }
@@ -1020,14 +1031,18 @@ std::string FileSystem::GetDateForFile( const std::string& path_relative_to_devi
 
 	for ( auto& device : mDevices )
 	{
-		if ( device->SupportsFileDates() == false )
-			continue;
-
-		ReadStream stream = device->OpenRead( path_relative_to_device_root );
-		if ( stream.IsValid() )
+		if ( device->SupportsFileDates() )
 		{
-			const auto full_path = device->GetFullPath( path_relative_to_device_root );
-			return platform_impl::GetDateForFile( full_path );
+			return device->GetDateForFile( path_relative_to_device_root );
+		}
+		else if ( device->SupportsLegacyFileDates() )
+		{
+			ReadStream stream = device->OpenRead( path_relative_to_device_root );
+			if ( stream.IsValid() )
+			{
+				const auto full_path = device->GetFullPath( path_relative_to_device_root );
+				return platform_impl::GetDateForFile( full_path );
+			}
 		}
 	}
 
@@ -1221,7 +1236,7 @@ bool DiskFileDevice::DoesExist( const std::string& path )
 	return OpenRead( path ).IsValid();
 }
 
-bool DiskFileDevice::SupportsFileDates()
+bool DiskFileDevice::SupportsLegacyFileDates()
 {
 	return true;
 }
