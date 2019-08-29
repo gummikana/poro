@@ -790,6 +790,7 @@ StreamStatus::Enum ReadStream::ReadWholeTextFile( std::string& out_text )
 	out_text.resize( mStreamImpl->mSize + 1 );
 	mStreamImpl->Read( &out_text[0], mStreamImpl->mSize, &num_bytes_read );
 	out_text[out_text.size() - 1] = '\0';
+	out_text.resize( mStreamImpl->mSize );
 
 	return StreamStatus::NoError;
 }
