@@ -1129,7 +1129,8 @@ int LoadShaderFromString( ShaderOpenGL* shader, const char* source, const int so
 	//DEBUG
 	GLint status;
 	glGetShaderiv( shader_handle, GL_COMPILE_STATUS, &status );
-	if (status == GL_FALSE)
+	shader->isCompiledAndLinked = (status == GL_TRUE);
+	if ( shader->isCompiledAndLinked == false )
 	{
 		GLint infoLogLength;
 		glGetShaderiv( shader_handle, GL_INFO_LOG_LENGTH, &infoLogLength );
