@@ -40,6 +40,9 @@ std::map< std::string, CFont* > m_font_cache;
 
 void LoadTextSpriteTo( const std::string& font_file, as::TextSprite* mTextSprite )
 {
+	if( font_file.empty() )
+		return;
+
 	if( mTextSprite == NULL ) return;
 
 	CFont* font = m_font_cache[ font_file ];
