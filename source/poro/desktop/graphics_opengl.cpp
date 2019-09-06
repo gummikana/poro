@@ -729,6 +729,9 @@ void GraphicsOpenGL::DestroyTexture( ITexture* itexture )
 
 void GraphicsOpenGL::SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode ) const
 {
+	if( itexture == NULL )
+		return;
+
 	if( GetMultithreadLock() )
 	{
 		poro_assert( dynamic_cast<TextureOpenGL*>( itexture ) );
