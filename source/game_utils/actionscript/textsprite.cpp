@@ -26,6 +26,7 @@
 
 #include "../../utils/singleton/csingletonptr.h"
 #include "../../utils/math/cvector2_serializer.h"
+#include "../../utils/filesystem/filesystem.h"
 #include "../font/cfont.h"
 #include "../font/ifontalign.h"
 
@@ -42,9 +43,23 @@ void LoadTextSpriteTo( const std::string& font_file, as::TextSprite* mTextSprite
 	if( mTextSprite == NULL ) return;
 
 	CFont* font = m_font_cache[ font_file ];
-	if( font == NULL ) {
+	if( font == NULL ) 
+	{
 		font = new CFont;
-		ceng::XmlLoadFromFile( *font, font_file, "FontData" );
+		
+		if( ceng::GetFileExtension( font_file ) == "xml" )
+		{
+			ceng::XmlLoadFromFile( *font, font_file, "FontData" );
+		}
+		else if( ceng::GetFileExtension( font_file ) == "bin" )
+		{
+			CFont_LoadFromBinary( font, font_file );
+		}
+		else
+		{
+			cassert( false && "TextSprite - trying to load unknown font type" );
+		}
+
 		m_font_cache[ font_file ] = font;
 	}
 

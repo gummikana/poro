@@ -26,9 +26,91 @@
 
 #include "../../utils/xml/cxml.h"
 #include "../../utils/debug.h"
-
+#include "../../utils/network/network_serializer.h"
 
 ///////////////////////////////////////////////////////////////////////////////
+
+void IMPL_ReadBinaryFile( const std::string& binary_filename, network_utils::types::ustring& data )
+{
+	/*
+	FILE *File = fopen(binary_filename.c_str(), "rb");
+	if(File)
+	{
+		// TODO( Petri ): fseek doesn't give accurate filesize
+		fseek(File, 0, SEEK_END);
+		size_t FileSize = ftell(File);
+		fseek(File, 0, SEEK_SET);
+
+		data.resize( FileSize );
+		char* Result = &(data[0]);
+		fread(Result, FileSize, 1, File);
+
+		fclose(File);
+	}*/
+
+
+	poro::FileSystem* file_system = Poro()->GetFileSystem();
+	bool delete_file_system = false;
+	if ( file_system == NULL )
+	{
+		file_system = new poro::FileSystem;
+		delete_file_system = true;
+	}
+	
+	char* result = NULL;
+	poro::types::Uint32 result_size = 0;
+	file_system->ReadWholeFile( binary_filename, result, &result_size );
+
+	data.resize( result_size );
+	for( size_t i = 0; i < result_size; ++i )
+	{
+		data[i] = result[i];
+	}
+
+	free( result );
+
+	if ( delete_file_system )
+		delete file_system;
+
+}
+
+#if 0 
+void IMPL_WriteBinaryFile( const std::string& binary_filename, const network_utils::types::ustring& data )
+{
+    FILE *File = fopen(binary_filename.c_str(), "wb");
+    if(File)
+    {
+		fwrite(&data[0], sizeof(data[0]), data.size(), File);
+        fclose(File);
+    }
+}
+#endif
+
+//------------------------------------------------------------------------------
+
+void CFont_LoadFromBinary( CFont* load_to_here, const std::string& binary_filename )
+{
+	cassert( load_to_here );
+
+	network_utils::types::ustring data;
+	IMPL_ReadBinaryFile( binary_filename, data );
+
+	network_utils::CSerialLoader loader( data );
+	load_to_here->BitSerialize( &loader );
+}
+
+#if 0
+void CFont_SaveToBinary( CFont* save_this_here, const std::string& binary_filename )
+{
+	cassert( save_this_here );
+
+	network_utils::CSerialSaver saver;
+	save_this_here->BitSerialize( &saver );
+	IMPL_WriteBinaryFile( binary_filename, saver.GetData() );
+}
+#endif
+//.............................................................................
+
 
 CFont::CFont() : 
 	mOffsetLineHeight( 0 ),
@@ -120,7 +202,7 @@ namespace
 {
 	struct FontSerializeHelper
 	{
-		FontSerializeHelper() : recto(), id(0) { }
+		FontSerializeHelper() { }
 		FontSerializeHelper( CFont::CharType id, const types::rect& recto ) : id( id ), recto( recto ) { }
 
 		void Serialize( ceng::CXmlFileSys* filesys )
@@ -164,6 +246,8 @@ namespace
 
 void CFont::CharQuad::Serialize( ceng::CXmlFileSys* filesys )
 {
+	XML_BindAttributeAlias( filesys, id, "id" );
+
 	XML_BindAttributeAlias( filesys, rect.x, "rect_x" );
 	XML_BindAttributeAlias( filesys, rect.y, "rect_y" );
 	XML_BindAttributeAlias( filesys, rect.w, "rect_w" );
@@ -173,6 +257,20 @@ void CFont::CharQuad::Serialize( ceng::CXmlFileSys* filesys )
 	XML_BindAttributeAlias( filesys, width,		"width" ) ;
 }
 
+void CFont::CharQuad::BitSerialize( network_utils::ISerializer* serializer )
+{
+	serializer->IO( id );
+
+	serializer->IO(rect.x);
+	serializer->IO(rect.y);
+	serializer->IO(rect.w);
+	serializer->IO(rect.h);
+	serializer->IO(offset.x);
+	serializer->IO(offset.y);
+	serializer->IO(width);
+}
+
+//-----------------------------------------------------------------------------
 
 void CFont::Serialize( ceng::CXmlFileSys* filesys )
 {
@@ -218,4 +316,45 @@ void CFont::Serialize( ceng::CXmlFileSys* filesys )
 		}
 	}
 }
+
+void CFont::BitSerialize( network_utils::ISerializer* serializer )
+{
+	if( serializer->IsLoading() )
+		Clear();
+
+	int VERSION = 1;
+	serializer->IO( VERSION );
+
+	serializer->IO( mTextureFilename );
+	serializer->IO( mLineHeight );
+	serializer->IO( mCharSpace );
+	serializer->IO( mWordSpace );
+	
+	int size = mCharQuads.size();
+	serializer->IO( size );
+
+	if( serializer->IsSaving() ) 
+	{
+		int safety_size = 0;
+		for( MapQuadType::iterator i = mCharQuads.begin(); i != mCharQuads.end(); ++i )
+		{
+			CFont::CharQuad* char_quad = i->second;
+			char_quad->id = i->first;
+			char_quad->BitSerialize( serializer );
+			safety_size++;
+		}
+
+		cassert( safety_size == size );
+	}
+	else if( serializer->IsLoading() )
+	{
+		for( int i = 0; i < size; ++i )
+		{
+			CFont::CharQuad* char_quad = new CFont::CharQuad;
+			char_quad->BitSerialize( serializer );
+			SetCharQuad( char_quad->id, char_quad );
+		}
+	}
+}
+
 //-----------------------------------------------------------------------------

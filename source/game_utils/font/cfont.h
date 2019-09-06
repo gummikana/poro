@@ -64,6 +64,16 @@
 #include "../../utils/math/cvector2.h"
 
 namespace ceng { class CXmlFileSys; }
+namespace network_utils { class ISerializer; }
+
+class CFont;
+
+//-----------------------------------------------------------------------------
+
+void CFont_LoadFromBinary( CFont* load_to_here, const std::string& binary_filename );
+// void CFont_SaveToBinary( CFont* save_this_here, const std::string& binary_filename );
+
+//-----------------------------------------------------------------------------
 
 // CFont is a class that only contains data about the font texture
 // someone else has to do all the hard work of drawing the font on
@@ -75,14 +85,17 @@ public:
 
 	struct CharQuad
 	{
-		CharQuad() : rect(), offset(), width( 0 ) { }
-		CharQuad( const types::rect& rect, const types::vector2& offset, float width ) : rect( rect ), offset( offset ), width( width ) { }
+		CharQuad() : rect(), offset(), width( 0 ), id( 0 ) { }
+		CharQuad( const types::rect& rect, const types::vector2& offset, float width, CharType id ) : rect( rect ), offset( offset ), width( width ), id( id ) { }
 
 		types::rect			rect;
 		types::vector2		offset;
 		float				width;
+		CharType			id;
 		
 		void Serialize( ceng::CXmlFileSys* filesys );
+		void BitSerialize( network_utils::ISerializer* serializer );
+
 	};
 	
 	//-------------------------------------------------------------------------
@@ -123,6 +136,7 @@ public:
 
 
 	void Serialize( ceng::CXmlFileSys* filesys );
+	void BitSerialize( network_utils::ISerializer* serializer );
 
 	// returns float[4]
 	const float* GetDefaultColor() const { return mDefaultColor; }
