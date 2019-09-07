@@ -311,7 +311,8 @@ namespace {
 			return NULL;
 
 		int x,y,bpp;
-		uint8* data = stbi_load_from_memory( (stbi_uc*)texture_data.memory, texture_data.size_bytes, &x, &y, &bpp, 4);
+		stbi_info_from_memory( (stbi_uc*)texture_data.memory, texture_data.size_bytes, &x, &y, &bpp );
+		uint8* data = stbi_load_from_memory( (stbi_uc*)texture_data.memory, texture_data.size_bytes, &x, &y, &bpp, bpp == 3 ? 4 : 0 );
 
 		if( data == NULL ) 
 			return NULL;
@@ -333,7 +334,15 @@ namespace {
 #endif
 		}
 
-		result = CreateImage( graphics, data, x, y, TEXTURE_FORMAT::RGBA, store_raw_pixel_data );
+		TEXTURE_FORMAT::Enum format = TEXTURE_FORMAT::RGBA;
+		switch ( bpp )
+		{
+			case 1: format = TEXTURE_FORMAT::Luminance; break;
+			case 4: format = TEXTURE_FORMAT::RGBA; break;
+			default: poro_assert( false && "Invalid enum value" ); break;
+		}
+
+		result = CreateImage( graphics, data, x, y, format, store_raw_pixel_data );
 
 		return result;
 	}
