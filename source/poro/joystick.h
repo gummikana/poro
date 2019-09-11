@@ -141,6 +141,7 @@ public:
 	// the platform should implement the SetName
 	std::string GetName() const;
 	void SetName(const std::string& name);
+	void SetButtonsJustDownFalse();
 
 private:
 	std::vector< IJoystickListener* > mListeners;
@@ -213,6 +214,12 @@ inline std::string Joystick::GetName() const {
 
 inline void Joystick::SetName(const std::string& name) {
 	mName = name;
+}
+
+inline void Joystick::SetButtonsJustDownFalse()
+{
+	for ( auto& button_just_down : mButtonsJustDown )
+		button_just_down = false;
 }
 
 

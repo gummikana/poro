@@ -174,8 +174,7 @@ void JoystickImpl::Update()
 	const float MAXBYTE_P = 32767.f;
 	const float MAXBYTE_N = 32768.f; 
 
-	for ( auto& button_just_down : mButtonsJustDown )
-		button_just_down = false;
+	SetButtonsJustDownFalse();
 
 	if (mSDLGameController)
 	{
