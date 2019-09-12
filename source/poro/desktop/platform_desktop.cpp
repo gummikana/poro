@@ -653,11 +653,12 @@ void PlatformDesktop::HandleEvents()
 		mEventRecorder->DoPlaybacksForFrame();
 
 	//----------
-	if ( mInputDisabled == false )
+	for ( std::size_t i = 0; i < mJoysticks.size(); ++i )
 	{
-		for ( std::size_t i = 0; i < mJoysticks.size(); ++i ) {
+		if ( mInputDisabled == false )
 			mJoysticks[i]->Update();
-		}
+		else
+			mJoysticks[i]->SetButtonsJustDownFalse();
 	}
 
 	//---------

@@ -46,6 +46,7 @@
 
 #include "../safearray/csafearray.h"
 #include "../string/string.h"
+#include "../random/random.h"
 
 #include "../debug.h"
 #include "../../poro/poro.h"
@@ -411,15 +412,14 @@ std::string GetFilenameWithoutExtension( const std::string& filename )
 
 std::string MakeUniqueFilename( const std::string& file, const std::string& extension )
 {
-	if( Poro()->GetFileSystem()->DoesExist( file + "." + extension ) == false )
-		return file;
+	std::string filename;
 
-	int i = 1;
-	std::string filename = file + "1";
-	while( Poro()->GetFileSystem()->DoesExist( filename + "." + extension ) )
+	while ( true )
 	{
-		i++;
-		filename = file + ceng::CastToString( i );
+		const int random_id = ceng::Random( 0, INT32_MAX );
+		filename = file + std::to_string( random_id ) + "." + extension;
+		if ( Poro()->GetFileSystem()->DoesExist( filename ) == false )
+			break;
 	}
 
 	return filename;
