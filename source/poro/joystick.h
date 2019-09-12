@@ -80,6 +80,29 @@ public:
 		JOY_BUTTON_14					= 36,
 		JOY_BUTTON_15					= 37,
 
+		// note - these will be set based on the analog stick movements and if the go across the mThreshold
+		JOY_BUTTON_LEFT_STICK_LEFT		= 38,
+		JOY_BUTTON_LEFT_STICK_RIGHT		= 39,
+		JOY_BUTTON_LEFT_STICK_UP		= 40,
+		JOY_BUTTON_LEFT_STICK_DOWN		= 41,
+
+		JOY_BUTTON_RIGHT_STICK_LEFT		= 42,
+		JOY_BUTTON_RIGHT_STICK_RIGHT	= 43,
+		JOY_BUTTON_RIGHT_STICK_UP		= 44,
+		JOY_BUTTON_RIGHT_STICK_DOWN		= 45,
+
+		JOY_BUTTON_ANALOG_00_DOWN = 46,
+		JOY_BUTTON_ANALOG_01_DOWN = 47,
+		JOY_BUTTON_ANALOG_02_DOWN = 48,
+		JOY_BUTTON_ANALOG_03_DOWN = 49,
+		JOY_BUTTON_ANALOG_04_DOWN = 50,
+		JOY_BUTTON_ANALOG_05_DOWN = 51,
+		JOY_BUTTON_ANALOG_06_DOWN = 52,
+		JOY_BUTTON_ANALOG_07_DOWN = 53,
+		JOY_BUTTON_ANALOG_08_DOWN = 54,
+		JOY_BUTTON_ANALOG_09_DOWN = 55,
+
+
 		// note, if you add more buttons, remember to set JOY_BUTTON_MAX to the last one
 
 		JOY_BUTTON_COUNT,
@@ -130,6 +153,12 @@ public:
 	// JOY_BUTTON_ANALOG_00_MOVED should work as well
 	float GetAnalogButton( int button ) const;
 
+	void SetAnalogStickThreshold( float threshold );
+	float GetAnalogStickThreshold() const;
+
+	void SetAnalogButtonThreshold( float threshold );
+	float GetAnalogButtonThreshold() const;
+
 	// values are between [0 and 1]
 	// can be implemented on the platform is available
 	virtual void Vibrate( const types::vec2& motor_forces, float time_in_seconds = 0.2f ) { }
@@ -150,6 +179,9 @@ private:
 
 	types::vec2 mLeftStick;
 	types::vec2 mRightStick;
+
+	float mStickThreshold;
+	float mButtonThreshold;
 
 	bool mConnected;
 	bool mIsGamePad;
