@@ -96,6 +96,8 @@ public:
 	virtual void			SetInputDisabled( bool disabled ) { mInputDisabled = disabled; }
 	virtual bool			GetInputDisabled() const { return mInputDisabled; }
 
+	virtual const char*		GetKeyName( types::Uint32 key_unicode ) const = 0;
+
 	// window / screen
 	virtual bool GetOrientationIsLandscape()			{ poro_assert( false ); return 0; }
 

@@ -855,6 +855,10 @@ Joystick* PlatformDesktop::GetJoystick( int n ) {
 	return mJoysticks[ n ];
 }
 
+const char* PlatformDesktop::GetKeyName( types::Uint32 key_unicode ) const
+{
+	return SDL_GetKeyName( key_unicode );
+}
 //-----------------------------------------------------------------------------
 
 GraphicsOpenGL* mGraphicsOpenGL = NULL;
