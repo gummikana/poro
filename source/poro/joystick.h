@@ -37,48 +37,72 @@ public:
 	enum JoystickButtons
 	{
 		// These are the beginning so that ANALOG_00 matches GetAnalogButton(0)
-		JOY_BUTTON_ANALOG_00_MOVED = 0,
-		JOY_BUTTON_ANALOG_01_MOVED = 1,
-		JOY_BUTTON_ANALOG_02_MOVED = 2,
-		JOY_BUTTON_ANALOG_03_MOVED = 3,
-		JOY_BUTTON_ANALOG_04_MOVED = 4,
-		JOY_BUTTON_ANALOG_05_MOVED = 5,
-		JOY_BUTTON_ANALOG_06_MOVED = 6,
-		JOY_BUTTON_ANALOG_07_MOVED = 7,
-		JOY_BUTTON_ANALOG_08_MOVED = 8,
-		JOY_BUTTON_ANALOG_09_MOVED = 9,
+		JOY_BUTTON_NONE = 0,
+		JOY_BUTTON_ANALOG_00_MOVED,
+		JOY_BUTTON_ANALOG_01_MOVED,
+		JOY_BUTTON_ANALOG_02_MOVED,
+		JOY_BUTTON_ANALOG_03_MOVED,
+		JOY_BUTTON_ANALOG_04_MOVED,
+		JOY_BUTTON_ANALOG_05_MOVED,
+		JOY_BUTTON_ANALOG_06_MOVED,
+		JOY_BUTTON_ANALOG_07_MOVED,
+		JOY_BUTTON_ANALOG_08_MOVED,
+		JOY_BUTTON_ANALOG_09_MOVED,
 
-		JOY_BUTTON_DPAD_UP				= 10,
-		JOY_BUTTON_DPAD_DOWN			= 11,
-		JOY_BUTTON_DPAD_LEFT        	= 12,
-		JOY_BUTTON_DPAD_RIGHT       	= 13,
+		JOY_BUTTON_DPAD_UP				,
+		JOY_BUTTON_DPAD_DOWN			,
+		JOY_BUTTON_DPAD_LEFT        	,
+		JOY_BUTTON_DPAD_RIGHT       	,
 		
-		JOY_BUTTON_START            	= 14,
-		JOY_BUTTON_BACK             	= 15,
-		JOY_BUTTON_LEFT_THUMB       	= 16,
-		JOY_BUTTON_RIGHT_THUMB      	= 17,
-		JOY_BUTTON_LEFT_SHOULDER    	= 18,
-		JOY_BUTTON_RIGHT_SHOULDER   	= 19,
+		JOY_BUTTON_START            	,
+		JOY_BUTTON_BACK             	,
+		JOY_BUTTON_LEFT_THUMB       	,
+		JOY_BUTTON_RIGHT_THUMB      	,
+		JOY_BUTTON_LEFT_SHOULDER    	,
+		JOY_BUTTON_RIGHT_SHOULDER   	,
 
-		JOY_BUTTON_LEFT_STICK_MOVED		= 20,
-		JOY_BUTTON_RIGHT_STICK_MOVED	= 21,
+		JOY_BUTTON_LEFT_STICK_MOVED		,
+		JOY_BUTTON_RIGHT_STICK_MOVED	,
 
-		JOY_BUTTON_0					= 22,
-		JOY_BUTTON_1					= 23,
-		JOY_BUTTON_2					= 24,
-		JOY_BUTTON_3					= 25,
-		JOY_BUTTON_4					= 26,
-		JOY_BUTTON_5					= 27,
-		JOY_BUTTON_6					= 28,
-		JOY_BUTTON_7					= 29,
-		JOY_BUTTON_8					= 30,
-		JOY_BUTTON_9					= 31,
-		JOY_BUTTON_10					= 32,
-		JOY_BUTTON_11					= 33,
-		JOY_BUTTON_12					= 34,
-		JOY_BUTTON_13					= 35,
-		JOY_BUTTON_14					= 36,
-		JOY_BUTTON_15					= 37,
+		JOY_BUTTON_0					,
+		JOY_BUTTON_1					,
+		JOY_BUTTON_2					,
+		JOY_BUTTON_3					,
+		JOY_BUTTON_4					,
+		JOY_BUTTON_5					,
+		JOY_BUTTON_6					,
+		JOY_BUTTON_7					,
+		JOY_BUTTON_8					,
+		JOY_BUTTON_9					,
+		JOY_BUTTON_10					,
+		JOY_BUTTON_11					,
+		JOY_BUTTON_12					,
+		JOY_BUTTON_13					,
+		JOY_BUTTON_14					,
+		JOY_BUTTON_15					,
+
+		// note - these will be set based on the analog stick movements and if the go across the mThreshold
+		JOY_BUTTON_LEFT_STICK_LEFT		,
+		JOY_BUTTON_LEFT_STICK_RIGHT		,
+		JOY_BUTTON_LEFT_STICK_UP		,
+		JOY_BUTTON_LEFT_STICK_DOWN		,
+
+		JOY_BUTTON_RIGHT_STICK_LEFT		,
+		JOY_BUTTON_RIGHT_STICK_RIGHT	,
+		JOY_BUTTON_RIGHT_STICK_UP		,
+		JOY_BUTTON_RIGHT_STICK_DOWN		,
+
+		JOY_BUTTON_ANALOG_00_DOWN		,
+		JOY_BUTTON_ANALOG_01_DOWN		,
+		JOY_BUTTON_ANALOG_02_DOWN		,
+		JOY_BUTTON_ANALOG_03_DOWN		,
+		JOY_BUTTON_ANALOG_04_DOWN		,
+		JOY_BUTTON_ANALOG_05_DOWN		,
+		JOY_BUTTON_ANALOG_06_DOWN		,
+		JOY_BUTTON_ANALOG_07_DOWN		,
+		JOY_BUTTON_ANALOG_08_DOWN		,
+		JOY_BUTTON_ANALOG_09_DOWN		,
+
 
 		// note, if you add more buttons, remember to set JOY_BUTTON_MAX to the last one
 
@@ -130,6 +154,12 @@ public:
 	// JOY_BUTTON_ANALOG_00_MOVED should work as well
 	float GetAnalogButton( int button ) const;
 
+	void SetAnalogStickThreshold( float threshold );
+	float GetAnalogStickThreshold() const;
+
+	void SetAnalogButtonThreshold( float threshold );
+	float GetAnalogButtonThreshold() const;
+
 	// values are between [0 and 1]
 	// can be implemented on the platform is available
 	virtual void Vibrate( const types::vec2& motor_forces, float time_in_seconds = 0.2f ) { }
@@ -151,6 +181,9 @@ private:
 
 	types::vec2 mLeftStick;
 	types::vec2 mRightStick;
+
+	float mStickThreshold;
+	float mButtonThreshold;
 
 	bool mConnected;
 	bool mIsGamePad;
