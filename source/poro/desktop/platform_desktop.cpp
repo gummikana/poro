@@ -101,12 +101,13 @@ void StartCounter() { }
 
 int ConvertSDLKeySymToPoroKey(int sdl_key)
 {
-	// #define PORO_CONVERT_SDLKEYSYM(X) ((X) & ~(1 << 30)) + 100;
+	return sdl_key;
+	/*// #define PORO_CONVERT_SDLKEYSYM(X) ((X) & ~(1 << 30)) + 100;
 
 	if (sdl_key > 122)
 		return ((sdl_key)& ~(1 << 30)) + 100;
 
-	return sdl_key;
+	return sdl_key;*/
 }
 
 
@@ -122,6 +123,7 @@ void SegFaultHandler( int signal )
 
 void TestSDL_Keycodes()
 {
+	#if 0 
 	poro_assert(poro::Key_UNKNOWN == 0);
 
 	poro_assert(poro::Key_RETURN == SDLK_RETURN);
@@ -373,6 +375,7 @@ void TestSDL_Keycodes()
 	poro_assert(poro::Key_KBDILLUMUP == ConvertSDLKeySymToPoroKey(SDLK_KBDILLUMUP));
 	poro_assert(poro::Key_EJECT == ConvertSDLKeySymToPoroKey(SDLK_EJECT));
 	poro_assert(poro::Key_SLEEP == ConvertSDLKeySymToPoroKey(SDLK_SLEEP));
+	#endif
 
 }
 
@@ -674,7 +677,7 @@ void PlatformDesktop::HandleEvents()
 					break;
 
 				mEventRecorder->FireKeyDownEvent(
-					ConvertSDLKeySymToPoroKey( static_cast< int >(event.key.keysym.sym) ),
+					ConvertSDLKeySymToPoroKey( static_cast< int >(event.key.keysym.scancode) ),
 					static_cast< types::charset >( event.key.keysym.sym ) );
 			}
 			break;
@@ -685,7 +688,7 @@ void PlatformDesktop::HandleEvents()
 					break;
 
 				mEventRecorder->FireKeyUpEvent(
-					ConvertSDLKeySymToPoroKey( static_cast< int >(event.key.keysym.sym) ),
+					ConvertSDLKeySymToPoroKey( static_cast< int >(event.key.keysym.scancode) ),
 					static_cast< types::charset >( event.key.keysym.sym )  );
 			}
 			break;

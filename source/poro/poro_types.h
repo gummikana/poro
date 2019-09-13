@@ -37,7 +37,7 @@ namespace types {
 	typedef double			Double32;
 
 	// for unicode support
-	typedef Uint16			charset;
+	typedef Int32			charset;
 
 	struct Vec2 {
 		Float32 x;
