@@ -71,7 +71,7 @@ public:
 	virtual Joystick*		GetJoystick( int n );
 	virtual bool			GetJoysticksEnabled() const;
 	virtual void			SetJoysticksEnabled( bool enabled );
-	virtual const char*		GetKeyName( types::Uint32 key_unicode ) const;
+	virtual const char*		GetKeyName( types::Int32 key_unicode ) const;
 
 	// timers
 	virtual void			SetFrameRate( int targetRate, bool fixed_timestep = true );
