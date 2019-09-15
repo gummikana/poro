@@ -173,12 +173,5 @@ protected:
 
 //-----------------------------------------------------------------------------
 
-inline CFont::CharQuad* CFont::GetCharQuad( CharType c ) const {
-	MapQuadType::const_iterator i = mCharQuads.find( c );
-	if( i != mCharQuads.end() )
-		return i->second;
-	else
-		return NULL;
-}
 
 #endif

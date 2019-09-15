@@ -143,6 +143,25 @@ void CFont::SetCharQuad( CharType c, CharQuad* quad )
 	// check for max offset.y ...
 }
 
+
+CFont::CharQuad* CFont::GetCharQuad( CharType c ) const 
+{
+	MapQuadType::const_iterator i = mCharQuads.find( c );
+	if( i != mCharQuads.end() )
+	{
+		return i->second;
+	}
+	else
+	{
+		// if we can't find the character, uses ? to replace it
+		i = mCharQuads.find( (int)'?' );
+		if( i != mCharQuads.end() )
+			return i->second;
+	}
+
+	return NULL;
+}
+
 types::rect	CFont::GetCharPosition( CharType c ) const
 {
 	if( GetCharQuad( c ) ) return GetCharQuad( c )->rect;
@@ -151,7 +170,8 @@ types::rect	CFont::GetCharPosition( CharType c ) const
 
 void CFont::SetCharPosition( CharType c, const types::rect& r )	
 { 
-	CharQuad* char_quad = GetCharQuad( c );
+	CharQuad* char_quad = mCharQuads[c];
+
 	if( char_quad == NULL ) 
 	{
 		char_quad = new CharQuad;
