@@ -154,6 +154,9 @@ CFont::CharQuad* CFont::GetCharQuad( CharType c ) const
 	else
 	{
 		// if we can't find the character, uses ? to replace it
+		if( c == (int)'\n' || c == (int)'\r' )
+			return NULL;
+
 		i = mCharQuads.find( (int)'?' );
 		if( i != mCharQuads.end() )
 			return i->second;
