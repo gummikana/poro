@@ -146,10 +146,21 @@ private:
 
 //-----------------------------------------------------------------------------
 
+struct XmlKey
+{
+	// size of both of these has to be 16
+	std::string key;
+	std::string iv;
+};
+
 class CXmlParser
 {
 public:
+	CXmlParser() : mHandler(), mEncyptionKey( NULL ) { }
+
 	CXmlHandler mHandler;
+	XmlKey* mEncyptionKey;
+
 
 	void ParseFile( const char* filename );
 
@@ -165,13 +176,42 @@ public:
 
 namespace ceng
 {
+
+
+void XML_Decrypt( XmlKey key, char* data, int size_bytes );
+void XML_Encrypt( XmlKey key, char* data, int size_bytes );
+
 	
+
+struct XmlEncryptedWriterWrapper
+{
+	XmlEncryptedWriterWrapper() : mText(), mWriterStream( NULL ), mEncyptionKey( NULL ) { }
+	~XmlEncryptedWriterWrapper() { Done(); }
+
+	void Write( const std::string& text )
+	{
+		mText += text;
+	}
+		
+	void WriteEndOfLine()
+	{
+		Write("\n");
+	}
+
+	void Done();
+
+	std::string mText;
+	poro::WriteStream* mWriterStream;
+	XmlKey* mEncyptionKey;
+
+};
+
 //! This parses the stuff confronted in to the stream.
 /*!
 	Works the other way round. If you have a CXmlNode structure you can create
 	a xml file structure and output it in you favourite stream.
 */
-
+template< class TWriter >
 class CXmlStreamHandler 
 {
 public:
@@ -182,16 +222,16 @@ public:
 		myPackTight ( false ),
 		myWriteAttributesOnLines( false ),
 		myExtraLineBetweenTags( false )
-		{ 
-		}
+	{ 
+	}
 
 	~CXmlStreamHandler() { }
 
 	void StartDocument() { }
 	void EndDocument() { }
 
-	void Characters( const std::string& chars, poro::WriteStream* stream  ) { if ( !chars.empty() ) PrintText( chars, stream ); }
-	void StartElement( const std::string& name, const attributes& attr, poro::WriteStream* stream  )
+	void Characters( const std::string& chars, TWriter* stream  ) { if ( !chars.empty() ) PrintText( chars, stream ); }
+	void StartElement( const std::string& name, const attributes& attr, TWriter* stream  )
 	{
 		std::stringstream ss;
 		ss << "<" << name;
@@ -224,7 +264,7 @@ public:
 		myCount++;
 	}
 
-	void EndElement( const std::string& name, poro::WriteStream* stream  )
+	void EndElement( const std::string& name, TWriter* stream  )
 	{
 		myCount--;
 		PrintText( "</" + name + ">", stream );
@@ -233,7 +273,7 @@ public:
 	}
 
 	//! Just for printing the text
-	void PrintText( const std::string& text, poro::WriteStream* stream  )
+	void PrintText( const std::string& text, TWriter* stream  )
 	{
 		if( myPackTight == false )
 		{
@@ -247,7 +287,7 @@ public:
 	}
 
 	//! Just for parsing open the Node
-	void ParseOpen( CXmlNode* rootnode, poro::WriteStream* stream )
+	void ParseOpen( CXmlNode* rootnode, TWriter* stream )
 	{
 		std::map< std::string, CAnyContainer > attributes;
 		CreateAttributes( rootnode, attributes );

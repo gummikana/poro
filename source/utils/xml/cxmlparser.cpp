@@ -7,7 +7,6 @@
 #include <vector>
 #include "xml_macros.h"
 
-// #include "../../../../Source/debug/simple_profiler.h"
 
 namespace ceng { 
 #if 0
@@ -46,7 +45,7 @@ static char* ReadWholeFile(const char *FileName)
 }
 #else
 
-static char* ReadWholeFile( const char* filename )
+static char* ReadWholeFile( const char* filename, poro::types::Uint32* result_size )
 {
 	using namespace poro;
 
@@ -59,8 +58,8 @@ static char* ReadWholeFile( const char* filename )
 	}
 	
 	char* result = NULL;
-	poro::types::Uint32 result_size = 0;
-	file_system->ReadWholeFileAndNullTerminate( filename, result, &result_size );
+	// poro::types::Uint32 result_size = 0;
+	file_system->ReadWholeFileAndNullTerminate( filename, result, result_size );
 
 	if ( delete_file_system )
 		delete file_system;
@@ -69,7 +68,8 @@ static char* ReadWholeFile( const char* filename )
 }
 #endif
 
-// --- 
+
+// --- --------------------------------------------------------------------
 
 struct XmlHandlerImpl
 {
@@ -522,15 +522,46 @@ public:
 
 //-----------------------------------------------------------------------------
 
+void XmlEncryptedWriterWrapper::Done()
+{
+	if( mText.empty() )
+		return;
+
+	if( mEncyptionKey && mText.empty() == false )
+	{
+		XML_Encrypt( *mEncyptionKey, &(mText[0]), mText.size() );
+	}
+
+	if( mWriterStream )
+	{
+		mWriterStream->Write( mText );
+	}
+
+	mText.clear();
+	// std::string mText;
+	// poro::WriteStream* mWriterStream;
+	// XmlKey* mEncyptionKey;
+
+}
+
+
+//-----------------------------------------------------------------------------
+
 void CXmlParser::ParseFile( const char* filename )
 {
 	// SPROFILE( "XML::ParseFile" );
 
 	if( filename == NULL ) return;
 
-	char* contents = ReadWholeFile( filename );
+	poro::types::Uint32 contents_size = 0;
+	char* contents = ReadWholeFile( filename, &contents_size );
 	if( contents == NULL ) 
 		return;
+
+	if( mEncyptionKey )
+	{
+		XML_Decrypt( *mEncyptionKey, contents, contents_size );
+	}
 
 	XmlHandlerImpl handler;
 	handler.mHandler = &mHandler;

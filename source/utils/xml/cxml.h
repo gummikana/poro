@@ -142,8 +142,6 @@
 #include "../filesystem/filesystem.h"
 #endif
 
-//#define PORO_XCODE_ERROR_HACK_TOGGLE
-
 namespace ceng {
 
 	//! Base class for Handlers
@@ -157,7 +155,6 @@ namespace ceng {
 	template< class T >
 	void XmlLoadFromMemory( T& mesh, CXmlNode* node, const std::string& rootnodename = "rootelement" );
 
-#ifndef PORO_XCODE_ERROR_HACK_TOGGLE
 	template< class T >
 	CXmlNode* XmlSaveToMemory( T& mesh, const std::string& rootnodename  )
 	{
@@ -172,7 +169,6 @@ namespace ceng {
 	{
 		XmlConvertTo( node, mesh );
 	}
-#endif
 
 //! Saves the mesh to the xml file.
 /*!
@@ -184,10 +180,8 @@ namespace ceng {
 	void XmlSaveToFile( T& mesh, const std::string& file, const std::string& rootnodename = "rootelement", bool parse_on_multiple_lines = false );
 	//void XmlSaveToFile( CPegManager& mesh, const std::string& file, const std::string& rootnodename = "rootelement" );
 
-#ifndef PORO_XCODE_ERROR_HACK_TOGGLE
 	template< class T >
 	inline void XmlSaveToFile( T& mesh, const std::string& file, const std::string& rootnodename, bool parse_on_multiple_lines  )
-	//void XmlSaveToFile( CPegManager& mesh, const std::string& file, const std::string& rootnodename  )
 	{
 		CXmlNode* node;
 		node = XmlConvertFrom( mesh, rootnodename );
@@ -195,7 +189,7 @@ namespace ceng {
 		poro::WriteStream stream = Poro()->GetFileSystem()->OpenWrite( file, poro::StreamWriteMode::Recreate | poro::StreamWriteMode::Ascii, poro::FileLocation::WorkingDirectory );
 		if ( stream.IsValid() )
 		{
-			CXmlStreamHandler handler;
+			CXmlStreamHandler< poro::WriteStream > handler;
 			if ( parse_on_multiple_lines )
 			{
 				handler.SetPackTight( false );
@@ -208,7 +202,41 @@ namespace ceng {
 
 		ceng::CXmlNode::FreeNode( node );
 	}
-#endif
+
+	template< class T >
+	void XmlSaveToFile_Encrypted( T& mesh, const std::string& file, const std::string& rootnodename, bool parse_on_multiple_lines, XmlKey xml_key );
+	//void XmlSaveToFile( CPegManager& mesh, const std::string& file, const std::string& rootnodename = "rootelement" );
+
+	template< class T >
+	inline void XmlSaveToFile_Encrypted( T& mesh, const std::string& file, const std::string& rootnodename, bool parse_on_multiple_lines, XmlKey xml_key  )
+	{
+		CXmlNode* node;
+		node = XmlConvertFrom( mesh, rootnodename );
+
+		poro::WriteStream stream = Poro()->GetFileSystem()->OpenWrite( file, poro::StreamWriteMode::Recreate | poro::StreamWriteMode::Ascii, poro::FileLocation::WorkingDirectory );
+		if ( stream.IsValid() )
+		{
+
+			CXmlStreamHandler< XmlEncryptedWriterWrapper > handler;
+			if ( parse_on_multiple_lines )
+			{
+				handler.SetPackTight( false );
+				handler.SetWriteAttributesOnLines( true );
+				handler.SetExtraLineBetweenTags( false );
+			}
+
+			XmlEncryptedWriterWrapper encrypted_stream;
+			encrypted_stream.mWriterStream = &stream;
+			encrypted_stream.mEncyptionKey = &xml_key;
+
+			handler.ParseOpen( node, &encrypted_stream );
+
+			encrypted_stream.Done();
+		}
+
+		ceng::CXmlNode::FreeNode( node );
+	}
+
 //! Loads a mesh from the xml file.
 /*!
 	Calls the meshs Serialize( CXmlFileSys* file ) method to serialize the
@@ -220,7 +248,6 @@ namespace ceng {
 	template< class T >
 	void XmlLoadFromFile( T& mesh, const std::string& file, const std::string& rootnodename = "rootelement", bool report_error_if_file_doesnt_exist = true );
 
-#ifndef PORO_XCODE_ERROR_HACK_TOGGLE
 	template< class T >
 	inline void XmlLoadFromFile( T& mesh, const std::string& file, const std::string& rootnodename, bool report_error_if_file_doesnt_exist )
 	{
@@ -236,31 +263,38 @@ namespace ceng {
 #endif
 		CXmlParser parser;
 		parser.ParseFile( file.c_str() );
-		/*CXmlParser	parser;
-		CXmlHandler handler;*/
-
-		// parser.SetHandler( &handler );
-		// parser.ParseFile( file.c_str() );
 
 		XmlConvertTo( parser.GetRootElement(), mesh );
 
 		CXmlNode::FreeNode( parser.GetRootElement() );
 	}
-#endif
-/*	void XmlLoadFromFile2( const std::string& mesh, const std::string& file, const std::string& rootnodename = "rootelement" )
-	{
-		ceng::CXmlParser	parser;
-		ceng::CXmlHandler handler;
 
-		parser.SetHandler( &handler );
+
+	template< class T >
+	void XmlLoadFromFile_Encrypted( T& mesh, const std::string& file, const std::string& rootnodename, bool report_error_if_file_doesnt_exist, XmlKey xml_key );
+
+	template< class T >
+	inline void XmlLoadFromFile_Encrypted( T& mesh, const std::string& file, const std::string& rootnodename, bool report_error_if_file_doesnt_exist, XmlKey xml_key )
+	{
+#ifdef WIZARD_DEBUG
+		if( Poro()->GetFileSystem()->DoesExist( file ) == false )
+		{
+			if ( report_error_if_file_doesnt_exist )
+				LogError << "Failed to load XML file - " << file << "\n";
+
+			return;
+		}
+		// cassert( Poro()->GetFileSystem()->DoesExist( file ) );
+#endif
+		CXmlParser parser;
+		parser.mEncyptionKey = &xml_key;
 		parser.ParseFile( file.c_str() );
 
-		// XmlConvertTo( handler.GetRootElement(), mesh );
+		XmlConvertTo( parser.GetRootElement(), mesh );
 
-		CXmlNode::FreeNode( handler.GetRootElement() );
-
+		CXmlNode::FreeNode( parser.GetRootElement() );
 	}
-*/
+
 
 }
 
