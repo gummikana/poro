@@ -45,6 +45,9 @@ static char* ReadWholeFile(const char *FileName)
 }
 #else
 
+//-----------------------------------------------------------------------------
+
+
 static char* ReadWholeFile( const char* filename, poro::types::Uint32* result_size )
 {
 	using namespace poro;
@@ -527,6 +530,14 @@ void XmlEncryptedWriterWrapper::Done()
 	if( mText.empty() )
 		return;
 
+#if 0 
+	if( mEncyptionKey && mText.empty() == false && mWriterStream )
+	{
+		mWriterStream->Write( EncryptMe( mText,  mEncyptionKey->key + mEncyptionKey->iv ) );
+		// XML_Encrypt( *mEncyptionKey, &(mText[0]), mText.size() );
+	}
+#else
+
 	if( mEncyptionKey && mText.empty() == false )
 	{
 		XML_Encrypt( *mEncyptionKey, &(mText[0]), mText.size() );
@@ -536,6 +547,7 @@ void XmlEncryptedWriterWrapper::Done()
 	{
 		mWriterStream->Write( mText );
 	}
+#endif
 
 	mText.clear();
 	// std::string mText;
@@ -558,10 +570,31 @@ void CXmlParser::ParseFile( const char* filename )
 	if( contents == NULL ) 
 		return;
 
+	#if 1
 	if( mEncyptionKey )
 	{
-		XML_Decrypt( *mEncyptionKey, contents, contents_size );
+		XML_Decrypt( *mEncyptionKey, contents, contents_size-1 );
+		// std::fstream fout( "temptemp/unecrypted.txt", std::ios::out );
+		// fout << contents << "\n";
 	}
+
+	bool free_contents = true;
+	#else
+	std::string unecrypted_str;
+	if( mEncyptionKey )
+	{
+		std::string str_contents( contents );
+		unecrypted_str = DecryptMe(  str_contents, mEncyptionKey->key + mEncyptionKey->iv );
+
+		std::fstream fout( "temptemp/unecrypted.txt", std::ios::out );
+		fout << unecrypted_str << "\n";
+
+		free( contents );
+		free_contents  = false;
+		contents = &unecrypted_str[0];
+
+	}
+	#endif
 
 	XmlHandlerImpl handler;
 	handler.mHandler = &mHandler;
@@ -586,7 +619,9 @@ void CXmlParser::ParseFile( const char* filename )
 	}
 
 	handler.EndDocument();
-	free( contents );
+	
+	if( free_contents )
+		free( contents );
 }
 
 } // end of namespace ceng

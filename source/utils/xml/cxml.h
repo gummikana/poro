@@ -213,7 +213,7 @@ namespace ceng {
 		CXmlNode* node;
 		node = XmlConvertFrom( mesh, rootnodename );
 
-		poro::WriteStream stream = Poro()->GetFileSystem()->OpenWrite( file, poro::StreamWriteMode::Recreate | poro::StreamWriteMode::Ascii, poro::FileLocation::WorkingDirectory );
+		poro::WriteStream stream = Poro()->GetFileSystem()->OpenWrite( file, poro::StreamWriteMode::Recreate, poro::FileLocation::WorkingDirectory );
 		if ( stream.IsValid() )
 		{
 
