@@ -68,6 +68,8 @@ namespace network_utils { class ISerializer; }
 
 class CFont;
 
+//bool CfontGetError();
+
 //-----------------------------------------------------------------------------
 
 void CFont_LoadFromBinary( CFont* load_to_here, const std::string& binary_filename );
@@ -141,6 +143,7 @@ public:
 	// returns float[4]
 	const float* GetDefaultColor() const { return mDefaultColor; }
 
+
 	//.........................................................................
 
 protected:
@@ -169,6 +172,8 @@ protected:
 
 	std::string mTextureFilename;
 	std::string mFilename;
+
+	//std::vector<int> error_spam;
 };
 
 //-----------------------------------------------------------------------------

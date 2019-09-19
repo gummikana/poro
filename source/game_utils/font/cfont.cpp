@@ -27,8 +27,18 @@
 #include "../../utils/xml/cxml.h"
 #include "../../utils/debug.h"
 #include "../../utils/network/network_serializer.h"
+#include "../../utils/vector_utils/vector_utils.h"
 
 ///////////////////////////////////////////////////////////////////////////////
+
+//static bool cfonterror = false;
+
+/*bool CfontGetError()
+{
+	auto result = cfonterror;
+	cfonterror = false;
+	return result;
+}*/
 
 void IMPL_ReadBinaryFile( const std::string& binary_filename, network_utils::types::ustring& data )
 {
@@ -157,13 +167,37 @@ CFont::CharQuad* CFont::GetCharQuad( CharType c ) const
 		if( c == (int)'\n' || c == (int)'\r' )
 			return NULL;
 
+
 		i = mCharQuads.find( (int)'?' );
+
+		/*auto this_ = ( CFont* )this;
+
+		if ( ceng::VectorAddUnique( this_->error_spam, (int)c ) )
+		{
+			std::stringstream ss;
+			std::stringstream ss2;
+			std::stringstream ss3;
+			ss2 << std::hex << (int)c; // int decimal_value
+			ss3 << std::hex << (int)c+1; // int decimal_value
+
+			ss << "<Range min=\"0x";
+			ss << std::hex << ceng::Uppercase( ss2.str() ); // int decimal_value
+			ss << "\" max=\"0x";
+			ss << std::hex << ceng::Uppercase( ss3.str() ); // int decimal_value
+			ss << "\" />";
+			std::string res( ss.str() );
+
+			LogLine( res );
+			cfonterror = true;
+		}*/
+
 		if( i != mCharQuads.end() )
 			return i->second;
 	}
 
 	return NULL;
 }
+
 
 types::rect	CFont::GetCharPosition( CharType c ) const
 {
