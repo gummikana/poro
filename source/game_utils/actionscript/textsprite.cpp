@@ -38,6 +38,32 @@ namespace as {
 // ---- just a simple font cache ----------------------------------------
 std::map< std::string, CFont* > m_font_cache;
 
+}
+
+void TextSprite_ReleaseFont( const std::string& font_filename )
+{
+	using namespace as;
+
+	std::map< std::string, CFont* >::iterator i = m_font_cache.find( font_filename );
+	if( i == m_font_cache.end() )
+		return;
+
+	CFont* font = i->second;
+	
+	std::string texture = font->GetTextureFilename();
+	ReleasePreloadedTexture( texture );
+
+	delete font;
+	font = NULL;
+	i->second = NULL;
+	
+	m_font_cache.erase( i );
+}
+
+//---------------------------------------------------------------------
+
+namespace as {
+
 void LoadTextSpriteTo( const std::string& font_file, as::TextSprite* mTextSprite )
 {
 	if( font_file.empty() )
@@ -79,6 +105,8 @@ as::TextSprite* LoadTextSprite( const std::string& font_file )
 	mTextSprite->SetFilename( font_file );
 	return mTextSprite;
 }
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 

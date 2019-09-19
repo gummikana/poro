@@ -32,6 +32,9 @@
 class CFont;
 class IFontAlign;
 
+void TextSprite_ReleaseFont( const std::string& font_filename );
+
+
 namespace as {
 
 // ----------------------------------------------------------------------------
