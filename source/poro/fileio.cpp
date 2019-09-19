@@ -149,6 +149,7 @@ namespace platform_impl
 				{
 					*out_text = first ? std::string( buffer, count ) : ( *out_text + std::string( buffer, count ) );
 					count = 0;
+					first = false;
 				}
 			}
 
