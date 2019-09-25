@@ -466,7 +466,6 @@ bool GraphicsOpenGL::Init( int width, int height, int internal_width, int intern
 		mDesktopHeight = (int)height;
 	}
 
-
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
@@ -674,6 +673,17 @@ bool GraphicsOpenGL::GetVsyncCurrentlyEnabled()
 {
 	return mVsyncEnabled;
 }
+
+std::string GraphicsOpenGL::GetGraphicsHardwareInfo()
+{
+	std::stringstream ss;
+	ss << "GL Vendor: " << glGetString( GL_VENDOR ) << "\n";
+	ss << "GL Renderer: " << glGetString( GL_RENDERER ) << "\n";
+	ss << "GL Version: " << glGetString( GL_VERSION ) << "\n";
+	ss << "GL Extensions: " << glGetString( GL_EXTENSIONS ) << "\n";
+	return ss.str();
+}
+
 
 //=============================================================================
 

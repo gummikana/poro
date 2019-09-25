@@ -216,8 +216,9 @@ public:
 	virtual int					GetFullscreen()														{ poro_assert( false ); return 0;/* You have to implement this */ }
 	virtual void				SetVsync( VSYNC_MODE::Enum vsync )									{ poro_assert( false ); /* You have to implement this */ }
 	virtual VSYNC_MODE::Enum	GetVsync()															{ poro_assert( false ); return VSYNC_MODE::OFF;/* You have to implement this */ }
-	virtual bool				GetVsyncCurrentlyEnabled()													{ poro_assert( false ); return false;/* You have to implement this */ }
+	virtual bool				GetVsyncCurrentlyEnabled()											{ poro_assert( false ); return false;/* You have to implement this */ }
 	virtual poro::types::vec2	GetViewPortSize()													{ poro_assert( false ); return poro::types::vec2(0,0); /* You have to implement this */ }
+	virtual std::string			GetGraphicsHardwareInfo()											{ poro_assert( false ); return "";/* implement for this platform*/ }
 
 	//-------------------------------------------------------------------------
 

@@ -61,8 +61,9 @@ public:
 	virtual int					GetFullscreen() PORO_OVERRIDE;
 	virtual void				SetVsync( VSYNC_MODE::Enum vsync ) PORO_OVERRIDE;
 	virtual VSYNC_MODE::Enum	GetVsync() PORO_OVERRIDE;
-	virtual bool GetVsyncCurrentlyEnabled() PORO_OVERRIDE;
+	virtual bool				GetVsyncCurrentlyEnabled() PORO_OVERRIDE;
 	virtual poro::types::vec2	GetViewPortSize() PORO_OVERRIDE { return mViewportSize; }
+	virtual std::string			GetGraphicsHardwareInfo() PORO_OVERRIDE;
 
 	//-------------------------------------------------------------------------
 
