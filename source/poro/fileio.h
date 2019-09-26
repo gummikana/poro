@@ -263,6 +263,8 @@ namespace poro {
 
 		// Get the full location of a file.
 		std::wstring GetFullPathFromRelativePath( FileLocation::Enum location, const std::string& relative_path );
+		std::wstring CompleteReadPath( const std::string& path, const std::wstring& root_path );
+		std::wstring CompleteWritePath( const poro::FileLocation::Enum to_location, const std::string& path );
 
 		// Get a list of files at the location specified by the parameters.
 		void GetFiles( FileLocation::Enum location, const std::string& path_relative_to_location, std::vector<std::string>* out_files );
@@ -299,8 +301,6 @@ namespace poro {
 	private:
 		friend class DiskFileDevice;
 
-		std::wstring CompleteReadPath( const std::string& path, const std::wstring& root_path );
-		std::wstring CompleteWritePath( const poro::FileLocation::Enum to_location, const std::string& path );
 
 		struct PathProxy
 		{
