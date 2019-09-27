@@ -968,6 +968,8 @@ IRenderTexture* GraphicsOpenGL::RenderTexture_Create( int width, int height, TEX
 
 	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, result->mTexture.mTexture, 0 );
 	GLenum status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
+	
+	// NOTE( Petri ): Gif recorder crashes here when allocating too much memory
 	poro_assert( status == GL_FRAMEBUFFER_COMPLETE );
 	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 
