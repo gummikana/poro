@@ -138,6 +138,25 @@ namespace {
 		return result;
 	}
 
+	uint32 GetGLTextureFilteringMode( TEXTURE_FILTERING_MODE::Enum mode )
+	{
+		uint32 result = GL_NEAREST;
+
+		switch ( mode )
+		{
+			case TEXTURE_FILTERING_MODE::LINEAR: result = GL_LINEAR; break;
+			case TEXTURE_FILTERING_MODE::NEAREST: result = GL_NEAREST; break;
+
+			default:
+			{
+				poro_assert( "Unsupported texture filtering mode used." );
+				break;
+			}
+		}
+
+		return result;
+	}
+
 	TextureOpenGL* CreateImage( GraphicsOpenGL* graphics, uint8* pixels, int w, int h, TEXTURE_FORMAT::Enum format, bool store_raw_pixel_data )
 	{
 		Uint32 oTexture = 0;
@@ -780,28 +799,9 @@ void GraphicsOpenGL::SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTER
 		glEnable( GL_TEXTURE_2D );
 		glBindTexture( GL_TEXTURE_2D, texture->mTexture );
 		
-		switch ( mode )
-		{
-			case TEXTURE_FILTERING_MODE::LINEAR:
-			{
-				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-				break;
-			}
-
-			case TEXTURE_FILTERING_MODE::NEAREST:
-			{
-				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-				break;
-			}
-
-			default:
-			{
-				poro_assert( "Unsupported texture filtering mode used." );
-				break;
-			}
-		}
+		const uint32 gl_mode = GetGLTextureFilteringMode( mode );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_mode );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_mode );
 			
 		glBindTexture( GL_TEXTURE_2D, 0 );
 
@@ -1120,7 +1120,7 @@ void GraphicsOpenGL::RenderTexture_AsyncReadTextureDataFromGPUFinish( IRenderTex
 }
 
 
-void GraphicsOpenGL::RenderTexture_Blit( IRenderTexture* ifrom, IRenderTexture* ito ) const
+void GraphicsOpenGL::RenderTexture_Blit( IRenderTexture* ifrom, IRenderTexture* ito, TEXTURE_FILTERING_MODE::Enum filtering_mode ) const
 {
 	poro_assert( dynamic_cast<RenderTextureOpenGL*>( ifrom ) );
 	RenderTextureOpenGL* from = static_cast<RenderTextureOpenGL*>( ifrom );
@@ -1128,11 +1128,13 @@ void GraphicsOpenGL::RenderTexture_Blit( IRenderTexture* ifrom, IRenderTexture* 
 	poro_assert( dynamic_cast<RenderTextureOpenGL*>( ito ) );
 	RenderTextureOpenGL* to = static_cast<RenderTextureOpenGL*>( ito );
 
+	const uint32 gl_filtering_mode = GetGLTextureFilteringMode( filtering_mode );
+
 	glBindFramebuffer( GL_READ_FRAMEBUFFER, from->mBufferId );
 	glBindFramebuffer( GL_DRAW_FRAMEBUFFER, to->mBufferId );
 	glReadBuffer( GL_COLOR_ATTACHMENT0 );
 
-	glBlitFramebuffer( 0, 0, from->mTexture.GetWidth(), from->mTexture.GetHeight(), 0, 0, to->mTexture.GetWidth(), to->mTexture.GetHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST );
+	glBlitFramebuffer( 0, 0, from->mTexture.GetWidth(), from->mTexture.GetHeight(), 0, 0, to->mTexture.GetWidth(), to->mTexture.GetHeight(), GL_COLOR_BUFFER_BIT, gl_filtering_mode );
 
 	glBindFramebuffer( GL_READ_FRAMEBUFFER, 0 );
 	glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
