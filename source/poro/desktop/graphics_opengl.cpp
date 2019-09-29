@@ -350,8 +350,9 @@ bool GraphicsOpenGL::Init( int width, int height, int internal_width, int intern
 	int pos_x = SDL_WINDOWPOS_CENTERED_DISPLAY(monitor_i);
 	int pos_y = SDL_WINDOWPOS_CENTERED_DISPLAY(monitor_i);
 	if( mDesktopHeight <= height ) pos_y = 0;
-
-	if ( OPENGL_SETTINGS.external_context && OPENGL_SETTINGS.external_context->window )
+	
+	const bool use_external_window = OPENGL_SETTINGS.external_context && OPENGL_SETTINGS.external_context->window;
+	if ( use_external_window )
 	{
 		mSDLWindow = (SDL_Window*)OPENGL_SETTINGS.external_context->window;
 	}
@@ -392,6 +393,8 @@ bool GraphicsOpenGL::Init( int width, int height, int internal_width, int intern
 	// ---
 	IPlatform::Instance()->SetInternalSize( (types::Float32)internal_width, (types::Float32)internal_height );
 	ResetWindow();
+	if ( use_external_window )
+		SetWindowPositionCentered();
 
 	return 1;
 }
