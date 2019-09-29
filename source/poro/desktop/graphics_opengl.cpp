@@ -276,7 +276,6 @@ GraphicsOpenGL::GraphicsOpenGL() :
 
 	mGlContextInitialized( false ),
 	mVsyncEnabled( false ),
-	mDynamicVboHandle( 0 ),
 
 	mBufferLoadTextures( false ),
 	mBufferedLoadTextures()
@@ -393,9 +392,6 @@ bool GraphicsOpenGL::Init( int width, int height, int internal_width, int intern
 	// ---
 	IPlatform::Instance()->SetInternalSize( (types::Float32)internal_width, (types::Float32)internal_height );
 	ResetWindow();
-
-	poro_assert( mDynamicVboHandle == 0 );
-	glGenBuffers( 1, &mDynamicVboHandle );
 
 	return 1;
 }
@@ -868,25 +864,12 @@ IRenderTexture* GraphicsOpenGL::RenderTexture_Create( int width, int height, TEX
 	return result;
 }
 
-RenderTextureOpenGL::~RenderTextureOpenGL() 
-{ 
-	//Delete texture
-	glDeleteTextures(1, &mTexture.mTexture);
-	//Bind 0, which means render to back buffer, as a result, fb is unbound
-	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-	glDeleteFramebuffers( 1, &mBufferId );
-	glDeleteBuffers( 1, &mPboBufferId );
-
-	#ifdef RENDER_TEXTURE_ASYNC_READ_SUBDATA_IMPL
-		glDeleteBuffers( 1, &mPboBufferOutId );
-	#endif
-}
-
 void GraphicsOpenGL::RenderTexture_Destroy( IRenderTexture* itexture )
 {
 	poro_assert( dynamic_cast<RenderTextureOpenGL*>( itexture ) );
 	RenderTextureOpenGL* texture = static_cast<RenderTextureOpenGL*>( itexture );
 
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 	glDeleteTextures(1, &texture->mTexture.mTexture);
 	glDeleteFramebuffers( 1, &texture->mBufferId );
 	glDeleteBuffers( 1, &texture->mPboBufferId );
@@ -896,8 +879,6 @@ void GraphicsOpenGL::RenderTexture_Destroy( IRenderTexture* itexture )
 		glDeleteBuffers( 1, &texture->mPboBufferOutId );
 	}
 	#endif
-
-	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 
 	delete texture;
 	rendertextures.erase( rendertextures.find( itexture ) );

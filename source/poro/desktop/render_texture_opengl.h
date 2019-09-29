@@ -32,7 +32,6 @@ class RenderTextureOpenGL :  public IRenderTexture
 {
 public:
 	RenderTextureOpenGL() : mTexture(), IRenderTexture() { }
-	virtual ~RenderTextureOpenGL();
 
 	// IRenderTexture
 	virtual ITexture* GetTexture() PORO_OVERRIDE { return &mTexture; }

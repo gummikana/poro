@@ -177,7 +177,6 @@ private:
 	bool mGlContextInitialized;
 
 	bool mVsyncEnabled = false;
-	uint32 mDynamicVboHandle = 0;
 
 	// for multithreaded loading of things
 	bool mBufferLoadTextures;
