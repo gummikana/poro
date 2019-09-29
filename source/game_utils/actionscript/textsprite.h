@@ -33,6 +33,7 @@ class CFont;
 class IFontAlign;
 
 void TextSprite_ReleaseFont( const std::string& font_filename );
+void TextSprite_DestroyCachedFonts();
 
 
 namespace as {
