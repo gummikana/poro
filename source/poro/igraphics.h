@@ -23,6 +23,7 @@
 
 #include <vector>
 #include <stack>
+#include <set>
 
 #include "poro_types.h"
 #include "poro_macros.h"
@@ -169,6 +170,12 @@ struct DisplayMode
 
 //-----------------------------
 
+struct ExternalGraphicsContext
+{
+	void* window;
+	void* gpu_context;
+};
+
 struct GraphicsSettings
 {
 	int				window_width = 1024;
@@ -183,6 +190,8 @@ struct GraphicsSettings
 	VSYNC_MODE::Enum vsync = VSYNC_MODE::OFF;
 
 	int current_display = 0;	// opens fullscreen on this display index
+
+	ExternalGraphicsContext* external_context = NULL;
 };
 //-----------------------------
 
@@ -247,8 +256,8 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual IRenderTexture* RenderTexture_Create( int width, int height, TEXTURE_FILTERING_MODE::Enum mode ) const{ poro_assert( false ); return 0; };
-	virtual void RenderTexture_Destroy( IRenderTexture* texture ) const{ poro_assert( false );  };
+	virtual IRenderTexture* RenderTexture_Create( int width, int height, TEXTURE_FILTERING_MODE::Enum mode ) { poro_assert( false ); return 0; };
+	virtual void RenderTexture_Destroy( IRenderTexture* texture ) { poro_assert( false );  };
 	virtual void RenderTexture_BeginRendering( IRenderTexture* texture, bool clear_color = false, bool clear_depth = false, float clear_r = 0.f, float clear_g = 0.f, float clear_b = 0.f, float clear_a = 0.f ) const { poro_assert( false );  };
 	virtual void RenderTexture_EndRendering( IRenderTexture* texture ) const{ poro_assert( false );  };
 	virtual void RenderTexture_ReadTextureDataFromGPU( IRenderTexture* texture, uint8* out_pixels ) const{ poro_assert( false );  };
@@ -258,7 +267,8 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual IShader* Shader_Create() const{ poro_assert( false ); return 0; };
+	virtual IShader* Shader_Create() { poro_assert( false ); return 0; };
+	virtual void Shader_Destroy( IShader* shader ) { poro_assert( false ); };
 	virtual void Shader_Init( IShader* shader, const std::string& vertex_source_filename, const std::string& fragment_source_filename ) const{ poro_assert( false );  };
 	virtual void Shader_InitFromString( IShader* shader, const std::string& vertex_source, const std::string& fragment_source ) const{ poro_assert( false );  };
 	virtual void Shader_Release( IShader* shader ) const{ poro_assert( false );  };
@@ -277,8 +287,8 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual IVertexBuffer* VertexBuffer_Create( VERTEX_FORMAT::Enum vertex_format ) const { return NULL; }
-	virtual void VertexBuffer_Destroy( IVertexBuffer* buffer ) const { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
+	virtual IVertexBuffer* VertexBuffer_Create( VERTEX_FORMAT::Enum vertex_format ) { return NULL; }
+	virtual void VertexBuffer_Destroy( IVertexBuffer* buffer ) { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
 	virtual void VertexBuffer_SetData( IVertexBuffer* buffer, void* vertices, uint32 num_vertices ) const { poro_assert( false && "IMPLEMENTATION NEEDED" ); }
 
 	//-------------------------------------------------------------------------
@@ -338,8 +348,10 @@ public:
 	//-------------------------------------------------------------------------
 	// Methods for loading and saving images to a pixel buffer
 	// ImageSave only supports .png formats
-	virtual unsigned char*	ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp )						{ poro_assert( false && "IMPLEMENTATION NEEDED" ); return NULL; }
-	virtual int				ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes )	{ poro_assert( false && "IMPLEMENTATION NEEDED" ); return -1; }
+	unsigned char*	ImageLoadTemp( char const *filename, int *x, int *y, int *comp, int req_comp ); // caller has to call free() for returned buffer
+	unsigned char*	ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp );		// GraphicsFreeLeakedResources will take care of the buffer unless ImageFree was called for it
+	void			ImageFree( unsigned char* image );
+	int				ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes );
 
 	//-------------------------------------------------------------------------
 	// this is haxed here... because we needed multithreaded loading of assets
@@ -349,7 +361,7 @@ public:
 
 	virtual bool UpdateBufferedMultithreaded() { return true; }
 
-
+	void GraphicsFreeLeakedResources();
 
 protected:
 	virtual void IMPL_SetVSyncEnabled( bool enabled ){ poro_assert( false );  };
@@ -364,6 +376,13 @@ protected:
 	TEXTURE_FILTERING_MODE::Enum mMipmapMode = TEXTURE_FILTERING_MODE::LINEAR;
 
 	IShader* mCurrentShader = NULL;
+
+	std::set<ITexture*> textures;
+	std::set<ITexture3d*> texture3Ds;
+	std::set<IRenderTexture*> rendertextures;
+	std::set<IShader*> shaders;
+	std::set<IVertexBuffer*> vertexbuffers;
+	std::set<unsigned char*> images;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

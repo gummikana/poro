@@ -553,7 +553,6 @@ void PlatformDesktop::StartMainLoop()
 		if( mApplication && mApplication->IsDead() == true )
 			mRunning = false;
 
-
 		const types::Double32 time_after = GetUpTime();
 		const types::Double32 elapsed_time = ( time_after - time_before );
 		if( elapsed_time < mOneFrameShouldLast )

@@ -21,7 +21,7 @@ struct TempTexture
 	TempTexture() : w( width ), h( height ) { }
 	~TempTexture() 
 	{
-		delete [] data;
+		Poro()->GetGraphics()->ImageFree( data );
 		data = NULL;
 	}
 

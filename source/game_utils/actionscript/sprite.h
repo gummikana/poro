@@ -55,6 +55,8 @@ class SpriteAnimationUpdater;
 
 // ----------------------------------------------------------------------------
 
+void ReleaseCachedTextures();
+
 class Sprite : public DisplayObjectContainer
 {
 public:

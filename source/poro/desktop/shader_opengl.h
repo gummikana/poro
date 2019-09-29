@@ -35,8 +35,6 @@ public:
 
 	}
 
-	~ShaderOpenGL();
-
 	bool isCompiledAndLinked = false;
 	int program = 0;
     int vertexShader = 0;

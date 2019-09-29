@@ -67,8 +67,11 @@ bool CXmlNode::myReplaceEscapeChars = true;
 
 CXmlNodeManager	CXmlNode::myManager;
 
-CXmlNode*	CXmlNode::CreateNewNode()				{ return new CXmlNode; /* return myManager.GetNew();*/ }
+#pragma push_macro("new")
+#undef new
+CXmlNode*	CXmlNode::CreateNewNode()				{ return new CXmlNode(); /* return myManager.GetNew();*/ }
 void		CXmlNode::FreeNode( CXmlNode* node )	{ delete node; /*myManager.ReleaseNode( node );*/ }
+#pragma pop_macro("new")
 
 CXmlNode::~CXmlNode()
 {
