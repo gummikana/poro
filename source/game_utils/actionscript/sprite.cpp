@@ -947,9 +947,10 @@ void ReleaseCachedTextures()
 
 	for ( auto& pair : mTextureBuffer )
 	{
+		if ( pair.second->texture )
+			graphics->DestroyTexture( pair.second->texture );
 		delete pair.second->image_data;
 		delete pair.second;
-		//graphics->DestroyTexture( pair.second->texture );
 	}
 
 	for ( auto& pair : mSpriteBuffer )

@@ -40,6 +40,7 @@ class GraphicsOpenGL : public IGraphics
 {
 public:
 	GraphicsOpenGL();
+	virtual ~GraphicsOpenGL() override;
 
 	//-------------------------------------------------------------------------
 

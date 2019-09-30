@@ -284,6 +284,13 @@ GraphicsOpenGL::GraphicsOpenGL() :
 
 }
 
+GraphicsOpenGL::~GraphicsOpenGL()
+{
+	if ( mGlContextInitialized )
+		fglUnloadOpenGL();
+	mGlContextInitialized = false;
+}
+
 //-----------------------------------------------------------------------------
 
 void GraphicsOpenGL::SetSettings( const GraphicsSettings& settings )
@@ -414,7 +421,6 @@ void GraphicsOpenGL::SetIcon( const std::string& icon_bmp_file )
 	
 	if( icon_surface )
 		SDL_SetWindowIcon(mSDLWindow, icon_surface);
-
 }
 
 //-----------------------------------------------------------------------------
@@ -601,7 +607,7 @@ void GraphicsOpenGL::SetTextureData( ITexture* itexture, void* data, int x, int 
 ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename )
 {
 	ITexture* result = LoadTexture( filename, false );
-
+	textures.insert( result );
 	return result;
 }
 

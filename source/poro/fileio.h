@@ -105,7 +105,7 @@ namespace poro {
         friend class WriteStream;
 	public:
 		virtual ~IFileDevice() { }
-
+		virtual void Destroy() { }
         virtual ReadStream  OpenRead( const std::string& path ) = 0;
         virtual WriteStream OpenWrite( FileLocation::Enum location, const std::string& read_path_relative_to_location, poro::types::Uint32 write_mode = StreamWriteMode::Enum::Recreate ) = 0;
 		virtual std::wstring GetFullPath( const std::string& path_relative_to_device_root ) = 0;
