@@ -28,11 +28,25 @@
 
 #ifdef PORO_PLAT_WINDOWS
 
+#  define PORO_OVERRIDE override
+
+// This branch is only used with Noita so...
+#include "../../../Source/debug/wizard_log.h"
+
+//------------------ debug logger + assert -----------------
+#ifdef WIZARD_DEBUG
+
 #		define vc_could_fix_its_assert(cond) if( !(cond)) { printf("Assert failed: (%s) in %s at line %d\n", (#cond), __FILE__, __LINE__); int* _break_me_ = 0; (*_break_me_) = 7337; }
 
-#  define poro_logger std::cout
+#  define poro_logger LogError
 #  define poro_assert vc_could_fix_its_assert
-#  define PORO_OVERRIDE override
+
+#else
+
+#  define poro_logger LogError
+#  define poro_assert(cond) ((void)0)
+
+#endif
 
 #ifdef PORO_PLAT_WINDOWS
 	#ifdef PORO_CONSERVATIVE
