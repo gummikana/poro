@@ -40,6 +40,7 @@ class GraphicsOpenGL : public IGraphics
 {
 public:
 	GraphicsOpenGL();
+	virtual ~GraphicsOpenGL() override;
 
 	//-------------------------------------------------------------------------
 
@@ -73,12 +74,12 @@ public:
 	//-------------------------------------------------------------------------
 
 	virtual ITexture*	CreateTexture( int width, int height, TEXTURE_FORMAT::Enum format = TEXTURE_FORMAT::RGBA ) PORO_OVERRIDE;
+	virtual void		DestroyTexture( ITexture* texture ) PORO_OVERRIDE;
 	virtual ITexture*	CloneTexture( ITexture* other ) PORO_OVERRIDE;
 	virtual void		SetTextureData(ITexture* texture, void* data ) PORO_OVERRIDE;
 	virtual void		SetTextureData(ITexture* texture, void* data, int x, int y, int w, int h ) PORO_OVERRIDE;
 	virtual ITexture*	LoadTexture( const types::string& filename ) PORO_OVERRIDE;
 	virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data ) PORO_OVERRIDE;
-	virtual void		DestroyTexture( ITexture* texture ) PORO_OVERRIDE;
 	virtual void		SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode ) const PORO_OVERRIDE;
 	virtual void		SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum  mode ) const PORO_OVERRIDE;
 
@@ -89,8 +90,8 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual IRenderTexture* RenderTexture_Create( int width, int height, TEXTURE_FILTERING_MODE::Enum filtering_mode ) const PORO_OVERRIDE;
-	virtual void RenderTexture_Destroy( IRenderTexture* texture ) const PORO_OVERRIDE;
+	virtual IRenderTexture* RenderTexture_Create( int width, int height, TEXTURE_FILTERING_MODE::Enum filtering_mode ) PORO_OVERRIDE;
+	virtual void RenderTexture_Destroy( IRenderTexture* texture ) PORO_OVERRIDE;
 	virtual void RenderTexture_BeginRendering( IRenderTexture* texture, bool clear_color = false, bool clear_depth = false, float clear_r = 0.f, float clear_g = 0.f, float clear_b = 0.f, float clear_a = 0.f ) const PORO_OVERRIDE;
 	virtual void RenderTexture_EndRendering( IRenderTexture* texture ) const PORO_OVERRIDE;
 	virtual void RenderTexture_ReadTextureDataFromGPU( IRenderTexture* texture, uint8* out_pixels ) const PORO_OVERRIDE;
@@ -100,7 +101,8 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual IShader* Shader_Create() const PORO_OVERRIDE;
+	virtual IShader* Shader_Create() PORO_OVERRIDE;
+	virtual void Shader_Destroy( IShader* shader) PORO_OVERRIDE;
 	virtual void Shader_Init( IShader* shader, const std::string& vertex_source_filename, const std::string& fragment_source_filename ) const PORO_OVERRIDE;
 	virtual void Shader_InitFromString( IShader* shader, const std::string& vertex_source, const std::string& fragment_source ) const PORO_OVERRIDE;
 	virtual void Shader_Release( IShader* shader ) const PORO_OVERRIDE;
@@ -121,8 +123,8 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual IVertexBuffer* VertexBuffer_Create( VERTEX_FORMAT::Enum vertex_format ) const PORO_OVERRIDE;
-	virtual void VertexBuffer_Destroy( IVertexBuffer* buffer ) const PORO_OVERRIDE;
+	virtual IVertexBuffer* VertexBuffer_Create( VERTEX_FORMAT::Enum vertex_format ) PORO_OVERRIDE;
+	virtual void VertexBuffer_Destroy( IVertexBuffer* buffer ) PORO_OVERRIDE;
 	virtual void VertexBuffer_SetData( IVertexBuffer* buffer, void* vertices, uint32 num_vertices ) const PORO_OVERRIDE;
 
 	//-------------------------------------------------------------------------
@@ -154,19 +156,16 @@ public:
 
 	//-------------------------------------------------------------------------
 
-	virtual unsigned char*	ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp ) PORO_OVERRIDE;
-	virtual int				ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes ) PORO_OVERRIDE;
-
-	//-------------------------------------------------------------------------
-
 	virtual void SetMultithreadLock( bool multithreaded_lock ) PORO_OVERRIDE { mBufferLoadTextures = multithreaded_lock; }
 	virtual bool GetMultithreadLock() const PORO_OVERRIDE { return mBufferLoadTextures; }
 
 	virtual bool UpdateBufferedMultithreaded() PORO_OVERRIDE;
 
 	void IMPL_AddTextureToBuffer( TextureOpenGL* buffer_me );
-private:
+	TextureOpenGL* IMPL_LoadTexture( const types::string& filename, bool store_raw_pixel_data );
+	TextureOpenGL* IMPL_CreateImage( uint8* pixels, int w, int h, TEXTURE_FORMAT::Enum format, bool store_raw_pixel_data );
 
+private:
 	SDL_Window* mSDLWindow;
 	int		mWindowWidth;
 	int		mWindowHeight;
@@ -179,7 +178,6 @@ private:
 	bool mGlContextInitialized;
 
 	bool mVsyncEnabled = false;
-	uint32 mDynamicVboHandle = 0;
 
 	// for multithreaded loading of things
 	bool mBufferLoadTextures;

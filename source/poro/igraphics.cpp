@@ -18,10 +18,13 @@
  *
  ***************************************************************************/
 
+#include "external/stb_image.h"
+#include "external/stb_image_write.h"
 #include "igraphics.h"
 #include "itexture.h"
 #include "utils/color/ccolor.h"
 #include "poro.h"
+unsigned char *stbi_write_png_to_mem( unsigned char *pixels, int stride_bytes, int x, int y, int n, int *out_len ); // not public unless defining stb implementation
 
 
 namespace poro
@@ -382,4 +385,132 @@ namespace poro
 		// ---
 		IMPL_EndRendering();
 	}
+
+	void IGraphics::GraphicsFreeLeakedResources()
+	{
+		std::vector<ITexture*> _textures;
+		std::vector<ITexture3d*> _texture3Ds;
+		std::vector<IRenderTexture*> _rendertextures;
+		std::vector<IShader*> _shaders;
+		std::vector<IVertexBuffer*> _vertexbuffers;
+
+		for ( auto res : textures )
+			_textures.push_back( res );
+		for ( auto res : texture3Ds )
+			_texture3Ds.push_back( res );
+		for ( auto res : rendertextures )
+			_rendertextures.push_back( res );
+		for ( auto res : shaders )
+			_shaders.push_back( res );
+		for ( auto res : vertexbuffers )
+			_vertexbuffers.push_back( res );
+		for ( auto res : images )
+			free( res );
+
+		for ( auto res : _textures )
+			DestroyTexture( res );
+		for ( auto res : _texture3Ds )
+			DestroyTexture3d( res );
+		for ( auto res : _rendertextures )
+			RenderTexture_Destroy( res );
+		for ( auto res : _shaders )
+			delete res; // man, this API
+		for ( auto res : _vertexbuffers )
+			VertexBuffer_Destroy( res );
+
+		textures.clear();
+		texture3Ds.clear();
+		rendertextures.clear();
+		shaders.clear();
+		vertexbuffers.clear();
+		images.clear();
+	}
+
+
+	unsigned char* IGraphics::ImageLoadTemp( char const *filename, int *x, int *y, int *comp, int req_comp )
+	{
+		// comp might be NULL
+		poro_assert( x );
+		poro_assert( y );
+		poro_assert( filename );
+
+		char* filedata = NULL;
+		poro::types::Uint32 data_size_bytes = 0;
+		StreamStatus::Enum read_status = Poro()->GetFileSystem()->ReadWholeFile( filename, filedata, &data_size_bytes );
+		if ( read_status != StreamStatus::NoError )
+			return NULL;
+
+		unsigned char* result = stbi_load_from_memory( (stbi_uc*)filedata, data_size_bytes, x, y, comp, req_comp );
+		free( filedata );
+
+		// error reading the file, probably not image file
+		if ( result == NULL )
+			return NULL;
+
+#define PORO_SWAP_RED_AND_BLUE
+#ifdef PORO_SWAP_RED_AND_BLUE
+		if ( comp && *comp == 4 )
+		{
+			int width = *x;
+			int height = *y;
+			int bpp = *comp;
+
+			for ( int ix = 0; ix < width; ++ix )
+			{
+				for ( int iy = 0; iy < height; ++iy )
+				{
+					int i = ( iy * width ) * bpp + ix * bpp;
+					// color = ((color & 0x000000FF) << 16) | ((color & 0x00FF0000) >> 16) | (color & 0xFF00FF00);
+					/*data[ co ] << 16 |
+					data[ co+1 ] << 8 |
+					data[ co+2 ] << 0; // |*/
+
+					unsigned char temp = result[i + 2];
+					result[i + 2] = result[i];
+					result[i] = temp;
+				}
+			}
+		}
+#endif
+
+		return result;
+	}
+
+	unsigned char* IGraphics::ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp )
+	{
+		unsigned char* result = ImageLoadTemp( filename, x, y, comp, req_comp );
+		images.insert( result ); // not thread-safe
+		return result;
+	}
+
+	void IGraphics::ImageFree( unsigned char* image )
+	{
+		free( image );
+
+		auto it = images.find( image );
+		if ( it != images.end() )
+		{
+			images.erase( it ); // not thread-safe
+		}
+	}
+
+	int	IGraphics::ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes )
+	{
+		int png_size_bytes;
+		unsigned char* png_memory = stbi_write_png_to_mem( (unsigned char*)data, stride_bytes, x, y, comp, &png_size_bytes );
+		if ( png_memory != 0 && png_size_bytes > 0 )
+		{
+			StreamStatus::Enum write_status = Poro()->GetFileSystem()->WriteWholeFile( filename, (char*)png_memory, (unsigned int)png_size_bytes, StreamWriteMode::Recreate, FileLocation::WorkingDirectory );
+			if ( write_status != StreamStatus::NoError )
+				poro_logger << "Error ImageSave() - couldn't write to file: " << filename << "\n";
+		}
+		else
+		{
+			return 0;
+		}
+		free( png_memory );
+
+		return 1;
+	}
+
 }

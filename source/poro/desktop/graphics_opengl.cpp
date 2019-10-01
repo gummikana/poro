@@ -100,13 +100,12 @@ namespace {
 	{
 		const int bpp = 4;
 
-		unsigned char* result = new unsigned char[ ( bpp * new_size_x * new_size_y ) ];
+		unsigned char* result = (unsigned char*)malloc( bpp * new_size_x * new_size_y );
 
 		for( int y = 0; y < new_size_y; ++y )
 		{
 			for( int x = 0; x < new_size_x; ++x )
 			{
-				
 				int pixel_pos = ( ( y * w ) + x ) * bpp;
 				int new_pos = ( ( y * new_size_x ) + x ) * bpp;
 				for( int i = 0; i < bpp; ++i )
@@ -157,100 +156,6 @@ namespace {
 		return result;
 	}
 
-	TextureOpenGL* CreateImage( GraphicsOpenGL* graphics, uint8* pixels, int w, int h, TEXTURE_FORMAT::Enum format, bool store_raw_pixel_data )
-	{
-		Uint32 oTexture = 0;
-		float uv[4];
-		int real_size[2];
-		
-		int nw = w; 
-		int nh = h; 
-
-		uv[0]=0;
-		uv[1]=0;
-		uv[2]=1;
-		uv[3]=1;
-		real_size[0] = w;
-		real_size[1] = h;
-		bool resize_to_power_of_two = OPENGL_SETTINGS.textures_resize_to_power_of_two;
-
-		bool image_resized = false;
-		uint8* new_pixels = pixels;
-		
-		// --- power of 2
-		if( resize_to_power_of_two )
-		{
-			nw = GetNextPowerOfTwo(w);
-			nh = GetNextPowerOfTwo(h);
-			if( nw != w || nh != h )
-			{
-				
-				new_pixels = ResizeImage( pixels, w, h, nw, nh );
-				image_resized = true;
-
-				uv[0] = 0;						// Min X
-				uv[1] = 0;						// Min Y
-				uv[2] = ((GLfloat)w ) / nw;	// Max X
-				uv[3] = ((GLfloat)h ) / nh;	// Max Y
-
-				real_size[ 0 ] = nw;
-				real_size[ 1 ] = nh;
-			}
-		}
-		// --- /power of 2 
-
-		TextureOpenGL* result = new TextureOpenGL;
-
-		if( graphics->GetMultithreadLock() == false )
-		{
-			const uint32 gl_format = GetGLTextureFormat( format );
-
-			glGenTextures(1, (GLuint*)&oTexture);
-			glBindTexture(GL_TEXTURE_2D, oTexture);
-			glTexImage2D(GL_TEXTURE_2D, 0, gl_format, nw, nh, 0, gl_format, GL_UNSIGNED_BYTE, new_pixels);
-		
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		}
-		else
-		{
-			graphics->IMPL_AddTextureToBuffer( result );
-			result->mStorePixelData = store_raw_pixel_data;
-
-			// this is so that we have the data to parse it later
-			store_raw_pixel_data = true;
-		}
-
-		result->mTexture = oTexture;
-		result->mWidth = w;
-		result->mHeight = h;
-		result->mRealSizeX = real_size[ 0 ];
-		result->mRealSizeY = real_size[ 1 ];
-		result->mFilteringMode = poro::TEXTURE_FILTERING_MODE::UNDEFINED;
-		result->mWrappingMode = poro::TEXTURE_WRAPPING_MODE::CLAMP_TO_EDGE;
-		result->mFormat = format;
-
-		graphics->SetTextureFilteringMode( result, graphics->GetMipmapMode() );
-
-		if ( !store_raw_pixel_data )
-		{
-			delete [] new_pixels;
-			new_pixels = NULL;
-		}
-
-		result->mPixelData = new_pixels;
-
-		if ( image_resized )
-		{
-			stbi_image_free( pixels );
-			pixels = NULL;
-		}
-
-		for( int i = 0; i < 4; ++i )
-			result->mUv[ i ] = uv[ i ];
-		return result;
-	}
-			
 	//-----------------------------------------------------------------------------
 
 	// Thanks to Jetro Lauha for allowing me to use this. 
@@ -320,52 +225,6 @@ namespace {
 		return "";
 	}
 
-	TextureOpenGL* LoadTexture_Impl( GraphicsOpenGL* graphics, const types::string& filename, bool store_raw_pixel_data )
-	{
-		TextureOpenGL* result = NULL;
-		
-		CharBufferAutoFree texture_data;
-		StreamStatus::Enum read_status = Poro()->GetFileSystem()->ReadWholeFile( filename, texture_data.memory, &texture_data.size_bytes );
-		if ( read_status != StreamStatus::NoError )
-			return NULL;
-
-		int x,y,bpp;
-		stbi_info_from_memory( (stbi_uc*)texture_data.memory, texture_data.size_bytes, &x, &y, &bpp );
-		uint8* data = stbi_load_from_memory( (stbi_uc*)texture_data.memory, texture_data.size_bytes, &x, &y, &bpp, bpp == 3 ? 4 : 0 );
-
-		if( data == NULL ) 
-			return NULL;
-		
-		// ... process data if not NULL ... 
-		// ... x = width, y = height, n = # 8-bit components per pixel ...
-		// ... replace '0' with '1'..'4' to force that many components per pixel
-		
-		if( OPENGL_SETTINGS.textures_fix_alpha_channel && bpp == 4 ) 
-		{
-			GetSimpleFixAlphaChannel( data, x, y, bpp );
-			
-#ifdef PORO_SAVE_ALPHA_FIXED_PNG_FILES
-			if( false && GetFileExtension( filename ) == "png" )
-			{
-				int result = stbi_write_png( filename.c_str(), x, y, 4, data, x * 4 );
-				if( result == 0 ) std::cout << "problems saving: " << filename << "\n";
-			}
-#endif
-		}
-
-		TEXTURE_FORMAT::Enum format = TEXTURE_FORMAT::RGBA;
-		switch ( bpp )
-		{
-			case 1: format = TEXTURE_FORMAT::Luminance; break;
-			case 4: format = TEXTURE_FORMAT::RGBA; break;
-			default: poro_assert( false && "Invalid enum value" ); break;
-		}
-
-		result = CreateImage( graphics, data, x, y, format, store_raw_pixel_data );
-
-		return result;
-	}
-
 	//-----------------------------------------------------------------------------
 
 	TextureOpenGL* CreateTexture_Impl( GraphicsOpenGL* graphics, int width, int height, TEXTURE_FORMAT::Enum format = TEXTURE_FORMAT::RGBA )
@@ -373,17 +232,14 @@ namespace {
 		TextureOpenGL* result = NULL;
 		
 		int bpp = 4;
-		int char_size = width * height * bpp;
-		uint8* data = new uint8[ char_size ];
+		const uint32 num_bytes = width * height * bpp;
+		uint8* data = (uint8*)malloc( num_bytes );
 		if( data == NULL ) 
 			return NULL;
 
-		for( int i = 0; i < char_size; ++i )
-		{
-			data[ i ] = 0;
-		}
+		memset( data, 0, num_bytes );
 
-		result = CreateImage( graphics, data, width, height, format, false );
+		result = graphics->IMPL_CreateImage( data, width, height, format, false );
 
 		return result;
 	}
@@ -420,13 +276,19 @@ GraphicsOpenGL::GraphicsOpenGL() :
 
 	mGlContextInitialized( false ),
 	mVsyncEnabled( false ),
-	mDynamicVboHandle( 0 ),
 
 	mBufferLoadTextures( false ),
 	mBufferedLoadTextures()
 
 {
 
+}
+
+GraphicsOpenGL::~GraphicsOpenGL()
+{
+	if ( mGlContextInitialized )
+		fglUnloadOpenGL();
+	mGlContextInitialized = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -495,15 +357,17 @@ bool GraphicsOpenGL::Init( int width, int height, int internal_width, int intern
 	int pos_x = SDL_WINDOWPOS_CENTERED_DISPLAY(monitor_i);
 	int pos_y = SDL_WINDOWPOS_CENTERED_DISPLAY(monitor_i);
 	if( mDesktopHeight <= height ) pos_y = 0;
+	
+	const bool use_external_window = OPENGL_SETTINGS.external_context && OPENGL_SETTINGS.external_context->window;
+	if ( use_external_window )
+	{
+		mSDLWindow = (SDL_Window*)OPENGL_SETTINGS.external_context->window;
+	}
+	else
+	{
+		mSDLWindow = SDL_CreateWindow( caption.c_str(), pos_x, pos_y, width, height, SDL_WINDOW_OPENGL );
+	}
 
-	mSDLWindow = SDL_CreateWindow( caption.c_str(), 
-		pos_x,
-		pos_y, 
-		width, height, SDL_WINDOW_OPENGL 
-/*#ifdef _DEBUG
-		| SDL_WINDOW_RESIZABLE 
-#endif*/
-		);
 	if ( mSDLWindow == NULL )
 	{
 		poro_logger << PORO_ERROR << "Window creation failed:  " << SDL_GetError() << "\n";
@@ -511,12 +375,19 @@ bool GraphicsOpenGL::Init( int width, int height, int internal_width, int intern
 		exit(0);
 	}
 
-	SDL_GLContext sdl_gl_context = SDL_GL_CreateContext(mSDLWindow);
-	if ( sdl_gl_context == NULL )
+	if ( OPENGL_SETTINGS.external_context && OPENGL_SETTINGS.external_context->gpu_context )
 	{
-		poro_logger << PORO_ERROR << "GL context creation failed:  " << SDL_GetError() << "\n";
-		SDL_Quit();
-		exit(0);
+		// do nothing
+	}
+	else
+	{
+		SDL_GLContext sdl_gl_context = SDL_GL_CreateContext( mSDLWindow );
+		if ( sdl_gl_context == NULL )
+		{
+			poro_logger << PORO_ERROR << "GL context creation failed:  " << SDL_GetError() << "\n";
+			SDL_Quit();
+			exit( 0 );
+		}
 	}
 
 	// vsync? 0 = no vsync, 1 = vsync
@@ -529,9 +400,8 @@ bool GraphicsOpenGL::Init( int width, int height, int internal_width, int intern
 	// ---
 	IPlatform::Instance()->SetInternalSize( (types::Float32)internal_width, (types::Float32)internal_height );
 	ResetWindow();
-
-	poro_assert( mDynamicVboHandle == 0 );
-	glGenBuffers( 1, &mDynamicVboHandle );
+	if ( use_external_window )
+		SetWindowPositionCentered();
 
 	return 1;
 }
@@ -551,7 +421,6 @@ void GraphicsOpenGL::SetIcon( const std::string& icon_bmp_file )
 	
 	if( icon_surface )
 		SDL_SetWindowIcon(mSDLWindow, icon_surface);
-
 }
 
 //-----------------------------------------------------------------------------
@@ -708,13 +577,17 @@ std::string GraphicsOpenGL::GetGraphicsHardwareInfo()
 
 ITexture* GraphicsOpenGL::CreateTexture( int width, int height, TEXTURE_FORMAT::Enum format )
 {
-	return CreateTexture_Impl( this, width, height, format );
+	auto result = CreateTexture_Impl( this, width, height, format );
+	textures.insert( result );
+	return result;
 }
 
 ITexture* GraphicsOpenGL::CloneTexture( ITexture* other )
 {
 	poro_assert( dynamic_cast<TextureOpenGL*>( other ) );
-	return new TextureOpenGL( static_cast<TextureOpenGL*>(other) );
+	auto result = new TextureOpenGL( static_cast<TextureOpenGL*>(other) );
+	textures.insert( result );
+	return result;
 }
 
 void GraphicsOpenGL::SetTextureData( ITexture* itexture, void* data )
@@ -734,19 +607,20 @@ void GraphicsOpenGL::SetTextureData( ITexture* itexture, void* data, int x, int 
 ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename )
 {
 	ITexture* result = LoadTexture( filename, false );
-
+	textures.insert( result );
 	return result;
 }
 
 ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename, bool store_raw_pixel_data )
 {
-	ITexture* result = LoadTexture_Impl( this, filename, store_raw_pixel_data );
+	ITexture* result = IMPL_LoadTexture( filename, store_raw_pixel_data );
 	
 	if ( result )
 	{
 		poro_assert( dynamic_cast<TextureOpenGL*>( result ) );
 		TextureOpenGL* texture = static_cast<TextureOpenGL*>( result );
 		texture->SetFilename( filename );
+		textures.insert( texture );
 	}
 	else
 	{
@@ -761,6 +635,8 @@ void GraphicsOpenGL::DestroyTexture( ITexture* itexture )
 	poro_assert( dynamic_cast<TextureOpenGL*>( itexture ) );
 	TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
 	glDeleteTextures(1, &texture->mTexture);
+	delete itexture;
+	textures.erase( itexture );
 }
 
 //-----------------------------------------------------------------------------
@@ -913,6 +789,7 @@ ITexture3d* GraphicsOpenGL::LoadTexture3d( const types::string& filename )
 	glDisable( GL_TEXTURE_3D );
 	
 	Texture3dOpenGL* result = new Texture3dOpenGL;
+	texture3Ds.insert( result );
 	if ( result )
 	{
 		result->mTexture = oTexture;
@@ -922,7 +799,9 @@ ITexture3d* GraphicsOpenGL::LoadTexture3d( const types::string& filename )
 		result->SetFilename( filename );
 	}
 	else
+	{
 		poro_logger << "Couldn't load 3d texture: " << filename << "\n";
+	}
 		
 	return result;
 }
@@ -934,13 +813,16 @@ void GraphicsOpenGL::DestroyTexture3d( ITexture3d* itexture )
 
 	if( texture )
 		glDeleteTextures(1, &texture->mTexture);
+
+	delete itexture;
 }
 
 //=============================================================================
 
-IRenderTexture* GraphicsOpenGL::RenderTexture_Create( int width, int height, TEXTURE_FILTERING_MODE::Enum filtering_mode ) const
+IRenderTexture* GraphicsOpenGL::RenderTexture_Create( int width, int height, TEXTURE_FILTERING_MODE::Enum filtering_mode )
 {
 	RenderTextureOpenGL* result = new RenderTextureOpenGL();
+	rendertextures.insert( result );
 	poro_assert( result );
 
 	// init texture
@@ -991,25 +873,12 @@ IRenderTexture* GraphicsOpenGL::RenderTexture_Create( int width, int height, TEX
 	return result;
 }
 
-RenderTextureOpenGL::~RenderTextureOpenGL() 
-{ 
-	//Delete texture
-	glDeleteTextures(1, &mTexture.mTexture);
-	//Bind 0, which means render to back buffer, as a result, fb is unbound
-	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-	glDeleteFramebuffers( 1, &mBufferId );
-	glDeleteBuffers( 1, &mPboBufferId );
-
-	#ifdef RENDER_TEXTURE_ASYNC_READ_SUBDATA_IMPL
-		glDeleteBuffers( 1, &mPboBufferOutId );
-	#endif
-}
-
-void GraphicsOpenGL::RenderTexture_Destroy( IRenderTexture* itexture ) const
+void GraphicsOpenGL::RenderTexture_Destroy( IRenderTexture* itexture )
 {
 	poro_assert( dynamic_cast<RenderTextureOpenGL*>( itexture ) );
 	RenderTextureOpenGL* texture = static_cast<RenderTextureOpenGL*>( itexture );
 
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 	glDeleteTextures(1, &texture->mTexture.mTexture);
 	glDeleteFramebuffers( 1, &texture->mBufferId );
 	glDeleteBuffers( 1, &texture->mPboBufferId );
@@ -1020,9 +889,8 @@ void GraphicsOpenGL::RenderTexture_Destroy( IRenderTexture* itexture ) const
 	}
 	#endif
 
-	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-
 	delete texture;
+	rendertextures.erase( rendertextures.find( itexture ) );
 }
 
 void GraphicsOpenGL::RenderTexture_BeginRendering( IRenderTexture* itexture, bool clear_color, bool clear_depth, float clear_r, float clear_g, float clear_b, float clear_a ) const
@@ -1163,8 +1031,6 @@ int LoadShaderFromString( ShaderOpenGL* shader, const char* source, const int so
 
 		GLchar *strInfoLog = new GLchar[infoLogLength + 1];
 		glGetShaderInfoLog( shader_handle, infoLogLength, NULL, strInfoLog );
-
-
 		fprintf(stderr, "GLSL compile failure:\n%s\n", strInfoLog);
 		delete[] strInfoLog;
 
@@ -1266,14 +1132,19 @@ void Shader_Release( IShader* ishader )
 
 //=============================================================================
 
-IShader* GraphicsOpenGL::Shader_Create() const
+IShader* GraphicsOpenGL::Shader_Create()
 {
-	return new ShaderOpenGL();
+	auto result = new ShaderOpenGL();
+
+	shaders.insert( result );
+	return result;
 }
 
-ShaderOpenGL::~ShaderOpenGL()
-{ 
-	poro::Shader_Release( this );
+void GraphicsOpenGL::Shader_Destroy( IShader* shader )
+{
+	poro::Shader_Release( shader );
+	delete shader;
+	shaders.erase( shaders.find( shader ) );
 }
 
 void GraphicsOpenGL::Shader_Init( IShader* ishader, const std::string& vertex_source_filename, const std::string& fragment_source_filename ) const
@@ -1461,9 +1332,10 @@ void GraphicsOpenGL::SetShader( IShader* shader )
 
 //===================================================================================
 
-IVertexBuffer* GraphicsOpenGL::VertexBuffer_Create( VERTEX_FORMAT::Enum vertex_format ) const
+IVertexBuffer* GraphicsOpenGL::VertexBuffer_Create( VERTEX_FORMAT::Enum vertex_format )
 {
 	auto result = new IVertexBuffer();
+	vertexbuffers.insert( result );
 	result->format = vertex_format;
 	result->vertex_size = 0;
 	switch ( vertex_format )
@@ -1484,11 +1356,12 @@ IVertexBuffer* GraphicsOpenGL::VertexBuffer_Create( VERTEX_FORMAT::Enum vertex_f
 	return result;
 }
 
-void GraphicsOpenGL::VertexBuffer_Destroy( IVertexBuffer* buffer ) const
+void GraphicsOpenGL::VertexBuffer_Destroy( IVertexBuffer* buffer )
 {
 	poro_assert( buffer );
 	glDeleteBuffers( 1, &buffer->impl_data );
 	delete buffer;
+	vertexbuffers.erase( vertexbuffers.find(buffer) );
 }
 
 void GraphicsOpenGL::VertexBuffer_SetData( IVertexBuffer* buffer, void* vertices, uint32 num_vertices ) const
@@ -1978,74 +1851,6 @@ int GraphicsOpenGL::CaptureScreenshot( unsigned char* data, int max_size )
 	return pixels_size;	
 }
 
-unsigned char* GraphicsOpenGL::ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp )
-{
-	// comp might be NULL
-	poro_assert( x );
-	poro_assert( y );
-	poro_assert( filename );
-
-	char* filedata = NULL;
-	poro::types::Uint32 data_size_bytes = 0;
-	StreamStatus::Enum read_status = Poro()->GetFileSystem()->ReadWholeFile( filename, filedata, &data_size_bytes );
-	if ( read_status != StreamStatus::NoError )
-		return NULL;
-
-	unsigned char* result = stbi_load_from_memory( (stbi_uc*)filedata, data_size_bytes, x, y, comp, req_comp );
-	free( filedata );
-	
-	// error reading the file, probably not image file
-	if( result == NULL )
-		return NULL;
-
-#define PORO_SWAP_RED_AND_BLUE
-#ifdef PORO_SWAP_RED_AND_BLUE
-	if( comp && *comp == 4 )
-	{
-		int width = *x;
-		int height = *y;
-		int bpp = *comp;
-
-		for( int ix = 0; ix < width; ++ix )
-		{
-			for( int iy = 0; iy < height; ++iy )
-			{
-				int i = ( iy * width ) * bpp + ix * bpp;
-				// color = ((color & 0x000000FF) << 16) | ((color & 0x00FF0000) >> 16) | (color & 0xFF00FF00);
-				/*data[ co ] << 16 |
-				data[ co+1 ] << 8 |
-				data[ co+2 ] << 0; // |*/
-
-				unsigned char temp = result[i+2];
-				result[i+2] = result[i];
-				result[i] = temp;
-			}
-		}
-	}
-#endif
-	
-	return result;
-}
-
-int	GraphicsOpenGL::ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes )
-{
-	int png_size_bytes;
-	unsigned char* png_memory = stbi_write_png_to_mem( (unsigned char*)data, stride_bytes, x, y, comp, &png_size_bytes );
-	if ( png_memory != 0 && png_size_bytes  > 0 )
-	{
-		StreamStatus::Enum write_status = Poro()->GetFileSystem()->WriteWholeFile( filename, (char*)png_memory, (unsigned int)png_size_bytes, StreamWriteMode::Recreate, FileLocation::WorkingDirectory );
-		if ( write_status != StreamStatus::NoError )
-			poro_logger << "Error ImageSave() - couldn't write to file: " << filename << "\n";
-	}
-	else
-	{
-		return 0;
-	}
-	free( png_memory );
-
-	return 1;
-}
-
 //=============================================================================
 
 bool GraphicsOpenGL::UpdateBufferedMultithreaded()
@@ -2081,7 +1886,7 @@ bool GraphicsOpenGL::UpdateBufferedMultithreaded()
 		bool store_raw_pixel_data = result->mStorePixelData;
 		if( !store_raw_pixel_data )
 		{
-			delete [] result->mPixelData;
+			ImageFree( result->mPixelData );
 			result->mPixelData = NULL;
 		}
 
@@ -2096,6 +1901,149 @@ void GraphicsOpenGL::IMPL_AddTextureToBuffer( TextureOpenGL* buffer_me )
 {
 	mBufferedLoadTextures.push_back( buffer_me );
 }
+
+TextureOpenGL* GraphicsOpenGL::IMPL_LoadTexture( const types::string& filename, bool store_raw_pixel_data )
+{
+	TextureOpenGL* result = NULL;
+
+	CharBufferAutoFree texture_data;
+	StreamStatus::Enum read_status = Poro()->GetFileSystem()->ReadWholeFile( filename, texture_data.memory, &texture_data.size_bytes );
+	if ( read_status != StreamStatus::NoError )
+		return NULL;
+
+	int x, y, bpp;
+	stbi_info_from_memory( (stbi_uc*)texture_data.memory, texture_data.size_bytes, &x, &y, &bpp );
+	uint8* data = stbi_load_from_memory( (stbi_uc*)texture_data.memory, texture_data.size_bytes, &x, &y, &bpp, bpp == 3 ? 4 : 0 );
+
+	if ( data == NULL )
+		return NULL;
+
+	images.insert( data );
+
+	// ... process data if not NULL ... 
+	// ... x = width, y = height, n = # 8-bit components per pixel ...
+	// ... replace '0' with '1'..'4' to force that many components per pixel
+
+	if ( OPENGL_SETTINGS.textures_fix_alpha_channel && bpp == 4 )
+	{
+		GetSimpleFixAlphaChannel( data, x, y, bpp );
+
+#ifdef PORO_SAVE_ALPHA_FIXED_PNG_FILES
+		if ( false && GetFileExtension( filename ) == "png" )
+		{
+			int result = stbi_write_png( filename.c_str(), x, y, 4, data, x * 4 );
+			if ( result == 0 ) std::cout << "problems saving: " << filename << "\n";
+		}
+#endif
+	}
+
+	TEXTURE_FORMAT::Enum format = TEXTURE_FORMAT::RGBA;
+	switch ( bpp )
+	{
+		case 1: format = TEXTURE_FORMAT::Luminance; break;
+		case 4: format = TEXTURE_FORMAT::RGBA; break;
+		default: poro_assert( false && "Invalid enum value" ); break;
+	}
+
+	result = IMPL_CreateImage( data, x, y, format, store_raw_pixel_data );
+
+	return result;
+}
+
+TextureOpenGL* GraphicsOpenGL::IMPL_CreateImage( uint8* pixels, int w, int h, TEXTURE_FORMAT::Enum format, bool store_raw_pixel_data )
+{
+	Uint32 oTexture = 0;
+	float uv[4];
+	int real_size[2];
+
+	int nw = w;
+	int nh = h;
+
+	uv[0] = 0;
+	uv[1] = 0;
+	uv[2] = 1;
+	uv[3] = 1;
+	real_size[0] = w;
+	real_size[1] = h;
+	bool resize_to_power_of_two = OPENGL_SETTINGS.textures_resize_to_power_of_two;
+
+	bool image_resized = false;
+	uint8* new_pixels = pixels;
+
+	// --- power of 2
+	if ( resize_to_power_of_two )
+	{
+		nw = GetNextPowerOfTwo( w );
+		nh = GetNextPowerOfTwo( h );
+		if ( nw != w || nh != h )
+		{
+			new_pixels = ResizeImage( pixels, w, h, nw, nh );
+			image_resized = true;
+
+			uv[0] = 0;						// Min X
+			uv[1] = 0;						// Min Y
+			uv[2] = ( (GLfloat)w ) / nw;	// Max X
+			uv[3] = ( (GLfloat)h ) / nh;	// Max Y
+
+			real_size[0] = nw;
+			real_size[1] = nh;
+		}
+	}
+	// --- /power of 2 
+
+	TextureOpenGL* result = new TextureOpenGL;
+
+	if ( GetMultithreadLock() == false )
+	{
+		const uint32 gl_format = GetGLTextureFormat( format );
+
+		glGenTextures( 1, (GLuint*)&oTexture );
+		glBindTexture( GL_TEXTURE_2D, oTexture );
+		glTexImage2D( GL_TEXTURE_2D, 0, gl_format, nw, nh, 0, gl_format, GL_UNSIGNED_BYTE, new_pixels );
+
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	}
+	else
+	{
+		IMPL_AddTextureToBuffer( result );
+		result->mStorePixelData = store_raw_pixel_data;
+
+		// this is so that we have the data to parse it later
+		store_raw_pixel_data = true;
+	}
+
+	result->mTexture = oTexture;
+	result->mWidth = w;
+	result->mHeight = h;
+	result->mRealSizeX = real_size[0];
+	result->mRealSizeY = real_size[1];
+	result->mFilteringMode = poro::TEXTURE_FILTERING_MODE::UNDEFINED;
+	result->mWrappingMode = poro::TEXTURE_WRAPPING_MODE::CLAMP_TO_EDGE;
+	result->mFormat = format;
+
+	SetTextureFilteringMode( result, GetMipmapMode() );
+
+	if ( !store_raw_pixel_data )
+	{
+		ImageFree( new_pixels );
+		new_pixels = NULL;
+	}
+
+	result->mPixelData = new_pixels;
+
+	if ( image_resized )
+	{
+		ImageFree( pixels );
+		pixels = NULL;
+	}
+
+	for ( int i = 0; i < 4; ++i )
+		result->mUv[i] = uv[i];
+
+	return result;
+}
+
 
 //=============================================================================
 #if 0 

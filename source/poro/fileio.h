@@ -85,6 +85,7 @@ namespace poro {
 	{
 		struct IStreamInternal
 		{
+			virtual ~IStreamInternal() { }
 			virtual StreamStatus::Enum Read( char* out_buffer, poro::types::Uint32 buffer_capacity_bytes, poro::types::Uint32* out_bytes_read ) = 0;
 			virtual StreamStatus::Enum ReadTextLine( std::string* out_text ) = 0;
 			virtual StreamStatus::Enum Write( const char* buffer, poro::types::Uint32 buffer_size_bytes ) = 0;
@@ -105,7 +106,7 @@ namespace poro {
         friend class WriteStream;
 	public:
 		virtual ~IFileDevice() { }
-
+		virtual void Destroy() { }
         virtual ReadStream  OpenRead( const std::string& path ) = 0;
         virtual WriteStream OpenWrite( FileLocation::Enum location, const std::string& read_path_relative_to_location, poro::types::Uint32 write_mode = StreamWriteMode::Enum::Recreate ) = 0;
 		virtual std::wstring GetFullPath( const std::string& path_relative_to_device_root ) = 0;

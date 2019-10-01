@@ -313,10 +313,13 @@ class CMemoryPoolObject
 public:
 	virtual ~CMemoryPoolObject() { }
 
+	#pragma push_macro("new") // needed for CRT memory leak detection macros
+	#undef new
 	void* operator new( size_type sizeo )
 	{
 		return ceng::GetSingletonPtr< ceng::CMemoryPoolForObjects< T, size_o_pool > >()->GetMem( sizeo );
 	}
+	#pragma pop_macro("new")
 
 	void operator delete( void* pointer )
 	{

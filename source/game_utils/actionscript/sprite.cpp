@@ -907,6 +907,7 @@ namespace {
 		}
 	}
 
+
 } // end of anonymous namespace
 //-----------------------------------------------------------------------------
 
@@ -926,8 +927,6 @@ void PreloadTexture( const std::string& filename )
 	}
 }
 
-//-----------------------------------------------------------------------------
-
 void ReleasePreloadedTexture( const std::string& filename )
 {
 	TTextureBuffer::iterator i = mTextureBuffer.find( filename );
@@ -941,7 +940,26 @@ void ReleasePreloadedTexture( const std::string& filename )
 		mTextureBuffer.erase( i );
 	}
 }
-//-----------------------------------------------------------------------------
+
+void ReleaseCachedTextures()
+{
+	auto graphics = Poro()->GetGraphics();
+
+	for ( auto& pair : mTextureBuffer )
+	{
+		if ( pair.second->texture )
+			graphics->DestroyTexture( pair.second->texture );
+		delete pair.second->image_data;
+		delete pair.second;
+	}
+
+	for ( auto& pair : mSpriteBuffer )
+	{
+		delete pair.second;
+	}
+
+	mTextureBuffer.clear();
+}
 
 poro::ITexture* GetTexture( const std::string& filename )
 {

@@ -60,6 +60,16 @@ void TextSprite_ReleaseFont( const std::string& font_filename )
 	m_font_cache.erase( i );
 }
 
+void TextSprite_DestroyCachedFonts()
+{
+	for ( auto pair : as::m_font_cache )
+	{
+		delete pair.second;
+	}
+
+	as::m_font_cache.clear();
+}
+
 //---------------------------------------------------------------------
 
 namespace as {
