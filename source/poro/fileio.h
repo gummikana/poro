@@ -85,6 +85,7 @@ namespace poro {
 	{
 		struct IStreamInternal
 		{
+			virtual ~IStreamInternal() { }
 			virtual StreamStatus::Enum Read( char* out_buffer, poro::types::Uint32 buffer_capacity_bytes, poro::types::Uint32* out_bytes_read ) = 0;
 			virtual StreamStatus::Enum ReadTextLine( std::string* out_text ) = 0;
 			virtual StreamStatus::Enum Write( const char* buffer, poro::types::Uint32 buffer_size_bytes ) = 0;

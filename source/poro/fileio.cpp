@@ -111,7 +111,7 @@ namespace platform_impl
 		{
 		}
 
-		~StreamInternal()
+		~StreamInternal() override
 		{
 			poro_assert( mWriteBuffer == NULL );
 		}
