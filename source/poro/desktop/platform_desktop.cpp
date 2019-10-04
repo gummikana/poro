@@ -388,6 +388,24 @@ const int PORO_WINDOWS_JOYSTICK_COUNT = 8;
 
 //-----------------------------------------------------------------------------
 
+unsigned int reverseBits(unsigned int num) 
+{ 
+	unsigned int count = sizeof(num) * 8 - 1; 
+	unsigned int reverse_num = num; 
+
+	num >>= 1;  
+	while(num) 
+	{ 
+		reverse_num <<= 1;
+		reverse_num |= num & 1; 
+		num >>= 1; 
+		count--; 
+	} 
+	reverse_num <<= count; 
+	return reverse_num; 
+} 
+
+
 PlatformDesktop::PlatformDesktop() :
 	mGraphics( NULL ),
 	mFrameCount( 0 ),
@@ -417,6 +435,21 @@ PlatformDesktop::PlatformDesktop() :
 	TestSDL_Keycodes();
 
 	mFileSystem = new FileSystem;
+
+	// mRandomSeeding process
+	mRandomSeed = (unsigned int)time(NULL);
+
+	{
+		unsigned int time_null = (unsigned int)time( NULL );
+		double up_time = 0.1234;
+		up_time = GetUpTime();
+		time_null = time_null - (unsigned int)( 0.051 * up_time * (double)time_null );
+		time_null = reverseBits( time_null );
+		time_null = time_null ^ (unsigned int)GetCurrentProcessId();
+
+		mRandomSeed = time_null;
+	}
+
 }
 
 PlatformDesktop::~PlatformDesktop()
@@ -437,12 +470,16 @@ void PlatformDesktop::Init( IApplication* application, const GraphicsSettings& s
 		unsigned int time_null = (unsigned int)time( NULL );
 		double up_time = 0.1234;
 		up_time = GetUpTime();
-		time_null = time_null + (unsigned int)( up_time * (double)time_null );
+		time_null = time_null - (unsigned int)( 0.051 * up_time * (double)time_null );
+		time_null = reverseBits( time_null );
+		time_null = time_null ^ (unsigned int)GetCurrentProcessId();
+
 		mRandomSeed = time_null;
 #ifdef WIZARD_DEBUG
 		std::cout << "Poro random seed: " << mRandomSeed << "\n";
 #endif
 	}
+
 	mRandomI = (int)mRandomSeed;
 	mRunning = true;
 	mFrameCount = 1;
