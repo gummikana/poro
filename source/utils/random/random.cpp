@@ -66,6 +66,9 @@ double Global_LGMRandom::seed = 0;
 
 void Global_LGMRandom::SetSeed( double s )
 {
+	if( s >= 2147483647.0 )
+		s = s / 2.0;
+
 	seed = s;
 }
 
@@ -87,6 +90,9 @@ double Global_LGMRandom::Next()
 
 void CLGMRandom::SetSeed( double s )
 {
+	if( s >= 2147483647.0 )
+		s = s / 2.0;
+
 	seed = s;
 	Next();
 }
