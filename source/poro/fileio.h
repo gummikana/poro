@@ -256,7 +256,7 @@ namespace poro {
 		// === immediate mode writing api ===
 
 		// Write 'length_bytes' bytes from data to the file at 'relative_path'.
-		StreamStatus::Enum WriteWholeFile( const std::string& relative_path, char* data, poro::types::Uint32 length_bytes, StreamWriteMode::Enum write_mode = StreamWriteMode::Enum::Recreate, FileLocation::Enum location = FileLocation::Enum::UserDocumentsDirectory );
+		StreamStatus::Enum WriteWholeFile( const std::string& relative_path, const char* data, poro::types::Uint32 length_bytes, StreamWriteMode::Enum write_mode = StreamWriteMode::Enum::Recreate, FileLocation::Enum location = FileLocation::Enum::UserDocumentsDirectory );
 		// Write 'text' to the file at 'relative_path'.
 		StreamStatus::Enum WriteWholeTextFile( const std::string& relative_path, const std::string& text, StreamWriteMode::Enum write_mode = StreamWriteMode::Enum::Recreate, FileLocation::Enum location = FileLocation::Enum::UserDocumentsDirectory );
 

@@ -951,7 +951,7 @@ WriteStream FileSystem::OpenWrite( const std::string& path, u32 write_mode, File
 }
 
 // ===
-StreamStatus::Enum FileSystem::WriteWholeFile( const std::string& path, char* data, u32 length_bytes, StreamWriteMode::Enum write_mode, FileLocation::Enum location )
+StreamStatus::Enum FileSystem::WriteWholeFile( const std::string& path, const char* data, u32 length_bytes, StreamWriteMode::Enum write_mode, FileLocation::Enum location )
 {
 	WriteStream stream = OpenWrite( path, write_mode, location );
 	return stream.Write( data, length_bytes );
