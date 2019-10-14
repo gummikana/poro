@@ -47,6 +47,8 @@
 
 // #define PORO_FPS_30_MODE
 
+/*
+// This isn't used at the moment, but it's a handy function to have
 void PORO_MessageBox( const char* title, const char* msg )
 {
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
@@ -54,13 +56,66 @@ void PORO_MessageBox( const char* title, const char* msg )
 		msg,
 		NULL);
 }
+*/
 
-void PORO_AssertBox( const char* filename, int line, const char* msg )
+std::map< std::string, bool > m_asserts_to_ignore;
+
+bool PORO_AssertBox( const char* filename, int line, const char* assert_msg )
 {
 	std::stringstream ss;
-	ss << "File: " << filename << " at line: " << line << "\n" << msg << " failed.";
+	ss << "File: " << filename << " at line: " << line << "\n" << assert_msg << " failed.";
 	
-	PORO_MessageBox( "ASSERT FAILED", ss.str().c_str() );
+	const char* title = "ASSERT FAILED!";
+	const std::string ss_str = ss.str();
+	const char* msg = ss_str.c_str();
+
+	std::map< std::string, bool >::iterator i = m_asserts_to_ignore.find( ss_str );
+	if( i != m_asserts_to_ignore.end() && i->second == true )
+		return false;
+
+	// PORO_MessageBox( "ASSERT FAILED", ss.str().c_str() );
+
+		 const SDL_MessageBoxButtonData buttons[] = {
+		{ /* .flags, .buttonid, .text */        0, 0, "Ignore always" },
+		{ SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "CRASH!" },
+		{ SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "Ignore" },
+	};
+	const SDL_MessageBoxColorScheme colorScheme = {
+		{ /* .colors (.r, .g, .b) */
+			/* [SDL_MESSAGEBOX_COLOR_BACKGROUND] */
+			{ 255,   0,   0 },
+			/* [SDL_MESSAGEBOX_COLOR_TEXT] */
+			{   0, 255,   0 },
+			/* [SDL_MESSAGEBOX_COLOR_BUTTON_BORDER] */
+			{ 255, 255,   0 },
+			/* [SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] */
+			{   0,   0, 255 },
+			/* [SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] */
+			{ 255,   0, 255 }
+		}
+	};
+	const SDL_MessageBoxData messageboxdata = {
+		SDL_MESSAGEBOX_INFORMATION, /* .flags */
+		NULL, /* .window */
+		title, /* .title */
+		msg, /* .message */
+		SDL_arraysize(buttons), /* .numbuttons */
+		buttons, /* .buttons */
+		&colorScheme /* .colorScheme */
+	};
+	
+	int buttonid = 1;
+	if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0) {
+		SDL_Log("error displaying message box");
+		return true;
+	}
+
+	if( buttonid == 0 )
+	{
+		m_asserts_to_ignore[ ss_str ] = true;
+	}
+
+	return ( buttonid == 1 );
 }
 
 namespace {
