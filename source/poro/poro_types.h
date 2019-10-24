@@ -53,11 +53,19 @@ namespace types {
 		Vec3() : x(0),y(0),z(0){}
 		Vec3(Float32 _x, Float32 _y, Float32 _z) : x(_x),y(_y),z(_z){}
 	};
-	
+
+	struct IVec2 {
+		Int32 x;
+		Int32 y;
+		IVec2() : x( 0 ), y( 0 ) {}
+		IVec2( Int32 _x, Int32 _y ) : x( _x ), y( _y ) {}
+	};
+
 	typedef std::string							string;
 	typedef ceng::StaticArray< Float32, 4 >		fcolor;
 	typedef Vec2								vec2;
 	typedef Vec3								vec3;
+	typedef IVec2								ivec2;
 
 	struct Vertex_PosFloat2_ColorUint32
 	{

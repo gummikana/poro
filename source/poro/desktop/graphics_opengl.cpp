@@ -719,6 +719,33 @@ void GraphicsOpenGL::SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPIN
 	}
 }
 
+void GraphicsOpenGL::BeginScissorRect( const poro::types::ivec2& pos_min, const poro::types::ivec2& pos_max ) const
+{
+	const float scale = GetWindowSize().x / GetInternalSize().x;
+
+	poro::types::ivec2 pmin = pos_min;
+	poro::types::ivec2 pmax = pos_max;
+
+	pmin.x = (float)pmin.x * scale;
+	pmin.y = (float)pmin.y *scale;
+	pmax.x = (float)pmax.x *scale;
+	pmax.y = (float)pmax.y *scale;
+
+	const int32_t height = pmax.y - pmin.y;
+	pmin.y = (int32_t)GetWindowSize().y - pmax.y;
+
+	pmin.x += mViewportOffset.x;
+	pmin.y -= mViewportOffset.y;
+
+	glEnable( GL_SCISSOR_TEST );
+	glScissor( pmin.x, pmin.y, pmax.x - pmin.x, height );
+}
+
+void GraphicsOpenGL::EndScissorRect() const
+{
+	glDisable( GL_SCISSOR_TEST );
+}
+
 //=============================================================================
 
 ITexture3d* GraphicsOpenGL::LoadTexture3d( const types::string& filename )

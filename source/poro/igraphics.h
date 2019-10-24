@@ -308,6 +308,9 @@ public:
 	virtual void PushBlendMode( BLEND_MODE::Enum blend_mode );
 	virtual void PopBlendMode();
 
+	virtual void BeginScissorRect( const poro::types::ivec2& pos_min, const poro::types::ivec2& pos_max ) const { poro_assert( false ); };
+	virtual void EndScissorRect() const { poro_assert( false ); };
+
 	virtual void SetShader( IShader* shader ){ poro_assert( false );  };
 
 	//-------------------------------------------------------------------------
