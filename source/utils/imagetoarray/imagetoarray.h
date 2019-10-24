@@ -19,11 +19,7 @@ namespace imagetoarray {
 struct TempTexture
 {
 	TempTexture() : w( width ), h( height ) { }
-	~TempTexture() 
-	{
-		Poro()->GetGraphics()->ImageFree( data );
-		data = NULL;
-	}
+	~TempTexture();
 
 	int width, height, bpp;
 	unsigned char *data;

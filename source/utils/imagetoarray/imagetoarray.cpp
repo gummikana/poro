@@ -104,6 +104,11 @@ void SaveImage( const std::string& filename, const ceng::CArray2D< poro::types::
 
 namespace imagetoarray {
 
+TempTexture::~TempTexture()
+{
+	Poro()->GetGraphics()->ImageFree( data );
+	data = NULL;
+}
 
 TempTexture* GetTexture( const std::string& filename )
 {
