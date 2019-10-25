@@ -721,15 +721,17 @@ void GraphicsOpenGL::SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPIN
 
 void GraphicsOpenGL::BeginScissorRect( const poro::types::ivec2& pos_min, const poro::types::ivec2& pos_max ) const
 {
-	const float scale = GetWindowSize().x / GetInternalSize().x;
+	const float internal_aspect = GetInternalSize().x / GetInternalSize().y;
+	const float window_aspect = GetWindowSize().x / GetWindowSize().y;
+	const float scale = ( window_aspect > internal_aspect ) ? ( GetWindowSize().y / GetInternalSize().y ) : ( GetWindowSize().x / GetInternalSize().x );
 
 	poro::types::ivec2 pmin = pos_min;
 	poro::types::ivec2 pmax = pos_max;
 
 	pmin.x = (float)pmin.x * scale;
-	pmin.y = (float)pmin.y *scale;
-	pmax.x = (float)pmax.x *scale;
-	pmax.y = (float)pmax.y *scale;
+	pmin.y = (float)pmin.y * scale;
+	pmax.x = (float)pmax.x * scale;
+	pmax.y = (float)pmax.y * scale;
 
 	const int32_t height = pmax.y - pmin.y;
 	pmin.y = (int32_t)GetWindowSize().y - pmax.y;
