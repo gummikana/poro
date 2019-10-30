@@ -771,30 +771,41 @@ namespace {
 	{
 		TTSpriteBuffer::iterator i = mSpriteBuffer.find(filename);
 
+		bool load = false;
+
 		impl::SpriteLoadHelper* data = NULL;
-		if (i != mSpriteBuffer.end()) {
+		if (i != mSpriteBuffer.end()) 
+		{
 			data = i->second;
-		} else {
+		}
+		else 
+		{
 			data = new impl::SpriteLoadHelper;
 			mSpriteBuffer[filename] = data;
+			load = true;
 		}
 
-		// this shouldn't be null
-		cassert(data);
-
+		cassert( data ); // this shouldn't be null
 
 #ifdef WIZARD_HOT_LOAD_ENABLED
 		// if we want to update sprite files on the fly...
 		// check if we should reload
 		std::string time_stamp = Poro()->GetFileSystem()->GetDateForFile(filename);
+		load |= ( data->time_stamp != time_stamp );
 		// logger << "WIZARD_HOT_LOAD_ENABLED!\n";
 #else
 		std::string time_stamp = "d";	// debug 
 #endif
 
 		// reload (or load for the first time)
-		if (data->time_stamp != time_stamp)
+		if ( load )
 		{
+			if ( Poro()->GetFileSystem()->DoesExist( filename ) == false )
+			{
+				logger_error << "ERROR - LoadSpriteTo()... file doesn't exist: " << filename << "\n";
+				return NULL;
+			}
+
 			if( data->time_stamp.empty() == false )
 				logger << "reloading sprite: " << filename << "\n";
 
@@ -853,12 +864,19 @@ namespace {
 
 		if( i == mTextureBuffer.end() )
 		{
+			if ( Poro()->GetFileSystem()->DoesExist( filename ) == false )
+			{
+				logger_error << "ERROR - LoadSpriteTo()... file doesn't exist: " << filename << "\n";
+				return NULL;
+			}
+
 			poro::IGraphics* graphics = poro::IPlatform::Instance()->GetGraphics();
 			poro::ITexture* image = graphics->LoadTexture( filename );
 
-			if ( image == NULL ) return NULL;
+			if ( image == NULL )
+				return NULL;
 
-			std::string time_stamp = Poro()->GetFileSystem()->GetDateForFile(filename);
+			const std::string time_stamp = Poro()->GetFileSystem()->GetDateForFile(filename);
 
 			TextureBuffer* data = new TextureBuffer( image, NULL, time_stamp );
 			mTextureBuffer[ filename ] = data;
@@ -866,9 +884,8 @@ namespace {
 		}
 		else
 		{
-			// if check the timestamp
-
-			std::string time_stamp = Poro()->GetFileSystem()->GetDateForFile(filename);
+#ifdef WIZARD_HOT_LOAD_ENABLED
+			const std::string time_stamp = Poro()->GetFileSystem()->GetDateForFile( filename );
 			if( i->second->time_stamp != time_stamp ) 
 			{
 				// debug reasons
@@ -893,7 +910,8 @@ namespace {
 				// reload
 				poro::ITexture* image = graphics->LoadTexture( filename );
 
-				if ( image == NULL ) return NULL;
+				if ( image == NULL )
+					return NULL;
 
 				logger << "Loading of new texture done: " << filename << "\n";
 
@@ -901,8 +919,8 @@ namespace {
 				i->second->time_stamp = time_stamp;
 				i->second->image_data = NULL;
 			}
+#endif
 
-			// else - don't check timestamps
 			return i->second;
 		}
 	}
@@ -992,38 +1010,31 @@ void LoadSpriteTo( const std::string& filename, as::Sprite* result )
 {
 	cassert( result );
 
-	if( Poro()->GetFileSystem()->DoesExist( filename ) == false ) 
-	{
-		logger_error << "ERROR - LoadSpriteTo()... file doesn't exist: " << filename << "\n";
-		return;
-	}
-
 	if( filename.size() >= 3 && filename.substr( filename.size() - 3 ) == "xml" )
 	{
 		// if we're loading an xml file
 		using namespace impl;
 
-		SpriteLoadHelper* sprite_data = GetSpriteLoadHelper(filename);
-		ApplySpriteLoadHelperToSprite(result, sprite_data);
-		result->SetFilename(filename);
+		SpriteLoadHelper* sprite_data = GetSpriteLoadHelper( filename );
+		ApplySpriteLoadHelperToSprite( result, sprite_data );
+		result->SetFilename( filename );
 		return;
 	}
 	else
 	{
-		// we're loading just a texture...
-
+		// we're loading just a texture
 		TextureBuffer* buffer = GetTextureBuffer( filename );
-		if ( buffer == NULL ) return;
+		if ( buffer == NULL )
+			return;
 
 		poro::ITexture* image = buffer->texture;
-		if( image == NULL ) return;
+		if( image == NULL )
+			return;
 
 		result->SetTexture( image );
 		result->SetImageData( buffer->image_data );
 		result->SetSize( (int)image->GetWidth(), (int)image->GetHeight() );
-
 		result->SetFilename( filename );
-
 		return;
 	}
 }
