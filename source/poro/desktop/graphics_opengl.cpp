@@ -728,16 +728,16 @@ void GraphicsOpenGL::BeginScissorRect( const poro::types::ivec2& pos_min, const 
 	poro::types::ivec2 pmin = pos_min;
 	poro::types::ivec2 pmax = pos_max;
 
-	pmin.x = (float)pmin.x * scale;
-	pmin.y = (float)pmin.y * scale;
-	pmax.x = (float)pmax.x * scale;
-	pmax.y = (float)pmax.y * scale;
+	pmin.x = (int32_t)( (float)pmin.x * scale );
+	pmin.y = (int32_t)( (float)pmin.y * scale );
+	pmax.x = (int32_t)( (float)pmax.x * scale );
+	pmax.y = (int32_t)( (float)pmax.y * scale );
 
 	const int32_t height = pmax.y - pmin.y;
 	pmin.y = (int32_t)GetWindowSize().y - pmax.y;
 
-	pmin.x += mViewportOffset.x;
-	pmin.y -= mViewportOffset.y;
+	pmin.x += (int32_t)mViewportOffset.x;
+	pmin.y -= (int32_t)mViewportOffset.y;
 
 	glEnable( GL_SCISSOR_TEST );
 	glScissor( pmin.x, pmin.y, pmax.x - pmin.x, height );
