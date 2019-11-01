@@ -55,6 +55,7 @@ class SpriteAnimationUpdater;
 
 // ----------------------------------------------------------------------------
 
+void ReleasePreloadedTexture( const std::string& filename );
 void ReleaseCachedTextures();
 
 class Sprite : public DisplayObjectContainer
