@@ -219,7 +219,7 @@ namespace poro {
 		// Open all files matching 'relative_path'. File is looked up from each FileDevice in current device list, starting with the first device. Device list can be modified using GetDeviceList and SetDeviceList.
 		void OpenReadOnAllMatchingFiles( const std::string& relative_path, std::vector<ReadStream>* out_files );
 
-		void RemoveFile( const std::string& relative_path, FileLocation::Enum location = FileLocation::UserDocumentsDirectory );
+		void RemoveFile( const std::string& relative_path, FileLocation::Enum location = FileLocation::UserDocumentsDirectory, bool report_errors = true );
 
 		bool RenameFile( const std::string& file, const std::string& new_name, poro::FileLocation::Enum location = FileLocation::UserDocumentsDirectory );
 

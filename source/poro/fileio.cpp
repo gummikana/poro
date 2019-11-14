@@ -530,11 +530,11 @@ namespace platform_impl
 			return result;
 		}
 
-		void DeleteFileImpl( const std::wstring& path )
+		void DeleteFileImpl( const std::wstring& path, bool report_errors )
 		{
 			const int result = DeleteFileW( path.c_str() );
 
-			if ( result == 0 )
+			if ( result == 0 && report_errors )
 			{
 				LogError << "DeleteFileImp(" << WStringToString( path ) << ") file failed - error code: " << GetLastError() << "\n";
 			}
@@ -861,10 +861,10 @@ void FileSystem::OpenReadOnAllMatchingFiles( const std::string& path, std::vecto
 
 // ===
 
-void FileSystem::RemoveFile( const std::string& relative_path, FileLocation::Enum location )
+void FileSystem::RemoveFile( const std::string& relative_path, FileLocation::Enum location, bool report_errors )
 {
 	auto file = CompleteWritePath( location, relative_path );
-	platform_impl::DeleteFileImpl( file );
+	platform_impl::DeleteFileImpl( file, report_errors );
 }
 
 bool FileSystem::RenameFile( const std::string& file_, const std::string& new_name_, FileLocation::Enum location )
