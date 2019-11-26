@@ -700,6 +700,9 @@ struct SpriteLoadHelper
 
 static void ApplySpriteLoadHelperToSprite(as::Sprite* result, impl::SpriteLoadHelper* sprite_data)
 {
+	if( sprite_data == NULL )
+		return;
+
 	// we need to duplicate rect_animations
 	/*std::vector< as::Sprite::RectAnimation* > rect_animations(sprite_data->rect_animations.size());
 	for (std::size_t i = 0; i < rect_animations.size(); ++i)
