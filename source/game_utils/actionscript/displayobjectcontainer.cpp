@@ -120,6 +120,11 @@ void DisplayObjectContainer::SetFather( DisplayObjectContainer* father )
 
 	if( mFather != father )
 	{
+		if( father != NULL )
+		{
+			cassert( mFather == NULL );
+		}
+
 		// the direction is always down the tree, to avoid loops
 		mFather = father;
 
