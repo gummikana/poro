@@ -129,8 +129,8 @@ public:
     istream& operator>> (unsigned short& val )		{ return istringstream::operator>>(val); }
     istream& operator>> (int& val )					{ return istringstream::operator>>(val); }
     istream& operator>> (unsigned int& val )		{ return istringstream::operator>>(val); }
-    istream& operator>> (long& val )				{ return istringstream::operator>>(val); }
-    istream& operator>> (unsigned long& val )		{ return istringstream::operator>>(val); }
+    istream& operator>> (long long int& val )		{ return istringstream::operator>>(val); }
+    istream& operator>> (unsigned long long int& val ){ return istringstream::operator>>(val); }
     istream& operator>> (float& val )				{ return istringstream::operator>>(val); }
     istream& operator>> (double& val )				{ return istringstream::operator>>(val); }
     istream& operator>> (long double& val )			{ return istringstream::operator>>(val); }
@@ -147,12 +147,13 @@ CENG_IS_CENGSTRINGSTREAMABLE_MACROHELPER( short )
 CENG_IS_CENGSTRINGSTREAMABLE_MACROHELPER( unsigned short )
 CENG_IS_CENGSTRINGSTREAMABLE_MACROHELPER( int )
 CENG_IS_CENGSTRINGSTREAMABLE_MACROHELPER( unsigned int )
+CENG_IS_CENGSTRINGSTREAMABLE_MACROHELPER( long long int )
+CENG_IS_CENGSTRINGSTREAMABLE_MACROHELPER( unsigned long long int )
 CENG_IS_CENGSTRINGSTREAMABLE_MACROHELPER( float )
 CENG_IS_CENGSTRINGSTREAMABLE_MACROHELPER( double )
 CENG_IS_CENGSTRINGSTREAMABLE_MACROHELPER( long double )
 CENG_IS_CENGSTRINGSTREAMABLE_MACROHELPER( void* )
 CENG_IS_CENGSTRINGSTREAMABLE_MACROHELPER( std::string )
-
 
 }
 
