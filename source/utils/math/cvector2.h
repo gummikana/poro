@@ -51,6 +51,7 @@ public:
 
 	bool operator== ( const CVector2< Type >& other ) const { return ( this->x == other.x && this->y == other.y ); }
 	bool operator!= ( const CVector2< Type >& other ) const { return !operator==( other ); }
+	bool operator<  ( const CVector2< Type >& other ) const { return x < other.x || y < other.y; }
 
 	//=========================================================================
 
