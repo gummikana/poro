@@ -710,15 +710,14 @@ void DrawArrow( poro::IGraphics* graphics, const types::vector2& p1, const types
 
 //-----------------------------------------------------------------------------
 
-void DrawCircle( poro::IGraphics* graphics, const types::vector2& position, float r, const poro::types::fcolor& color, types::camera* camera )
+void DrawCircle( poro::IGraphics* graphics, const types::vector2& position, float r, const poro::types::fcolor& color, types::camera* camera, uint32 num_segments )
 {
 	std::vector< poro::types::Vertex_PosFloat2_ColorUint32 > debug_drawing;
-	const float k_segments = 16.0f;
-	const float k_increment = 2.0f * ceng::math::pi / k_segments;
+	const float k_increment = 2.0f * ceng::math::pi / num_segments;
 	const uint32 color32 = types::fcolor( color ).Get32();
 
 	float theta = 0.0f;
-	for( int i = 0; i < k_segments; ++i )
+	for( uint32 i = 0; i < num_segments; ++i )
 	{
 		types::vector2 d(r * cosf(theta), r * sinf(theta));
 		types::vector2 v = position + d;
@@ -733,13 +732,11 @@ void DrawCircle( poro::IGraphics* graphics, const types::vector2& position, floa
 		theta += k_increment;
 	}
 
-
 	// adding the first as the last (aka closing the loop)
 	debug_drawing.push_back( debug_drawing[ 0 ] );
 
 	// return debug_drawing;
 	// AddDebugLineDrawing( debug_drawing );
-
 
 	cassert( graphics );
 	graphics->DrawLines( debug_drawing, smooth_lines, line_width );

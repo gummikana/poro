@@ -55,7 +55,7 @@ void DrawArrow( poro::IGraphics* graphics, const types::vector2& p1, const types
 void DrawCross( poro::IGraphics* graphics, const types::vector2& p, float r, const poro::types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ), types::camera* camera = NULL );
 
 // draws a circle with lines
-void DrawCircle( poro::IGraphics* graphics, const types::vector2& position, float r, const poro::types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ), types::camera* camera = NULL );
+void DrawCircle( poro::IGraphics* graphics, const types::vector2& position, float r, const poro::types::fcolor& color = poro::GetFColor( 1, 1, 1, 1 ), types::camera* camera = NULL, uint32 num_segments = 16 );
 
 // draws a box with DrawLine method
 void DrawBox( poro::IGraphics* graphics, const types::vector2& min_pos, const types::vector2& max_pos, const poro::types::fcolor& color, types::camera* camera = NULL );
