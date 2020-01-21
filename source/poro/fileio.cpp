@@ -377,15 +377,18 @@ namespace platform_impl
 					auto out_file = CombinePath( relative_path_where, WStringToString( file_info.cFileName ) );
 					NormalizeSeparatorsOut( out_file );
 
-					if( (file_info.dwFileAttributes & _A_SUBDIR) )
+					if ( out_file.empty() == false )
 					{
-						if( list_directories ) 
-							out_files->push_back( out_file );
-					}
-					else
-					{
-						if( list_directories == false ) 
-							out_files->push_back( out_file );
+						if ( ( file_info.dwFileAttributes & _A_SUBDIR ) )
+						{
+							if ( list_directories )
+								out_files->push_back( out_file );
+						}
+						else
+						{
+							if ( list_directories == false )
+								out_files->push_back( out_file );
+						}
 					}
 				} 
 				while( FindNextFileW( file_handle, &file_info ) );
