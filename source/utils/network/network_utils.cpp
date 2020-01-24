@@ -23,8 +23,51 @@
 
 namespace network_utils
 {
+	//-------------------------------------------------------------------------
 
+	types::ustring ConvertUint16ToHex( uint16 value )
+	{
+		types::ustring result;
+		result.resize( sizeof( value ) );
+		result[0] = (unsigned char)( ( value >> 8 ) & 0xFF );
+		result[1] = (unsigned char)( (value)& 0xFF );
 
+		return result;
+	}
+
+	uint16 ConvertHexToUint16( const types::ustring& s )
+	{
+		cassert( s.size() >= sizeof( uint16 ) );
+
+		uint16 result =
+			( ( uint16( s[0] ) & 0xFF ) << 8 ) |
+			( ( uint16( s[1] ) & 0xFF ) );
+
+		return result;
+	}
+
+	//-------------------------------------------------------------------------
+
+	types::ustring ConvertInt16ToHex( int16 value )
+	{
+		types::ustring result;
+		result.resize( sizeof(value) );
+		result[0] = (unsigned char)( ( value >> 8 ) & 0xFF );
+		result[1] = (unsigned char)( (value)& 0xFF );
+
+		return result;
+	}
+
+	int16 ConvertHexToInt16( const types::ustring& s )
+	{
+		cassert( s.size() >= sizeof(int16) );
+
+		int32 result =
+			( ( int16( s[0] ) & 0xFF ) << 8 ) |
+			( ( int16( s[1] ) & 0xFF ) );
+
+		return result;
+	}
 
 	//-------------------------------------------------------------------------
 
@@ -55,7 +98,7 @@ namespace network_utils
 
 	//-------------------------------------------------------------------------
 
-	types::ustring	ConvertInt32ToHex( int32 value )
+	types::ustring ConvertInt32ToHex( int32 value )
 	{
 		types::ustring result;
 		result.resize( 4 );
@@ -67,7 +110,7 @@ namespace network_utils
 		return result;
 	}
 
-	int32			ConvertHexToInt32( const types::ustring& s )
+	int32 ConvertHexToInt32( const types::ustring& s )
 	{
 		cassert( s.size() >= 4 );
 		

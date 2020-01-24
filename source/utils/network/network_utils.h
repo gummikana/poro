@@ -29,7 +29,6 @@
 
 namespace network_utils
 {
-
 	// from here: http://www.gamedev.net/community/forums/topic.asp?topic_id=517289
 	template< typename To, typename From > To ConvertBits( From what )
 	{
@@ -37,6 +36,12 @@ namespace network_utils
 		union { From from; To to; } n = {what};
 		return n.to;
 	}
+
+	types::ustring	ConvertUint16ToHex( uint16 value );
+	uint16			ConvertHexToUint16( const types::ustring& s );
+
+	types::ustring	ConvertInt16ToHex( int16 value );
+	int16			ConvertHexToInt16( const types::ustring& s );
 
 	types::ustring	ConvertUint32ToHex( uint32 value );
 	uint32			ConvertHexToUint32( const types::ustring& s );

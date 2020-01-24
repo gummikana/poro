@@ -28,7 +28,6 @@
 
 namespace network_utils 
 {
-
 	class ISerializer
 	{
 	public:
@@ -39,6 +38,9 @@ namespace network_utils
 		virtual bool HasOverflowed() const = 0;
 		
 		virtual void IO( uint8		&value ) = 0;
+		virtual void IO( int8		&value ) = 0;
+		virtual void IO( uint16		&value ) = 0;
+		virtual void IO( int16		&value ) = 0;
 		virtual void IO( uint32		&value ) = 0;
 		virtual void IO( int32		&value ) = 0;
 		virtual void IO( uint64		&value ) = 0;
@@ -109,64 +111,84 @@ namespace network_utils
 			mHasOverflowed = false;
 		}
 
-		void IO( uint8& value )
+		void IO( uint8& value ) override
 		{
-			if( mHasOverflowed ) return; //stop writing when overflowed
+			if ( mHasOverflowed ) return; //stop writing when overflowed
 			mBuffer += value;
-			++mBytesUsed;
+			mBytesUsed += sizeof( value );
 		}
-		
-		void IO( uint32& value )
+
+		void IO( int8& value ) override
+		{
+			if ( mHasOverflowed ) return; //stop writing when overflowed
+			mBuffer += value;
+			mBytesUsed += sizeof( value );
+		}
+
+		void IO( uint16& value ) override
+		{
+			if ( mHasOverflowed ) return; //stop writing when overflowed
+			mBuffer += ConvertUint16ToHex( value );
+			mBytesUsed += sizeof( value );
+		}
+
+		void IO( int16& value ) override
+		{
+			if ( mHasOverflowed ) return; //stop writing when overflowed
+			mBuffer += ConvertUint16ToHex( value );
+			mBytesUsed += sizeof(value);
+		}
+
+		void IO( uint32& value ) override
 		{
 			if( mHasOverflowed ) return; //stop writing when overflowed
 			mBuffer += ConvertUint32ToHex( value );
-			mBytesUsed += 4;
+			mBytesUsed += sizeof( value );
 		}
 
-		virtual void IO( int32&		value )
+		void IO( int32&	value ) override
 		{
 			if( mHasOverflowed ) return; //stop writing when overflowed
 			mBuffer += ConvertInt32ToHex( value );
-			mBytesUsed += 4;
+			mBytesUsed += sizeof( value );
 		}
 
-		virtual void IO( uint64& value ) 
+		void IO( uint64& value )  override
 		{
 			if( mHasOverflowed ) return; //stop writing when overflowed
 			mBuffer += ConvertUint64ToHex( value );
-			mBytesUsed += 8;
+			mBytesUsed += sizeof( value );
 		}
 
-		virtual void IO( int64& value )
+		void IO( int64& value ) override
 		{
 			if( mHasOverflowed ) return; //stop writing when overflowed
 			mBuffer += ConvertInt64ToHex( value );
-			mBytesUsed += 8;
+			mBytesUsed += sizeof( value );
 		}
 
-		
-		void IO( float32& value )
+		void IO( float32& value ) override
 		{
 			if( mHasOverflowed ) return; //stop writing when overflowed
 			mBuffer += FloatToHexString( value );
-			mBytesUsed += 4;
+			mBytesUsed += sizeof( value );
 		}
 		
-		void IO( double64	&value )
+		void IO( double64& value ) override
 		{
 			if( mHasOverflowed ) return; //stop writing when overflowed
 			mBuffer += DoubleToHexString( value );
-			mBytesUsed += 8;
+			mBytesUsed += sizeof( value );
 		}
 			
-		void IO( bool& value )
+		void IO( bool& value ) override
 		{
 			if( mHasOverflowed ) return; //stop writing when overflowed
 			uint8 v = (value)?1:0;
 			IO( v );
 		}
 
-		void IO( types::ustring& str )
+		void IO( types::ustring& str ) override
 		{
 			uint32 l = str.length();
 			IO(l);
@@ -217,63 +239,87 @@ namespace network_utils
 			mHasOverflowed = false;
 		}
 
-		void IO( uint8& value )
+		void IO( uint8& value ) override
+		{
+			if ( mHasOverflowed ) return;
+			if ( mBytesUsed + sizeof( value ) > mLength ) { mHasOverflowed = true; return; }
+			value = mBuffer[mBytesUsed];
+			mBytesUsed += sizeof( value );
+		}
+
+		void IO( int8& value ) override
 		{
 			if( mHasOverflowed ) return; 
-			if( mBytesUsed+1 > mLength ) { mHasOverflowed = true; return; }
+			if( mBytesUsed + sizeof( value ) > mLength ) { mHasOverflowed = true; return; }
 			value = mBuffer[ mBytesUsed ];
-			++mBytesUsed;
+			mBytesUsed += sizeof( value );
 		}
 
-		void IO( uint32& value )
+		void IO( uint16& value ) override
+		{
+			if ( mHasOverflowed ) return;
+			if ( mBytesUsed + sizeof(value) > mLength ) { mHasOverflowed = true; return; }
+			value = ConvertHexToUint16( mBuffer.substr( mBytesUsed, sizeof( value ) ) );
+			mBytesUsed += sizeof( value );
+		}
+
+		void IO( int16&	value ) override
+		{
+			if ( mHasOverflowed ) return;
+			if ( mBytesUsed + sizeof( value ) > mLength ) { mHasOverflowed = true; return; }
+			value = ConvertHexToInt16( mBuffer.substr( mBytesUsed, sizeof( value ) ) );
+			mBytesUsed += sizeof( value );
+		}
+
+		void IO( uint32& value ) override
 		{
 			if( mHasOverflowed ) return; 
-			if( mBytesUsed + 4 > mLength ) { mHasOverflowed = true; return; }
-			value = ConvertHexToUint32( mBuffer.substr( mBytesUsed, 4 ) );
-			mBytesUsed += 4;
+			if( mBytesUsed + sizeof( value ) > mLength ) { mHasOverflowed = true; return; }
+			value = ConvertHexToUint32( mBuffer.substr( mBytesUsed, sizeof( value ) ) );
+			mBytesUsed += sizeof( value );
 		}
 
-		virtual void IO( int32&	value )
+		void IO( int32&	value ) override
 		{
 			if( mHasOverflowed ) return; 
-			if( mBytesUsed + 4 > mLength ) { mHasOverflowed = true; return; }
-			value = ConvertHexToInt32( mBuffer.substr( mBytesUsed, 4 ) );
-			mBytesUsed += 4;
+			if( mBytesUsed + sizeof( value ) > mLength ) { mHasOverflowed = true; return; }
+			value = ConvertHexToInt32( mBuffer.substr( mBytesUsed, sizeof( value ) ) );
+			mBytesUsed += sizeof( value );
 		}
 
-		void IO( uint64& value )
+		void IO( uint64& value ) override
 		{
 			if( mHasOverflowed ) return; 
-			if( mBytesUsed + 8 > mLength ) { mHasOverflowed = true; return; }
-			value = ConvertHexToUint64( mBuffer.substr( mBytesUsed, 8 ) );
-			mBytesUsed += 8;
+			if( mBytesUsed + sizeof( value ) > mLength ) { mHasOverflowed = true; return; }
+			value = ConvertHexToUint64( mBuffer.substr( mBytesUsed, sizeof( value ) ) );
+			mBytesUsed += sizeof( value );
 		}
 
-		virtual void IO( int64&	value )
+		void IO( int64&	value ) override
 		{
 			if( mHasOverflowed ) return; 
-			if( mBytesUsed + 8 > mLength ) { mHasOverflowed = true; return; }
-			value = ConvertHexToInt64( mBuffer.substr( mBytesUsed, 8 ) );
-			mBytesUsed += 8;
+			if( mBytesUsed + sizeof( value ) > mLength ) { mHasOverflowed = true; return; }
+			value = ConvertHexToInt64( mBuffer.substr( mBytesUsed, sizeof( value ) ) );
+			mBytesUsed += sizeof( value );
 		}
 
-		void IO( float32& value )
+		void IO( float32& value ) override
 		{
 			if( mHasOverflowed ) return; 
-			if( mBytesUsed + 4 > mLength ) { mHasOverflowed = true; return; }
-			value = HexStringToFloat( mBuffer.substr( mBytesUsed, 4 ) );
-			mBytesUsed += 4;
+			if( mBytesUsed + sizeof( value ) > mLength ) { mHasOverflowed = true; return; }
+			value = HexStringToFloat( mBuffer.substr( mBytesUsed, sizeof( value ) ) );
+			mBytesUsed += sizeof( value );
 		}
 
-		void IO( double64	&value )
+		void IO( double64& value ) override
 		{
 			if( mHasOverflowed ) return; //stop writing when overflowed
-			if( mBytesUsed + 8 > mLength ) { mHasOverflowed = true; return; }
-			value = HexStringToDouble( mBuffer.substr( mBytesUsed, 8 ) );
-			mBytesUsed += 8;
+			if( mBytesUsed + sizeof( value ) > mLength ) { mHasOverflowed = true; return; }
+			value = HexStringToDouble( mBuffer.substr( mBytesUsed, sizeof( value ) ) );
+			mBytesUsed += sizeof( value );
 		}
 			
-		void IO( bool& value )
+		void IO( bool& value ) override
 		{
 			uint8 v = 0;
 			IO( v );
@@ -282,7 +328,7 @@ namespace network_utils
 			value = (v != 0)?1:0;
 		}
 
-		void IO( types::ustring& str )
+		void IO( types::ustring& str ) override
 		{
 			uint32 len = 0;
 			IO( len );
