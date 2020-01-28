@@ -1081,7 +1081,7 @@ Sprite::Sprite() :
 	mSize( 0, 0 ),
 	mCenterOffset( 0, 0 ),
 	mXForm(),
-	mZ( 100 ),
+	mZ( 100.f ),
 	mLastFrameRendered( -1 ),
 	mColor( 4 ),
 	mDead( false ),
@@ -1102,6 +1102,11 @@ Sprite::Sprite() :
 
 	#ifdef WIZARD_DEBUG
 		total_sprites++;
+
+		if( total_sprites > 100000 )
+		{
+			int debug_break_me = 1;
+		}
 	#endif
 }
 
@@ -1931,6 +1936,13 @@ void Sprite::FindSpritesAtPointImpl( const types::vector2& pos, Transform& trans
 
 	transform.PopXForm();
 }
+//-----------------------------------------------------------------------------
+
+void Sprite::SortByZ()
+{
+	std::sort( mChildren.begin(), mChildren.end(), []( const DisplayObjectContainer* a, const DisplayObjectContainer* b ) { return dynamic_cast< const as::Sprite* >(b)->GetZ() < dynamic_cast< const as::Sprite* >(a)->GetZ(); } );
+}
+
 //-----------------------------------------------------------------------------
 
 } // end of namespace as

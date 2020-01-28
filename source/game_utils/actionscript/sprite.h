@@ -116,6 +116,8 @@ public:
 
 	void			SetZ( int z );
 	int				GetZ() const;
+	void			SortByZ();
+	
 	void			SetCenterOffset( const types::vector2& p );
 	types::vector2	GetCenterOffset() const;
 	void			SetSize( int w, int h );
