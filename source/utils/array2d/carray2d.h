@@ -137,6 +137,11 @@ public:
 		return myHeight;
 	}
 
+	inline int GetArea() const
+	{
+		return myWidth * myHeight;
+	}
+
 	inline bool IsValid( int x, int y ) const 
 	{
 		if( x < 0 ) return false;
