@@ -1658,7 +1658,18 @@ void GraphicsOpenGL::DrawVertices( const IVertexBuffer* buffer, uint32 start_ver
 
 		case VERTEX_FORMAT::VertexFormat_PosFloat2_2xTexCoordFloat2_ColorUint32:
 		{
-			poro_assert( false && "Not implemented" );
+			glEnableClientState( GL_TEXTURE_COORD_ARRAY );
+
+			glVertexPointer( 2, GL_FLOAT, sizeof( types::Vertex_PosFloat2_2xTexCoordFloat2_ColorUint32 ), NULL );
+			glTexCoordPointer( 4, GL_FLOAT, sizeof( types::Vertex_PosFloat2_2xTexCoordFloat2_ColorUint32 ), (GLvoid*)offsetof( types::Vertex_PosFloat2_2xTexCoordFloat2_ColorUint32, u ) );
+			glColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( types::Vertex_PosFloat2_2xTexCoordFloat2_ColorUint32 ), (GLvoid*)offsetof( types::Vertex_PosFloat2_2xTexCoordFloat2_ColorUint32, color ) );
+
+			// draw
+			glDrawArrays( api_primitive_mode, start_vertice, num_vertices );
+
+			// disable state
+			glDisableClientState( GL_TEXTURE_COORD_ARRAY );
+
 			break;
 		}
 
