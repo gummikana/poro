@@ -295,7 +295,7 @@ std::string StringReplace( const std::string& what, const std::string& with, con
 	while( pos != return_value.npos && ( limit == -1 || i < limit )  )
 	{
 		return_value.replace( pos, what.size(), with );
-		pos = return_value.find( what, pos );
+		pos = return_value.find( what, pos + with.size() );
 		i++;
 	}
 
