@@ -848,6 +848,11 @@ ReadStream FileSystem::OpenRead( const std::string& path )
 	return result;
 }
 
+ReadStream FileSystem::OpenRead( poro::FileLocation::Enum location, const std::string& relative_path )
+{
+	return mDefaultDevice->OpenRead( location, relative_path );
+}
+
 // ===
 
 void FileSystem::OpenReadOnAllMatchingFiles( const std::string& path, std::vector<ReadStream>* out_files )
@@ -1030,6 +1035,11 @@ bool FileSystem::DoesExist( const std::string& path_relative_to_device_root )
 	return result;
 }
 
+bool FileSystem::DoesExist( poro::FileLocation::Enum location, const std::string& path_relative_to_device_root )
+{
+	return mDefaultDevice->OpenRead( location, path_relative_to_device_root ).IsValid();
+}
+
 std::string FileSystem::GetDateForFile( const std::string& path_relative_to_device_root )
 {
 	bool result = false;
@@ -1202,6 +1212,22 @@ DiskFileDevice::DiskFileDevice( FileLocation::Enum read_location, const std::str
 ReadStream DiskFileDevice::OpenRead( const std::string& path_relative_to_device_root )
 {
 	const std::wstring full_path = Poro()->GetFileSystem()->CompleteReadPath( path_relative_to_device_root, mReadRootPath );
+
+	StreamStatus::Enum status;
+	ReadStream result;
+	result.mDevice = this;
+	result.mStreamImpl = new platform_impl::StreamInternal( full_path, true, &status, StreamWriteMode::Recreate ); // TODO: allocate from a pool
+	if ( status != StreamStatus::NoError )
+	{
+		delete result.mStreamImpl;
+		result.mStreamImpl = NULL;
+	}
+	return result;
+}
+
+ReadStream DiskFileDevice::OpenRead( FileLocation::Enum location, const std::string& path_relative_to_location )
+{
+	const std::wstring full_path = Poro()->GetFileSystem()->CompleteWritePath( location, path_relative_to_location );
 
 	StreamStatus::Enum status;
 	ReadStream result;

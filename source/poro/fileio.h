@@ -107,7 +107,8 @@ namespace poro {
 	public:
 		virtual ~IFileDevice() { }
 		virtual void Destroy() { }
-        virtual ReadStream  OpenRead( const std::string& path ) = 0;
+        virtual ReadStream OpenRead( const std::string& path ) = 0;
+		virtual ReadStream OpenRead( FileLocation::Enum location, const std::string& path_relative_to_location ) = 0;
         virtual WriteStream OpenWrite( FileLocation::Enum location, const std::string& read_path_relative_to_location, poro::types::Uint32 write_mode = StreamWriteMode::Enum::Recreate ) = 0;
 		virtual std::wstring GetFullPath( const std::string& path_relative_to_device_root ) = 0;
 		virtual void GetFiles( FileLocation::Enum location, const std::string& path_relative_to_location, std::vector<std::string>* out_files ) { }
@@ -213,8 +214,11 @@ namespace poro {
 	{
 	public:
 		// === reading API ===
-		// Open a file at 'relative_path' for reading. file is looked up from each FileDevice in current device list, starting with the first device.
-		ReadStream OpenRead            ( const std::string& relative_path );
+		// Open a file at 'relative_path' for reading. File is looked up from each FileDevice in current device list, starting with the first device.
+		ReadStream OpenRead( const std::string& relative_path );
+
+		// Open a file at 'relative_path' for reading. File is opened using the default file device.
+		ReadStream OpenRead( poro::FileLocation::Enum location, const std::string& relative_path );
 
 		// Open all files matching 'relative_path'. File is looked up from each FileDevice in current device list, starting with the first device. Device list can be modified using GetDeviceList and SetDeviceList.
 		void OpenReadOnAllMatchingFiles( const std::string& relative_path, std::vector<ReadStream>* out_files );
@@ -278,6 +282,9 @@ namespace poro {
 		// returns true if file at 'relative_path' exists in some of the file devices
 		bool DoesExist( const std::string& path_relative_to_device_root );
 
+		// returns true if file at 'relative_path' exists in some in location
+		bool DoesExist( poro::FileLocation::Enum location, const std::string& path_relative_to_device_root );
+
 		// ---
 		std::string GetDateForFile( const std::string& path_relative_to_device_root );
 
@@ -326,7 +333,8 @@ namespace poro {
 		DiskFileDevice( const std::string& read_root_path_full );
 		DiskFileDevice( FileLocation::Enum read_location, const std::string& read_root_path_relative_to_location = "" );
 
-        virtual ReadStream  OpenRead( const std::string& path_relative_to_device_root ) override;
+        virtual ReadStream OpenRead( const std::string& path_relative_to_device_root ) override;
+		virtual ReadStream OpenRead( FileLocation::Enum location, const std::string& path_relative_to_location ) override;
         virtual WriteStream	OpenWrite( FileLocation::Enum location, const std::string& path_relative_to_location, poro::types::Uint32 write_mode = StreamWriteMode::Enum::Recreate ) override;
 		virtual std::wstring GetFullPath( const std::string& path_relative_to_device_root ) override;
 		virtual bool DoesExist( const std::string& path ) override;
