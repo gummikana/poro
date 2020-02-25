@@ -1081,7 +1081,7 @@ Sprite::Sprite() :
 	mSize( 0, 0 ),
 	mCenterOffset( 0, 0 ),
 	mXForm(),
-	mZ( 100 ),
+	mZ( 100.f ),
 	mLastFrameRendered( -1 ),
 	mColor( 4 ),
 	mDead( false ),

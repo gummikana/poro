@@ -114,8 +114,8 @@ public:
 	//static Image*						GetTexture( const std::string& filename );
 	//static ceng::CArray2D< Uint32 >*	GetImageData( const std::string& filename );
 
-	void			SetZ( int z );
-	int				GetZ() const;
+	void			SetZ( float z );
+	float			GetZ() const;
 	void			SortByZ();
 	
 	void			SetCenterOffset( const types::vector2& p );
@@ -470,7 +470,7 @@ protected:
 	types::vector2				mSize;
 	types::vector2				mCenterOffset;
 	types::xform				mXForm;
-	int							mZ;
+	float						mZ;
 
 	int							mLastFrameRendered;
 
@@ -690,11 +690,11 @@ inline const ceng::CArray2D< Uint32 >* Sprite::GetImageData() const {
 	return mImageData;
 }
 
-inline void Sprite::SetZ( int z ) { 
+inline void Sprite::SetZ( float z ) { 
 	mZ = z; 
 }
 
-inline int Sprite::GetZ() const { 
+inline float Sprite::GetZ() const { 
 	return mZ; 
 }
 
