@@ -737,9 +737,7 @@ void GraphicsOpenGL::BeginScissorRect( const poro::types::ivec2& pos_min, const 
 	pmin.y = (int32_t)GetWindowSize().y - pmax.y;
 
 	pmin.x += (int32_t)mViewportOffset.x;
-	pmax.x += (int32_t)mViewportOffset.x;
 	pmin.y -= (int32_t)mViewportOffset.y;
-	pmax.y -= (int32_t)mViewportOffset.y;
 
 	glEnable( GL_SCISSOR_TEST );
 	glScissor( pmin.x, pmin.y, pmax.x - pmin.x, height );
