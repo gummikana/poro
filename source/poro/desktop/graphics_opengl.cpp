@@ -743,14 +743,14 @@ void GraphicsOpenGL_SetScissorRect( const  poro::GraphicsOpenGL* graphics, const
 	pmin.y -= (int32_t)viewport_offset.y;
 	pmax.y -= (int32_t)viewport_offset.y;
 
-	static bool do_debug_logging = true;
+	/*static bool do_debug_logging = true;
 	if ( do_debug_logging )
 	{
 		poro_logger << "BeginScissorRect pmin: " << pmin.x << "," << pmin.y << " pmax: " << pmax.x << "," << pmax.y << " height " << height << "\n";
 		poro_logger << "BeginScissorRect offset: " << viewport_offset.x << "," << viewport_offset.y << " scale: " << scale << "\n";
 		poro_logger << "glScissor( " << pmin.x << "," << pmin.y << "," << pmax.x - pmin.x << "," << height << " )" << "\n";
 		do_debug_logging = false;
-	}
+	}*/
 
 	if ( enable )
 		glEnable( GL_SCISSOR_TEST );
