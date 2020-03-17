@@ -719,11 +719,13 @@ void GraphicsOpenGL::SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPIN
 	}
 }
 
-void GraphicsOpenGL::BeginScissorRect( const poro::types::ivec2& pos_min, const poro::types::ivec2& pos_max ) const
+void GraphicsOpenGL_SetScissorRect( const  poro::GraphicsOpenGL* graphics, const poro::types::vec2& viewport_offset, bool enable, const poro::types::ivec2& pos_min, const poro::types::ivec2& pos_max )
 {
-	const float internal_aspect = GetInternalSize().x / GetInternalSize().y;
-	const float window_aspect = GetWindowSize().x / GetWindowSize().y;
-	const float scale = ( window_aspect > internal_aspect ) ? ( GetWindowSize().y / GetInternalSize().y ) : ( GetWindowSize().x / GetInternalSize().x );
+	cassert( graphics );
+
+	const float internal_aspect = graphics->GetInternalSize().x / graphics->GetInternalSize().y;
+	const float window_aspect = graphics->GetWindowSize().x / graphics->GetWindowSize().y;
+	const float scale = ( window_aspect > internal_aspect ) ? ( graphics->GetWindowSize().y / graphics->GetInternalSize().y ) : ( graphics->GetWindowSize().x / graphics->GetInternalSize().x );
 
 	poro::types::ivec2 pmin = pos_min;
 	poro::types::ivec2 pmax = pos_max;
@@ -734,18 +736,37 @@ void GraphicsOpenGL::BeginScissorRect( const poro::types::ivec2& pos_min, const 
 	pmax.y = (int32_t)( (float)pmax.y * scale );
 
 	const int32_t height = pmax.y - pmin.y;
-	pmin.y = (int32_t)GetWindowSize().y - pmax.y;
+	pmin.y = (int32_t)graphics->GetWindowSize().y - pmax.y;
 
-	pmin.x += (int32_t)mViewportOffset.x;
-	pmin.y -= (int32_t)mViewportOffset.y;
+	pmin.x += (int32_t)viewport_offset.x;
+	pmax.x += (int32_t)viewport_offset.x;
+	pmin.y -= (int32_t)viewport_offset.y;
+	pmax.y -= (int32_t)viewport_offset.y;
 
-	glEnable( GL_SCISSOR_TEST );
+	static bool do_debug_logging = true;
+	if ( do_debug_logging )
+	{
+		poro_logger << "BeginScissorRect pmin: " << pmin.x << "," << pmin.y << " pmax: " << pmax.x << "," << pmax.y << " height " << height << "\n";
+		poro_logger << "BeginScissorRect offset: " << viewport_offset.x << "," << viewport_offset.y << " scale: " << scale << "\n";
+		poro_logger << "glScissor( " << pmin.x << "," << pmin.y << "," << pmax.x - pmin.x << "," << height << " )" << "\n";
+		do_debug_logging = false;
+	}
+
+	if ( enable )
+		glEnable( GL_SCISSOR_TEST );
 	glScissor( pmin.x, pmin.y, pmax.x - pmin.x, height );
+	if ( enable == false )
+		glDisable( GL_SCISSOR_TEST );
+}
+
+void GraphicsOpenGL::BeginScissorRect( const poro::types::ivec2& pos_min, const poro::types::ivec2& pos_max ) const
+{
+	GraphicsOpenGL_SetScissorRect( this, mViewportOffset, true, pos_min, pos_max );
 }
 
 void GraphicsOpenGL::EndScissorRect() const
 {
-	glDisable( GL_SCISSOR_TEST );
+	GraphicsOpenGL_SetScissorRect( this, mViewportOffset, false, poro::types::ivec2(0,0), poro::types::ivec2( (int32)GetInternalSize().x, (int32)GetInternalSize().y ) );
 }
 
 //=============================================================================
