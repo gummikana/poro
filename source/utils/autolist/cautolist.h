@@ -49,7 +49,7 @@
 #ifndef INC_CAUTOLIST_H
 #define INC_CAUTOLIST_H
 
-#include <list>
+#include <vector>
 #include <algorithm>
 
 namespace ceng {
@@ -61,7 +61,7 @@ class CAutoListInsertOperation
 public:
 	CAutoListInsertOperation() { }
 
-	bool operator()( T* insert_me, std::list< T* >& list )
+	bool operator()( T* insert_me, std::vector< T* >& list )
 	{
 		list.push_back( insert_me );
 		return false;
