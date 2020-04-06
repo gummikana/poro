@@ -1245,10 +1245,14 @@ void GraphicsOpenGL::Shader_Enable( IShader* ishader ) const
 
 void GraphicsOpenGL::Shader_Disable( IShader* ishader ) const
 {
-	poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
 	ShaderOpenGL* shader = static_cast<ShaderOpenGL*>( ishader );
 
-	shader->lastAllocatedTextureUnit = 2;
+	if( shader )
+	{
+		poro_assert( dynamic_cast<ShaderOpenGL*>( ishader) );
+		shader->lastAllocatedTextureUnit = 2;
+	}
+
 	glUseProgram( 0 );
 	glDisable( GL_TEXTURE_2D );
 	glDisable( GL_TEXTURE_3D );
