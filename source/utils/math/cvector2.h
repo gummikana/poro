@@ -200,6 +200,14 @@ public:
 		return *this;
 	}
 
+	CVector2< Type > Rotated( float angle_rad ) const
+	{
+		CVector2< Type > result;
+		result.x = (Type)( ( ( (float)x ) * (float)cosf( angle_rad ) ) - ( (float)y * (float)sinf( angle_rad ) ) );
+		result.y = (Type)( ( ( (float)x ) * (float)sinf( angle_rad ) ) + ( (float)y * (float)cosf( angle_rad ) ) );
+		return result;
+	}
+
 	CVector2< Type >& Rotate( const CVector2< Type >& centre, float angle_rad )
 	{
 		CVector2< Type > D = *this - centre;
