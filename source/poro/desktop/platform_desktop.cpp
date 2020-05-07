@@ -687,6 +687,8 @@ void PlatformDesktop::StartMainLoop()
 
 void PlatformDesktop::SingleLoop() 
 {
+	GetApplication()->BeginFrame();
+
 	if( mEventRecorder )
 		mEventRecorder->StartOfFrame( GetTime() );
 

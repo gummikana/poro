@@ -32,6 +32,7 @@ public:
 	virtual ~IApplication() { }
 
 	virtual void Init() { }
+	virtual void BeginFrame() { }
 	virtual void Update(float deltaTime) = 0;
 	virtual void Draw(poro::IGraphics * graphics) { }
 	virtual void WindowFocusChanged( bool has_focus ) { }
