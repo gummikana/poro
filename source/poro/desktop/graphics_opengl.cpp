@@ -584,6 +584,7 @@ ITexture* GraphicsOpenGL::CreateTexture( int width, int height, TEXTURE_FORMAT::
 
 ITexture* GraphicsOpenGL::CloneTexture( ITexture* other )
 {
+	poro_assert( GetMultithreadLock() == false );
 	poro_assert( dynamic_cast<TextureOpenGL*>( other ) );
 	auto result = new TextureOpenGL( static_cast<TextureOpenGL*>(other) );
 	textures.insert( result );
@@ -592,6 +593,7 @@ ITexture* GraphicsOpenGL::CloneTexture( ITexture* other )
 
 void GraphicsOpenGL::SetTextureData( ITexture* itexture, void* data )
 {
+	poro_assert( GetMultithreadLock() == false );
 	poro_assert( dynamic_cast<TextureOpenGL*>( itexture) );
 	TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
 	SetTextureData_Impl( texture, data, 0, 0, texture->GetWidth(), texture->GetHeight() );
@@ -599,6 +601,7 @@ void GraphicsOpenGL::SetTextureData( ITexture* itexture, void* data )
 
 void GraphicsOpenGL::SetTextureData( ITexture* itexture, void* data, int x, int y, int w, int h )
 {
+	poro_assert( GetMultithreadLock() == false );
 	poro_assert( dynamic_cast<TextureOpenGL*>( itexture) );
 	TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
     SetTextureData_Impl( texture, data, x, y, w, h );
@@ -632,6 +635,7 @@ ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename, bool store
 
 void GraphicsOpenGL::DestroyTexture( ITexture* itexture )
 {
+	poro_assert( GetMultithreadLock() == false );
 	poro_assert( dynamic_cast<TextureOpenGL*>( itexture ) );
 	TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
 	glDeleteTextures(1, &texture->mTexture);
@@ -731,6 +735,7 @@ void GraphicsOpenGL::SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPIN
 void GraphicsOpenGL_SetScissorRect( const  poro::GraphicsOpenGL* graphics, const poro::types::vec2& viewport_offset, bool enable, const poro::types::ivec2& pos_min, const poro::types::ivec2& pos_max )
 {
 	cassert( graphics );
+	poro_assert( graphics->GetMultithreadLock() == false );
 
 	const float internal_aspect = graphics->GetInternalSize().x / graphics->GetInternalSize().y;
 	const float window_aspect = graphics->GetWindowSize().x / graphics->GetWindowSize().y;
@@ -1397,6 +1402,8 @@ void GraphicsOpenGL::SetShader( IShader* shader )
 
 IVertexBuffer* GraphicsOpenGL::VertexBuffer_Create( VERTEX_FORMAT::Enum vertex_format )
 {
+	poro_assert( GetMultithreadLock() == false );
+
 	auto result = new IVertexBuffer();
 	vertexbuffers.insert( result );
 	result->format = vertex_format;
@@ -1421,7 +1428,9 @@ IVertexBuffer* GraphicsOpenGL::VertexBuffer_Create( VERTEX_FORMAT::Enum vertex_f
 
 void GraphicsOpenGL::VertexBuffer_Destroy( IVertexBuffer* buffer )
 {
+	poro_assert( GetMultithreadLock() == false );
 	poro_assert( buffer );
+
 	glDeleteBuffers( 1, &buffer->impl_data );
 	delete buffer;
 	vertexbuffers.erase( vertexbuffers.find(buffer) );
@@ -1429,6 +1438,7 @@ void GraphicsOpenGL::VertexBuffer_Destroy( IVertexBuffer* buffer )
 
 void GraphicsOpenGL::VertexBuffer_SetData( IVertexBuffer* buffer, void* vertices, uint32 num_vertices ) const
 {
+	poro_assert( GetMultithreadLock() == false );
 	poro_assert( buffer );
 
 	glBindBuffer( GL_ARRAY_BUFFER, buffer->impl_data );
