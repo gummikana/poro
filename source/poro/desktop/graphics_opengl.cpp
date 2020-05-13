@@ -278,8 +278,8 @@ GraphicsOpenGL::GraphicsOpenGL() :
 	mVsyncEnabled( false ),
 
 	mBufferLoadTextures( false ),
-	mBufferedLoadTextures()
-
+	mBufferedLoadTextures(),
+	mBufferedSetWrappingModeTextures()
 {
 
 }
@@ -641,7 +641,7 @@ void GraphicsOpenGL::DestroyTexture( ITexture* itexture )
 
 //-----------------------------------------------------------------------------
 
-void GraphicsOpenGL::SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode ) const
+void GraphicsOpenGL::SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode )
 {
 	if( itexture == NULL )
 		return;
@@ -656,8 +656,11 @@ void GraphicsOpenGL::SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTER
 		bool found = false;
 		for( size_t i = 0; i < mBufferedLoadTextures.size(); ++i )
 		{
-			if( mBufferedLoadTextures[i] == itexture )
+			if ( mBufferedLoadTextures[i] == itexture )
+			{
 				found = true;
+				break;
+			}
 		}
 
 		poro_assert( found );
@@ -685,7 +688,7 @@ void GraphicsOpenGL::SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTER
 	}
 }
 
-void GraphicsOpenGL::SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum mode ) const
+void GraphicsOpenGL::SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum mode )
 {
 	if( GetMultithreadLock() )
 	{
@@ -697,11 +700,17 @@ void GraphicsOpenGL::SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPIN
 		bool found = false;
 		for( size_t i = 0; i < mBufferedLoadTextures.size(); ++i )
 		{
-			if( mBufferedLoadTextures[i] == itexture )
+			if ( mBufferedLoadTextures[i] == itexture )
+			{
 				found = true;
+				break;
+			}
 		}
 
-		poro_assert( found );
+		if ( found == false )
+		{
+			mBufferedSetWrappingModeTextures.push_back( texture );
+		}
 	}
 	else
 	{
@@ -1957,7 +1966,15 @@ bool GraphicsOpenGL::UpdateBufferedMultithreaded()
 
 	}
 
+	for ( TextureOpenGL* texture : mBufferedSetWrappingModeTextures )
+	{
+		const auto wrapping_mode = (poro::TEXTURE_WRAPPING_MODE::Enum)texture->mWrappingMode;
+		texture->mWrappingMode = -1;
+		SetTextureWrappingMode( texture, wrapping_mode );
+	}
+
 	mBufferedLoadTextures.clear();
+	mBufferedSetWrappingModeTextures.clear();
 
 	return false;
 }
