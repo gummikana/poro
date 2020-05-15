@@ -142,8 +142,10 @@ public:
 	virtual int GetRandomSeed();
 	virtual void SetRandomSeed( unsigned int random_seed ) { }
 
-	// 	basically returns (unsigned int)time(NULL)
-	// this will return the same value everytime you call it
+	virtual void InitTimeNullSeed() = 0;
+
+	// basically returns (unsigned int)time(NULL) (though it's a bit more complicated than that)
+	// this will return the same value everytime you call it, between calls to InitTimeNullSeed() which reseed the value.
 	virtual unsigned int GetTimeNull() const = 0;
 
 	// other

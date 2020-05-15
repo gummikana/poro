@@ -492,19 +492,8 @@ PlatformDesktop::PlatformDesktop() :
 	mFileSystem = new FileSystem;
 
 	// mRandomSeeding process
-	mRandomSeed = (unsigned int)time(NULL);
-
-	{
-		unsigned int time_null = (unsigned int)time( NULL );
-		double up_time = 0.1234;
-		up_time = GetUpTime();
-		time_null = time_null - (unsigned int)( 0.051 * up_time * (double)time_null );
-		time_null = reverseBits( time_null );
-		time_null = time_null ^ (unsigned int)GetCurrentProcessId();
-
-		mRandomSeed = time_null;
-	}
-
+	
+	InitTimeNullSeed();
 }
 
 PlatformDesktop::~PlatformDesktop()
@@ -1036,7 +1025,6 @@ bool PlatformDesktop::IsBreakpointFrame()
 
 //-----------------------------------------------------------------------------
 
-
 int PlatformDesktop::GetRandomSeed()
 {
 	int result = mRandomI;
@@ -1046,6 +1034,18 @@ int PlatformDesktop::GetRandomSeed()
 	mRandomI = (int)t;
 	
 	return result;
+}
+
+void PlatformDesktop::InitTimeNullSeed()
+{
+	mRandomSeed = (unsigned int)time( NULL );
+	unsigned int time_null = (unsigned int)time( NULL );
+	double up_time = 0.1234;
+	up_time = GetUpTime();
+	time_null = time_null - (unsigned int)( 0.051 * up_time * (double)time_null );
+	time_null = reverseBits( time_null );
+	time_null = time_null ^ (unsigned int)GetCurrentProcessId();
+	mRandomSeed = time_null;
 }
 
 unsigned int PlatformDesktop::GetTimeNull() const
