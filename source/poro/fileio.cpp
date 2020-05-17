@@ -171,9 +171,10 @@ namespace platform_impl
 
 		void ReadWholeFileTemp( FileDataTemp* out_data ) override
 		{
-			char* buffer = (char*)malloc( mSize );
+			char* buffer = (char*)malloc( mSize + 1 );
 			uint32 bytes_read = 0;
 			Read( buffer, mSize, &bytes_read );
+			buffer[mSize] = '\0';
 
 			out_data->Init<StreamInternalTempReleaser>( buffer, bytes_read );
 		}
