@@ -434,14 +434,12 @@ namespace poro
 		poro_assert( y );
 		poro_assert( filename );
 
-		char* filedata = NULL;
-		poro::types::Uint32 data_size_bytes = 0;
-		StreamStatus::Enum read_status = Poro()->GetFileSystem()->ReadWholeFile( filename, filedata, &data_size_bytes );
-		if ( read_status != StreamStatus::NoError )
+		FileDataTemp file;
+		Poro()->GetFileSystem()->ReadWholeFileTemp( filename, &file );
+		if ( file.IsValid() == false )
 			return NULL;
 
-		unsigned char* result = stbi_load_from_memory( (stbi_uc*)filedata, data_size_bytes, x, y, comp, req_comp );
-		free( filedata );
+		unsigned char* result = stbi_load_from_memory( (stbi_uc*)file.data, file.data_size_bytes, x, y, comp, req_comp );
 
 		// error reading the file, probably not image file
 		if ( result == NULL )
