@@ -787,13 +787,13 @@ void GraphicsOpenGL::EndScissorRect() const
 
 ITexture3d* GraphicsOpenGL::LoadTexture3d( const types::string& filename )
 {
-	CharBufferAutoFree texture_data;
-	auto read_status = Poro()->GetFileSystem()->ReadWholeFile( filename, texture_data.memory, &texture_data.size_bytes );
-	if ( read_status != StreamStatus::NoError )
+	FileDataTemp file;
+	Poro()->GetFileSystem()->ReadWholeFileTemp( filename, &file );
+	if ( file.IsValid() == false )
 		return NULL;
 
 	int x, y, z, bpp;
-	unsigned char *data = stbi_load_from_memory( (stbi_uc*)texture_data.memory, texture_data.size_bytes, &x, &y, &bpp, 4 );
+	unsigned char *data = stbi_load_from_memory( (stbi_uc*)file.data,file.data_size_bytes, &x, &y, &bpp, 4 );
 
 	if ( data == NULL )
 	{
@@ -1108,15 +1108,15 @@ int LoadShader( ShaderOpenGL* shader, const std::string& filename, bool is_verte
 {
 	poro_assert( shader );
 
-	CharBufferAutoFree text;
-	StreamStatus::Enum read_status = Poro()->GetFileSystem()->ReadWholeFile( filename, text.memory, &text.size_bytes );
-	if ( read_status != StreamStatus::NoError )
+	FileDataTemp file;
+	Poro()->GetFileSystem()->ReadWholeFileTemp( filename, &file );
+	if ( file.IsValid() == false )
 	{
 		shader->isCompiledAndLinked = false;
 		return 0;
 	}
 
-	return LoadShaderFromString( shader, text.memory, text.size_bytes, is_vertex_shader );
+	return LoadShaderFromString( shader, file.data, file.data_size_bytes, is_vertex_shader );
 }
 
 void Shader_Link( const GraphicsOpenGL* graphics, ShaderOpenGL* shader )
@@ -1998,14 +1998,14 @@ TextureOpenGL* GraphicsOpenGL::IMPL_LoadTexture( const types::string& filename, 
 {
 	TextureOpenGL* result = NULL;
 
-	CharBufferAutoFree texture_data;
-	StreamStatus::Enum read_status = Poro()->GetFileSystem()->ReadWholeFile( filename, texture_data.memory, &texture_data.size_bytes );
-	if ( read_status != StreamStatus::NoError )
+	FileDataTemp file;
+	Poro()->GetFileSystem()->ReadWholeFileTemp( filename, &file );
+	if ( file.IsValid() == false )
 		return NULL;
 
 	int x, y, bpp;
-	stbi_info_from_memory( (stbi_uc*)texture_data.memory, texture_data.size_bytes, &x, &y, &bpp );
-	uint8* data = stbi_load_from_memory( (stbi_uc*)texture_data.memory, texture_data.size_bytes, &x, &y, &bpp, bpp == 3 ? 4 : 0 );
+	stbi_info_from_memory( (stbi_uc*)file.data, file.data_size_bytes, &x, &y, &bpp );
+	uint8* data = stbi_load_from_memory( (stbi_uc*)file.data, file.data_size_bytes, &x, &y, &bpp, bpp == 3 ? 4 : 0 );
 
 	if ( data == NULL )
 		return NULL;
