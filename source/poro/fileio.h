@@ -88,7 +88,8 @@ namespace poro {
 	{
 		inline ~FileDataTemp()
 		{
-			releaser->Release( data );
+			if ( releaser )
+				releaser->Release( data );
 			data = NULL;
 			data_size_bytes = 0;
 		}

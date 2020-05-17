@@ -779,7 +779,8 @@ StreamStatus::Enum ReadStream::ReadWholeFile( char*& out_buffer, u32* out_bytes_
 
 void ReadStream::ReadWholeFileTemp( FileDataTemp* out_data )
 {
-	return mStreamImpl->ReadWholeFileTemp( out_data );
+	if ( mStreamImpl )
+		mStreamImpl->ReadWholeFileTemp( out_data );
 }
 
 StreamStatus::Enum ReadStream::ReadTextLine( char* out_buffer, u32 buffer_capacity, u32* out_length_read )
