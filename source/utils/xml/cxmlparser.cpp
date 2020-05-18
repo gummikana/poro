@@ -557,7 +557,7 @@ void XmlEncryptedWriterWrapper::Done()
 
 //-----------------------------------------------------------------------------
 
-void CXmlParser::ParseContents( const char* filename, char* contents )
+void CXmlParser::ParseContents( const char* filename, const char* contents )
 {
 	XmlHandlerImpl handler;
 	handler.mHandler = &mHandler;
