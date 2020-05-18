@@ -79,6 +79,42 @@ namespace poro {
 		};
 	}
 
+	struct FileDataTempReleaser
+	{
+		virtual void Release( const char* data ) { }
+	};
+
+	struct FileDataTemp
+	{
+		inline ~FileDataTemp()
+		{
+			if ( releaser )
+				releaser->Release( data );
+			data = NULL;
+			data_size_bytes = 0;
+		}
+
+		template<typename TReleaser>
+		void Init( const char* data, uint32 data_size_bytes )
+		{
+			static_assert( sizeof( TReleaser ) <= sizeof( mem ), "TReleaser doesnt fit in the buffer we've reserved for it" );
+			this->data = data;
+			this->data_size_bytes = data_size_bytes;
+			releaser = new( mem )TReleaser(); // placement new to avoid temp allocation
+		}
+
+		inline bool IsValid()
+		{
+			return data != NULL && data_size_bytes > 0;
+		}
+
+		const char* data = NULL;
+		uint32 data_size_bytes = 0;
+	private:
+		FileDataTempReleaser* releaser = NULL;
+		char mem[4];
+	};
+
     // ================================
 
 	namespace platform_impl
@@ -88,6 +124,7 @@ namespace poro {
 			virtual ~IStreamInternal() { }
 			virtual StreamStatus::Enum Read( char* out_buffer, poro::types::Uint32 buffer_capacity_bytes, poro::types::Uint32* out_bytes_read ) = 0;
 			virtual StreamStatus::Enum ReadTextLine( std::string* out_text ) = 0;
+			virtual void ReadWholeFileTemp( FileDataTemp* out_data ) = 0;
 			virtual StreamStatus::Enum Write( const char* buffer, poro::types::Uint32 buffer_size_bytes ) = 0;
 			virtual StreamStatus::Enum WriteLineEnding() = 0;
 			virtual void SeekToBeginning() = 0;
@@ -178,14 +215,17 @@ namespace poro {
 		ReadStream& operator= ( const ReadStream& other );
 		
 		// Read 'buffer_capacity_bytes' bytes from the stream to 'out_buffer'. Actual number of bytes read is written to 'out_bytes_read'.
-		StreamStatus::Enum Read             ( char* out_buffer, poro::types::Uint32 buffer_capacity_bytes, poro::types::Uint32* out_bytes_read );
+		StreamStatus::Enum Read( char* out_buffer, poro::types::Uint32 buffer_capacity_bytes, poro::types::Uint32* out_bytes_read );
 		
 		// Read one line of text from the stream to to 'out_buffer'. Actual number of bytes read is written to 'out_bytes_read'. 'buffer_capacity' specifies the maximum capacity of the buffer.
-		StreamStatus::Enum ReadTextLine     ( char* out_buffer, poro::types::Uint32 buffer_capacity, poro::types::Uint32* out_length_read );
+		StreamStatus::Enum ReadTextLine( char* out_buffer, poro::types::Uint32 buffer_capacity, poro::types::Uint32* out_length_read );
 		
 		// Read one line of text from the stream to 'out_text'.
-		StreamStatus::Enum ReadTextLine     ( std::string& out_text );
+		StreamStatus::Enum ReadTextLine( std::string& out_text );
 		
+		// Reads the whole file. Does no allocations if possible.
+		virtual void ReadWholeFileTemp( FileDataTemp* out_data );
+
 		// Returns true if the stream was succesfully opened and has not been closed.
 		bool IsValid() { return mStreamImpl != NULL; }
 		
@@ -193,6 +233,7 @@ namespace poro {
 		~ReadStream();
 	private:
 		StreamStatus::Enum ReadWholeFile( char*& out_buffer, poro::types::Uint32* out_bytes_read, bool add_null_terminate );
+		void GetPointerToWholeFile( char*& out_buffer, poro::types::Uint32* out_size_bytes );
 		StreamStatus::Enum ReadWholeTextFile( std::string& out_text );
 		void Close();
 		// data
@@ -236,7 +277,10 @@ namespace poro {
 		
 		// Reads the entire file and adds a '\0' to the end
 		StreamStatus::Enum ReadWholeFileAndNullTerminate( const std::string& relative_path, char*& out_buffer, poro::types::Uint32* out_bytes_read );
-		
+
+		// Read the entire contents of file at 'relative_path'. Any allocated buffers are automatically freed when the returned object is destructed. Doesn't do any allocations if possible.
+		void ReadWholeFileTemp( const std::string& relative_path, FileDataTemp* out_data );
+
 		// Reads one line of text from the file at 'relative_path' to 'out_buffer'. consecutive calls to this function from current thread will continue reading from the same stream.
 		StreamStatus::Enum ReadTextLine( const std::string& relative_path, char* out_buffer, poro::types::Uint32 buffer_capacity, poro::types::Uint32* out_length_read );
 		

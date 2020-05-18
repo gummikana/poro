@@ -48,7 +48,7 @@ static char* ReadWholeFile(const char *FileName)
 //-----------------------------------------------------------------------------
 
 
-static char* ReadWholeFile( const char* filename, poro::types::Uint32* result_size )
+void ReadWholeFile( const char* filename, poro::FileDataTemp* out_data )
 {
 	using namespace poro;
 
@@ -62,12 +62,10 @@ static char* ReadWholeFile( const char* filename, poro::types::Uint32* result_si
 	
 	char* result = NULL;
 	// poro::types::Uint32 result_size = 0;
-	file_system->ReadWholeFileAndNullTerminate( filename, result, result_size );
+	file_system->ReadWholeFileTemp( filename, out_data );
 
 	if ( delete_file_system )
 		delete file_system;
-
-	return result;
 }
 #endif
 
@@ -202,14 +200,14 @@ public:
 
 	struct Token
 	{
-		char* text;
+		const char* text;
 		TokenType type;	
 		size_t length;
 	};
 
 	struct Tokenizer
 	{
-		char* at;
+		const char* at;
 		bool end_of_stream;
 	};
 
@@ -592,22 +590,26 @@ void CXmlParser::ParseFile( const char* filename )
 
 	if( filename == NULL ) return;
 
-	poro::types::Uint32 contents_size = 0;
-	char* contents = ReadWholeFile( filename, &contents_size );
-	if( contents == NULL ) 
+	poro::FileDataTemp file;
+	ReadWholeFile( filename, &file );
+	if ( file.IsValid() == false )
 		return;
+
+	const char* file_data = file.data;
+	char* free_this = NULL;
 
 	#if 1
 	if( mEncyptionKey )
 	{
-		XML_Decrypt( *mEncyptionKey, contents, contents_size-1 );
+		free_this = (char*)malloc( file.data_size_bytes + 1 );
+		memcpy( free_this, file_data, file.data_size_bytes + 1 );
+		XML_Decrypt( *mEncyptionKey, free_this, file.data_size_bytes );
+		file_data = free_this;
 		// std::fstream fout( "temptemp/unecrypted.txt", std::ios::out );
 		// fout << contents << "\n";
 	}
 
-	bool free_contents = true;
-
-	ParseContents( filename, contents );
+	ParseContents( filename, file_data );
 
 	#else
 	std::string unecrypted_str;
@@ -626,9 +628,10 @@ void CXmlParser::ParseFile( const char* filename )
 	}
 	#endif
 
+
 	
-	if( free_contents )
-		free( contents );
+	if( free_this )
+		free( free_this );
 }
 
 } // end of namespace ceng

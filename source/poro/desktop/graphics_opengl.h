@@ -80,8 +80,8 @@ public:
 	virtual void		SetTextureData(ITexture* texture, void* data, int x, int y, int w, int h ) PORO_OVERRIDE;
 	virtual ITexture*	LoadTexture( const types::string& filename ) PORO_OVERRIDE;
 	virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data ) PORO_OVERRIDE;
-	virtual void		SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode ) const PORO_OVERRIDE;
-	virtual void		SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum  mode ) const PORO_OVERRIDE;
+	virtual void		SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode ) PORO_OVERRIDE;
+	virtual void		SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum  mode ) PORO_OVERRIDE;
 	virtual void		BeginScissorRect( const poro::types::ivec2& pos_min, const poro::types::ivec2& pos_max ) const PORO_OVERRIDE;
 	virtual void		EndScissorRect() const PORO_OVERRIDE;
 
@@ -184,6 +184,7 @@ private:
 	// for multithreaded loading of things
 	bool mBufferLoadTextures;
 	std::vector< TextureOpenGL* > mBufferedLoadTextures;
+	std::vector< TextureOpenGL* > mBufferedSetWrappingModeTextures;
 };
 
 types::Uint32 GetNextPowerOfTwo(types::Uint32 input);

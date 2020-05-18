@@ -97,6 +97,7 @@ public:
 
 	// random seed
 	virtual int GetRandomSeed();
+	virtual void InitTimeNullSeed() PORO_OVERRIDE;
 	unsigned int GetTimeNull() const;
 	virtual void SetRandomSeed( unsigned int random_seed );	// Never call this without a good reason
 

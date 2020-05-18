@@ -57,6 +57,14 @@ namespace platform_impl
 	std::wstring CombinePath( std::wstring root, std::wstring relative_to_root );
 	std::string CombinePath( std::string root, std::string relative_to_root );
 	
+	struct StreamInternalTempReleaser : public FileDataTempReleaser
+	{
+		virtual void Release( const char* data ) override
+		{
+			free( (void*)data );
+		}
+	};
+
 	struct StreamInternal : public IStreamInternal
 	{
 		StreamInternal( const std::wstring& filename, bool read, StreamStatus::Enum* out_status, u32 write_mode )
@@ -159,6 +167,16 @@ namespace platform_impl
 				*out_text = "";
 
 			return StreamStatus::NoError;
+		}
+
+		void ReadWholeFileTemp( FileDataTemp* out_data ) override
+		{
+			char* buffer = (char*)malloc( mSize + 1 );
+			uint32 bytes_read = 0;
+			Read( buffer, mSize, &bytes_read );
+			buffer[mSize] = '\0';
+
+			out_data->Init<StreamInternalTempReleaser>( buffer, bytes_read );
 		}
 
 		StreamStatus::Enum Write( const char* buffer, u32 buffer_size_bytes ) override
@@ -759,6 +777,12 @@ StreamStatus::Enum ReadStream::ReadWholeFile( char*& out_buffer, u32* out_bytes_
 	return status;
 }
 
+void ReadStream::ReadWholeFileTemp( FileDataTemp* out_data )
+{
+	if ( mStreamImpl )
+		mStreamImpl->ReadWholeFileTemp( out_data );
+}
+
 StreamStatus::Enum ReadStream::ReadTextLine( char* out_buffer, u32 buffer_capacity, u32* out_length_read )
 {
 	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
@@ -905,6 +929,14 @@ StreamStatus::Enum FileSystem::ReadWholeFileAndNullTerminate( const std::string&
 	StreamStatus::Enum result = impl::gImCtx->readStream.ReadWholeFile( out_buffer, out_bytes_read, true );
 	impl::CloseReadImContext( this );
 	return result;
+}
+
+void FileSystem::ReadWholeFileTemp( const std::string& path, FileDataTemp* file )
+{
+	poro_assert( file );
+	impl::UpdateReadImContext( this, path );
+	impl::gImCtx->readStream.ReadWholeFileTemp( file );
+	impl::CloseReadImContext( this );
 }
 
 StreamStatus::Enum FileSystem::ReadTextLine( const std::string& path, char* out_buffer, u32 buffer_capacity, u32* out_length_read )

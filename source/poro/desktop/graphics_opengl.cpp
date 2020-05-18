@@ -278,8 +278,8 @@ GraphicsOpenGL::GraphicsOpenGL() :
 	mVsyncEnabled( false ),
 
 	mBufferLoadTextures( false ),
-	mBufferedLoadTextures()
-
+	mBufferedLoadTextures(),
+	mBufferedSetWrappingModeTextures()
 {
 
 }
@@ -584,6 +584,7 @@ ITexture* GraphicsOpenGL::CreateTexture( int width, int height, TEXTURE_FORMAT::
 
 ITexture* GraphicsOpenGL::CloneTexture( ITexture* other )
 {
+	poro_assert( GetMultithreadLock() == false );
 	poro_assert( dynamic_cast<TextureOpenGL*>( other ) );
 	auto result = new TextureOpenGL( static_cast<TextureOpenGL*>(other) );
 	textures.insert( result );
@@ -592,6 +593,7 @@ ITexture* GraphicsOpenGL::CloneTexture( ITexture* other )
 
 void GraphicsOpenGL::SetTextureData( ITexture* itexture, void* data )
 {
+	poro_assert( GetMultithreadLock() == false );
 	poro_assert( dynamic_cast<TextureOpenGL*>( itexture) );
 	TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
 	SetTextureData_Impl( texture, data, 0, 0, texture->GetWidth(), texture->GetHeight() );
@@ -599,6 +601,7 @@ void GraphicsOpenGL::SetTextureData( ITexture* itexture, void* data )
 
 void GraphicsOpenGL::SetTextureData( ITexture* itexture, void* data, int x, int y, int w, int h )
 {
+	poro_assert( GetMultithreadLock() == false );
 	poro_assert( dynamic_cast<TextureOpenGL*>( itexture) );
 	TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
     SetTextureData_Impl( texture, data, x, y, w, h );
@@ -632,6 +635,7 @@ ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename, bool store
 
 void GraphicsOpenGL::DestroyTexture( ITexture* itexture )
 {
+	poro_assert( GetMultithreadLock() == false );
 	poro_assert( dynamic_cast<TextureOpenGL*>( itexture ) );
 	TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
 	glDeleteTextures(1, &texture->mTexture);
@@ -641,7 +645,7 @@ void GraphicsOpenGL::DestroyTexture( ITexture* itexture )
 
 //-----------------------------------------------------------------------------
 
-void GraphicsOpenGL::SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode ) const
+void GraphicsOpenGL::SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode )
 {
 	if( itexture == NULL )
 		return;
@@ -656,8 +660,11 @@ void GraphicsOpenGL::SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTER
 		bool found = false;
 		for( size_t i = 0; i < mBufferedLoadTextures.size(); ++i )
 		{
-			if( mBufferedLoadTextures[i] == itexture )
+			if ( mBufferedLoadTextures[i] == itexture )
+			{
 				found = true;
+				break;
+			}
 		}
 
 		poro_assert( found );
@@ -685,7 +692,7 @@ void GraphicsOpenGL::SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTER
 	}
 }
 
-void GraphicsOpenGL::SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum mode ) const
+void GraphicsOpenGL::SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum mode )
 {
 	if( GetMultithreadLock() )
 	{
@@ -697,11 +704,17 @@ void GraphicsOpenGL::SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPIN
 		bool found = false;
 		for( size_t i = 0; i < mBufferedLoadTextures.size(); ++i )
 		{
-			if( mBufferedLoadTextures[i] == itexture )
+			if ( mBufferedLoadTextures[i] == itexture )
+			{
 				found = true;
+				break;
+			}
 		}
 
-		poro_assert( found );
+		if ( found == false )
+		{
+			mBufferedSetWrappingModeTextures.push_back( texture );
+		}
 	}
 	else
 	{
@@ -722,6 +735,7 @@ void GraphicsOpenGL::SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPIN
 void GraphicsOpenGL_SetScissorRect( const  poro::GraphicsOpenGL* graphics, const poro::types::vec2& viewport_offset, bool enable, const poro::types::ivec2& pos_min, const poro::types::ivec2& pos_max )
 {
 	cassert( graphics );
+	poro_assert( graphics->GetMultithreadLock() == false );
 
 	const float internal_aspect = graphics->GetInternalSize().x / graphics->GetInternalSize().y;
 	const float window_aspect = graphics->GetWindowSize().x / graphics->GetWindowSize().y;
@@ -773,13 +787,13 @@ void GraphicsOpenGL::EndScissorRect() const
 
 ITexture3d* GraphicsOpenGL::LoadTexture3d( const types::string& filename )
 {
-	CharBufferAutoFree texture_data;
-	auto read_status = Poro()->GetFileSystem()->ReadWholeFile( filename, texture_data.memory, &texture_data.size_bytes );
-	if ( read_status != StreamStatus::NoError )
+	FileDataTemp file;
+	Poro()->GetFileSystem()->ReadWholeFileTemp( filename, &file );
+	if ( file.IsValid() == false )
 		return NULL;
 
 	int x, y, z, bpp;
-	unsigned char *data = stbi_load_from_memory( (stbi_uc*)texture_data.memory, texture_data.size_bytes, &x, &y, &bpp, 4 );
+	unsigned char *data = stbi_load_from_memory( (stbi_uc*)file.data,file.data_size_bytes, &x, &y, &bpp, 4 );
 
 	if ( data == NULL )
 	{
@@ -1094,15 +1108,15 @@ int LoadShader( ShaderOpenGL* shader, const std::string& filename, bool is_verte
 {
 	poro_assert( shader );
 
-	CharBufferAutoFree text;
-	StreamStatus::Enum read_status = Poro()->GetFileSystem()->ReadWholeFile( filename, text.memory, &text.size_bytes );
-	if ( read_status != StreamStatus::NoError )
+	FileDataTemp file;
+	Poro()->GetFileSystem()->ReadWholeFileTemp( filename, &file );
+	if ( file.IsValid() == false )
 	{
 		shader->isCompiledAndLinked = false;
 		return 0;
 	}
 
-	return LoadShaderFromString( shader, text.memory, text.size_bytes, is_vertex_shader );
+	return LoadShaderFromString( shader, file.data, file.data_size_bytes, is_vertex_shader );
 }
 
 void Shader_Link( const GraphicsOpenGL* graphics, ShaderOpenGL* shader )
@@ -1388,6 +1402,8 @@ void GraphicsOpenGL::SetShader( IShader* shader )
 
 IVertexBuffer* GraphicsOpenGL::VertexBuffer_Create( VERTEX_FORMAT::Enum vertex_format )
 {
+	poro_assert( GetMultithreadLock() == false );
+
 	auto result = new IVertexBuffer();
 	vertexbuffers.insert( result );
 	result->format = vertex_format;
@@ -1412,7 +1428,9 @@ IVertexBuffer* GraphicsOpenGL::VertexBuffer_Create( VERTEX_FORMAT::Enum vertex_f
 
 void GraphicsOpenGL::VertexBuffer_Destroy( IVertexBuffer* buffer )
 {
+	poro_assert( GetMultithreadLock() == false );
 	poro_assert( buffer );
+
 	glDeleteBuffers( 1, &buffer->impl_data );
 	delete buffer;
 	vertexbuffers.erase( vertexbuffers.find(buffer) );
@@ -1420,6 +1438,7 @@ void GraphicsOpenGL::VertexBuffer_Destroy( IVertexBuffer* buffer )
 
 void GraphicsOpenGL::VertexBuffer_SetData( IVertexBuffer* buffer, void* vertices, uint32 num_vertices ) const
 {
+	poro_assert( GetMultithreadLock() == false );
 	poro_assert( buffer );
 
 	glBindBuffer( GL_ARRAY_BUFFER, buffer->impl_data );
@@ -1957,7 +1976,15 @@ bool GraphicsOpenGL::UpdateBufferedMultithreaded()
 
 	}
 
+	for ( TextureOpenGL* texture : mBufferedSetWrappingModeTextures )
+	{
+		const auto wrapping_mode = (poro::TEXTURE_WRAPPING_MODE::Enum)texture->mWrappingMode;
+		texture->mWrappingMode = -1;
+		SetTextureWrappingMode( texture, wrapping_mode );
+	}
+
 	mBufferedLoadTextures.clear();
+	mBufferedSetWrappingModeTextures.clear();
 
 	return false;
 }
@@ -1971,14 +1998,14 @@ TextureOpenGL* GraphicsOpenGL::IMPL_LoadTexture( const types::string& filename, 
 {
 	TextureOpenGL* result = NULL;
 
-	CharBufferAutoFree texture_data;
-	StreamStatus::Enum read_status = Poro()->GetFileSystem()->ReadWholeFile( filename, texture_data.memory, &texture_data.size_bytes );
-	if ( read_status != StreamStatus::NoError )
+	FileDataTemp file;
+	Poro()->GetFileSystem()->ReadWholeFileTemp( filename, &file );
+	if ( file.IsValid() == false )
 		return NULL;
 
 	int x, y, bpp;
-	stbi_info_from_memory( (stbi_uc*)texture_data.memory, texture_data.size_bytes, &x, &y, &bpp );
-	uint8* data = stbi_load_from_memory( (stbi_uc*)texture_data.memory, texture_data.size_bytes, &x, &y, &bpp, bpp == 3 ? 4 : 0 );
+	stbi_info_from_memory( (stbi_uc*)file.data, file.data_size_bytes, &x, &y, &bpp );
+	uint8* data = stbi_load_from_memory( (stbi_uc*)file.data, file.data_size_bytes, &x, &y, &bpp, bpp == 3 ? 4 : 0 );
 
 	if ( data == NULL )
 		return NULL;

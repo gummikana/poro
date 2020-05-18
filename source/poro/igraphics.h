@@ -246,8 +246,8 @@ public:
 	virtual ITexture*	LoadTexture( const types::string& filename ){ poro_assert( false ); return 0; }
 	virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data ){ poro_assert( false ); return 0; }
 	virtual void		DestroyTexture( ITexture* texture ){ poro_assert( false );  }
-	virtual void		SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode ) const{ poro_assert( false );  };
-	virtual void		SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum mode ) const{ poro_assert( false );  };
+	virtual void		SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode ) { poro_assert( false );  };
+	virtual void		SetTextureWrappingMode( ITexture* itexture, TEXTURE_WRAPPING_MODE::Enum mode ) { poro_assert( false );  };
 
 	//-------------------------------------------------------------------------
 	
