@@ -559,43 +559,8 @@ void XmlEncryptedWriterWrapper::Done()
 
 //-----------------------------------------------------------------------------
 
-void CXmlParser::ParseFile( const char* filename )
+void CXmlParser::ParseContents( const char* filename, char* contents )
 {
-	// SPROFILE( "XML::ParseFile" );
-
-	if( filename == NULL ) return;
-
-	poro::types::Uint32 contents_size = 0;
-	char* contents = ReadWholeFile( filename, &contents_size );
-	if( contents == NULL ) 
-		return;
-
-	#if 1
-	if( mEncyptionKey )
-	{
-		XML_Decrypt( *mEncyptionKey, contents, contents_size-1 );
-		// std::fstream fout( "temptemp/unecrypted.txt", std::ios::out );
-		// fout << contents << "\n";
-	}
-
-	bool free_contents = true;
-	#else
-	std::string unecrypted_str;
-	if( mEncyptionKey )
-	{
-		std::string str_contents( contents );
-		unecrypted_str = DecryptMe(  str_contents, mEncyptionKey->key + mEncyptionKey->iv );
-
-		std::fstream fout( "temptemp/unecrypted.txt", std::ios::out );
-		fout << unecrypted_str << "\n";
-
-		free( contents );
-		free_contents  = false;
-		contents = &unecrypted_str[0];
-
-	}
-	#endif
-
 	XmlHandlerImpl handler;
 	handler.mHandler = &mHandler;
 
@@ -619,6 +584,48 @@ void CXmlParser::ParseFile( const char* filename )
 	}
 
 	handler.EndDocument();
+}
+
+void CXmlParser::ParseFile( const char* filename )
+{
+	// SPROFILE( "XML::ParseFile" );
+
+	if( filename == NULL ) return;
+
+	poro::types::Uint32 contents_size = 0;
+	char* contents = ReadWholeFile( filename, &contents_size );
+	if( contents == NULL ) 
+		return;
+
+	#if 1
+	if( mEncyptionKey )
+	{
+		XML_Decrypt( *mEncyptionKey, contents, contents_size-1 );
+		// std::fstream fout( "temptemp/unecrypted.txt", std::ios::out );
+		// fout << contents << "\n";
+	}
+
+	bool free_contents = true;
+
+	ParseContents( filename, contents );
+
+	#else
+	std::string unecrypted_str;
+	if( mEncyptionKey )
+	{
+		std::string str_contents( contents );
+		unecrypted_str = DecryptMe(  str_contents, mEncyptionKey->key + mEncyptionKey->iv );
+
+		std::fstream fout( "temptemp/unecrypted.txt", std::ios::out );
+		fout << unecrypted_str << "\n";
+
+		free( contents );
+		free_contents  = false;
+		contents = &unecrypted_str[0];
+
+	}
+	#endif
+
 	
 	if( free_contents )
 		free( contents );

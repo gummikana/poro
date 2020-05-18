@@ -163,6 +163,7 @@ public:
 
 
 	void ParseFile( const char* filename );
+	void ParseContents( const char* filename, char* contents );
 
 	CXmlNode* GetRootElement() const
 	{
