@@ -20,6 +20,10 @@
 
 //#include <Shlwapi.h>
 
+// for memory tracking
+#include <psapi.h>
+
+
 #undef LoadImage
 #undef SendMessage
 #undef GetMessage
