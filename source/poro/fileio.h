@@ -133,6 +133,8 @@ namespace poro {
 
 			long mSize = 0;
 		};
+
+		void ListFiles( const std::wstring& full_path_where, const std::string& relative_path_where, std::vector<std::string>* out_files, bool list_directories );
 	}
 
 	// ================================
