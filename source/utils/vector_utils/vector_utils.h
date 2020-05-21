@@ -26,6 +26,26 @@ bool VectorAddUnique( std::vector< T >& container, const T& element )
 	return true;
 }
 
+// adds an element to vector that is sorted into the correct position
+template< class T >
+void VectorAddSorted( std::vector< T >& container, const T& element )
+{
+	std::size_t i_next = container.size();
+	for( std::size_t i = 0; i < container.size(); ++i ) 
+	{
+		if( container[i] > element  )
+		{
+			i_next = i;
+			break;
+		}
+	}
+
+	container.insert( container.begin() + i_next, element );
+
+	// cassert( ceng::VectorIsSorted( container ) );
+}
+
+// returns true if the element is in container
 template< class T >
 bool VectorContains( const std::vector< T >& container, const T& element )
 {
@@ -186,8 +206,8 @@ T VectorRandomElement( const std::vector< T >& container )
 
 //----------------------------------------------------------------------------
 // shuffles the vector elements
-template< class T >
-void VectorShuffle( std::vector< T >& array, unsigned int seed )
+template< class T, class TSeed >
+void VectorShuffle( std::vector< T >& array, TSeed seed )
 {
 	ceng::CLGMRandom randomizer( (double)seed );
 	for( int i = (int)array.size() - 1; i >= 0; --i )
@@ -196,6 +216,20 @@ void VectorShuffle( std::vector< T >& array, unsigned int seed )
 		std::swap( array[i], array[j] );
 	}
 }
+
+//----------------------------------------------------------------------------
+// returns true if every element in the array is unique
+template< class T >
+bool VectorIsUnique( const std::vector< T >& container )
+{
+	for( std::size_t i = 0; i < container.size(); ++i ) {
+		for( std::size_t j = i + 1; j < container.size(); ++j ) {
+			if( container[ i ] == container[ j ] ) return false;
+		}
+	}
+	return true;
+}
+
 
 //-----------------------------------------------------------------------------
 //
