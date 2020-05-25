@@ -73,13 +73,6 @@ IPlatform::~IPlatform()
 {
 }
 
-IPlatform* IPlatform::Instance()
-{
-	poro_assert(gInstance!=NULL);
-	return gInstance;
-}
-
-
 void IPlatform::Init( IApplication* application, const GraphicsSettings& settings, AppConfig* config )
 {
 	mApplication = application;

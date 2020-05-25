@@ -59,7 +59,7 @@ class IPlatform
 public:
 
 	// static access method:
-	static IPlatform* Instance();
+	static inline IPlatform* Instance();
 
 	virtual ~IPlatform();
 
@@ -168,6 +168,12 @@ protected:
 	types::Float32 mInternalHeight;
 	bool mInputDisabled;
 };
+
+inline IPlatform* IPlatform::Instance()
+{
+	poro_assert( gInstance != NULL );
+	return gInstance;
+}
 
 //-------------------------- inlined stuff ------------------------------------
 
