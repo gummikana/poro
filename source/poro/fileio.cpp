@@ -28,6 +28,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <utils/filesystem/filesystem.h>
+#include <utils/string/string.h>
 
 #ifdef PORO_PLAT_WINDOWS
 #include "external/poro_windows.h"
@@ -1105,9 +1106,9 @@ std::wstring FileSystem::CompleteReadPath( const std::string& path, const std::w
 
 	if ( path.size() > 5 && path[0] == '?' && path[1] == '?' )
 	{
-		std::lock_guard<std::mutex> lock( mMutex );
+		const std::lock_guard<std::mutex> lock( mMutex );
 
-		const auto name = path.substr( 0, 5 );
+		const auto name = ceng::Uppercase( path.substr( 0, 5 ) );
 
 		for ( auto& proxy : mPathProxies )
 		{
