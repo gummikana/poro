@@ -18,6 +18,9 @@
 // to open dialogs
 #include <commdlg.h>
 
+// For TimeBeginPeriod(1)
+#include <timeapi.h>
+
 //#include <Shlwapi.h>
 
 // for memory tracking

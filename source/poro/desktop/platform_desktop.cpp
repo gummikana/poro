@@ -29,6 +29,7 @@
 #include "../libraries.h"
 #include "../external/poro_windows.h"
 
+
 #include "../mouse.h"
 #include "../keyboard.h"
 #include "../touch.h"
@@ -460,6 +461,7 @@ unsigned int reverseBits(unsigned int num)
 	return reverse_num; 
 } 
 
+//-----------------------------------------------------------------------------
 
 PlatformDesktop::PlatformDesktop() :
 	mGraphics( NULL ),
@@ -481,7 +483,7 @@ PlatformDesktop::PlatformDesktop() :
 	mFileSystem( NULL ),
 	mRunning( 0 ),
 	mMousePos(),
-	mSleepingMode( PORO_MAXIMIZE_SLEEP ),
+	mSleepingMode( PORO_WINDOWS_10_SLEEP ),
 	mPrintFramerate( false ),
 	mRandomSeed( 1234567 ),
 	mRandomI( 1234567 )
@@ -603,8 +605,8 @@ void PlatformDesktop::SetFrameRate( int targetRate, bool fixed_time_step )
 	mOneFrameShouldLast = mOneFrameShouldLast * 2;
 	#endif
 }
-
 //-----------------------------------------------------------------------------
+
 void PlatformDesktop::StartMainLoop() 
 {
 	mRunning = true;
@@ -625,9 +627,41 @@ void PlatformDesktop::StartMainLoop()
 	int					mFrameRateUpdateCounter = 0;
 	types::Double32		mProcessorRate = 0;
 
+#ifdef PORO_PLAT_WINDOWS
+	timeBeginPeriod(1);
+#endif
+
+
+#ifdef PORO_DEBUG_SLEEP
+
+	std::vector< double > frame_times( 6000 );
+	std::vector< double > epsilon_times( 6000 );
+	std::vector< double > sleep_lag( 6000 );
+	int frame_i = 0;
+
+#endif
+
+	types::Double32 time_before = GetUpTime();
+	types::Double32 real_time_before = GetUpTime();
+	
+	mOneFrameShouldLast -= (0.0001 / 1000.0);
+
 	while( mRunning )
 	{
-		const types::Double32 time_before = GetUpTime();
+		const types::Double32 old_time_before = real_time_before;
+		real_time_before = GetUpTime();
+
+		time_before = real_time_before;
+		types::Double32 timing_epsilon = ( real_time_before - old_time_before ) - mOneFrameShouldLast;
+
+		// 2ms buffer for epsilon, 
+		// if the previous frame took longer than 16.6666... we'll adjust the next frame by the time it went over
+		// this seems to be required to compensate for inaccuracy of Sleep()
+		if( timing_epsilon < 0 || timing_epsilon > ( 2.0 / 1000.0 ) )
+			timing_epsilon = 0;
+
+		time_before -= timing_epsilon;
+
 
 		SingleLoop();
 
@@ -637,20 +671,40 @@ void PlatformDesktop::StartMainLoop()
 		const types::Double32 time_after = GetUpTime();
 		const types::Double32 elapsed_time = ( time_after - time_before );
 		if( elapsed_time < mOneFrameShouldLast )
+		{
 			Sleep( mOneFrameShouldLast - elapsed_time );
 
-		while( ( GetUpTime() - time_before ) < mOneFrameShouldLast ) { Sleep( 0 ); }
+#ifdef PORO_DEBUG_SLEEP
+			if( ( GetUpTime() - time_after ) >  ( mOneFrameShouldLast - elapsed_time ) )
+				std::cout << "Sleep taking: " << (( GetUpTime() - time_after ) -  ( mOneFrameShouldLast - elapsed_time )) * 1000.0 << "ms more than it should\n";
+#endif
+			// spin for the rest
+			while( ( GetUpTime() - time_before ) < mOneFrameShouldLast ) { Sleep( 0 ); }
+		}
+
+#ifdef PORO_DEBUG_SLEEP
+		frame_times[ (frame_i++) % frame_times.size() ] = ( real_time_before - old_time_before );
+		epsilon_times[ (frame_i) % epsilon_times.size() ] = timing_epsilon;
+		sleep_lag[ (frame_i) % epsilon_times.size() ] = (( GetUpTime() - time_after ) -  (floor( (mOneFrameShouldLast - elapsed_time) * 1000.0 )) / 1000.0);
+#endif
+
 
 		// frame-rate check
-		mProcessorRate += ( elapsed_time / mOneFrameShouldLast );
+		const types::Double32 real_elapsed_time = ( time_after - real_time_before );
+
+		mProcessorRate += ( real_elapsed_time / mOneFrameShouldLast );
 		mFrameCount++;
 		mFrameRateUpdateCounter++;
-		mLastFrameExecutionTime = elapsed_time;
-		mTimeElapsedTracker += elapsed_time;
+		mLastFrameExecutionTime = real_elapsed_time;
+		mTimeElapsedTracker += real_elapsed_time;
 
 		if( ( GetUpTime() - mFrameCountLastTime ) >= 1.0 )
 		{
-			mFrameCountLastTime = GetUpTime();
+			if( ( GetUpTime() - mFrameCountLastTime ) > 1.5 )
+				mFrameCountLastTime = GetUpTime();
+			else
+				mFrameCountLastTime += 1.0;
+
 			mFrameRate = mFrameRateUpdateCounter;
 			mFrameRateUpdateCounter = 0;
 			mAverageFrameExecutionTime = ( mTimeElapsedTracker / mFrameRate );
@@ -663,11 +717,45 @@ void PlatformDesktop::StartMainLoop()
 
 				std::cout << "Fps: " << mFrameRate << " - " << ss.str() << " ms - (CPU): " << ( mProcessorRate / ( types::Double32 )mFrameRate ) * 100.f << "%" << "\n";
 			}
+
 			
 			mTimeElapsedTracker = 0;
 			mProcessorRate = 0;
 		}
 	}
+
+#ifdef PORO_DEBUG_SLEEP
+
+	if( true )
+	{
+		double average_frame = 0;
+		double average_epsilon = 0;
+		double average_sleep_lag = 0;
+
+		const int frame_times_size = frame_i < frame_times.size() ? frame_i : frame_times.size();
+
+		for( int i = 0; i < frame_times_size; ++i )
+		{
+			std::cout << "frames[" << i % 60 << "]: " << std::fixed << std::setprecision( 10 ) << frame_times[i] * 1000.0 << "ms " 
+				<< "epsilon[" << i % 60 << "]: " <<   epsilon_times[i] * 1000.0 << "ms "
+				<< "sleep_lag[" << i % 60 << "]: " << sleep_lag[i] * 1000.0 << "ms \n";
+
+			average_frame += frame_times[i];
+			average_epsilon += epsilon_times[i];
+			average_sleep_lag += sleep_lag[i];
+			if( i % 60 == 59 )
+			{
+				std::cout << "average_frame: " << ( average_frame / 60.0 ) * 1000.0 << "ms " 
+					<< "average_epsilon: " << ( average_epsilon / 60.0 ) * 1000.0 << "ms "
+					<< "average_sleep_lag: " << ( average_sleep_lag / 60.0 ) * 1000.0 << "ms \n";
+				average_frame = 0;		
+				average_epsilon = 0;
+				average_sleep_lag = 0;
+			}
+		}
+		
+	}
+#endif
 
 	if( mApplication )
 		mApplication->Exit();
@@ -712,6 +800,7 @@ void PlatformDesktop::SingleLoop()
 
 void PlatformDesktop::Sleep( types::Double32 seconds )
 {
+	
 	if( mSleepingMode == PORO_NEVER_SLEEP ) {
 		return;
 	}
@@ -720,6 +809,15 @@ void PlatformDesktop::Sleep( types::Double32 seconds )
 	}
 	else if( mSleepingMode == PORO_MAXIMIZE_SLEEP ) {
 		SDL_Delay( (Uint32)( seconds * 1000.0 ) );
+	}
+	else if( mSleepingMode == PORO_WINDOWS_10_SLEEP ) {
+	
+		// burn the CPU for less than 1ms (because calling Sleep(0) might take as long or longer than 1ms)
+		if( seconds <= 1.0 / 1000.0 )
+			return;
+
+		// on Windows 10 Sleep() takes about 1ms longer than you ask it to
+		SDL_Delay( (Uint32)( seconds * 1000.0 - 1.0 ) );	
 	}
 }
 //-----------------------------------------------------------------------------

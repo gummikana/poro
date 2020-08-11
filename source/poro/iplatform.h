@@ -181,7 +181,8 @@ enum PORO_SLEEPING_MODES
 {
 	PORO_NEVER_SLEEP = 0,
 	PORO_USE_SLEEP_0 = 1,
-	PORO_MAXIMIZE_SLEEP = 2	// default
+	PORO_MAXIMIZE_SLEEP = 2,	
+	PORO_WINDOWS_10_SLEEP = 3	// default
 };
 
 //-------------------------- inlined stuff ------------------------------------
