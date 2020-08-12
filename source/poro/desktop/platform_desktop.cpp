@@ -631,6 +631,7 @@ void PlatformDesktop::StartMainLoop()
 	timeBeginPeriod(1);
 #endif
 
+// #define PORO_DEBUG_SLEEP
 
 #ifdef PORO_DEBUG_SLEEP
 
@@ -675,6 +676,8 @@ void PlatformDesktop::StartMainLoop()
 			Sleep( mOneFrameShouldLast - elapsed_time );
 
 #ifdef PORO_DEBUG_SLEEP
+			sleep_lag[ (frame_i) % epsilon_times.size() ] = (( GetUpTime() - time_after ) -  (floor( (mOneFrameShouldLast - elapsed_time) * 1000.0 ) - 1.0 ) / 1000.0);
+
 			if( ( GetUpTime() - time_after ) >  ( mOneFrameShouldLast - elapsed_time ) )
 				std::cout << "Sleep taking: " << (( GetUpTime() - time_after ) -  ( mOneFrameShouldLast - elapsed_time )) * 1000.0 << "ms more than it should\n";
 #endif
@@ -682,10 +685,10 @@ void PlatformDesktop::StartMainLoop()
 			while( ( GetUpTime() - time_before ) < mOneFrameShouldLast ) { Sleep( 0 ); }
 		}
 
+
 #ifdef PORO_DEBUG_SLEEP
 		frame_times[ (frame_i++) % frame_times.size() ] = ( real_time_before - old_time_before );
 		epsilon_times[ (frame_i) % epsilon_times.size() ] = timing_epsilon;
-		sleep_lag[ (frame_i) % epsilon_times.size() ] = (( GetUpTime() - time_after ) -  (floor( (mOneFrameShouldLast - elapsed_time) * 1000.0 )) / 1000.0);
 #endif
 
 
@@ -732,7 +735,7 @@ void PlatformDesktop::StartMainLoop()
 		double average_epsilon = 0;
 		double average_sleep_lag = 0;
 
-		const int frame_times_size = frame_i < frame_times.size() ? frame_i : frame_times.size();
+		const int frame_times_size = frame_i < (int)frame_times.size() ? frame_i : (int)frame_times.size();
 
 		for( int i = 0; i < frame_times_size; ++i )
 		{
@@ -812,7 +815,7 @@ void PlatformDesktop::Sleep( types::Double32 seconds )
 	}
 	else if( mSleepingMode == PORO_WINDOWS_10_SLEEP ) {
 	
-		// burn the CPU for less than 1ms (because calling Sleep(0) might take as long or longer than 1ms)
+		// burn the CPU for less than 1ms (because calling Sleep(0) doesn't do anything useful)
 		if( seconds <= 1.0 / 1000.0 )
 			return;
 
