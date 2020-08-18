@@ -68,6 +68,9 @@
 	#pragma comment( lib, "sdl2.lib" )
 	#pragma comment( lib, "opengl32.lib" )
 	#pragma comment( lib, "glu32.lib" )
+	
+	// for TimeBeginPeriod(1)
+	#pragma comment( lib, "winmm.lib" )
 
 	/*
 	// PLEASE USE poro_windows.h instead

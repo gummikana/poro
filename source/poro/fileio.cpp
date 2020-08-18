@@ -36,8 +36,8 @@
 #include <shlwapi.h>
 #pragma comment(lib,"shlwapi.lib")
 //#pragma comment(lib,"Pathcch.lib")
-#include "shlobj.h"
-#include "strsafe.h"
+#include <shlobj.h>
+#include <strsafe.h>
 
 #endif
 
