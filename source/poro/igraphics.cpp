@@ -348,26 +348,25 @@ namespace poro
 		// adaptive vsync
 		if ( app_config->graphics_settings.vsync == VSYNC_MODE::ADAPTIVE )
 		{
-			const float vsync_off_threshold = 0.9f * app_config->framerate;
+			const float vsync_off_threshold = ADAPTIVE_VSYNC_OFF_THRESHOLD * app_config->framerate;
 			const float vsync_on_threshold = (float)app_config->framerate - 1.0f;
 
 			const auto graphics = Poro()->GetGraphics();
 
-			const uint32 NUM_FPS_SAMPLES = 32;
-			static float fps_samples[NUM_FPS_SAMPLES] = { 0 };
-			static uint32 sample_index = 0;
-
-			fps_samples[sample_index] = (float)Poro()->GetFrameRate();
-
-			sample_index++;
-			if ( sample_index >= NUM_FPS_SAMPLES )
-				sample_index = 0;
+			float framerate = ceng::math::Min( (float)app_config->framerate, (float)(1.0 / Poro()->GetLastFrameExecutionTime()) );
+			if ( mAdaptiveVsyncSamplingEnabled && Poro()->GetFrameNum() > 30 )
+			{
+				mAdaptiveVsyncSamples[mAdaptiveVsyncSampleIndex] = framerate;
+				mAdaptiveVsyncSampleIndex++;
+				if ( mAdaptiveVsyncSampleIndex >= NUM_ADAPTIVE_VSYNC_SAMPLES )
+					mAdaptiveVsyncSampleIndex = 0;
+			}
 
 			float fps_average = 0;
-			for ( auto sample : fps_samples )
+			for ( auto sample : mAdaptiveVsyncSamples )
 				fps_average += sample;
 
-			fps_average /= NUM_FPS_SAMPLES;
+			fps_average /= NUM_ADAPTIVE_VSYNC_SAMPLES;
 
 			const bool vsync_enabled = graphics->GetVsyncCurrentlyEnabled();
 
@@ -509,6 +508,17 @@ namespace poro
 		free( png_memory );
 
 		return 1;
+	}
+
+	void IGraphics::IMPL_InitAdaptiveVSync()
+	{
+		const auto app_config = Poro()->GetApplicationConfig();
+		poro_assert( app_config );
+		const float initial_sample = (float)app_config->framerate;// *( ADAPTIVE_VSYNC_OFF_THRESHOLD + 1.0f ) * 0.5f;
+		for ( float& sample : mAdaptiveVsyncSamples )
+		{
+			sample = initial_sample;
+		}
 	}
 
 }

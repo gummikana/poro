@@ -226,6 +226,7 @@ public:
 	virtual void				SetVsync( VSYNC_MODE::Enum vsync )									{ poro_assert( false ); /* You have to implement this */ }
 	virtual VSYNC_MODE::Enum	GetVsync()															{ poro_assert( false ); return VSYNC_MODE::OFF;/* You have to implement this */ }
 	virtual bool				GetVsyncCurrentlyEnabled()											{ poro_assert( false ); return false;/* You have to implement this */ }
+	void						SetAdaptiveVsyncSamplingEnabled( bool enabled )						{ mAdaptiveVsyncSamplingEnabled = enabled; }
 	virtual poro::types::vec2	GetViewPortSize()													{ poro_assert( false ); return poro::types::vec2(0,0); /* You have to implement this */ }
 	virtual std::string			GetGraphicsHardwareInfo()											{ poro_assert( false ); return "";/* implement for this platform*/ }
 
@@ -367,6 +368,7 @@ public:
 	void GraphicsFreeLeakedResources();
 
 protected:
+	void IMPL_InitAdaptiveVSync();
 	virtual void IMPL_SetVSyncEnabled( bool enabled ){ poro_assert( false );  };
 	virtual void IMPL_EndRendering(){ poro_assert( false );  };
 
@@ -380,6 +382,12 @@ protected:
 
 	IShader* mCurrentShader = NULL;
 
+	static const uint32 NUM_ADAPTIVE_VSYNC_SAMPLES = 10;
+	const float ADAPTIVE_VSYNC_OFF_THRESHOLD = 0.9f;
+	float mAdaptiveVsyncSamples[NUM_ADAPTIVE_VSYNC_SAMPLES];
+	int32 mAdaptiveVsyncSampleIndex = 0;
+	bool mAdaptiveVsyncSamplingEnabled = true;
+
 	std::set<ITexture*> textures;
 	std::set<ITexture3d*> texture3Ds;
 	std::set<IRenderTexture*> rendertextures;
@@ -389,12 +397,6 @@ protected:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-
-inline bool IGraphics::Init( int width, int height, int internal_width, int internal_height, int fullscreen, const types::string& caption, const GraphicsSettings& settings )
-{
-	SetSettings( settings );
-	return Init( width, height, internal_width, internal_height, fullscreen, caption );
-}
 
 inline void	IGraphics::PushBlendMode( BLEND_MODE::Enum blend_mode) {
 	mBlendModes.push(mBlendMode);

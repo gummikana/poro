@@ -403,6 +403,8 @@ bool GraphicsOpenGL::Init( int width, int height, int internal_width, int intern
 	if ( use_external_window )
 		SetWindowPositionCentered();
 
+	IMPL_InitAdaptiveVSync();
+
 	return 1;
 }
 
