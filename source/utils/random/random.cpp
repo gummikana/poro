@@ -196,6 +196,13 @@ bool RandomBool( int chance_of_true )
 	return Random( 1, 100 ) <= chance_of_true;
 }
 
+bool RandomBoolf( float chance_of_true )
+{
+	// this was 1., 100.f, but then it will not work if chance_of_true = 0.5f 
+	return Randomf( 0.f, 1.f - FLT_EPSILON ) < ( chance_of_true / 100.f ); 	
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 int CreateWeightedRandom( int low, int high, const std::vector< int >& data, float constant )

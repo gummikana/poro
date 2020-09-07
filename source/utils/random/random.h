@@ -67,6 +67,7 @@ float ChooseRandom( float a, float b );
 
 // returns true with the given chance [0,100]
 bool RandomBool( int chance_of_true = 50 );
+bool RandomBoolf( float chance_of_true );
 
 //-----------------------------------------------------------------------------
 // Here's some stats that produced by a quick testing of the speed of the 
