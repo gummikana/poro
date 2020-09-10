@@ -74,6 +74,7 @@ void Keyboard::OnFrameStart()
 		mKeysJustDown[ i ] = false; 
 		mKeysJustUp[ i ] = false;
 	}
+	mTextInput = "";
 }
 
 //-----------------------------------------------------------------------------
@@ -113,6 +114,12 @@ void Keyboard::FireKeyUpEvent( int button, types::charset unicode )
 	}
 
 	SetKeyDown( button, false );
+}
+
+void Keyboard::FireTextInputEvent( const char* text )
+{
+	if ( text != NULL && strlen( text ) > 0 )
+		mTextInput += text;
 }
 
 bool Keyboard::IsKeyDown( int button ) const
@@ -167,17 +174,19 @@ bool Keyboard::IsShiftDown() const
 	return ( IsKeyDown( poro::Key_LSHIFT ) || IsKeyDown( poro::Key_RSHIFT ) );
 }
 
-
 bool Keyboard::IsAltDown() const
 {
 	return ( IsKeyDown( poro::Key_LALT ) || IsKeyDown( poro::Key_RALT ) );
 }
-
 
 bool Keyboard::IsCtrlDown() const
 {
 	return ( IsKeyDown( poro::Key_LCTRL ) || IsKeyDown( poro::Key_RCTRL ) );
 }
 
+const std::string* Keyboard::GetTextInput()
+{
+	return &mTextInput;
+}
 
 } // end of namespace poro

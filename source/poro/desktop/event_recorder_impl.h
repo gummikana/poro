@@ -45,6 +45,9 @@ public:
 	virtual void FireTouchDownEvent(const types::vec2& pos, int touchId);
 	virtual void FireTouchUpEvent(const types::vec2& pos, int touchId);
 
+	// text input events
+	virtual void FireTextInputEvent( const char* text );
+
 	//-------------------------------------------------------------------------
 
 	virtual void SetFilename( const std::string& filename );

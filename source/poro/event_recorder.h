@@ -59,7 +59,7 @@ public:
 	// keyboard events
 	virtual void FireKeyDownEvent( int button, types::charset unicode );
 	virtual void FireKeyUpEvent( int button, types::charset unicode );
-	
+
 	// mouse events
 	virtual void FireMouseMoveEvent(const types::vec2& pos);
 	virtual void FireMouseDownEvent(const types::vec2& pos, int button);
@@ -73,6 +73,9 @@ public:
 	// gamepad events
 	virtual void FireGamepadDownEvent( int button );
 	virtual void FireGamepadUpEvent( int button );
+
+	// text events
+	virtual void FireTextInputEvent( const char* text );
 
 	//-------------------------------------------------------------------------
 	

@@ -41,6 +41,7 @@ public:
 
 	void FireKeyDownEvent(int button, types::charset unicode);
 	void FireKeyUpEvent(int button, types::charset unicode);
+	void FireTextInputEvent( const char* text );
 
 	bool IsKeyDown(int button) const;
 	bool IsKeyJustDown(int button) const;
@@ -50,7 +51,11 @@ public:
 	bool IsAltDown() const;
 	bool IsCtrlDown() const;
 
+	const std::string* GetTextInput();
+
 	void SetDisableRepeats(bool disable_repeats);
+
+	void SetTextInputEnabled();
 
 private:
 	void SetKeyDown(int button, bool down);
@@ -60,6 +65,7 @@ private:
 	std::vector< bool > mKeysDown;
 	std::vector< bool > mKeysJustDown;
 	std::vector< bool > mKeysJustUp;
+	std::string mTextInput;
 
 	bool mDisableRepeats;
 };
