@@ -69,20 +69,20 @@ inline double Round( double value )
 // Basically done because VC6 breaks the std::min and std::max, that fucker
 //.............................................................................
 
-template< typename Type >
-inline const Type& Min( const Type& c1, const Type& c2 )
+template< typename Type, typename Type2 >
+inline const Type Min( const Type& c1, const Type2& c2 )
 {
 	return ( c1 < c2 )?c1:c2;
 }
 
-template< typename Type >
-inline const Type& Min( const Type& c1, const Type& c2, const Type& c3 )
+template< typename Type, typename Type2 >
+inline const Type Min( const Type& c1, const Type2& c2, const Type2& c3 )
 {
 	return ( c1 < Min( c2, c3 ) )?c1:Min( c2, c3 );
 }
 
-template< typename Type >
-inline const Type& Min( const Type& c1, const Type& c2, const Type& c3, const Type& c4 )
+template< typename Type, typename Type2 >
+inline const Type Min( const Type& c1, const Type2& c2, const Type2& c3, const Type2& c4 )
 {
 	return ( c1 < Min( c2, c3, c4 ) )?c1:Min( c2, c3, c4 );
 }
@@ -95,20 +95,20 @@ inline const Type& Min( const Type& c1, const Type& c2, const Type& c3, const Ty
 // Basically done because VC6 breaks the std::min and std::max, that fucker
 //.............................................................................
 
-template< typename Type >
-inline const Type& Max( const Type& c1, const Type& c2 )
+template< typename Type, typename Type2 >
+inline const Type Max( const Type& c1, const Type2& c2 )
 {
 	return ( c1 < c2 )?c2:c1;
 }
 
-template< typename Type >
-inline const Type& Max( const Type& c1, const Type& c2, const Type& c3 )
+template< typename Type, typename Type2 >
+inline const Type Max( const Type& c1, const Type2& c2, const Type2& c3 )
 {
 	return ( c1 < Max( c2, c3 ) )?Max( c2, c3 ):c1;
 }
 
-template< typename Type >
-inline const Type& Max( const Type& c1, const Type& c2, const Type& c3, const Type& c4 )
+template< typename Type, typename Type2 >
+inline const Type Max( const Type& c1, const Type2& c2, const Type2& c3, const Type2& c4 )
 {
 	return ( c1 < Max( c2, c3, c4 ) )?Max( c2, c3, c4 ):c1;
 }
