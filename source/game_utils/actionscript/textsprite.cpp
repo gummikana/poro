@@ -168,7 +168,7 @@ For more information, please refer to <http://unlicense.org/>
  * error, but it will always advance at least one byte.
  */
 
-static void* utf8_decode(void *buf, poro::types::Uint32 *c, int *e)
+void* utf8_decode(void *buf, poro::types::Uint32 *c, int *e)
 {
     static const char lengths[] = {
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,

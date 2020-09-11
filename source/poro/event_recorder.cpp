@@ -38,7 +38,7 @@ void EventRecorder::FireKeyDownEvent( int button, types::charset unicode ) {
 void EventRecorder::FireKeyUpEvent( int button, types::charset unicode ) {
 	if( mKeyboard ) mKeyboard->FireKeyUpEvent( button, unicode );
 }
-	
+
 // mouse events
 void EventRecorder::FireMouseMoveEvent(const types::vec2& pos) {
 	if( mMouse ) mMouse->FireMouseMoveEvent( pos );
@@ -72,6 +72,12 @@ void EventRecorder::FireGamepadDownEvent( int button ) {
 
 void EventRecorder::FireGamepadUpEvent( int button ) {
 	if ( mJoystick ) mJoystick->SetButtonState( button, false );
+}
+
+// text events
+
+void EventRecorder::FireTextInputEvent( const char* text ) {
+	if ( mKeyboard ) mKeyboard->FireTextInputEvent( text );
 }
 
 

@@ -876,6 +876,12 @@ void PlatformDesktop::HandleEvents()
 			}
 			break;
 
+			case SDL_TEXTINPUT:
+			{
+				mEventRecorder->FireTextInputEvent( event.text.text );
+			}
+			break;
+
 			case SDL_WINDOWEVENT:
 			{
 				switch ( event.window.event )

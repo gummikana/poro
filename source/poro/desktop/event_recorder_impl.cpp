@@ -161,6 +161,18 @@ void EventRecorderImpl::FireTouchUpEvent(const types::vec2& pos, int touchId) {
 	Flush();
 }
 
+//-----------------------------------------------------------------------------
+// text input events
+void EventRecorderImpl::FireTextInputEvent( const char* text ) {
+	EventRecorder::FireTextInputEvent( text );
+
+	// to write text input safely into the buffer it'd need to be encoded (e.g. base64)
+	//std::stringstream ss;
+	//ss << "ti " << text;
+	//mEventBuffer.push_back( ss.str() );
+	//Flush();
+}
+
 //=============================================================================
 
 void EventRecorderImpl::SetFilename( const std::string& filename ) {
