@@ -188,6 +188,7 @@ std::string CastToString( const T& var )
 	return ss.str();
 }
 
+
 //! Just a helper utility to save some code lines,
 //! casts a string to a variable
 template< class T >
@@ -197,6 +198,28 @@ T CastFromString( const std::string& str, T default_value = T() )
 	std::stringstream ss( str );
 	ss.operator>>( result );
 	return result;
+}
+
+template<>
+signed char CastFromString< signed char >( const std::string& str, signed char default_value );
+
+template<>
+unsigned char CastFromString< unsigned char >( const std::string& str, unsigned char default_value );
+
+inline signed char CastFromString< signed char >( const std::string& str, signed char default_value )
+{
+	int result = (int)default_value;
+	std::stringstream ss( str );
+	ss.operator>>( result );
+	return (signed char)result;
+}
+
+inline unsigned char CastFromString< unsigned char >( const std::string& str, unsigned char default_value )
+{
+	unsigned int result = (unsigned int)default_value;
+	std::stringstream ss( str );
+	ss.operator>>( result );
+	return (unsigned char)result;
 }
 
 //-----------------------------------------------------------------------------
