@@ -1859,15 +1859,17 @@ void GraphicsOpenGL::SaveScreenshot( const std::string& filename, int pos_x, int
 
 	const int bpp = 3;
 
-	static unsigned char* pixels = new unsigned char[ bpp * (int)mViewportSize.x * (int)mViewportSize.y ];
-	int pixels_size = bpp * (int)mViewportSize.x * (int)mViewportSize.y;
+	static unsigned char* pixels = NULL; // new unsigned char[ bpp * (int)mViewportSize.x * (int)mViewportSize.y ];
+	static int pixels_size = 0; // bpp * (int)mViewportSize.x * (int)mViewportSize.y;
 
-	if( ( bpp * (int)mViewportSize.x * (int)mViewportSize.y ) !=  pixels_size )
+	if( ( ( bpp * (int)mViewportSize.x * (int)mViewportSize.y ) !=  pixels_size ) || pixels == NULL )
 	{
 		delete [] pixels;
 		pixels_size = ( bpp * (int)mViewportSize.x * (int)mViewportSize.y );
 		pixels = new unsigned char[ pixels_size ];
 	}
+
+	poro_assert( pixels );
 
 	// this is needed for GL_RGB
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
