@@ -56,5 +56,19 @@ void MouseImpl::SetCursor( const char* image_rgba8, int width, int height, int c
 	SDL_FreeSurface( surface );
 }
 
+void MouseImpl::SetCaptureMouse( bool mouse_captured_inside_window ) 
+{
+	SDL_Window* sdl_window = (SDL_Window*)Poro()->GetGraphics()->IMPL_GetSDLWindow();
+	poro_assert( sdl_window );
+	SDL_SetWindowGrab( sdl_window, mouse_captured_inside_window ? SDL_TRUE : SDL_FALSE );
+
+	/*
+	// GetSDLWindow
+	std::cout << "MouseImpl::SetCaptureMouse\n";
+	// auto result = SDL_CaptureMouse( mouse_captured_inside_window ? SDL_TRUE : SDL_FALSE );
+	auto result = SDL_SetRelativeMouseMode(mouse_captured_inside_window ? SDL_TRUE : SDL_FALSE);
+	std::cout << result << "\n";
+	*/
+}
 
 } // end of namespace poro

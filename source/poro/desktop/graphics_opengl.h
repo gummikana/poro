@@ -163,6 +163,11 @@ public:
 
 	virtual bool UpdateBufferedMultithreaded() PORO_OVERRIDE;
 
+	// for some SDL implementation deltais you need the SDLWindow*
+	virtual void* IMPL_GetSDLWindow() const PORO_OVERRIDE { return (void*)mSDLWindow; }
+
+	//-------------------------------------------------------------------------
+
 	void IMPL_AddTextureToBuffer( TextureOpenGL* buffer_me );
 	TextureOpenGL* IMPL_LoadTexture( const types::string& filename, bool store_raw_pixel_data );
 	TextureOpenGL* IMPL_CreateImage( uint8* pixels, int w, int h, TEXTURE_FORMAT::Enum format, bool store_raw_pixel_data );

@@ -367,6 +367,9 @@ public:
 
 	void GraphicsFreeLeakedResources();
 
+	// for some SDL implementation deltais you need the SDLWindow*
+	virtual void* IMPL_GetSDLWindow() const { poro_assert( false && "IMPLEMENTATION NEEDED" ); return NULL; }
+
 protected:
 	void IMPL_InitAdaptiveVSync();
 	virtual void IMPL_SetVSyncEnabled( bool enabled ){ poro_assert( false );  };

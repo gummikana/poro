@@ -33,9 +33,10 @@ public:
 	MouseImpl() : Mouse() {}
 	virtual ~MouseImpl() {}
 	
-	virtual void SetCursorVisibility( bool show_cursor ) override;
-	virtual void SetCursor( const char* image_rgba8, int width, int height, int center_offset_x, int center_offset_y ) override;
-
+	virtual void SetCursorVisibility( bool show_cursor ) PORO_OVERRIDE;
+	virtual void SetCursor( const char* image_rgba8, int width, int height, int center_offset_x, int center_offset_y ) PORO_OVERRIDE;
+	virtual void SetCaptureMouse( bool mouse_captured_inside_window ) PORO_OVERRIDE;
+	
 	SDL_Cursor* mCursor = NULL;
 };
 
