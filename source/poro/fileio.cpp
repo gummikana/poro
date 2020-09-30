@@ -127,8 +127,11 @@ namespace platform_impl
 
 		StreamStatus::Enum Read( char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read ) override
 		{
-			if (mFile.good() == false )
+			if ( mFile.good() == false )
+			{
+				*out_bytes_read = 0;
 				return StreamStatus::AccessFailed;
+			}
 
 			long read_size = std::min( mSize - mPosition, (long)buffer_capacity_bytes );
 			mPosition += read_size;
@@ -140,7 +143,10 @@ namespace platform_impl
 		StreamStatus::Enum ReadTextLine( std::string* out_text ) override
 		{
 			if ( mFile.good() == false )
+			{
+				*out_text = "";
 				return StreamStatus::AccessFailed;
+			}
 
 			bool first = true;
 			const int buffer_size = 1024;
@@ -745,14 +751,23 @@ WriteStream& WriteStream::operator= ( const WriteStream& other )
 
 StreamStatus::Enum ReadStream::Read( char* out_buffer, u32 buffer_capacity_bytes, u32* out_bytes_read )
 {
-	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
+	if ( mStreamImpl == NULL )
+	{
+		*out_bytes_read = 0;
+		return StreamStatus::AccessFailed;
+	}
 
 	return mStreamImpl->Read( out_buffer, buffer_capacity_bytes, out_bytes_read );
 }
 
 StreamStatus::Enum ReadStream::ReadWholeFile( char*& out_buffer, u32* out_bytes_read, bool add_null_terminate )
 {
-	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
+	if ( mStreamImpl == NULL )
+	{
+		out_buffer = NULL;
+		*out_bytes_read = 0;
+		return StreamStatus::AccessFailed;
+	}
 
 	mStreamImpl->SeekToBeginning();
 	auto buffer_size = mStreamImpl->mSize;
@@ -786,7 +801,11 @@ void ReadStream::ReadWholeFileTemp( FileDataTemp* out_data )
 
 StreamStatus::Enum ReadStream::ReadTextLine( char* out_buffer, u32 buffer_capacity, u32* out_length_read )
 {
-	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
+	if ( mStreamImpl == NULL )
+	{
+		*out_length_read = 0;
+		return StreamStatus::AccessFailed;
+	}
 
 	// TODO: optimize
 	std::string text;
@@ -803,7 +822,8 @@ StreamStatus::Enum ReadStream::ReadTextLine( char* out_buffer, u32 buffer_capaci
 
 StreamStatus::Enum ReadStream::ReadTextLine( std::string& out_text )
 {
-	if ( mStreamImpl == NULL ) return StreamStatus::AccessFailed;
+	if ( mStreamImpl == NULL )
+		return StreamStatus::AccessFailed;
 
 	return mStreamImpl->ReadTextLine( &out_text );
 }
