@@ -1101,7 +1101,9 @@ std::string FileSystem::GetDateForFile( const std::string& path_relative_to_devi
 	{
 		if ( device->SupportsFileDates() )
 		{
-			return device->GetDateForFile( path_relative_to_device_root );
+			ReadStream stream = device->OpenRead( path_relative_to_device_root );
+			if ( stream.IsValid() )
+				return device->GetDateForFile( path_relative_to_device_root );
 		}
 		else if ( device->SupportsLegacyFileDates() )
 		{
