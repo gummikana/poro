@@ -259,7 +259,7 @@ namespace network_utils
 		{
 			if ( mHasOverflowed ) return;
 			if ( mBytesUsed + sizeof(value) > mLength ) { mHasOverflowed = true; return; }
-			value = ConvertHexToUint16( mBuffer.substr( mBytesUsed, sizeof( value ) ) );
+			value = ConvertHexToUint16( &mBuffer[mBytesUsed] );
 			mBytesUsed += sizeof( value );
 		}
 
@@ -267,7 +267,7 @@ namespace network_utils
 		{
 			if ( mHasOverflowed ) return;
 			if ( mBytesUsed + sizeof( value ) > mLength ) { mHasOverflowed = true; return; }
-			value = ConvertHexToInt16( mBuffer.substr( mBytesUsed, sizeof( value ) ) );
+			value = ConvertHexToInt16( &mBuffer[mBytesUsed] );
 			mBytesUsed += sizeof( value );
 		}
 
@@ -275,7 +275,7 @@ namespace network_utils
 		{
 			if( mHasOverflowed ) return; 
 			if( mBytesUsed + sizeof( value ) > mLength ) { mHasOverflowed = true; return; }
-			value = ConvertHexToUint32( mBuffer.substr( mBytesUsed, sizeof( value ) ) );
+			value = ConvertHexToUint32( &mBuffer[mBytesUsed] );
 			mBytesUsed += sizeof( value );
 		}
 
@@ -283,7 +283,7 @@ namespace network_utils
 		{
 			if( mHasOverflowed ) return; 
 			if( mBytesUsed + sizeof( value ) > mLength ) { mHasOverflowed = true; return; }
-			value = ConvertHexToInt32( mBuffer.substr( mBytesUsed, sizeof( value ) ) );
+			value = ConvertHexToInt32( &mBuffer[mBytesUsed] );
 			mBytesUsed += sizeof( value );
 		}
 
@@ -291,7 +291,7 @@ namespace network_utils
 		{
 			if( mHasOverflowed ) return; 
 			if( mBytesUsed + sizeof( value ) > mLength ) { mHasOverflowed = true; return; }
-			value = ConvertHexToUint64( mBuffer.substr( mBytesUsed, sizeof( value ) ) );
+			value = ConvertHexToUint64( &mBuffer[mBytesUsed] );
 			mBytesUsed += sizeof( value );
 		}
 
@@ -299,7 +299,7 @@ namespace network_utils
 		{
 			if( mHasOverflowed ) return; 
 			if( mBytesUsed + sizeof( value ) > mLength ) { mHasOverflowed = true; return; }
-			value = ConvertHexToInt64( mBuffer.substr( mBytesUsed, sizeof( value ) ) );
+			value = ConvertHexToInt64( &mBuffer[mBytesUsed] );
 			mBytesUsed += sizeof( value );
 		}
 
@@ -307,7 +307,7 @@ namespace network_utils
 		{
 			if( mHasOverflowed ) return; 
 			if( mBytesUsed + sizeof( value ) > mLength ) { mHasOverflowed = true; return; }
-			value = HexStringToFloat( mBuffer.substr( mBytesUsed, sizeof( value ) ) );
+			value = HexStringToFloat( &mBuffer[mBytesUsed] );
 			mBytesUsed += sizeof( value );
 		}
 
@@ -315,7 +315,7 @@ namespace network_utils
 		{
 			if( mHasOverflowed ) return; //stop writing when overflowed
 			if( mBytesUsed + sizeof( value ) > mLength ) { mHasOverflowed = true; return; }
-			value = HexStringToDouble( mBuffer.substr( mBytesUsed, sizeof( value ) ) );
+			value = HexStringToDouble( &mBuffer[mBytesUsed] );
 			mBytesUsed += sizeof( value );
 		}
 			

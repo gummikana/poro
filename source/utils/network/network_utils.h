@@ -29,97 +29,26 @@
 
 namespace network_utils
 {
-	// from here: http://www.gamedev.net/community/forums/topic.asp?topic_id=517289
-	template< typename To, typename From > To ConvertBits( From what )
-	{
-		cassert( sizeof(To) == sizeof(From) );
-		union { From from; To to; } n = {what};
-		return n.to;
-	}
-
 	types::ustring	ConvertUint16ToHex( uint16 value );
-	uint16			ConvertHexToUint16( const types::ustring& s );
-
 	types::ustring	ConvertInt16ToHex( int16 value );
-	int16			ConvertHexToInt16( const types::ustring& s );
-
 	types::ustring	ConvertUint32ToHex( uint32 value );
-	uint32			ConvertHexToUint32( const types::ustring& s );
-
 	types::ustring	ConvertInt32ToHex( int32 value );
-	int32			ConvertHexToInt32( const types::ustring& s );
-
 	types::ustring	ConvertUint64ToHex( uint64 value );
-	uint64			ConvertHexToUint64( const types::ustring& s );
-
 	types::ustring	ConvertInt64ToHex( int64 value );
-	int64			ConvertHexToInt64( const types::ustring& s );
-
 	types::ustring	FloatToHexString( float32 value );
-	float32			HexStringToFloat( const types::ustring& value );
-
 	types::ustring	DoubleToHexString( double64 value );
-	double64		HexStringToDouble( const types::ustring& value );
 
 	//-------------------------------------------------------------------------
 
+	uint16		ConvertHexToUint16( const char* s );
+	int16		ConvertHexToInt16( const char* s );
+	uint32		ConvertHexToUint32( const char* s );
+	int32		ConvertHexToInt32( const char* s );
+	uint64		ConvertHexToUint64( const char* s );
+	int64		ConvertHexToInt64( const char* s );
+	float32		HexStringToFloat( const char* s );
+	double64	HexStringToDouble( const char* s );
 
-	/*class SimpleMutex
-	{
-	public:
-		SimpleMutex() :
-			mLocked( false ),
-			mLock( NULL )
-		{
-			mLock = SDL_CreateMutex();
-		}
-
-		~SimpleMutex()
-		{
-			SDL_DestroyMutex( mLock );
-			mLock = NULL;
-		}
-
-		bool Enter()
-		{
-			cassert( mLock );
-			if( mLock == NULL )
-				return false;
-
-			if( SDL_mutexP( mLock ) == -1 )
-			{
-				std::cout << "Thread fail: SDL_mutexP failed" << "\n";
-				return false;
-			}
-
-			mLocked = true;
-			return true;
-		}
-
-		bool Leave()
-		{
-			cassert( mLock );
-
-			if( mLock == NULL )
-				return false;
-
-			mLocked = false;
-
-			if( SDL_mutexV( mLock ) == -1 )
-			{
-				std::cout << "Thread fail: SDL_mutexV failed" << "\n";
-				return false;
-			}
-
-			return true;
-		}
-
-		bool IsLocked() const { return mLocked; }
-
-		bool		mLocked;
-		SDL_mutex*	mLock;
-	};*/
-
-} // end o namespace network_utils
+} // end of namespace network_utils
 
 #endif

@@ -20,6 +20,7 @@
 
 
 #include "network_utils.h"
+#include <intrin.h>
 
 namespace network_utils
 {
@@ -35,17 +36,6 @@ namespace network_utils
 		return result;
 	}
 
-	uint16 ConvertHexToUint16( const types::ustring& s )
-	{
-		cassert( s.size() >= sizeof( uint16 ) );
-
-		uint16 result =
-			( ( uint16( s[0] ) & 0xFF ) << 8 ) |
-			( ( uint16( s[1] ) & 0xFF ) );
-
-		return result;
-	}
-
 	//-------------------------------------------------------------------------
 
 	types::ustring ConvertInt16ToHex( int16 value )
@@ -54,17 +44,6 @@ namespace network_utils
 		result.resize( sizeof(value) );
 		result[0] = (unsigned char)( ( value >> 8 ) & 0xFF );
 		result[1] = (unsigned char)( (value)& 0xFF );
-
-		return result;
-	}
-
-	int16 ConvertHexToInt16( const types::ustring& s )
-	{
-		cassert( s.size() >= sizeof(int16) );
-
-		int32 result =
-			( ( int16( s[0] ) & 0xFF ) << 8 ) |
-			( ( int16( s[1] ) & 0xFF ) );
 
 		return result;
 	}
@@ -83,19 +62,6 @@ namespace network_utils
 		return result;
 	}
 
-	uint32 ConvertHexToUint32( const types::ustring& s )
-	{
-		cassert( s.size() >= 4 );
-		
-		uint32 result = 
-			( (uint32(s[ 0 ]) & 0xFF) << 24 ) |
-			( (uint32(s[ 1 ]) & 0xFF) << 16 ) |
-			( (uint32(s[ 2 ]) & 0xFF) << 8 ) |
-			( (uint32(s[ 3 ]) & 0xFF) );
-
-		return result;
-	}
-
 	//-------------------------------------------------------------------------
 
 	types::ustring ConvertInt32ToHex( int32 value )
@@ -110,19 +76,6 @@ namespace network_utils
 		return result;
 	}
 
-	int32 ConvertHexToInt32( const types::ustring& s )
-	{
-		cassert( s.size() >= 4 );
-		
-		int32 result = 
-			( (int32(s[ 0 ]) & 0xFF) << 24 ) |
-			( (int32(s[ 1 ]) & 0xFF) << 16 ) |
-			( (int32(s[ 2 ]) & 0xFF) << 8 ) |
-			( (int32(s[ 3 ]) & 0xFF) );
-
-		return result;
-	}
-	
 	//-------------------------------------------------------------------------
 
 	types::ustring ConvertInt64ToHex( int64 value )
@@ -138,23 +91,6 @@ namespace network_utils
 		result[6] = (unsigned char) ( ( value >> 8 ) & 0xFF );
 		result[7] = (unsigned char) ( ( value >> 0 ) & 0xFF );
 		
-		return result;
-	}
-
-	int64 ConvertHexToInt64( const types::ustring& s )
-	{
-		cassert( s.size() >= 8 );
-		
-		int64 result = 
-			( (int64(s[ 0 ]) & 0xFF) << 56 ) |
-			( (int64(s[ 1 ]) & 0xFF) << 48 ) |
-			( (int64(s[ 2 ]) & 0xFF) << 40 ) |
-			( (int64(s[ 3 ]) & 0xFF) << 32 ) |
-			( (int64(s[ 4 ]) & 0xFF) << 24 ) |
-			( (int64(s[ 5 ]) & 0xFF) << 16 ) |
-			( (int64(s[ 6 ]) & 0xFF) << 8 ) |
-			( (int64(s[ 7 ]) & 0xFF) );
-
 		return result;
 	}
 
@@ -176,24 +112,43 @@ namespace network_utils
 		return result;
 	}
 
-	uint64 ConvertHexToUint64( const types::ustring& s )
-	{
-		cassert( s.size() >= 8 );
-		
-		uint64 result = 
-			( (uint64(s[ 0 ]) & 0xFF) << 56 ) |
-			( (uint64(s[ 1 ]) & 0xFF) << 48 ) |
-			( (uint64(s[ 2 ]) & 0xFF) << 40 ) |
-			( (uint64(s[ 3 ]) & 0xFF) << 32 ) |
-			( (uint64(s[ 4 ]) & 0xFF) << 24 ) |
-			( (uint64(s[ 5 ]) & 0xFF) << 16 ) |
-			( (uint64(s[ 6 ]) & 0xFF) << 8 ) |
-			( (uint64(s[ 7 ]) & 0xFF) );
+	//-------------------------------------------------------------------------
 
-		return result;
-	}
+	// NOTE: We need to do this hackery because for some reason the serializer swaps the endianess when writing.
+	// Maybe someone wants to implement non-swapping serializing and dynamic selectiion of serializers based on format version number where possible?
+	// That would make binary serialization quite a bit faster.
+
+	template<typename T>
+	T interpret_as( const uint64& x ) { return *(T*)&x; }
+
+	template<typename T>
+	T interpret_as( const uint32& x ) { return *(T*)&x; }
+
+	template<typename T>
+	T interpret_as( const uint16& x ) { return *(T*)&x; }
+
+#ifdef PORO_PLAT_WINDOWS
+	uint16		ConvertHexToUint16( const char* s ) { return interpret_as<int16>(_byteswap_ushort(*(uint16*)s)); }
+	int16		ConvertHexToInt16( const char* s )	{ return _byteswap_ushort(*(int16*)s); }
+	uint32		ConvertHexToUint32( const char* s ) { return _byteswap_ulong(*(uint32*)s); }
+	int32		ConvertHexToInt32( const char* s )	{ return interpret_as<int32>( (uint32)_byteswap_ulong(*(int32*)s)); }
+	uint64		ConvertHexToUint64( const char* s ) { return _byteswap_uint64(*(uint64*)s); }
+	int64		ConvertHexToInt64( const char* s )	{ return interpret_as<int64>( _byteswap_uint64(*(int64*)s)); }
+	float32		HexStringToFloat( const char* s )	{ return interpret_as<float32>((uint32)_byteswap_ulong(*(uint32*)s)); }
+	double64	HexStringToDouble( const char* s )	{ return interpret_as<double64>(_byteswap_uint64(*(uint64*)s)); }
+#else
+	#error You need to implement these for your platform.
+#endif
 
 	//-------------------------------------------------------------------------
+
+	// from here: http://www.gamedev.net/community/forums/topic.asp?topic_id=517289
+	template< typename To, typename From > To ConvertBits( From what )
+	{
+		cassert( sizeof( To ) == sizeof( From ) );
+		union { From from; To to; } n = { what };
+		return n.to;
+	}
 
 	types::ustring FloatToHexString( float32 value )
 	{
@@ -203,18 +158,6 @@ namespace network_utils
 	types::ustring DoubleToHexString( double64 value ) 
 	{
 		return ConvertUint64ToHex( ConvertBits< uint64, double64 >( value ) );
-	}
-
-	//-------------------------------------------------------------------------
-
-	float32 HexStringToFloat( const types::ustring& value )
-	{
-		return ConvertBits< float32, uint32 >( ConvertHexToUint32( value ) );
-	}
-	
-	double64 HexStringToDouble( const types::ustring& value )
-	{
-		return ConvertBits< double64, uint64 >( ConvertHexToUint64( value ) );
 	}
 
 	//-------------------------------------------------------------------------
