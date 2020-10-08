@@ -16,6 +16,8 @@ void LoadImage( const std::string& filename, ceng::CArray2D< poro::types::Uint32
 	TempTexture* surface = GetTexture(filename);
 	if( surface == NULL || surface->data == NULL )
 	{
+		if( surface ) delete surface;
+
 		logger_error << "LoadImage() - Failed to load image: " << filename << "\n";
 		return;		
 	}
