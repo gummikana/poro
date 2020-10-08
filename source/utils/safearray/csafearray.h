@@ -7,23 +7,31 @@
 #include "../debug.h"
 #include "../memcpy/memcpy.h"
 
+#include "../autolist/memory_tracker.h"
+
 namespace ceng 
 {
 
 template< typename Type, typename SizeType = int >
-class CSafeArray
+// class CSafeArray : public MemoryTracker< ceng::CSafeArray< Type, SizeType > > 
+class CSafeArray /*: public MemoryTracker< ceng::CSafeArray< Type, SizeType > > */
 {
 public:
+
+	static_assert(std::is_pod<Type>::value, "Type is not a pod");
+
 	CSafeArray() : data( 0 ), _size( SizeType() ) { }
 	CSafeArray( SizeType size ) : 
-		data( new Type[ size ] ),
+		data( NULL ),
 		_size( size )
 	{
 		
 		/*for( SizeType i = 0; i < Size(); ++i ) 
 			data[ i ] = Type();*/
-		
+
+		data = (Type*)malloc( Size() * sizeof( Type ) );
 		memset( data, 0, Size() * sizeof( Type ) );
+		// SetMemoryChunk( (int)( Size() * sizeof( Type ) ) );
 	}
 	
 	CSafeArray( const CSafeArray& other ) :
@@ -45,7 +53,8 @@ public:
 		if( other._size != _size )
 		{
 			Clear();
-			data =  new Type[ other._size ];
+			// data =  new Type[ other._size ];
+			data = (Type*)malloc( other._size * sizeof( Type ) );
 			_size = other._size;
 			min_size = Size() < other.Size() ? Size() : other.Size();
 		}
@@ -75,7 +84,8 @@ public:
 
 	void Clear()
 	{
-		delete [] data;
+		// delete [] data;
+		free( data );
 		data = 0;
 		_size = 0;
 	}
@@ -93,7 +103,8 @@ public:
 		if( _size != s )
 		{
 			Clear();
-			data =  new Type[ s ];
+			// data =  new Type[ s ];
+			data = (Type*)malloc( s * sizeof( Type ) );
 			_size = s;
 			
 			
@@ -128,7 +139,8 @@ public:
 	}
 
 	Type* data;
-private:
+	// NOTE( Petri ): 8.10.2020 - exposed _size to make loading of images faster
+// private:
 	SizeType _size;
 };
 

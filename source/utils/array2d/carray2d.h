@@ -44,6 +44,45 @@
 // #include <vector>
 // #include <memory>
 
+// #define DEBUG_ARRAY2D_MEM_LEAKS
+
+#ifdef DEBUG_ARRAY2D_MEM_LEAKS
+
+#include <atomic>
+
+namespace ceng {
+
+class AtomicInteger
+{
+public:
+	AtomicInteger();
+	AtomicInteger( int initial_value );
+	AtomicInteger( const AtomicInteger& other );
+
+	void operator+=( int );
+	void operator-=( int );
+	int operator++( int );
+	int operator--( int );
+	int operator=( int value ) { Set( value ); return value; }
+	
+	int Get() const;
+	void Set( int value );
+
+	AtomicInteger& operator =( const AtomicInteger& other );
+
+private:
+	std::atomic<int> mValue;
+
+};
+
+struct CArray2DLeaks
+{
+	static AtomicInteger mCount;
+};
+
+}
+#endif
+
 #include "../safearray/csafearray.h"
 
 namespace ceng {
@@ -55,6 +94,8 @@ namespace ceng {
 //! std::vector< std::vector< T > >
 
 // #define CENG_CARRAY2D_SAFE
+
+
 
 template < class _Ty, class _Container = ceng::CSafeArray< _Ty >, class _A = std::allocator<_Ty> >
 class CArray2D
@@ -89,7 +130,9 @@ public:
 		myArraysLittleHelper( *this ),
 		myNullReference( _Ty() )
 	{
-
+#ifdef DEBUG_ARRAY2D_MEM_LEAKS
+		CArray2DLeaks::mCount++;
+#endif
 	}
 
 	CArray2D( int _width, int _height ) :
@@ -99,6 +142,9 @@ public:
 		myArraysLittleHelper( *this ),
 		myNullReference( _Ty() )
 	{
+#ifdef DEBUG_ARRAY2D_MEM_LEAKS
+		CArray2DLeaks::mCount++;
+#endif
 
 		Allocate();
 	}
@@ -111,8 +157,18 @@ public:
 		myDataArray( other.myDataArray ),
 		myNullReference( _Ty() )
 	{
+#ifdef DEBUG_ARRAY2D_MEM_LEAKS
+		CArray2DLeaks::mCount++;
+#endif
 
 	}
+
+#ifdef DEBUG_ARRAY2D_MEM_LEAKS
+	~CArray2D() 
+	{
+		CArray2DLeaks::mCount--;
+	}
+#endif
 
 	CArray2DHelper& operator[] ( int _x ) { myArraysLittleHelper.SetX( _x ); return myArraysLittleHelper; }
 	const CArray2DHelper& operator[] ( int _x ) const { myArraysLittleHelper.SetX( _x ); return myArraysLittleHelper; }
@@ -277,15 +333,18 @@ private:
 		if( n_size != mySize )
 		{
 			mySize = n_size;
-			myDataArray.resize( mySize + 1 );
+			myDataArray.resize( mySize /*+ 1*/ );
 		}
 	}
 
+public:
+	// NOTE( Petri ): 8.10.2020 - exposed these to make LoadImage faster
 	int myWidth;
 	int myHeight;
 
 	int mySize;
 
+private:
 	CArray2DHelper	   myArraysLittleHelper;
 
 	_Ty					myNullReference;
