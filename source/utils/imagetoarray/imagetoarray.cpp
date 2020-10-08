@@ -41,6 +41,10 @@ void LoadImage( const std::string& filename, ceng::CArray2D< poro::types::Uint32
 	out_array2d.mySize = w*h;
 	out_array2d.myWidth = w;
 	out_array2d.myHeight = h;
+
+	out_array2d.GetData().Clear();
+	poro_assert( out_array2d.GetData().data == NULL );
+
 	out_array2d.GetData().data = (uint32*)result;
 	out_array2d.GetData()._size = out_array2d.mySize;
 
