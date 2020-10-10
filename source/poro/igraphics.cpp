@@ -403,8 +403,8 @@ namespace poro
 			_shaders.push_back( res );
 		for ( auto res : vertexbuffers )
 			_vertexbuffers.push_back( res );
-		for ( auto res : images )
-			free( res );
+		/*for ( auto res : images )
+			free( res );*/
 
 		for ( auto res : _textures )
 			DestroyTexture( res );
@@ -422,7 +422,7 @@ namespace poro
 		rendertextures.clear();
 		shaders.clear();
 		vertexbuffers.clear();
-		images.clear();
+		// images.clear();
 	}
 
 
@@ -476,7 +476,7 @@ namespace poro
 	unsigned char* IGraphics::ImageLoad( char const *filename, int *x, int *y, int *comp, int req_comp )
 	{
 		unsigned char* result = ImageLoadTemp( filename, x, y, comp, req_comp );
-		images.insert( result ); // not thread-safe
+		// images.insert( result ); // not thread-safe
 		return result;
 	}
 
@@ -484,11 +484,11 @@ namespace poro
 	{
 		free( image );
 
-		auto it = images.find( image );
+		/*auto it = images.find( image );
 		if ( it != images.end() )
 		{
 			images.erase( it ); // not thread-safe
-		}
+		}*/
 	}
 
 	int	IGraphics::ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes )

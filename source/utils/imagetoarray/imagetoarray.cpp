@@ -1,5 +1,6 @@
 #include "imagetoarray.h"
 
+
 #include <poro/iplatform.h>
 #include <poro/igraphics.h>
 #include <utils/color/ccolor.h>
@@ -8,6 +9,83 @@
 
 
 //-----------------------------------------------------------------------------
+
+void LoadImage( const std::string& filename, ceng::CArray2D< poro::types::Uint32 >& out_array2d, bool include_alpha )
+{
+	int w = 0;
+	int h = 0;
+	int bpp = 0;
+	const int req_comp = 4;
+
+	poro::FileDataTemp file;
+	Poro()->GetFileSystem()->ReadWholeFileTemp( filename, &file );
+	if ( file.IsValid() == false )
+	{
+		logger_error << "LoadImage() - Failed to load image: " << filename << "\n";
+		return;
+	}
+
+	unsigned char* result = stbi_load_from_memory( (stbi_uc*)file.data, file.data_size_bytes, &w, &h, &bpp, req_comp );
+
+	// error reading the file, probably not image file
+	if ( result == NULL )
+	{
+		logger_error << "LoadImage() - Failed to load image: " << filename << "\n";
+		return;
+	}
+
+	poro_assert( bpp == 4 );
+	poro_assert( w > 0 );
+	poro_assert( h > 0 );
+
+	out_array2d.mySize = w*h;
+	out_array2d.myWidth = w;
+	out_array2d.myHeight = h;
+
+	out_array2d.GetData().Clear();
+	poro_assert( out_array2d.GetData().data == NULL );
+
+	out_array2d.GetData().data = (uint32*)result;
+	out_array2d.GetData()._size = out_array2d.mySize;
+
+
+	poro_assert( include_alpha );
+	if( include_alpha == false )
+	{
+		logger_error << "LoadImage() include_alpha == false in: " << filename << "\n";
+	}
+
+#if 0
+#define PORO_SWAP_RED_AND_BLUE
+#ifdef PORO_SWAP_RED_AND_BLUE
+		if ( comp && *comp == 4 )
+		{
+			int width = *x;
+			int height = *y;
+			int bpp = *comp;
+
+			for ( int ix = 0; ix < width; ++ix )
+			{
+				for ( int iy = 0; iy < height; ++iy )
+				{
+					int i = ( iy * width ) * bpp + ix * bpp;
+					// color = ((color & 0x000000FF) << 16) | ((color & 0x00FF0000) >> 16) | (color & 0xFF00FF00);
+					/*data[ co ] << 16 |
+					data[ co+1 ] << 8 |
+					data[ co+2 ] << 0; // |*/
+
+					unsigned char temp = result[i + 2];
+					result[i + 2] = result[i];
+					result[i] = temp;
+				}
+			}
+		}
+#endif
+#endif
+
+}
+
+#if 0 
 void LoadImage( const std::string& filename, ceng::CArray2D< poro::types::Uint32 >& out_array2d, bool include_alpha )
 {
 	using namespace imagetoarray;
@@ -16,6 +94,8 @@ void LoadImage( const std::string& filename, ceng::CArray2D< poro::types::Uint32
 	TempTexture* surface = GetTexture(filename);
 	if( surface == NULL || surface->data == NULL )
 	{
+		if( surface ) delete surface;
+
 		logger_error << "LoadImage() - Failed to load image: " << filename << "\n";
 		return;		
 	}
@@ -60,6 +140,7 @@ void LoadImage( const std::string& filename, ceng::CArray2D< poro::types::Uint32
 
 	delete surface;
 }
+#endif
 
 //-----------------------------------------------------------------------------
 void SaveImage( const std::string& filename, const ceng::CArray2D< poro::types::Uint32 >& image_data )
