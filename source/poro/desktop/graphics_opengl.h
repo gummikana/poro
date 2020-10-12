@@ -65,6 +65,9 @@ public:
 	virtual bool				GetVsyncCurrentlyEnabled() PORO_OVERRIDE;
 	virtual poro::types::vec2	GetViewPortSize() PORO_OVERRIDE { return mViewportSize; }
 	virtual std::string			GetGraphicsHardwareInfo() PORO_OVERRIDE;
+	virtual void 				SetCurrentDisplay( int monitor_n ) PORO_OVERRIDE;
+	virtual int 				GetCurrentDisplay() const PORO_OVERRIDE;
+	virtual int 				GetCurrentDisplayCount() const PORO_OVERRIDE;
 
 	//-------------------------------------------------------------------------
 

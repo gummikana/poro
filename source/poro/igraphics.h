@@ -229,6 +229,9 @@ public:
 	void						SetAdaptiveVsyncSamplingEnabled( bool enabled )						{ mAdaptiveVsyncSamplingEnabled = enabled; }
 	virtual poro::types::vec2	GetViewPortSize()													{ poro_assert( false ); return poro::types::vec2(0,0); /* You have to implement this */ }
 	virtual std::string			GetGraphicsHardwareInfo()											{ poro_assert( false ); return "";/* implement for this platform*/ }
+	virtual void 				SetCurrentDisplay( int monitor_n )									{ poro_assert( false ); /* implement for this platform*/ }
+	virtual int 				GetCurrentDisplay() const											{ poro_assert( false ); return 0; /* implement for this platform*/ }
+	virtual int 				GetCurrentDisplayCount() const										{ poro_assert( false ); return 1;/* implement for this platform*/ }
 
 	//-------------------------------------------------------------------------
 

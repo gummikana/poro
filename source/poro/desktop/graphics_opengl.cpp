@@ -365,7 +365,7 @@ bool GraphicsOpenGL::Init( int width, int height, int internal_width, int intern
 	}
 	else
 	{
-		mSDLWindow = SDL_CreateWindow( caption.c_str(), pos_x, pos_y, width, height, SDL_WINDOW_OPENGL );
+		mSDLWindow = SDL_CreateWindow( caption.c_str(), pos_x, pos_y, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_INPUT_GRABBED );
 	}
 
 	if ( mSDLWindow == NULL )
@@ -400,8 +400,8 @@ bool GraphicsOpenGL::Init( int width, int height, int internal_width, int intern
 	// ---
 	IPlatform::Instance()->SetInternalSize( (types::Float32)internal_width, (types::Float32)internal_height );
 	ResetWindow();
-	if ( use_external_window )
-		SetWindowPositionCentered();
+	// if ( use_external_window )
+	SetWindowPositionCentered();
 
 	IMPL_InitAdaptiveVSync();
 
@@ -483,7 +483,8 @@ void GraphicsOpenGL::SetWindowPosition( int x, int y )
 void GraphicsOpenGL::SetWindowPositionCentered()
 {
 	poro_assert( mSDLWindow );
-	SDL_SetWindowPosition( mSDLWindow, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED );
+	int monitor_i = OPENGL_SETTINGS.current_display;
+	SDL_SetWindowPosition( mSDLWindow, SDL_WINDOWPOS_CENTERED_DISPLAY( monitor_i ), SDL_WINDOWPOS_CENTERED_DISPLAY( monitor_i ) );
 }
 
 poro::types::vec2 GraphicsOpenGL::GetWindowPosition() const
@@ -574,6 +575,43 @@ std::string GraphicsOpenGL::GetGraphicsHardwareInfo()
 	return ss.str();
 }
 
+//=============================================================================
+
+void GraphicsOpenGL::SetCurrentDisplay( int monitor_i )
+{
+	if( monitor_i != OPENGL_SETTINGS.current_display )
+	{
+		OPENGL_SETTINGS.current_display = monitor_i;
+		int display_n = GetCurrentDisplayCount();
+
+		if( display_n > 0 )
+		{
+			monitor_i = OPENGL_SETTINGS.current_display;
+			if( monitor_i < 0 ) monitor_i = 0;
+			if( monitor_i >= display_n ) monitor_i = display_n - 1;
+
+			SDL_DisplayMode display_mode;
+			SDL_GetDesktopDisplayMode( monitor_i, &display_mode );
+
+			mDesktopWidth = (int)display_mode.w;
+			mDesktopHeight = (int)display_mode.h;
+		}
+		
+		SetWindowPositionCentered();
+	}
+}
+
+int GraphicsOpenGL::GetCurrentDisplay() const
+{
+	return OPENGL_SETTINGS.current_display;
+}
+
+int GraphicsOpenGL::GetCurrentDisplayCount() const
+{
+	int display_n = SDL_GetNumVideoDisplays();
+
+	return display_n;
+}
 
 //=============================================================================
 
@@ -606,7 +644,7 @@ void GraphicsOpenGL::SetTextureData( ITexture* itexture, void* data, int x, int 
 	poro_assert( GetMultithreadLock() == false );
 	poro_assert( dynamic_cast<TextureOpenGL*>( itexture) );
 	TextureOpenGL* texture = static_cast<TextureOpenGL*>( itexture );
-    SetTextureData_Impl( texture, data, x, y, w, h );
+	SetTextureData_Impl( texture, data, x, y, w, h );
 }
 
 ITexture* GraphicsOpenGL::LoadTexture( const types::string& filename )
