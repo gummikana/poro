@@ -365,7 +365,8 @@ bool GraphicsOpenGL::Init( int width, int height, int internal_width, int intern
 	}
 	else
 	{
-		mSDLWindow = SDL_CreateWindow( caption.c_str(), pos_x, pos_y, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_INPUT_GRABBED );
+		mSDLWindow = SDL_CreateWindow( caption.c_str(), pos_x, pos_y, width, height, SDL_WINDOW_OPENGL );
+		SDL_SetWindowGrab( mSDLWindow, SDL_FALSE );
 	}
 
 	if ( mSDLWindow == NULL )
