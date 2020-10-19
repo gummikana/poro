@@ -91,8 +91,12 @@ void DisplayObjectContainer::removeChild( DisplayObjectContainer* child )
 
 	ChildList::iterator i = std::find( mChildren.begin(), mChildren.end(), child );
 	
-	cassert( i != mChildren.end() );
-	mChildren.erase( i );
+	// cassert( i != mChildren.end() );
+	// There's a case in which this assert fires, that is if the Sprite is dead, during DrawChildren() it's killed,
+	// it will then be removed from mChildren array and then deleted, but its father is not set to NULL. 
+	// That will trigger this assert. So the way around this is to just add a if()
+	if( i != mChildren.end() )
+		mChildren.erase( i );
 	
 	// this triggers RemoveAllChildren in the removed child
 	child->SetFather( NULL );

@@ -1194,17 +1194,20 @@ void Sprite::DrawChildren( poro::IGraphics* graphics, types::camera* camera, Tra
 
 	transform.PushXForm( mXForm, mColor );
 
-	DisplayObjectContainer::ChildList::iterator i;
+	// DisplayObjectContainer::ChildList::iterator i;
 	Sprite* current = NULL;
 
-	for( i = mChildren.begin(); i != mChildren.end(); )
+	// mChildren is std::vector... 
+	// for( i = mChildren.begin(); i != mChildren.end(); )
+	for( size_t i = 0; i < mChildren.size(); )
 	{
-		cassert( *i );
-		cassert( (*i)->GetFather() == this );
+		DisplayObjectContainer* object_container = mChildren[i];
+		cassert( object_container );
+		cassert( object_container->GetFather() == this );
 
-		if( (*i)->GetSpriteType() == this->GetSpriteType() )
+		if( object_container->GetSpriteType() == this->GetSpriteType() )
 		{			
-			current = dynamic_cast< Sprite* >(*i);
+			current = dynamic_cast< Sprite* >(object_container);
 			cassert( current );
 			if( current->IsSpriteDead() == false )
 			{
@@ -1213,9 +1216,9 @@ void Sprite::DrawChildren( poro::IGraphics* graphics, types::camera* camera, Tra
 			}
 			else 
 			{
-				DisplayObjectContainer::ChildList::iterator remove = i;
-				++i;
-				mChildren.erase( remove );
+				mChildren.erase( mChildren.begin() + i );
+				
+				// NOTE( Petri ): 19.10.2020 - this current->SetFather( NULL ) was commented out in 2011. I have no idea why, but I'm sure there was a good reason
 				// current->SetFather( NULL );
 				delete current;
 			}
