@@ -411,11 +411,12 @@ public:
 
 	void					SetRectAnimation( const RectAnimation* animation );
 	const RectAnimation*	GetRectAnimation() const;
-	void					SetRectAnimations( std::vector< RectAnimation >* animations );
+	const RectAnimation*	GetRectAnimationByName( const std::string& name ) const;
+	void					SetRectAnimations( std::vector< RectAnimation >* animations, std::map< std::string, RectAnimation* >* animations_by_name );
     const std::vector< RectAnimation >* GetRectAnimations() const;
 	
-	// looks in mRectAnimations for a rect animation with the name
-	void PlayRectAnimation( const std::string& name );
+	// plays the animation with name 'name' if it exist. returns true if successful.
+	bool PlayRectAnimation( const std::string& name );
 	void PauseRectAnimation();
 
 	bool IsRectAnimationPlaying() const;
@@ -490,6 +491,7 @@ protected:
 	const RectAnimation*					mRectAnimation;
 	RectAnimationData						mRectAnimationData;
 	std::vector< RectAnimation >*			mRectAnimations;
+	std::map< std::string, RectAnimation* >*mRectAnimationsByName;
 
 	// filename
 	std::string								mFilename;

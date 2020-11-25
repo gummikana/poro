@@ -113,6 +113,7 @@ struct SpriteLoadHelper
 		default_animation = "";
 
 		rect_animations.clear();
+		rect_animations_by_name.clear();
 		ceng::VectorClearPointers(child_sprites);
 	}
 
@@ -132,6 +133,7 @@ struct SpriteLoadHelper
 	std::string		default_animation;
 
 	std::vector< Sprite::RectAnimation > rect_animations;
+	std::map< std::string, Sprite::RectAnimation* > rect_animations_by_name;
 	std::vector< SpriteLoadHelper* > child_sprites;
 
 	// these are kept around for saving these out
@@ -318,6 +320,10 @@ struct SpriteLoadHelper
 
 			// apply to rect animations
 			rect_animations = temp_rect_animations;
+			for ( Sprite::RectAnimation& rect_anim : rect_animations )
+			{
+				rect_animations_by_name[rect_anim.mName] = &rect_anim;
+			}
 		}
 		
 #ifdef WIZARD_DEBUG_SPRITES
@@ -710,7 +716,7 @@ static void ApplySpriteLoadHelperToSprite(as::Sprite* result, impl::SpriteLoadHe
 		rect_animations[i] = new as::Sprite::RectAnimation(*(sprite_data->rect_animations[i]));
 	}*/
 
-	result->SetRectAnimations( &sprite_data->rect_animations );
+	result->SetRectAnimations( &sprite_data->rect_animations, &sprite_data->rect_animations_by_name );
 	result->SetCenterOffset(sprite_data->offset);
 	result->SetScale(sprite_data->scale.x, sprite_data->scale.y);
 	result->SetName(sprite_data->name);
@@ -1658,36 +1664,35 @@ void Sprite::SetRectAnimation( const RectAnimation* animation )
 }
 //-------------------------------------------------------------------------
 
-void Sprite::SetRectAnimations( std::vector< RectAnimation >* animations ) 
+void Sprite::SetRectAnimations( std::vector< RectAnimation >* animations, std::map< std::string, RectAnimation* >* animations_by_name )
 {
 	mRectAnimations = animations;
+	mRectAnimationsByName = animations_by_name;
 }
 //-----------------------------------------------------------------------------
 
-void Sprite::PlayRectAnimation( const std::string& name )
+bool Sprite::PlayRectAnimation( const std::string& name )
 {
 	if( mRectAnimation && mRectAnimation->mName == name )
 	{
 		mRectAnimationData.mPaused = false;
-		return;
+		return true;
 	}
 
-	if( mRectAnimations == NULL ) 
-		return;
+	if ( mRectAnimations == NULL )
+		return false;
 
-	for( std::size_t i = 0; i < mRectAnimations->size(); ++i ) 
+	if ( const RectAnimation* anim = GetRectAnimationByName( name ) )
 	{
-		auto anim = &(mRectAnimations->at(i));
-		if( anim->mName == name ) 
-		{
-			SetRectAnimation( anim );
-			// add so that the rect animation doesn't flash for 1 frame
-			const bool mFinishedTemp = mHasAnimationFinished;
-			Update( 0 );
-			mHasAnimationFinished = mFinishedTemp;
-			return;
-		}
+		SetRectAnimation( anim );
+		// add so that the rect animation doesn't flash for 1 frame
+		const bool mFinishedTemp = mHasAnimationFinished;
+		Update( 0 );
+		mHasAnimationFinished = mFinishedTemp;
+		return true;
 	}
+
+	return false;
 }
 //-----------------------------------------------------------------------------
 
@@ -1721,18 +1726,27 @@ bool Sprite::HasRectAnimationJustFinished() const
 
 bool Sprite::HasRectAnimation( const std::string& name ) const
 {
-	if( mRectAnimation && mRectAnimation->mName == name ) return true;
-
-	if( mRectAnimations == NULL ) 
+	if ( mRectAnimations == NULL )
 		return false;
 
-	for( std::size_t i = 0; i < mRectAnimations->size(); ++i ) 
+	if ( mRectAnimation && mRectAnimation->mName == name )
+		return true;
+
+	return mRectAnimationsByName->find( name ) != mRectAnimationsByName->end();
+}
+
+const Sprite::RectAnimation* Sprite::GetRectAnimationByName( const std::string& name ) const
+{
+	const Sprite::RectAnimation* result = NULL;
+	
+	if ( mRectAnimationsByName )
 	{
-		if( mRectAnimations->at(i).mName == name ) 
-			return true;
+		auto it = mRectAnimationsByName->find( name );
+		if ( it != mRectAnimationsByName->end() )
+			result = it->second;
 	}
 
-	return false;
+	return result;
 }
 //-----------------------------------------------------------------------------
 
