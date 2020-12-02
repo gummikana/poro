@@ -826,7 +826,7 @@ namespace {
 	}
 
 	//----------------------------------------------------------------------------
-
+#if 0 
 	ceng::CArray2D< Uint32 >* GetPixelDataCopy( poro::ITexture* image)
 	{
 		//Copy the raw pixel data
@@ -858,7 +858,7 @@ namespace {
 
 		return raw_pixel_data_copy;
 	}
-
+#endif
 	//----------------------------------------------------------------------------
 
 	TextureBuffer* GetTextureBuffer( const std::string& filename )
@@ -888,6 +888,8 @@ namespace {
 		else
 		{
 #ifdef WIZARD_HOT_LOAD_ENABLED
+			// BUG - this crashes if resetting game and in the reset textures have been changed
+			// if( IsMultithreaded() == false ) 
 			const std::string time_stamp = Poro()->GetFileSystem()->GetDateForFile( filename );
 			if( i->second->time_stamp != time_stamp ) 
 			{
