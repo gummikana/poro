@@ -465,13 +465,13 @@ unsigned int reverseBits(unsigned int num)
 
 PlatformDesktop::PlatformDesktop() :
 	mGraphics( NULL ),
+	mFixedTimeStep( true ),
 	mFrameCount( 0 ),
 	mFrameRate( 0 ),
 	mLastFrameExecutionTime( 0 ),
 	mAverageFrameExecutionTime( 0 ),
 	mOneFrameShouldLast( 1.f / 60.f ),
 	mTimeElapsedTracker( 0 ),
-	mFixedTimeStep( true ),
 	mWidth( 0 ),
 	mHeight( 0 ),
 	mEventRecorder( NULL ),
@@ -485,8 +485,10 @@ PlatformDesktop::PlatformDesktop() :
 	mMousePos(),
 	mSleepingMode( PORO_WINDOWS_10_SLEEP ),
 	mPrintFramerate( false ),
+	mWorkingDir( "" ),
 	mRandomSeed( 1234567 ),
-	mRandomI( 1234567 )
+	mRandomI( 1234567 ),
+	mJoysticksEnabled( true )
 {
 	StartCounter();
 	TestSDL_Keycodes();
