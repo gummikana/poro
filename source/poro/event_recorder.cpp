@@ -67,11 +67,11 @@ void EventRecorder::FireTouchUpEvent(const types::vec2& pos, int touchId) {
 
 // gamepad events
 void EventRecorder::FireGamepadDownEvent( int button ) {
-	if ( mJoystick ) mJoystick->SetButtonState( button, true );
+	if ( mJoystick ) mJoystick->SetButtonState( button, true, 1.f );
 }
 
 void EventRecorder::FireGamepadUpEvent( int button ) {
-	if ( mJoystick ) mJoystick->SetButtonState( button, false );
+	if ( mJoystick ) mJoystick->SetButtonState( button, false, 1.f );
 }
 
 // text events

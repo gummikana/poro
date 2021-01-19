@@ -178,23 +178,23 @@ void JoystickImpl::Update()
 
 	if (mSDLGameController)
 	{
-		SetButtonState(Joystick::JOY_BUTTON_DPAD_UP, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_DPAD_UP) != 0);
-		SetButtonState(Joystick::JOY_BUTTON_DPAD_DOWN, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_DPAD_DOWN) != 0);
-		SetButtonState(Joystick::JOY_BUTTON_DPAD_LEFT, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_DPAD_LEFT) != 0);
-		SetButtonState(Joystick::JOY_BUTTON_DPAD_RIGHT, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_DPAD_RIGHT) != 0);
+		SetButtonState(Joystick::JOY_BUTTON_DPAD_UP, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_DPAD_UP) != 0, 1.f);
+		SetButtonState(Joystick::JOY_BUTTON_DPAD_DOWN, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_DPAD_DOWN) != 0, 1.f);
+		SetButtonState(Joystick::JOY_BUTTON_DPAD_LEFT, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_DPAD_LEFT) != 0, 1.f);
+		SetButtonState(Joystick::JOY_BUTTON_DPAD_RIGHT, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_DPAD_RIGHT) != 0, 1.f);
 
-		SetButtonState(Joystick::JOY_BUTTON_START, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_START) != 0);
-		SetButtonState(Joystick::JOY_BUTTON_BACK, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_BACK) != 0);
-		SetButtonState(Joystick::JOY_BUTTON_LEFT_THUMB, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_LEFTSTICK) != 0);
-		SetButtonState(Joystick::JOY_BUTTON_RIGHT_THUMB, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_RIGHTSTICK) != 0);
+		SetButtonState(Joystick::JOY_BUTTON_START, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_START) != 0, 1.f);
+		SetButtonState(Joystick::JOY_BUTTON_BACK, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_BACK) != 0, 1.f);
+		SetButtonState(Joystick::JOY_BUTTON_LEFT_THUMB, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_LEFTSTICK) != 0, 1.f);
+		SetButtonState(Joystick::JOY_BUTTON_RIGHT_THUMB, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_RIGHTSTICK) != 0, 1.f);
 
-		SetButtonState(Joystick::JOY_BUTTON_LEFT_SHOULDER, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_LEFTSHOULDER) != 0);
-		SetButtonState(Joystick::JOY_BUTTON_RIGHT_SHOULDER, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) != 0);
+		SetButtonState(Joystick::JOY_BUTTON_LEFT_SHOULDER, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_LEFTSHOULDER) != 0, 1.f);
+		SetButtonState(Joystick::JOY_BUTTON_RIGHT_SHOULDER, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) != 0, 1.f);
 
-		SetButtonState(Joystick::JOY_BUTTON_A, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_A) != 0);
-		SetButtonState(Joystick::JOY_BUTTON_B, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_B) != 0);
-		SetButtonState(Joystick::JOY_BUTTON_X, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_X) != 0);
-		SetButtonState(Joystick::JOY_BUTTON_Y, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_Y) != 0);
+		SetButtonState(Joystick::JOY_BUTTON_A, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_A) != 0, 1.f);
+		SetButtonState(Joystick::JOY_BUTTON_B, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_B) != 0, 1.f);
+		SetButtonState(Joystick::JOY_BUTTON_X, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_X) != 0, 1.f);
+		SetButtonState(Joystick::JOY_BUTTON_Y, SDL_GameControllerGetButton(mSDLGameController, SDL_CONTROLLER_BUTTON_Y) != 0, 1.f);
 
 		// Triggers are always between 0 and 32767 (according to documentation)
 		float left_trigger = ((float)SDL_GameControllerGetAxis(mSDLGameController, SDL_CONTROLLER_AXIS_TRIGGERLEFT)) / MAXBYTE_P;
@@ -240,7 +240,7 @@ void JoystickImpl::Update()
 
 		for (int i = 0; i < button_count; ++i)
 		{
-			SetButtonState( Joystick::JOY_BUTTON_0 + i, SDL_JoystickGetButton(mSDLJoystick, i ) != 0 );
+			SetButtonState( Joystick::JOY_BUTTON_0 + i, SDL_JoystickGetButton(mSDLJoystick, i ) != 0, 1.f );
 		}
 
 		int axis_count = SDL_JoystickNumAxes(mSDLJoystick);

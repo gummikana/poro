@@ -34,7 +34,7 @@ public:
 	virtual void OnJoystickConnected(		poro::Joystick* jstick ) { }
 	virtual void OnJoystickDisconnected(	poro::Joystick* jstick ) { }
 
-	virtual void OnJoystickButtonDown(		poro::Joystick* jstick, int button ) { }
+	virtual void OnJoystickButtonDown(		poro::Joystick* jstick, int button, float analog_how_much ) { }
 	virtual void OnJoystickButtonUp(		poro::Joystick* jstick, int button ) { }
 };
 

@@ -21,6 +21,8 @@
 #include "joystick.h"
 #include "run_poro.h"
 
+#include <math.h>
+
 namespace poro {
 namespace {
 
@@ -96,7 +98,7 @@ void Joystick::SetConnected( bool value )
 
 //-----------------------------------------------------------------------------
 
-void Joystick::SetButtonState( int button, bool is_down )
+void Joystick::SetButtonState( int button, bool is_down, float analog_how_much )
 {
 	poro_assert( button >= 0 );
 	poro_assert( button < (int)mButtonsDown.size() );
@@ -107,12 +109,14 @@ void Joystick::SetButtonState( int button, bool is_down )
 			mButtonsJustDown[ button ] = is_down;
 
 		mButtonsDown[ button ] = is_down;
-	
+
+		bool is_joystick_enabled = IPlatform::Instance()->GetJoysticksEnabled();
+
 		if ( IPlatform::Instance()->GetJoysticksEnabled() )
 		{
 			for ( std::size_t i = 0; i < mListeners.size(); ++i ) {
 				if ( is_down )
-					mListeners[i]->OnJoystickButtonDown( this, button );
+					mListeners[i]->OnJoystickButtonDown( this, button, analog_how_much );
 				else
 					mListeners[i]->OnJoystickButtonUp( this, button );
 			}
@@ -138,14 +142,14 @@ void Joystick::SetLeftStick( const types::vec2& value )
 			const bool up = ( mLeftStick.y < -mStickThreshold );
 			const bool down = ( mLeftStick.y > mStickThreshold );
 
-			SetButtonState(	JOY_BUTTON_LEFT_STICK_LEFT, left );
-			SetButtonState(	JOY_BUTTON_LEFT_STICK_RIGHT, right );
-			SetButtonState( JOY_BUTTON_LEFT_STICK_UP, up );
-			SetButtonState( JOY_BUTTON_LEFT_STICK_DOWN, down );
+			SetButtonState(	JOY_BUTTON_LEFT_STICK_LEFT, left, abs( mLeftStick.x ) );
+			SetButtonState(	JOY_BUTTON_LEFT_STICK_RIGHT, right, abs( mLeftStick.x ) );
+			SetButtonState( JOY_BUTTON_LEFT_STICK_UP, up, abs( mLeftStick.y ) );
+			SetButtonState( JOY_BUTTON_LEFT_STICK_DOWN, down, abs( mLeftStick.y ) );
  
 			for ( std::size_t i = 0; i < mListeners.size(); ++i ) 
 			{
-				mListeners[i]->OnJoystickButtonDown( this, Joystick::JOY_BUTTON_LEFT_STICK_MOVED );
+				mListeners[i]->OnJoystickButtonDown( this, Joystick::JOY_BUTTON_LEFT_STICK_MOVED, sqrtf( ( mLeftStick.x * mLeftStick.x + mLeftStick.y * mLeftStick.y ) ) );
 			}
 		}
 	}
@@ -168,13 +172,13 @@ void Joystick::SetRightStick( const types::vec2& value )
 			const bool up = ( mRightStick.y < -mStickThreshold );
 			const bool down = ( mRightStick.y > mStickThreshold );
 
-			SetButtonState(	JOY_BUTTON_RIGHT_STICK_LEFT, left );
-			SetButtonState(	JOY_BUTTON_RIGHT_STICK_RIGHT, right );
-			SetButtonState( JOY_BUTTON_RIGHT_STICK_UP, up );
-			SetButtonState( JOY_BUTTON_RIGHT_STICK_DOWN, down );
+			SetButtonState(	JOY_BUTTON_RIGHT_STICK_LEFT, left, abs( mRightStick.x ) );
+			SetButtonState(	JOY_BUTTON_RIGHT_STICK_RIGHT, right, abs( mRightStick.x ) );
+			SetButtonState( JOY_BUTTON_RIGHT_STICK_UP, up, abs( mRightStick.y ) );
+			SetButtonState( JOY_BUTTON_RIGHT_STICK_DOWN, down, abs( mRightStick.y ) );
 
 			for ( std::size_t i = 0; i < mListeners.size(); ++i ) {
-				mListeners[i]->OnJoystickButtonDown( this, Joystick::JOY_BUTTON_RIGHT_STICK_MOVED );
+				mListeners[i]->OnJoystickButtonDown( this, Joystick::JOY_BUTTON_RIGHT_STICK_MOVED, sqrtf( ( mRightStick.x * mRightStick.x + mRightStick.y * mRightStick.y ) ) );
 			}
 		}
 	}
@@ -216,10 +220,10 @@ void Joystick::SetAnalogButton( int button, float value )
 		if ( IPlatform::Instance()->GetJoysticksEnabled() )
 		{
 			bool is_button_down = ( value > mButtonThreshold );
-			SetButtonState( Joystick::JOY_BUTTON_ANALOG_00_DOWN + button, is_button_down );
+			SetButtonState( Joystick::JOY_BUTTON_ANALOG_00_DOWN + button, is_button_down, value );
 
 			for ( std::size_t i = 0; i < mListeners.size(); ++i ) {
-				mListeners[i]->OnJoystickButtonDown( this, ( Joystick::JOY_BUTTON_ANALOG_00_MOVED + button ) );
+				mListeners[i]->OnJoystickButtonDown( this, ( Joystick::JOY_BUTTON_ANALOG_00_MOVED + button ), value );
 			}
 		}
 	}

@@ -130,7 +130,7 @@ public:
 	bool IsGamePad() const;
 
 	// Fires an event about the new button state	
-	void SetButtonState( int button, bool is_down );
+	void SetButtonState( int button, bool is_down, float analog_how_much );
 	bool IsButtonDown( int button ) const;
 	bool IsButtonJustDown( int button ) const;
 
