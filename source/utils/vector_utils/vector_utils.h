@@ -145,7 +145,7 @@ bool VectorRemoveBackwards( std::vector< T >& container, const T& element )
 	return false;
 }
 
-
+// removes all copies of the element
 template< class T >
 bool VectorRemoveAll( std::vector< T >& container, const T& element )
 {
@@ -162,6 +162,20 @@ bool VectorRemoveAll( std::vector< T >& container, const T& element )
 	}
 
 	return result;
+}
+
+// shifts all elements by 1 and the pops the last one
+// relatively slow compared to pop_back
+template< class T >
+void VectorPopFront( std::vector< T >& array )
+{
+	if( array.empty() ) return;
+	for( size_t i = 0; i < array.size() - 1; ++i )
+	{
+		array[i] = array[i+1];
+	}
+
+	array.pop_back();
 }
 
 // used to release a vector full of pointers
