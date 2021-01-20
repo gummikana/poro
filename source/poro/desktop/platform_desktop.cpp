@@ -831,7 +831,7 @@ void PlatformDesktop::Sleep( types::Double32 seconds )
 void PlatformDesktop::HandleEvents() 
 {
 	// Reset mouse state
-	mMouse->OnFrameStart();
+	mMouse->OnFrameStart( GetFrameNum() );
 	mKeyboard->OnFrameStart( GetFrameNum() );
 
 	// -- event recorder might fire or simulate events of the SDL_EventPoll

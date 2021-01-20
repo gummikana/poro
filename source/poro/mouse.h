@@ -46,7 +46,7 @@ public:
 	void AddMouseListener( IMouseListener* listener );
 	void RemoveMouseListener( IMouseListener* listener );
 
-	void OnFrameStart();
+	void OnFrameStart( int frame_num );
 
 	void FireMouseMoveEvent( const types::vec2& pos );
 	void FireMouseDownEvent( const types::vec2& pos, int button );
@@ -64,12 +64,15 @@ public:
 	virtual bool		IsButtonDown( int button ) const;
 	virtual bool		IsButtonJustDown( int button ) const;
 	virtual bool		IsButtonJustUp( int button ) const;
-	virtual int			LastFrameHasMoved() const;
-
+	
 	// -1 is up and +1 is down
 	virtual int			GetMouseWheelJustAxis() const;
 	virtual int			GetButtonJustDownCount( int button ) const;
 	virtual int			GetButtonJustUpCount( int button ) const;
+
+	virtual int			GetLastFrameHasMoved() const;
+	virtual int			GetLastFrameButtonsPressed() const;
+	virtual int			GetLastFrameActive() const;
 
 private:
 	std::vector< IMouseListener* >	mMouseListeners;
@@ -79,7 +82,10 @@ private:
 	
 	bool							mCursorVisible;
 	types::vec2						mMousePos;
+	int								mFrameNum;
 	int								mLastFrameHasMoved;
+	int								mLastFrameButtonsPressed;
+
 };
 
 } // end of namespace poro

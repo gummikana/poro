@@ -33,7 +33,9 @@ Mouse::Mouse() :
 	mMouseButtonsJustUp( _MOUSE_BUTTON_COUNT ),
 	mCursorVisible( true ),
 	mMousePos( 0, 0 ),
-	mLastFrameHasMoved( INT_MIN )
+	mFrameNum( 0 ),
+	mLastFrameHasMoved( INT_MIN ),
+	mLastFrameButtonsPressed( INT_MIN )
 { 
 	for( std::size_t i = 0; i < mMouseButtonsDown.size(); ++i )
 	{
@@ -65,8 +67,10 @@ void Mouse::RemoveMouseListener( IMouseListener* listener )
 
 //-----------------------------------------------------------------------------
 
-void Mouse::OnFrameStart()
+void Mouse::OnFrameStart( int frame_num )
 {
+	mFrameNum = frame_num;
+
 	// Reset the state
 	for( std::size_t i = 0; i < mMouseButtonsDown.size(); ++i )
 	{
@@ -84,7 +88,7 @@ void Mouse::OnFrameStart()
 void Mouse::FireMouseMoveEvent( const types::vec2& pos )
 {
 	mMousePos = pos;
-	mLastFrameHasMoved = IPlatform::Instance()->GetFrameNum();
+	mLastFrameHasMoved = mFrameNum;
 	for( std::size_t i = 0; i < mMouseListeners.size(); i++ )
 		mMouseListeners[i]->MouseMove( pos );
 }
@@ -101,6 +105,8 @@ void Mouse::FireMouseDownEvent( const types::vec2& pos, int button )
 	
 	poro_assert( button < (int)mMouseButtonsJustDown.size() );
 	mMouseButtonsJustDown[ button ]++;
+
+	mLastFrameButtonsPressed = mFrameNum;
 }
 
 void Mouse::FireMouseUpEvent( const types::vec2& pos, int button )
@@ -178,10 +184,6 @@ bool Mouse::IsButtonJustUp( int button ) const
 	return false;
 }
 
-int Mouse::LastFrameHasMoved() const
-{
-	return mLastFrameHasMoved;
-}
 //-----------------------------------------------------------------------------
 
 int	Mouse::GetMouseWheelJustAxis() const
@@ -203,6 +205,26 @@ int	Mouse::GetButtonJustUpCount( int button ) const
 	poro_assert( button < (int)mMouseButtonsJustUp.size() );
 
 	return mMouseButtonsJustUp[ button ];
+}
+
+//-----------------------------------------------------------------------------
+
+int Mouse::GetLastFrameHasMoved() const
+{
+	return mLastFrameHasMoved;
+}
+
+int Mouse::GetLastFrameButtonsPressed() const
+{
+	return mLastFrameButtonsPressed;
+}
+
+int	Mouse::GetLastFrameActive() const
+{
+	if( mLastFrameHasMoved > mLastFrameButtonsPressed )
+		return mLastFrameHasMoved;
+	else 
+		return mLastFrameButtonsPressed;
 }
 
 //-----------------------------------------------------------------------------
