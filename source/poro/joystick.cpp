@@ -41,10 +41,12 @@ Joystick::Joystick( int id ) :
 	mButtonsDown( Joystick::JOY_BUTTON_COUNT ),
 	mButtonsJustDown( Joystick::JOY_BUTTON_COUNT ),
 	mAnalogButtons( JOYSTICK_ANALOG_BUTTON_COUNT ),
+	mStickThreshold( 0.5f ),
+	mButtonThreshold( 0.5f ),
 	mConnected( false ),
 	mIsGamePad( false),
-	mStickThreshold( 0.5f ),
-	mButtonThreshold( 0.5f )
+	mFrameNum( 0 ),
+	mLastFrameActive( 0 )
 {
 	// just making sure everything is set to 0
 	for( std::size_t i = 0; i < mButtonsDown.size(); ++i )
@@ -77,6 +79,14 @@ void Joystick::RemoveListener( IJoystickListener* listener )
 			mListeners.pop_back();
 		}
 	}
+}
+
+//-----------------------------------------------------------------------------
+
+void Joystick::OnFrameStart( int frame_num )
+{
+	mFrameNum = frame_num;
+	SetButtonsJustDownFalse();
 }
 
 //-----------------------------------------------------------------------------
@@ -121,6 +131,9 @@ void Joystick::SetButtonState( int button, bool is_down, float analog_how_much )
 					mListeners[i]->OnJoystickButtonUp( this, button );
 			}
 		}
+
+		if( analog_how_much > 0.8f )
+			mLastFrameActive = mFrameNum;
 	}
 }
 
@@ -231,5 +244,9 @@ void Joystick::SetAnalogButton( int button, float value )
 
 //-----------------------------------------------------------------------------
 
+int Joystick::GetLastFrameActive() const
+{
+	return mLastFrameActive;
+}
 
 } // end o namespace poro

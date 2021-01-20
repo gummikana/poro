@@ -844,7 +844,7 @@ void PlatformDesktop::HandleEvents()
 	for ( std::size_t i = 0; i < mJoysticks.size(); ++i )
 	{
 		if ( mInputDisabled == false )
-			mJoysticks[i]->Update();
+			mJoysticks[i]->OnFrameStart( GetFrameNum() );
 		else
 			mJoysticks[i]->SetButtonsJustDownFalse();
 	}

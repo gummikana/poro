@@ -120,6 +120,9 @@ public:
 	void AddListener( IJoystickListener* listener );
 	void RemoveListener( IJoystickListener* listener );
 
+	// Update()
+	virtual void OnFrameStart( int frame_num );
+
 	// Fires an event about connection
 	void SetConnected( bool value );
 	bool GetConnected() const;
@@ -173,6 +176,8 @@ public:
 	void SetName(const std::string& name);
 	void SetButtonsJustDownFalse();
 
+	int GetLastFrameActive() const;
+
 private:
 	std::vector< IJoystickListener* > mListeners;
 
@@ -187,6 +192,9 @@ private:
 
 	bool mConnected;
 	bool mIsGamePad;
+
+	int mFrameNum;
+	int mLastFrameActive;
 
 protected:
 	std::vector< bool >		mButtonsDown;

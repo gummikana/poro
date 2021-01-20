@@ -41,11 +41,14 @@ public:
 	JoystickImpl( int id );
 	~JoystickImpl();
 
+	virtual void OnFrameStart( int frame_num ) PORO_OVERRIDE;
+
 	// values are between [0 and 1]
 	// can be implemented on the platform is available
 	// SDL2 uses the time given, but it's motor force is 1D (so it takes the length of the vector2)
 	// XInput doesn't support time, so it rumbles based on the forces given
 	void Vibrate( const types::vec2& motor_forces, float time_in_seconds = 0.2f );
+
 
 private:
 	void Init();

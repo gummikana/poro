@@ -37,6 +37,8 @@ namespace {
 	}
 }
 
+//=============================================================================
+
 JoystickImpl::JoystickImpl( int id ) :
 	Joystick( id ),
 	mSDLGameController( NULL )
@@ -48,6 +50,8 @@ JoystickImpl::~JoystickImpl()
 {
 	
 }
+
+//=============================================================================
 
 void JoystickImpl::Init()
 {
@@ -143,6 +147,7 @@ void JoystickImpl::Exit()
 	SetConnected(false);
 }
 
+//=============================================================================
 
 // controller_n is number of controller
 // left_value is the force (max 65535)
@@ -165,6 +170,12 @@ void JoystickImpl::Vibrate(const types::vec2& motor_forces, float time_in_second
 }
 
 //=============================================================================
+
+void JoystickImpl::OnFrameStart( int frame_num ) 
+{
+	Joystick::OnFrameStart( frame_num );
+	Update();
+}
 
 void JoystickImpl::Update()
 {
