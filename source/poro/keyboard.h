@@ -37,7 +37,7 @@ public:
 	void AddKeyboardListener(IKeyboardListener* listener);
 	void RemoveKeyboardListener(IKeyboardListener* listener);
 
-	void OnFrameStart();
+	void OnFrameStart( int frame_num );
 
 	void FireKeyDownEvent(int button, types::charset unicode);
 	void FireKeyUpEvent(int button, types::charset unicode);
@@ -57,6 +57,8 @@ public:
 
 	void SetTextInputEnabled();
 
+	int GetLastFrameActive() const;
+
 private:
 	void SetKeyDown(int button, bool down);
 
@@ -68,6 +70,8 @@ private:
 	std::string mTextInput;
 
 	bool mDisableRepeats;
+	int mCurrentFrameNum;
+	int mLastFrameActive;
 };
 
 //-----------------------------------------------------------------------------

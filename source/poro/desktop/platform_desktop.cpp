@@ -832,7 +832,7 @@ void PlatformDesktop::HandleEvents()
 {
 	// Reset mouse state
 	mMouse->OnFrameStart();
-	mKeyboard->OnFrameStart();
+	mKeyboard->OnFrameStart( GetFrameNum() );
 
 	// -- event recorder might fire or simulate events of the SDL_EventPoll
 	poro_assert( mEventRecorder );

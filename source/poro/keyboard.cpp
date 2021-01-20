@@ -35,7 +35,9 @@ Keyboard::Keyboard() :
 	mKeysDown(poro::Key_SPECIAL_COUNT),
 	mKeysJustDown(poro::Key_SPECIAL_COUNT),
 	mKeysJustUp(poro::Key_SPECIAL_COUNT),
-	mDisableRepeats(true)
+	mDisableRepeats(true),
+	mCurrentFrameNum(0),
+	mLastFrameActive(0)
 {
 }
 
@@ -66,8 +68,10 @@ void Keyboard::RemoveKeyboardListener( IKeyboardListener* listener )
 
 //-----------------------------------------------------------------------------
 
-void Keyboard::OnFrameStart()
+void Keyboard::OnFrameStart( int frame_num )
 {
+	mCurrentFrameNum = frame_num;
+
 	// Reset the state
 	for( std::size_t i = 0; i < mKeysJustDown.size(); ++i )
 	{
@@ -167,6 +171,9 @@ void Keyboard::SetKeyDown( int key, bool down )
 		mKeysJustDown[ key ] = true;
 	else
 		mKeysJustUp[ key ] = true;
+
+	if( down )
+		mLastFrameActive = mCurrentFrameNum;
 }
 
 bool Keyboard::IsShiftDown() const
@@ -187,6 +194,11 @@ bool Keyboard::IsCtrlDown() const
 const std::string* Keyboard::GetTextInput()
 {
 	return &mTextInput;
+}
+
+int Keyboard::GetLastFrameActive() const
+{
+	return mLastFrameActive;
 }
 
 } // end of namespace poro
