@@ -880,6 +880,9 @@ void PlatformDesktop::HandleEvents()
 
 			case SDL_TEXTINPUT:
 			{
+				if ( mInputDisabled )
+					break;
+
 				mEventRecorder->FireTextInputEvent( event.text.text );
 			}
 			break;
