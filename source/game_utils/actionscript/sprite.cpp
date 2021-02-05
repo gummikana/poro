@@ -116,7 +116,13 @@ struct SpriteLoadHelper
 		rect_animations_by_name.clear();
 		ceng::VectorClearPointers(child_sprites);
 	}
-
+	
+	bool IsEmpty() const 
+	{
+		if( name == "" && filename == "" && rect_animations.empty() && rect_animations_by_name.empty() && child_sprites.empty() && default_animation == "" )
+			return true;
+		return false;
+	}
 
 	/*bool is_text;
 	std::string text;*/
@@ -709,6 +715,13 @@ static void ApplySpriteLoadHelperToSprite(as::Sprite* result, impl::SpriteLoadHe
 	if( sprite_data == NULL )
 		return;
 
+	// sprite_data filename is empty in the case the file doesn't exist. 
+	if( sprite_data->filename.empty() )
+	{
+		poro_assert( sprite_data->IsEmpty() );
+		return;
+	}
+
 	// we need to duplicate rect_animations
 	/*std::vector< as::Sprite::RectAnimation* > rect_animations(sprite_data->rect_animations.size());
 	for (std::size_t i = 0; i < rect_animations.size(); ++i)
@@ -793,6 +806,8 @@ namespace {
 			mSpriteBuffer[filename] = data;
 			load = true;
 		}
+
+		
 
 		cassert( data ); // this shouldn't be null
 
