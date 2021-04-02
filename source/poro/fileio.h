@@ -231,6 +231,8 @@ namespace poro {
 		// Returns true if the stream was succesfully opened and has not been closed.
 		bool IsValid() { return mStreamImpl != NULL; }
 		
+		int32 GetSize() { return mStreamImpl? mStreamImpl->mSize : 0; }
+
 		// Close the stream and clean up all resources used by it.
 		~ReadStream();
 	private:
