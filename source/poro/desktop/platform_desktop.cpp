@@ -937,6 +937,14 @@ void PlatformDesktop::HandleEvents()
 				{
 					mEventRecorder->FireMouseDownEvent( mMousePos, Mouse::MOUSE_BUTTON_MIDDLE );
 				}
+				else if( event.button.button == SDL_BUTTON_X1 )
+				{
+					mEventRecorder->FireMouseDownEvent( mMousePos, Mouse::MOUSE_BUTTON_X1 );
+				}
+				else if( event.button.button == SDL_BUTTON_X2 )
+				{
+					mEventRecorder->FireMouseDownEvent( mMousePos, Mouse::MOUSE_BUTTON_X2 );
+				}
 				break;
 
 			case SDL_MOUSEBUTTONUP:
@@ -956,6 +964,15 @@ void PlatformDesktop::HandleEvents()
 				{
 					mEventRecorder->FireMouseUpEvent( mMousePos, Mouse::MOUSE_BUTTON_MIDDLE );
 				}
+				else if( event.button.button == SDL_BUTTON_X1 )
+				{
+					mEventRecorder->FireMouseUpEvent( mMousePos, Mouse::MOUSE_BUTTON_X1 );
+				}
+				else if( event.button.button == SDL_BUTTON_X2 )
+				{
+					mEventRecorder->FireMouseUpEvent( mMousePos, Mouse::MOUSE_BUTTON_X2 );
+				}
+
 				break;
 
 			case SDL_MOUSEMOTION:
