@@ -463,6 +463,12 @@ struct SpriteLoadHelper
 			return;
 		}
 
+		if( filename == "data/ui_gfx/loading_splash/noita_logo_v3_anim_01.png" )
+		{
+			logger << "Skipping: data/ui_gfx/loading_splash/noita_logo_v3_anim_01.png\n";
+			return;
+		}
+
 		if( ceng::VectorContains( DEBUG_SavedImages, filename ) )
 		{
 			if( ceng::VectorContains( DEBUG_SavedImages, xml_filename ) == false )
