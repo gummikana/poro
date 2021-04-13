@@ -157,6 +157,11 @@ public:
 		return ( x * x + y * y );
 	}
 
+	inline Type LengthManhattan() const 
+	{
+		return (Type)(fabs( ((double)x) ) + fabs( ((double)y) ) );
+	}
+
 	inline float Length() const
 	{
 		return sqrtf( (float)LengthSquared() );
