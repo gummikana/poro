@@ -428,6 +428,57 @@ namespace platform_impl
 			}
 		}
 
+		uint64 ListFilesAndCountSize( const std::wstring& full_path_where, const std::string& relative_path_where, std::vector<std::string>* out_files, bool list_directories )
+		{
+			// poro_assert( out_files );
+			uint64 directory_size = 0;
+
+			std::wstring find_path = CombinePath( full_path_where, L"*" );
+
+			WIN32_FIND_DATAW file_info;
+			auto file_handle = FindFirstFileW( find_path.c_str(), &file_info );
+			if ( file_handle != INVALID_HANDLE_VALUE )
+			{
+				do 
+				{
+					if ( std::wstring( file_info.cFileName ) == L"." || std::wstring( file_info.cFileName ) == L".." )
+					{
+						continue;
+					}
+
+					auto out_file = CombinePath( relative_path_where, WStringToString( file_info.cFileName ) );
+					NormalizeSeparatorsOut( out_file );
+
+					if ( out_file.empty() == false )
+					{
+						if ( ( file_info.dwFileAttributes & _A_SUBDIR ) )
+						{
+							if ( list_directories && out_files )
+								out_files->push_back( out_file );
+						}
+						else
+						{
+							if ( list_directories == false )
+							{
+								if( out_files )
+									out_files->push_back( out_file );
+
+								directory_size += (uint64) ( (file_info.nFileSizeHigh * (MAXDWORD+1ull)) + file_info.nFileSizeLow);
+							}
+						}
+					}
+				} 
+				while( FindNextFileW( file_handle, &file_info ) );
+
+				FindClose( file_handle );
+			}
+			else
+			{
+				// nothing found, or an error occurred
+			}
+			return directory_size;
+		}
+
 		std::wstring GetFullPath( FileLocation::Enum location, const std::string& relative_path )
 		{
 			std::wstring a = GetFullPath( location );
@@ -1033,11 +1084,18 @@ std::wstring FileSystem::GetFullPathFromRelativePath( FileLocation::Enum locatio
 	return platform_impl::GetFullPath( location, relative_path );
 }
 
-void FileSystem::GetFiles( FileLocation::Enum location, const std::string& path_relative_to_location, std::vector<std::string>* out_files )
+void FileSystem::GetFiles( FileLocation::Enum location, const std::string& path_relative_to_location, std::vector<std::string>* out_files, uint64* directory_size )
 {
 	poro_assert( out_files );
 	const std::wstring full_path = CompleteWritePath( location, path_relative_to_location );
-	platform_impl::ListFiles( full_path, path_relative_to_location, out_files, false );
+	if( directory_size )
+	{
+		*directory_size = platform_impl::ListFilesAndCountSize( full_path, path_relative_to_location, out_files, false );	
+	}
+	else
+	{
+		platform_impl::ListFiles( full_path, path_relative_to_location, out_files, false );
+	}
 }
 
 std::vector<std::string> FileSystem::GetFiles( FileLocation::Enum location, const std::string& path_relative_to_location )
@@ -1053,7 +1111,7 @@ std::vector<std::string> FileSystem::GetFiles( FileLocation::Enum location, cons
 		}
 	}
 
-	GetFiles( location, path_relative_to_location, &result );
+	GetFiles( location, path_relative_to_location, &result, NULL );
 	return result;
 }
 

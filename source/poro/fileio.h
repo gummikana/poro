@@ -320,7 +320,7 @@ namespace poro {
 		std::wstring CompleteWritePath( const poro::FileLocation::Enum to_location, const std::string& path );
 
 		// Get a list of files at the location specified by the parameters.
-		void GetFiles( FileLocation::Enum location, const std::string& path_relative_to_location, std::vector<std::string>* out_files );
+		void GetFiles( FileLocation::Enum location, const std::string& path_relative_to_location, std::vector<std::string>* out_files, uint64* directory_size );
 		std::vector<std::string> GetFiles( FileLocation::Enum location, const std::string& path_relative_to_location );
 
 		// Get a list of directories at the location specified by the parameters.
