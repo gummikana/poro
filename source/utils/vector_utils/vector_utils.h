@@ -164,6 +164,28 @@ bool VectorRemoveAll( std::vector< T >& container, const T& element )
 	return result;
 }
 
+
+// the standard way of removing elements by swapping it with the last and popping the last
+// uses if( remove_if_func( element ) ) to determine if the element should be removed
+// returns true if found an element, false if none was found
+template< class T, class TFUCN >
+bool VectorRemoveAllIf( std::vector< T >& container, const TFUCN& remove_if_func )
+{
+	bool result = false;
+	for( std::size_t i = 0; i < container.size(); ) 
+	{
+		if( remove_if_func( container[ i ] ) ) {
+			container[ i ] = container[ container.size() - 1 ];
+			container.pop_back();
+			result = true;
+		} else {
+			++i;
+		}
+	}
+
+	return result;
+}
+
 // shifts all elements by 1 and the pops the last one
 // relatively slow compared to pop_back
 template< class T >
