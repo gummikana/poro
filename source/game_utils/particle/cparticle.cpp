@@ -1,46 +1,40 @@
 #include "cparticle.h"
 
-CParticle::CParticle( CSprite* sprite ) :
-	mySprite( sprite ),
-	myDelay( 0 ),
-	myDead( false ),
-	myTimeNow( 0 ),
-	myLifeTime( 1.f ),
-	myVelocity( 0, 0 ),
-	myRotationVelocity( 0 ),
-	myScaleVel( 0, 0 ),
-	myGravity( 0, 0 ),
-	myVelocitySlowDown( 0 ),
-	myReleaseSprite( true ),
-	myPaused(false),
-	myUseVelocityAsRotation( false ),
-	myParticleHacks() 
+void CParticle::Init( CSprite* sprite )
 {
-	for( int i = 0; i < 4; ++i )
-		myColorChanges[ i ] = 0;
+	mySprite = sprite;
+	myDead = false;
+	myTimeNow = 0;
+	myLifeTime = 1.f;
+	myVelocity.Set( 0, 0 );
+	myRotationVelocity = 0;
+	myGravity.Set( 0, 0 );
+	myVelocitySlowDown = 0.f;
+	myColorChanges[0] = 0;
+	myColorChanges[1] = 0;
+	myColorChanges[2] = 0;
+	myColorChanges[3] = 0;
+	myUseVelocityAsRotation = false;
+	myScaleVel.Set( 0, 0 );
+	myDelay = 0;
+	myParticleHack = NULL;
 
-	Update( 0 );
+	Update( 0 );	
 }
 
-CParticle::~CParticle()
+void CParticle::Release()
 {
-	if( myReleaseSprite )
-		delete mySprite;
+	delete mySprite;
+	mySprite = NULL;
 
-	for( std::size_t i = 0; i < myParticleHacks.size(); ++i )
-	{
-		cassert( myParticleHacks[ i ] );
-		if( myParticleHacks[ i ]->FreeMe() ) 
-			delete myParticleHacks[ i ];
-	}
+	if( myParticleHack )
+		myParticleHack->FreeMe();
+	myParticleHack = NULL;
 }
 
 
 bool CParticle::Update( float dt )
 {
-	if (myPaused)
-		return false;
-	
 	if( mySprite == NULL ) { myDead = true; return false; }
 
 	myDelay -= dt;
@@ -59,11 +53,21 @@ bool CParticle::Update( float dt )
 	if( myTimeNow >= myLifeTime )
 		myDead = true;
 		
-	std::vector< float > color = mySprite->GetColor();
-	for( int i = 0; i < 4; ++i )
+	/*std::vector< float > color = mySprite->GetColor();
+	for( int i = 0; i < color.size(); ++i )
 		color[ i ] = ceng::math::Clamp( color[ i ] + myColorChanges[ i ] * dt, 0.f, 1.f );
 	
 	mySprite->SetColor(color);
+	*/
+
+	const std::vector< float >& color = mySprite->GetColor();
+	mySprite->SetColor( 
+		ceng::math::Clamp( color[ 0 ] + myColorChanges[ 0 ] * dt, 0.f, 1.f ),
+		ceng::math::Clamp( color[ 1 ] + myColorChanges[ 1 ] * dt, 0.f, 1.f ),
+		ceng::math::Clamp( color[ 2 ] + myColorChanges[ 2 ] * dt, 0.f, 1.f ) );
+	mySprite->SetAlpha( ceng::math::Clamp( color[ 3 ] + myColorChanges[ 3 ] * dt, 0.f, 1.f ) );
+
+
 	mySprite->SetRotation( mySprite->GetRotation() + myRotationVelocity * dt );
 	mySprite->SetScale( mySprite->GetScale() + (myScaleVel * dt) );
 
@@ -75,21 +79,8 @@ bool CParticle::Update( float dt )
 	myVelocity += myGravity * dt;
 	myVelocity -= myVelocity * myVelocitySlowDown * dt;
 
-	for( std::size_t i = 0; i < myParticleHacks.size(); ++i ) 
-	{
-		cassert( myParticleHacks[ i ] );
-		myParticleHacks[ i ]->Update( this, dt );
-	}
-
-	// mySprite->Update( dt );
+	if( myParticleHack )
+		myParticleHack->Update( this, dt );
 
 	return true;
-}
-
-void CParticle::Draw( poro::IGraphics* graphics, as::Transform& t )
-{
-	// this is never called!
-	if( !myDead && myDelay <= 0 ) 
-		as::DrawSprite( mySprite, graphics, NULL, t );
-
 }

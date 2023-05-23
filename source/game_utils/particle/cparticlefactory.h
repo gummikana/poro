@@ -33,15 +33,13 @@ public:
 	
 	CParticle*	NewParticle( CSprite* sprite );
 	CParticle* 	NewParticle( CSprite* sprite, float life_time, const types::vector2& velocity, float rotation );
-	CParticle*	AddParticle( CParticle *particle );
 	void 		Update( float dt );
-	void 		Draw( poro::IGraphics* graphics, as::Transform t );
 	void		Clear();
 	
-	int			DEBUG_GetParticleCount() const { return (int)myParticles.size(); }
+	int			DEBUG_GetParticleCount() const { return (int)mParticleBuffer.size(); }
 
 private:
-	std::vector< CParticle* > myParticles;	
+    std::vector< CParticle > mParticleBuffer;
 	
 };
 

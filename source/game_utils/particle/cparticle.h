@@ -8,32 +8,33 @@
 typedef as::Sprite CSprite;
 class IParticleHack;
 
+//-----------------------------------------------------------------------------
+
 class CParticle
 {
 public:
-	CParticle( CSprite* sprite );
-	virtual ~CParticle();
+
+	void Init( CSprite* sprite );
+	void Release();
 	
-	virtual bool Update( float dt );
-	void Draw( poro::IGraphics* graphics, as::Transform& t );
+	bool Update( float dt );
+
 	
 	CSprite* mySprite;
 	bool myDead;
-	float myDelay;
 	float myTimeNow;
-	float myColorChanges[ 4 ];
 	float myLifeTime;
 	types::vector2 myVelocity;
 	float myRotationVelocity;
-	types::vector2 myScaleVel;
-	bool myReleaseSprite;
 	types::vector2 myGravity;
 	float myVelocitySlowDown;
-	bool myPaused;
+	float myColorChanges[ 4 ];
 	bool myUseVelocityAsRotation;
-	
+	types::vector2 myScaleVel;
+	float myDelay;
 
-	std::vector< IParticleHack* > myParticleHacks;
+
+	IParticleHack* myParticleHack;
 };
 
 //-----------------------------------------------------------------------------

@@ -20,8 +20,8 @@
 
 #include "cparticlefactory.h"
 
-CParticleFactory::CParticleFactory() :
-	myParticles()
+
+CParticleFactory::CParticleFactory()
 {
 }
 
@@ -30,10 +30,12 @@ CParticleFactory::~CParticleFactory()
 	Clear();
 }
 
-CParticle*	CParticleFactory::NewParticle( CSprite* sprite )
+CParticle* CParticleFactory::NewParticle( CSprite* sprite )
 {
-	CParticle* result = new CParticle( sprite );
-	myParticles.push_back( result );
+	int index = mParticleBuffer.size();
+	mParticleBuffer.resize( index + 1 );
+	CParticle* result = &mParticleBuffer[ index ];
+	result->Init( sprite );
 	return result;
 }
 
@@ -47,47 +49,29 @@ CParticle* CParticleFactory::NewParticle( CSprite* sprite, float life_time, cons
 	return result;
 }
 
-CParticle* CParticleFactory::AddParticle( CParticle* particle )
-{	
-	myParticles.push_back( particle );
-	return particle;
-}
-
 void CParticleFactory::Update( float dt )
 {
-	
-	for( unsigned int i = 0; i < myParticles.size(); )
+	for( unsigned int i = 0; i < mParticleBuffer.size(); )
 	{
-		myParticles[ i ]->Update( dt );
-		if( myParticles[ i ]->myDead )
+		mParticleBuffer[ i ].Update( dt );
+		if( mParticleBuffer[ i ].myDead )
 		{
-			delete myParticles[ i ];
-			myParticles[ i ] = myParticles[ myParticles.size() - 1 ];
-			myParticles.pop_back();
+			mParticleBuffer[ i ].Release();
+			mParticleBuffer[ i ] = mParticleBuffer[ mParticleBuffer.size() - 1 ];
+			mParticleBuffer.pop_back();
 		}
 		else
 		{
 			++i;
 		}
 	}
-	
-}
-
-void CParticleFactory::Draw(poro::IGraphics* graphics, as::Transform t)
-{
-	
-	for( unsigned int i = 0; i < myParticles.size(); ++i)
-	{
-		myParticles[ i ]->Draw(graphics, t);
-	}
-	
 }
 
 void CParticleFactory::Clear()
 {
-	for( unsigned int i = 0; i < myParticles.size(); ++i )
+	for( unsigned int i = 0; i < mParticleBuffer.size(); ++i )
 	{
-		delete myParticles[ i ];
+		mParticleBuffer[ i ].Release();
 	}
-	myParticles.clear();
+	mParticleBuffer.clear();
 }
