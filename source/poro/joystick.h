@@ -137,6 +137,9 @@ public:
 	bool IsButtonDown( int button ) const;
 	bool IsButtonJustDown( int button ) const;
 
+	// returns if this is valid index
+	bool IsValidButtonIndex( int button ) const;
+
 	// Fires an event through JOY_BUTTON_LEFT_STICK_MOVED && JOY_BUTTON_RIGHT_STICK_MOVED
 	// values are between [-1 and 1] 
 	// 0 being center
@@ -156,6 +159,9 @@ public:
 	// 0 is the first analog button or 
 	// JOY_BUTTON_ANALOG_00_MOVED should work as well
 	float GetAnalogButton( int button ) const;
+
+	// returns if this is valid index
+	bool IsValidAnalogButtonIndex( int button ) const;
 
 	void SetAnalogStickThreshold( float threshold );
 	float GetAnalogStickThreshold() const;
@@ -220,14 +226,23 @@ inline bool Joystick::IsButtonDown( int button ) const {
 	poro_assert( button >= 0 );
 	poro_assert( button < (int)mButtonsDown.size() );
 
-	return mButtonsDown[ button ];
+	if( button >= 0 && button < (int)mButtonsDown.size() )
+		return mButtonsDown[ button ];
+
+	return false;
 }
 
 inline bool Joystick::IsButtonJustDown( int button ) const {
 	poro_assert( button >= 0 );
 	poro_assert( button < (int)mButtonsJustDown.size() );
 
-	return mButtonsJustDown[button];
+	if( button >= 0 && button < (int)mButtonsJustDown.size() )
+		return mButtonsJustDown[button];
+	return false;
+}
+
+inline bool Joystick::IsValidButtonIndex( int button ) const {
+	return ( button >= 0 && button < (int)mButtonsJustDown.size() );
 }
 
 inline types::vec2 Joystick::GetLeftStick() const { 
@@ -242,7 +257,14 @@ inline float Joystick::GetAnalogButton(int button) const {
 	poro_assert(button >= 0);
 	poro_assert(button < (int)mAnalogButtons.size());
 
-	return mAnalogButtons[button];
+	if( button >= 0 && button < (int)mAnalogButtons.size() )
+		return mAnalogButtons[button];
+
+	return false;
+}
+
+inline bool Joystick::IsValidAnalogButtonIndex( int button ) const {
+	return ( button >= 0 && button < (int)mAnalogButtons.size() );
 }
 
 inline int Joystick::GetId() const {
