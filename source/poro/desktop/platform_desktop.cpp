@@ -851,6 +851,8 @@ void PlatformDesktop::HandleEvents()
 
 	//---------
 	// Handle events
+	bool mouse_motion_happened = false;
+
 	SDL_Event event;
 	while( SDL_PollEvent( &event ) )
 	{
@@ -980,10 +982,7 @@ void PlatformDesktop::HandleEvents()
 					mMousePos = mGraphics->ConvertToInternalPos( event.motion.x, event.motion.y );
 					if ( mInputDisabled )
 						break;
-					
-					mEventRecorder->FireMouseMoveEvent( mMousePos );
-					if( mTouch && mTouch->IsTouchIdDown( 0 ) ) 
-						mEventRecorder->FireTouchMoveEvent( mMousePos, 0 );
+					mouse_motion_happened = true;
 				}
 				break;
 
@@ -1040,7 +1039,18 @@ void PlatformDesktop::HandleEvents()
 						unplugged_device->Impl_SDL2_OnRemoved();
 				}
 				break;
+			default:
+				break;
 		}
+	}
+
+	// NOTE( Petri ): Apparently high DPI mice can kill the frame rate
+	// testing to see if calling this only once solves the issue.
+	if( mouse_motion_happened )
+	{
+		mEventRecorder->FireMouseMoveEvent( mMousePos );
+		if( mTouch && mTouch->IsTouchIdDown( 0 ) ) 
+			mEventRecorder->FireTouchMoveEvent( mMousePos, 0 );
 	}
 }
 //-----------------------------------------------------------------------------
