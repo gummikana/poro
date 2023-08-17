@@ -46,14 +46,10 @@ DisplayObjectContainer::~DisplayObjectContainer()
 
 int DisplayObjectContainer::GetChildCount() const { return (int)mChildren.size(); }
 
-// warning this is a super slow method of iterationg though 
-// children and should not be used in time critical places
 DisplayObjectContainer* DisplayObjectContainer::GetChildAt( int index )
 {
-	for( ChildList::iterator i = mChildren.begin(); i != mChildren.end(); ++i, --index )
-	{
-		if( index == 0 ) return *i;
-	}
+	if( index >= 0 && index < (int)mChildren.size() )
+		return mChildren[ index ];
 
 	// out of bound
 	return NULL;
