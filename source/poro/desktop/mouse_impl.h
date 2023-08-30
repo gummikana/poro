@@ -22,6 +22,8 @@
 #define INC_PORO_MOUSE_IMPL_H
 
 #include "../mouse.h"
+#include "../poro_macros.h"
+
 struct SDL_Cursor;
 
 

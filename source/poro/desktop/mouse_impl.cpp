@@ -20,6 +20,8 @@
 
 #include "mouse_impl.h"
 #include "../libraries.h"
+#include "../iplatform.h"
+#include "../igraphics.h"
 
 namespace poro {
 

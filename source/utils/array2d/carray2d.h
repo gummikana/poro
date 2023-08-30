@@ -84,6 +84,7 @@ struct CArray2DLeaks
 #endif
 
 #include "../safearray/csafearray.h"
+#include "../math/math_functions.h"
 
 namespace ceng {
 

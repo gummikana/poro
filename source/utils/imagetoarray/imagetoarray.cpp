@@ -3,6 +3,8 @@
 
 #include <poro/iplatform.h>
 #include <poro/igraphics.h>
+#include <poro/fileio.h>
+#include <poro/external/stb_image.h>
 #include <utils/color/ccolor.h>
 #include <utils/debug.h>
 #include <poro/external/stb_image_write.h>
