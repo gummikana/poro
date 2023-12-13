@@ -18,6 +18,9 @@
 *
 ***************************************************************************/
 
+// NOTE( Petri ): 13.12.2023 - disabled the support for ../ paths. Enable the define to get it back.
+// #define PORO_FILEIO_ALLOW_PARENT_DIRECTORY_TRAVEL
+
 #include "fileio.h"
 #include "iplatform.h"
 
@@ -1328,6 +1331,14 @@ ReadStream DiskFileDevice::OpenRead( const std::string& path_relative_to_device_
 {
 	const std::wstring full_path = Poro()->GetFileSystem()->CompleteReadPath( path_relative_to_device_root, mReadRootPath );
 
+#ifndef PORO_FILEIO_ALLOW_PARENT_DIRECTORY_TRAVEL
+	const bool is_moving_up_path = (ceng::StringFind( "../", path_relative_to_device_root ) != std::string::npos) || (ceng::StringFind( "..\\", path_relative_to_device_root ) != std::string::npos);
+	if ( is_moving_up_path ) // these kinds of paths should not be allowed
+	{
+		return ReadStream();
+	}
+#endif
+
 	StreamStatus::Enum status;
 	ReadStream result;
 	result.mDevice = this;
@@ -1343,6 +1354,14 @@ ReadStream DiskFileDevice::OpenRead( const std::string& path_relative_to_device_
 ReadStream DiskFileDevice::OpenRead( FileLocation::Enum location, const std::string& path_relative_to_location )
 {
 	const std::wstring full_path = Poro()->GetFileSystem()->CompleteWritePath( location, path_relative_to_location );
+
+#ifndef PORO_FILEIO_ALLOW_PARENT_DIRECTORY_TRAVEL
+	const bool is_moving_up_path = (ceng::StringFind( "../", path_relative_to_location ) != std::string::npos) || (ceng::StringFind( "..\\", path_relative_to_location ) != std::string::npos);
+	if ( is_moving_up_path ) // these kinds of paths should not be allowed
+	{
+		return ReadStream();
+	}
+#endif
 
 	StreamStatus::Enum status;
 	ReadStream result;
