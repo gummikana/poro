@@ -226,7 +226,7 @@ public:
 		if ( myReference && myReference->GetType() != typeid( reference ).name() )
 			return false;
 
-		_Ty tmp;
+		_Ty tmp{}; // Value-init in case GetValue is a no-op for this type
 		GetValue( tmp );
 		return ( tmp == reference );
 	}
@@ -235,7 +235,7 @@ public:
 	template< class _Ty >
 	bool operator < ( const _Ty& reference )
 	{
-		_Ty tmp;
+		_Ty tmp{}; // Value-init in case GetValue is a no-op for this type
 		GetValue( tmp );
 		return reference < tmp;
 	}
@@ -358,7 +358,7 @@ _Ty CAnyContainerCast( const CAnyContainer& container )
 
 	if ( tmp_var == NULL )
 	{
-		_Ty temp_var;
+		_Ty temp_var{}; // Value-init in case GetValue is a no-op for this type
 		container.GetValue( temp_var );
 		return temp_var;
 	}

@@ -125,6 +125,20 @@ public:
 
 
     istream& operator>> (bool& val )				{ return istringstream::operator>>(val); }
+    istream& operator>> (signed char& val )
+    {
+        int tmp;
+        istringstream::operator>>(tmp);
+        val = tmp;
+        return *this;
+    }
+    istream& operator>> (unsigned char& val )
+    {
+        unsigned int tmp;
+        istringstream::operator>>(tmp);
+        val = tmp;
+        return *this;
+    }
     istream& operator>> (short& val )				{ return istringstream::operator>>(val); }
     istream& operator>> (unsigned short& val )		{ return istringstream::operator>>(val); }
     istream& operator>> (int& val )					{ return istringstream::operator>>(val); }
@@ -143,6 +157,8 @@ private:
 };
 
 CENG_IS_CENGSTRINGSTREAMABLE_MACROHELPER( bool )
+CENG_IS_CENGSTRINGSTREAMABLE_MACROHELPER( signed char )
+CENG_IS_CENGSTRINGSTREAMABLE_MACROHELPER( unsigned char )
 CENG_IS_CENGSTRINGSTREAMABLE_MACROHELPER( short )
 CENG_IS_CENGSTRINGSTREAMABLE_MACROHELPER( unsigned short )
 CENG_IS_CENGSTRINGSTREAMABLE_MACROHELPER( int )

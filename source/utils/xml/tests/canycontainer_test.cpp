@@ -40,6 +40,30 @@ namespace {
 		~CAnyFucker() { }
 		int i;
 	};
+
+	// Struct whose data members are uninitialized if contructed like this:
+	// UninitializedMemory m;
+	// But not when constructed like this
+	// UninitializedMemory m{};
+	struct UninitializedMemory {
+		int a;
+		float x;
+		char c;
+		long data[20];
+
+		bool all_zero()
+		{
+			if (a != 0 || x != 0 || c != 0)
+				return false;
+
+			for (auto d : data)
+			{
+				if (d != 0) return false;
+			}
+
+			return true;
+		}
+	};
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -157,6 +181,12 @@ int CAnyContainerTest()
 			test_assert( tss == "1" );
 
 			CAnyFucker fucked = CAnyContainerCast< CAnyFucker >( test );
+			unsigned char tu8 = CAnyContainerCast< unsigned char > ( test );
+			test_assert( tu8 == 1 );
+
+			signed char ti8 = CAnyContainerCast< signed char > ( test );
+			test_assert( ti8 == 1 );
+
 		}
 
 		{
@@ -191,6 +221,13 @@ int CAnyContainerTest()
 			test_assert( tss == "1" );
 
 			CAnyFucker fucked = CAnyContainerCast< CAnyFucker >( test );
+		}
+
+		// Unknown types should not receive junk memory
+		{
+			test = std::string("hm");
+			UninitializedMemory mem = CAnyContainerCast< UninitializedMemory >( test );
+			test_assert( mem.all_zero() );
 		}
 
 	}
