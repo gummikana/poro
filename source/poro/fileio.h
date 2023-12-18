@@ -381,6 +381,9 @@ namespace poro {
 		DiskFileDevice( const std::string& read_root_path_full );
 		DiskFileDevice( FileLocation::Enum read_location, const std::string& read_root_path_relative_to_location = "" );
 
+		// filter should return true for ok paths
+		void SetReadPathFilter( bool(*path_filter_fn)( const std::string& path ) );
+
         virtual ReadStream OpenRead( const std::string& path_relative_to_device_root ) override;
 		virtual ReadStream OpenRead( FileLocation::Enum location, const std::string& path_relative_to_location ) override;
         virtual WriteStream	OpenWrite( FileLocation::Enum location, const std::string& path_relative_to_location, poro::types::Uint32 write_mode = StreamWriteMode::Enum::Recreate ) override;
@@ -390,6 +393,7 @@ namespace poro {
 
     private:
         std::wstring mReadRootPath;
+		bool(*path_filter_fn)(const std::string& path);
 	};
 
 	// ================================

@@ -18,9 +18,6 @@
 *
 ***************************************************************************/
 
-// NOTE( Petri ): 13.12.2023 - disabled the support for ../ paths. Enable the define to get it back.
-// #define PORO_FILEIO_ALLOW_PARENT_DIRECTORY_TRAVEL
-
 #include "fileio.h"
 #include "iplatform.h"
 
@@ -1325,19 +1322,22 @@ DiskFileDevice::DiskFileDevice( FileLocation::Enum read_location, const std::str
 	mReadRootPath = platform_impl::GetFullPath( read_location, read_root_path_relative_to_location );
 }
 
+void DiskFileDevice::SetReadPathFilter( bool(*path_filter_fn)(const std::string& path) )
+{
+	this->path_filter_fn = path_filter_fn;
+}
+
+
 // ===
 
 ReadStream DiskFileDevice::OpenRead( const std::string& path_relative_to_device_root )
 {
 	const std::wstring full_path = Poro()->GetFileSystem()->CompleteReadPath( path_relative_to_device_root, mReadRootPath );
 
-#ifndef PORO_FILEIO_ALLOW_PARENT_DIRECTORY_TRAVEL
-	const bool is_moving_up_path = (ceng::StringFind( "../", path_relative_to_device_root ) != std::string::npos) || (ceng::StringFind( "..\\", path_relative_to_device_root ) != std::string::npos);
-	if ( is_moving_up_path ) // these kinds of paths should not be allowed
+	if ( path_filter_fn && path_filter_fn( path_relative_to_device_root ) == false )
 	{
 		return ReadStream();
 	}
-#endif
 
 	StreamStatus::Enum status;
 	ReadStream result;
@@ -1355,13 +1355,10 @@ ReadStream DiskFileDevice::OpenRead( FileLocation::Enum location, const std::str
 {
 	const std::wstring full_path = Poro()->GetFileSystem()->CompleteWritePath( location, path_relative_to_location );
 
-#ifndef PORO_FILEIO_ALLOW_PARENT_DIRECTORY_TRAVEL
-	const bool is_moving_up_path = (ceng::StringFind( "../", path_relative_to_location ) != std::string::npos) || (ceng::StringFind( "..\\", path_relative_to_location ) != std::string::npos);
-	if ( is_moving_up_path ) // these kinds of paths should not be allowed
+	if ( path_filter_fn && path_filter_fn( path_relative_to_location ) == false )
 	{
 		return ReadStream();
 	}
-#endif
 
 	StreamStatus::Enum status;
 	ReadStream result;
