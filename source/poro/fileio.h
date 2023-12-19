@@ -393,7 +393,7 @@ namespace poro {
 
     private:
         std::wstring mReadRootPath;
-		bool(*path_filter_fn)(const std::string& path);
+		bool( *path_filter_fn )( const std::string& path ) = NULL;
 	};
 
 	// ================================
