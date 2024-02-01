@@ -2056,7 +2056,6 @@ TextureOpenGL* GraphicsOpenGL::IMPL_LoadTexture( const types::string& filename, 
 		data = stbi_load_from_memory( (stbi_uc*)file.data, file.data_size_bytes, &x, &y, &bpp, bpp == 3 ? 4 : 0 );
 	}
 
-	images.insert( data );
 	if ( data == NULL )
 		return NULL;
 
