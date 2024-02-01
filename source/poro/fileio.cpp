@@ -1332,12 +1332,12 @@ void DiskFileDevice::SetReadPathFilter( bool(*path_filter_fn)(const std::string&
 
 ReadStream DiskFileDevice::OpenRead( const std::string& path_relative_to_device_root )
 {
-	const std::wstring full_path = Poro()->GetFileSystem()->CompleteReadPath( path_relative_to_device_root, mReadRootPath );
-
 	if ( path_filter_fn && path_filter_fn( path_relative_to_device_root ) == false )
 	{
 		return ReadStream();
 	}
+
+	const std::wstring full_path = Poro()->GetFileSystem()->CompleteReadPath( path_relative_to_device_root, mReadRootPath );
 
 	StreamStatus::Enum status;
 	ReadStream result;
