@@ -19,15 +19,20 @@ void LoadImage( const std::string& filename, ceng::CArray2D< poro::types::Uint32
 	int bpp = 0;
 	const int req_comp = 4;
 
-	poro::FileDataTemp file;
-	Poro()->GetFileSystem()->ReadWholeFileTemp( filename, &file );
-	if ( file.IsValid() == false )
-	{
-		logger_error << "LoadImage() - Failed to load image: " << filename << "\n";
-		return;
-	}
+	unsigned char* result = poro::IGraphics::MemoryImage_GetCopyOfBitmap( filename.c_str(), &w, &h, &bpp, req_comp );
 
-	unsigned char* result = stbi_load_from_memory( (stbi_uc*)file.data, file.data_size_bytes, &w, &h, &bpp, req_comp );
+	if ( result == NULL )
+	{
+		poro::FileDataTemp file;
+		Poro()->GetFileSystem()->ReadWholeFileTemp( filename, &file );
+		if ( file.IsValid() == false )
+		{
+			logger_error << "LoadImage() - Failed to load image: " << filename << "\n";
+			return;
+		}
+
+		result = stbi_load_from_memory( (stbi_uc*)file.data, file.data_size_bytes, &w, &h, &bpp, req_comp );
+	}
 
 	// error reading the file, probably not image file
 	if ( result == NULL )

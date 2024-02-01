@@ -2041,19 +2041,24 @@ TextureOpenGL* GraphicsOpenGL::IMPL_LoadTexture( const types::string& filename, 
 {
 	TextureOpenGL* result = NULL;
 
-	FileDataTemp file;
-	Poro()->GetFileSystem()->ReadWholeFileTemp( filename, &file );
-	if ( file.IsValid() == false )
-		return NULL;
 
 	int x, y, bpp;
-	stbi_info_from_memory( (stbi_uc*)file.data, file.data_size_bytes, &x, &y, &bpp );
-	uint8* data = stbi_load_from_memory( (stbi_uc*)file.data, file.data_size_bytes, &x, &y, &bpp, bpp == 3 ? 4 : 0 );
+	uint8* data = poro::IGraphics::MemoryImage_GetCopyOfBitmap( filename.c_str(), &x, &y, &bpp, 4 );
 
 	if ( data == NULL )
-		return NULL;
+	{
+		FileDataTemp file;
+		Poro()->GetFileSystem()->ReadWholeFileTemp( filename, &file );
+		if ( file.IsValid() == false )
+			return NULL;
+
+		stbi_info_from_memory( (stbi_uc*)file.data, file.data_size_bytes, &x, &y, &bpp );
+		data = stbi_load_from_memory( (stbi_uc*)file.data, file.data_size_bytes, &x, &y, &bpp, bpp == 3 ? 4 : 0 );
+	}
 
 	images.insert( data );
+	if ( data == NULL )
+		return NULL;
 
 	// ... process data if not NULL ... 
 	// ... x = width, y = height, n = # 8-bit components per pixel ...
