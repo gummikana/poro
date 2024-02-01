@@ -665,8 +665,6 @@ namespace poro
 					image_data[write_index++] = src[i+2];
 				}
 			}
-			
-			Poro()->GetGraphics()->ImageSave( ("debug/" + ceng::GetFilename( filename ) ).c_str(), image->width, image->height, req_comp, image_data, image->width * req_comp);
 
 			*x = image->width;
 			*y = image->height;
