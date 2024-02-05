@@ -196,12 +196,20 @@ struct GraphicsSettings
 
 //-----------------------------
 
-struct Image
+static const uint32 MEMORYIMAGE_NULL_ID = 0;
+
+struct MemoryImage
 {
 	int width = 0;
 	int height = 0;
 	int last_editor_id = -1;
 	uint32* data = NULL;
+};
+
+struct MemoryImageHandle
+{
+	uint32 id = MEMORYIMAGE_NULL_ID;
+	const MemoryImage* image = NULL; // for temp use, don't store anywhere
 };
 
 //-----------------------------
@@ -213,6 +221,7 @@ public:
 	IGraphics()
 	{
 		mFillColor[0] = 0.f;mFillColor[1] = 0.f; mFillColor[2] = 0.f; mFillColor[3] = 1.f;
+		MemoryImage_InitAndFreeExisting();
 	}
 
 	virtual ~IGraphics() { }
@@ -253,10 +262,10 @@ public:
 
 	virtual ITexture*	CreateTexture( int width, int height, TEXTURE_FORMAT::Enum format = TEXTURE_FORMAT::RGBA ) { poro_assert( false ); return 0; }
 	virtual ITexture*	CloneTexture( ITexture* other ) { poro_assert( false ); return 0; }
-	void				SetTextureData(ITexture* texture, unsigned char* data ){ SetTextureData(texture, (void*)data ); }
-	void				SetTextureData(ITexture* texture, float* data ){ SetTextureData(texture, (void*)data ); }
-	virtual void		SetTextureData(ITexture* texture, void* data ) { poro_assert( false );  }
-	virtual void		SetTextureData( ITexture* texture, void* data, int x, int y, int w, int h ) { poro_assert( false );  }
+	void				SetTextureData(ITexture* texture, const unsigned char* data ){ SetTextureData(texture, (const void*)data ); }
+	void				SetTextureData(ITexture* texture, const float* data ){ SetTextureData(texture, (const void*)data ); }
+	virtual void		SetTextureData(ITexture* texture, const void* data ) { poro_assert( false );  }
+	virtual void		SetTextureData( ITexture* texture, const void* data, int x, int y, int w, int h ) { poro_assert( false );  }
 
 	virtual ITexture*	LoadTexture( const types::string& filename ){ poro_assert( false ); return 0; }
 	virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data ){ poro_assert( false ); return 0; }
@@ -372,26 +381,24 @@ public:
 	int				ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes );
 
 	// returns true if the image identified by 'filename' exists in the file system or has been created through MemoryImage_MakeReadWrite()
-	bool					ImageExistAsFileOrMemoryImage( char const* filename );
+	bool							ImageExistAsFileOrMemoryImage( char const* filename );
 	// loads the image from 'filename' to memory (w and h will be ignored). 
 	// if the file does not exist, a new empty (zeroed) in-memory-bitmap will be created with the given size and name.
 	// afterwards, accesses to image with 'filename' through ImageLoad, ImageLoadTemp and others will receive a malloc'd copy of the in-memory-bitmap,
 	// with possible modifications made using MemoryImage_SetPixel.
-	// if an image was previously created using MemoryImage_MakeReadWrite using 'filename', that image will be made available for editing.
 	// this function isn't safe to call, if images are being accessed in other threads.
-	static const Image*		MemoryImage_MakeReadWrite( char const* filename, uint32 slot, int w, int h, int last_editor_id );
-	// makes an existing memory image available for read operations via MemoryImage_GetPixel
-	static const Image*		MemoryImage_Read( char const* filename, uint32 slot );
-	// after calling this, MemoryImage_Read* need to be called again to access memory image. 
-	static void				MemoryImage_ClearAccess();
+	// returns the id of the created image, which can be used to access the image with MemoryImage_GetPixel and MemoryImage_SetPixel
+	// if an image was previously created using MemoryImage_MakeReadWrite using 'filename', returns the id of that image.
+	static const MemoryImageHandle	MemoryImage_MakeReadWrite( char const* filename, int w, int h, int last_editor_id );
 	// will clear the in-memory-bitmaps created using MemoryImage_MakeReadWrite and empty the memory image map. any cached copies to these images will continue existing.
 	// this function isn't safe to call, if images are being accessed in other threads.
-	static void				MemoryImage_FreeAll();
+	static void						MemoryImage_InitAndFreeExisting();
 	// if a memory image with 'filename' exist, will return a malloc'ed copy to that image's data. will imitate the stbi API
-	static unsigned char*	MemoryImage_GetCopyOfBitmap( const char* filename, int *x, int *y, int *comp, int req_comp );
-	static const Image*		MemoryImage_Get( const char* filename );
-	static unsigned int		MemoryImage_GetPixel( uint32 slot, uint32 x, uint32 y );
-	static void				MemoryImage_SetPixel( uint32 slot, uint32 x, uint32 y, uint32 color );
+	static unsigned char*			MemoryImage_GetCopyOfBitmap( const char* filename, int *x, int *y, int *comp, int req_comp );
+	// returns MEMORY_IMAGE_NULL_ID if no image was found
+	static const MemoryImageHandle	MemoryImage_GetFromFilename( const char* filename );
+	static uint32					MemoryImage_GetPixel( uint32 id, uint32 x, uint32 y );
+	static void						MemoryImage_SetPixel( uint32 id, uint32 x, uint32 y, uint32 color );
 
 	//-------------------------------------------------------------------------
 	// this is haxed here... because we needed multithreaded loading of assets

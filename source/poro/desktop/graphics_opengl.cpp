@@ -244,7 +244,7 @@ namespace {
 		return result;
 	}
 
-	void SetTextureData_Impl(TextureOpenGL* texture, void* data, int x, int y, int w, int h)
+	void SetTextureData_Impl(TextureOpenGL* texture, const void* data, int x, int y, int w, int h)
 	{
 		poro_assert( x >= 0 );
 		poro_assert( y >= 0 );
@@ -632,7 +632,7 @@ ITexture* GraphicsOpenGL::CloneTexture( ITexture* other )
 	return result;
 }
 
-void GraphicsOpenGL::SetTextureData( ITexture* itexture, void* data )
+void GraphicsOpenGL::SetTextureData( ITexture* itexture, const void* data )
 {
 	poro_assert( GetMultithreadLock() == false );
 	poro_assert( dynamic_cast<TextureOpenGL*>( itexture) );
@@ -640,7 +640,7 @@ void GraphicsOpenGL::SetTextureData( ITexture* itexture, void* data )
 	SetTextureData_Impl( texture, data, 0, 0, texture->GetWidth(), texture->GetHeight() );
 }
 
-void GraphicsOpenGL::SetTextureData( ITexture* itexture, void* data, int x, int y, int w, int h )
+void GraphicsOpenGL::SetTextureData( ITexture* itexture, const void* data, int x, int y, int w, int h )
 {
 	poro_assert( GetMultithreadLock() == false );
 	poro_assert( dynamic_cast<TextureOpenGL*>( itexture) );

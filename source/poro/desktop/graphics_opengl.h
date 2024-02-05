@@ -79,8 +79,8 @@ public:
 	virtual ITexture*	CreateTexture( int width, int height, TEXTURE_FORMAT::Enum format = TEXTURE_FORMAT::RGBA ) PORO_OVERRIDE;
 	virtual void		DestroyTexture( ITexture* texture ) PORO_OVERRIDE;
 	virtual ITexture*	CloneTexture( ITexture* other ) PORO_OVERRIDE;
-	virtual void		SetTextureData(ITexture* texture, void* data ) PORO_OVERRIDE;
-	virtual void		SetTextureData(ITexture* texture, void* data, int x, int y, int w, int h ) PORO_OVERRIDE;
+	virtual void		SetTextureData(ITexture* texture, const void* data ) PORO_OVERRIDE;
+	virtual void		SetTextureData(ITexture* texture, const void* data, int x, int y, int w, int h ) PORO_OVERRIDE;
 	virtual ITexture*	LoadTexture( const types::string& filename ) PORO_OVERRIDE;
 	virtual ITexture*	LoadTexture( const types::string& filename, bool store_raw_pixel_data ) PORO_OVERRIDE;
 	virtual void		SetTextureFilteringMode( ITexture* itexture, TEXTURE_FILTERING_MODE::Enum mode ) PORO_OVERRIDE;

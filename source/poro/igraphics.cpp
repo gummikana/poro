@@ -25,6 +25,7 @@
 #include "itexture.h"
 #include "utils/color/ccolor.h"
 #include "poro.h"
+#include "utils/string/string.h"
 unsigned char *stbi_write_png_to_mem( unsigned char *pixels, int stride_bytes, int x, int y, int n, int *out_len ); // not public unless defining stb implementation
 
 namespace ceng
@@ -34,14 +35,10 @@ namespace ceng
 
 namespace poro
 {
-	// 2024/1/31 - added these to support procedural generation and editing of textures that are normally loaded from the filesystem, without changing the code that uses them.
+	// 2024/1/31 - added the MemoryImage system to support procedural generation and editing of textures that are normally loaded from the filesystem, without changing the code that uses them.
 	// MemoryImage_MakeReadWrite() can also be used to create procedural textures that look like file-based images to the game, but don't have a corresponding real file.
-
-	const uint32 MEMORY_IMAGE_SLOTS = 8;
-	const Image* read_image_slots[MEMORY_IMAGE_SLOTS] = { 0 };
-	Image* write_image_slots[MEMORY_IMAGE_SLOTS] = { 0 };
-
-	std::unordered_map<std::string, Image*> filename_to_memory_image;
+	std::unordered_map<std::string, uint32> filename_to_memory_image_id;
+	std::vector<MemoryImage> id_to_memory_image;
 
 
 	// 2019-04-11 CLEANUP NOTE: For now we'll keep DrawTexture implementations as they were in GraphicsOpenGL. They'd sure use a cleanup but the main reason for that would be aesthetic.
@@ -84,7 +81,6 @@ namespace poro
 		poro_assert( x );
 		poro_assert( y );
 		poro_assert( filename );
-
 
 		unsigned char* result = NULL;
 		
@@ -534,36 +530,53 @@ namespace poro
 
 	bool IGraphics::ImageExistAsFileOrMemoryImage( char const* filename )
 	{
+		// NOTE: this should not have any side effects that endanger thread safety
 		if ( filename == NULL )
 			return NULL;
 
-		const Image* image = IGraphics::MemoryImage_Get( filename );
-		return ( image && image->data ) ||
+		const MemoryImageHandle handle = IGraphics::MemoryImage_GetFromFilename( filename );
+		return ( handle.id != MEMORYIMAGE_NULL_ID ) ||
 			Poro()->GetFileSystem()->DoesExist( FileLocation::WorkingDirectory, filename );
 	}
 
 
-	const Image* IGraphics::MemoryImage_MakeReadWrite( char const* filename, uint32 slot, int width, int height, int last_editor_id )
+
+
+	// copied here so we can use this without linking to a certain codebase
+	bool MemoryImage_StringStartsWith( const std::string& in, const std::string& what )
 	{
-		if ( slot >= MEMORY_IMAGE_SLOTS )
-			return NULL;
+		if ( in.size() < what.size() )
+			return false;
+		if ( in.empty() )
+			return false;
 
-		if ( filename == NULL )
-			return NULL;
-
-		poro_assert( filename );
-		Image** image_ref = &filename_to_memory_image[filename];
-		Image* image = NULL;
-		if ( *image_ref )
+		for ( size_t i = 0; i < what.size(); i++ )
 		{
-			image = *image_ref;
+			if ( in[i] != what[i] )
+				return false;
 		}
-		else
+
+		return true;
+	}
+
+	const MemoryImageHandle IGraphics::MemoryImage_MakeReadWrite( char const* filename, int width, int height, int last_editor_id )
+	{
+		if ( filename == NULL )
+			return MemoryImageHandle();
+		
+		poro_assert( filename );
+
+		MemoryImageHandle handle = MemoryImage_GetFromFilename( filename );
+
+		if ( handle.id == MEMORYIMAGE_NULL_ID )
 		{
+			// create new memory image
 			int comp;
 			int w;
 			int h;
-			unsigned char* data = IMPL_ImageLoad( filename, &w, &h, &comp, 4, true, true );
+			unsigned char* data = NULL;
+			if ( MemoryImage_StringStartsWith( filename, "data/" ) || MemoryImage_StringStartsWith( filename, "mods/" ) ) // hax for certain codebase, because otherwise it reports an error
+				data = IMPL_ImageLoad( filename, &w, &h, &comp, 4, true, true );
 
 			if ( data == NULL && w > 0 && h > 0 ) // if file load failed, allocate an empty bitmap in memory
 			{
@@ -580,66 +593,50 @@ namespace poro
 
 			if ( data == NULL ) // if couldn't create image at all
 			{
-				filename_to_memory_image.erase( filename_to_memory_image.find( filename ) );
-				return NULL; // <--------------------------------- returns
+				return handle; // <--------------------------------- returns
 			}
 
-			image = new Image();
-			image->width = w;
-			image->height = h;
-			image->data = (uint32*)data;
+			poro_assert( data );
+			poro_assert( w > 0 );
+			poro_assert( h > 0 );
 
-			*image_ref = image; // store to map
+			const uint32 id = id_to_memory_image.size();
+
+			MemoryImage image;
+			image.width = w;
+			image.height = h;
+			image.data = (uint32*)data;
+			image.last_editor_id = last_editor_id;
+
+			id_to_memory_image.push_back( image );
+			filename_to_memory_image_id[filename] = id;
+
+			handle.id = id;
+			handle.image = &id_to_memory_image.back();
 		}
-
-		poro_assert( image );
-		poro_assert( image->data );
-		poro_assert( image->width > 0 );
-		poro_assert( image->height > 0 );
-
-		image->last_editor_id = last_editor_id;
-
-		read_image_slots[slot] = image;
-		write_image_slots[slot] = image;
-
-		return image;
-	}
-
-	const Image* IGraphics::MemoryImage_Read( char const* filename, uint32 slot )
-	{
-		if ( slot >= MEMORY_IMAGE_SLOTS )
-			return NULL;
-
-		const Image* image = MemoryImage_Get( filename );
-		if ( image )
+		else
 		{
-			cassert( image->data );
-			read_image_slots[slot] = image;
-			write_image_slots[slot] = NULL;
-			return image;
+			id_to_memory_image[handle.id].last_editor_id = last_editor_id;
 		}
 
-		return NULL;
-	}
-
-	void IGraphics::MemoryImage_ClearAccess()
-	{
-		for ( int i = 0; i < MEMORY_IMAGE_SLOTS; i++ )
-		{
-			read_image_slots[i] = NULL;
-			write_image_slots[i] = NULL;
-		}
+		return handle;
 	}
 
 	// ideally we would just return a pointer to the data, but the lifetimes of various images have no consistent logic, 
 	// so it's best we just return a new allocation, imitating the use of the stbi API, and clear the memory image map on game reset.
 	unsigned char* IGraphics::MemoryImage_GetCopyOfBitmap( const char* filename, int *x, int *y, int *comp, int req_comp )
 	{
-		auto it = filename_to_memory_image.find( filename );
+		poro_assert( filename );
+		poro_assert( x );
+		poro_assert( y );
 
-		if ( it != filename_to_memory_image.end() )
+		// NOTE: this should not have any side effects that endanger thread safety
+		const MemoryImageHandle img = MemoryImage_GetFromFilename( filename );
+		if ( img.id != MEMORYIMAGE_NULL_ID )
 		{
-			poro::Image* image = it->second;
+			poro_assert( img.image );
+
+			const MemoryImage* image = img.image;
 
 			poro_assert( image );
 			poro_assert( image->data );
@@ -666,6 +663,8 @@ namespace poro
 				}
 			}
 
+			//Poro()->GetGraphics()->ImageSave( ("temptemp/" + ceng::GetFilename( filename ) ).c_str(), image->width, image->height, req_comp, image_data, image->width * req_comp);
+
 			*x = image->width;
 			*y = image->height;
 			if ( comp )
@@ -677,40 +676,59 @@ namespace poro
 	}
 
 
-	const Image* IGraphics::MemoryImage_Get( const char* filename )
+	const MemoryImageHandle IGraphics::MemoryImage_GetFromFilename( const char* filename )
 	{
-		auto it = filename_to_memory_image.find( filename );
-		return it != filename_to_memory_image.end() ? it->second : NULL;
-	}
+		// NOTE: this should not have any side effects that endanger thread safety
+		MemoryImageHandle handle;
 
-
-	void IGraphics::MemoryImage_FreeAll()
-	{
-		MemoryImage_ClearAccess();
-
-		for ( auto& it : filename_to_memory_image )
+		if ( filename )
 		{
-			if ( it.second )
+			handle.id = MEMORYIMAGE_NULL_ID;
+
+			auto it = filename_to_memory_image_id.find( filename );
+			if ( it != filename_to_memory_image_id.end() )
 			{
-				if ( it.second->data )
-				{
-					poro_assert( it.second->data );
-					free( it.second->data );
-				}
-				delete it.second;
+				poro_assert( it->second < id_to_memory_image.size() );
+
+				const MemoryImage* image = &id_to_memory_image[it->second];
+				handle.id = it->second;
+				handle.image = image;
 			}
 		}
 
-		filename_to_memory_image.clear();
+		return handle;
 	}
 
-	unsigned int IGraphics::MemoryImage_GetPixel( uint32 slot, uint32 x, uint32 y )
+
+	void IGraphics::MemoryImage_InitAndFreeExisting()
 	{
-		if ( slot >= MEMORY_IMAGE_SLOTS )
+		for ( MemoryImage& image : id_to_memory_image )
+		{
+			if ( image.data )
+				free( image.data );
+		}
+
+		id_to_memory_image.clear();
+		filename_to_memory_image_id.clear();
+
+		// allocate an non-image in the first slot, for id 0. 
+		// the image will have 0,0 as its size so getpixel and setpixel calls will fail without accessing any data, and we don't need a separate check for MEMORYIMAGE_NULL_ID
+		id_to_memory_image.push_back( MemoryImage() );
+
+		poro_assert( MEMORYIMAGE_NULL_ID == 0 );
+		poro_assert( id_to_memory_image[MEMORYIMAGE_NULL_ID].width == 0 );
+		poro_assert( id_to_memory_image[MEMORYIMAGE_NULL_ID].height == 0 );
+	}
+
+	unsigned int IGraphics::MemoryImage_GetPixel( uint32 id, uint32 x, uint32 y )
+	{
+		// NOTE: this should not have any side effects that endanger thread safety
+		if ( id >= id_to_memory_image.size() )
 			return 0;
 
-		const Image* image = read_image_slots[slot];
-		if ( image && x < (uint32)image->width && y < (uint32)image->height )
+		const MemoryImage* image = &id_to_memory_image[id];
+		poro_assert( image );
+		if ( x < (uint32)image->width && y < (uint32)image->height )
 		{
 			poro_assert( image->data );
 			return image->data[x + y * image->width];
@@ -719,13 +737,15 @@ namespace poro
 		return 0;
 	}
 
-	void IGraphics::MemoryImage_SetPixel( uint32 slot, uint32 x, uint32 y, uint32 color )
+	void IGraphics::MemoryImage_SetPixel( uint32 id, uint32 x, uint32 y, uint32 color )
 	{
-		if ( slot >= MEMORY_IMAGE_SLOTS )
+		// NOTE: this should not have any side effects that endanger thread safety
+		if ( id >= id_to_memory_image.size() )
 			return;
 
-		const Image* image = read_image_slots[slot];
-		if ( image && x < (uint32)image->width && y < (uint32)image->height )
+		const MemoryImage* image = &id_to_memory_image[id];
+		poro_assert( image );
+		if ( x < (uint32)image->width && y < (uint32)image->height )
 		{
 			poro_assert( image->data );
 			image->data[x + y * image->width] = color;
