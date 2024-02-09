@@ -528,7 +528,7 @@ namespace poro
 	}
 
 
-	bool IGraphics::ImageExistAsFileOrMemoryImage( char const* filename )
+	bool IGraphics::ImageExistsAsFileOrMemoryImage( char const* filename )
 	{
 		// NOTE: this should not have any side effects that endanger thread safety
 		if ( filename == NULL )
@@ -536,7 +536,7 @@ namespace poro
 
 		const MemoryImageHandle handle = IGraphics::MemoryImage_GetFromFilename( filename );
 		return ( handle.id != MEMORYIMAGE_NULL_ID ) ||
-			Poro()->GetFileSystem()->DoesExist( FileLocation::WorkingDirectory, filename );
+			Poro()->GetFileSystem()->DoesExist( filename );
 	}
 
 

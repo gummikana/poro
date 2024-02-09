@@ -894,7 +894,7 @@ namespace {
 
 		if( i == mTextureBuffer.end() )
 		{
-			if ( Poro()->GetGraphics()->ImageExistAsFileOrMemoryImage( filename.c_str() ) == false )
+			if ( Poro()->GetGraphics()->ImageExistsAsFileOrMemoryImage( filename.c_str() ) == false )
 			{
 				logger_error << "ERROR - LoadSpriteTo()... file doesn't exist: " << filename << "\n";
 				return NULL;

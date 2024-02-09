@@ -381,7 +381,7 @@ public:
 	int				ImageSave( char const *filename, int x, int y, int comp, const void *data, int stride_bytes );
 
 	// returns true if the image identified by 'filename' exists in the file system or has been created through MemoryImage_MakeReadWrite()
-	bool							ImageExistAsFileOrMemoryImage( char const* filename );
+	bool							ImageExistsAsFileOrMemoryImage( char const* filename );
 	// loads the image from 'filename' to memory (w and h will be ignored). 
 	// if the file does not exist, a new empty (zeroed) in-memory-bitmap will be created with the given size and name.
 	// afterwards, accesses to image with 'filename' through ImageLoad, ImageLoadTemp and others will receive a malloc'd copy of the in-memory-bitmap,
