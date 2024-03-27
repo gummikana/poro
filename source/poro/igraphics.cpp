@@ -578,7 +578,7 @@ namespace poro
 			if ( MemoryImage_StringStartsWith( filename, "data/" ) || MemoryImage_StringStartsWith( filename, "mods/" ) ) // hax for certain codebase, because otherwise it reports an error
 				data = IMPL_ImageLoad( filename, &w, &h, &comp, 4, true, true );
 
-			if ( data == NULL && w > 0 && h > 0 ) // if file load failed, allocate an empty bitmap in memory
+			if ( data == NULL && width > 0 && height > 0 ) // if file load failed, allocate an empty bitmap in memory
 			{
 				// ensure size doesn't overflow int. though at this size it's possible the allocation fails
 				w = ceng::math::Clamp( width, 0, 1024 * 16 );
@@ -588,7 +588,6 @@ namespace poro
 				data = (unsigned char*)malloc( data_size_bytes ); // allocate an in-memory-image. malloc, because ImageFree could touch it and uses free()
 				if ( data )
 					memset( data, 0, data_size_bytes );
-
 			}
 
 			if ( data == NULL ) // if couldn't create image at all
