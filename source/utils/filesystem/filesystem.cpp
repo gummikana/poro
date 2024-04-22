@@ -50,6 +50,7 @@
 
 #include "../debug.h"
 #include "../../poro/poro.h"
+#include "../../poro/fileio.h"
 
 namespace ceng {
 
@@ -132,7 +133,21 @@ bool DoesExist( const std::string& filename )
 		std::string result;
 
 		if((hFile = _findfirst(filename.c_str(), &c_file)) == -1L)
+		{
+			cassert( Poro()->GetFileSystem() );
+			cassert( Poro()->GetFileSystem()->DoesExist( filename ) == false );
 			return false;
+		}
+		else
+		{
+			cassert( Poro()->GetFileSystem() );
+			// NOTE( Petri ): This is a debug assert. If it fires, then there's likely a mismatch in
+			// what fileio.cpp path filtering allows and what is being tested. This also cause crashes
+			// because the code using this assumes we can load the file. Or this can crash, because
+			cassert( Poro()->GetFileSystem()->DoesExist( filename ) );
+			return true;
+		}
+
 	#elif defined(CENG_PLATFORM_MACOSX)
 #if 0
 		NSString *path = [[NSString alloc] initWithCString:filename.c_str() encoding:NSMacOSRomanStringEncoding];
