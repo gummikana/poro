@@ -993,6 +993,7 @@ void ReleasePreloadedTexture( const std::string& filename )
 
 void ReleaseCachedTextures()
 {
+	// NOTE( Petri ): 26.4.2024 - this function is never called
 	auto graphics = Poro()->GetGraphics();
 
 	for ( auto& pair : mTextureBuffer )
@@ -1008,6 +1009,7 @@ void ReleaseCachedTextures()
 		delete pair.second;
 	}
 
+	mSpriteBuffer.clear();
 	mTextureBuffer.clear();
 }
 
