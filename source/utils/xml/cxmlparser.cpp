@@ -343,7 +343,17 @@ public:
 				++tokenizer->at;
 			}
 			result.length = ( tokenizer->at - result.text );
-			++tokenizer->at;
+	
+			// BUG( Petri ): 12.8.2024 - the tokenizer moved past the end of stream marker, potentially causing problems
+			if( tokenizer->at[0] == '\0' ) 
+			{
+				result.type = TOKEN_EndOfStream; tokenizer->end_of_stream = true;
+			}
+			else
+			{
+				cassert( tokenizer->at[0] );
+				++tokenizer->at;
+			}
 		}
 		break;
 
